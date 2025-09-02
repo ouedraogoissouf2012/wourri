@@ -1,0 +1,45 @@
+# Dépendances Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sessions WhatsApp (sensibles)
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Logs et fichiers temporaires
+*.log
+debug.log
+test_result.tmp
+nul
+
+# Système d'exploitation
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.orig
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# PM2 logs
+pm2.log
