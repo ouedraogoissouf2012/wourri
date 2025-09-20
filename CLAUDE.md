@@ -11,10 +11,25 @@ This is the **Node.js WhatsApp server component** of the larger Spring Boot noti
 ### Running the WhatsApp Server
 - `npm start` - Start the WhatsApp server on port 3000
 - `node whatsapp-server.js` - Alternative start command
+- `start-whatsapp.bat` - Windows batch script to start server with proper directory navigation
 
 ### Package Management
 - `npm install` - Install dependencies after cloning
 - `npm list` - View installed packages
+- `npm update` - Update dependencies
+- `npm audit` - Check for security vulnerabilities
+
+### Testing and Monitoring
+- `node test-whatsapp.js --test` - Run comprehensive connection and message tests
+- `node test-whatsapp.js --monitor` - Start continuous monitoring (30s intervals)
+- `node test-whatsapp.js --monitor --interval 60` - Custom monitoring interval
+- `health-check.bat` - Windows script for daily health verification
+- `monitor.bat` - Interactive monitoring menu for Windows
+
+### Maintenance Commands
+- `npx kill-port 3000` - Stop server running on port 3000
+- `cleanup.bat` - Clean WhatsApp sessions and restart server
+- Remove sessions manually: `rmdir /s /q .wwebjs_auth .wwebjs_cache` (Windows)
 
 ## Architecture
 
@@ -33,7 +48,8 @@ The server uses WhatsApp Web's session-based authentication:
 
 ### API Endpoints
 - `GET /status` - Returns connection status and QR code requirement
-- `GET /qr` - Returns current QR code data if authentication needed  
+- `GET /qr` - Returns current QR code data if authentication needed
+- `GET /qr-page` - Web interface for QR code scanning with visual interface
 - `POST /send-message` - Send WhatsApp message (requires `number` and `message` in body)
 
 ### Session Management
@@ -68,15 +84,22 @@ This WhatsApp server is designed to work alongside the Spring Boot notification 
 
 ### Testing Message Sending
 ```bash
+# Manual API test
 curl -X POST http://localhost:3000/send-message \
   -H "Content-Type: application/json" \
-  -d '{"number": "+1234567890", "message": "Test message"}'
+  -d '{"number": "22544210112", "message": "Test message"}'
+
+# Automated test with monitoring
+node test-whatsapp.js --test
 ```
 
-### Troubleshooting
-- If QR code doesn't appear, delete `.wwebjs_auth/` and `.wwebjs_cache/` directories
-- Check `GET /status` endpoint to verify connection state
-- WhatsApp session expires after ~2 weeks of inactivity
+### Troubleshooting Common Issues
+- **QR code doesn't appear**: Delete `.wwebjs_auth/` and `.wwebjs_cache/` directories, restart server
+- **Port already in use**: Run `npx kill-port 3000` or use `cleanup.bat`
+- **Connection lost**: Server auto-reconnects after 5 seconds; check logs for errors
+- **Session expires**: WhatsApp sessions expire after ~2 weeks of inactivity - re-scan QR code
+- **Protocol errors**: Clean sessions with `cleanup.bat` and restart
+- **QR code access**: Use http://localhost:3000/qr-page for visual QR interface
 
 ## Key Design Considerations
 
@@ -107,9 +130,35 @@ curl -X POST http://localhost:3000/send-message \
 - No sensitive credentials stored in code
 - Relies on WhatsApp Web's built-in security model
 
+## Important Configuration
+
+### Key Files and Scripts
+- **Main server**: `whatsapp-server.js` - Core Express server with WhatsApp integration
+- **Test suite**: `test-whatsapp.js` - Comprehensive testing and monitoring utilities
+- **Windows utilities**: `*.bat` files for automated maintenance (cleanup, monitoring, health checks)
+- **Session storage**: `.wwebjs_auth/ecole-notification/` - Persistent WhatsApp sessions
+- **Comprehensive guide**: `GUIDE-COMPLET.md` - Detailed French documentation for setup/maintenance
+
+### Environment Configuration
+- **Default port**: 3000 (configurable in `whatsapp-server.js` line 7)
+- **Session name**: "ecole-notification" (configurable in LocalAuth strategy)
+- **Test number**: 22544210112 (configurable in `test-whatsapp.js` line 64)
+- **Puppeteer args**: Optimized for headless operation with performance flags
+
+### Operational URLs
+- **QR Code Interface**: http://localhost:3000/qr-page (visual QR scanning)
+- **Status API**: http://localhost:3000/status
+- **QR Data API**: http://localhost:3000/qr
+
 ## Important Notes
 
 ### Documentation Consistency
-- The actual implemented endpoints are `/status`, `/qr`, and `/send-message`
+- The actual implemented endpoints are `/status`, `/qr`, `/qr-page`, and `/send-message`
 - The README.md mentions different endpoints that may be from an earlier design
 - Always refer to the actual code implementation in `whatsapp-server.js` for current API endpoints
+- For comprehensive operational procedures, reference `GUIDE-COMPLET.md`
+
+### WhatsApp Web Version Management
+- Server uses remote web version cache for stability
+- Version URL: https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html
+- Automatic reconnection logic handles temporary disconnections
