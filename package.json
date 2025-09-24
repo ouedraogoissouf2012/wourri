@@ -4,7 +4,12 @@
   "description": "Serveur WhatsApp gratuit pour École Notification",
   "main": "whatsapp-server.js",
   "scripts": {
-    "start": "node whatsapp-server.js"
+    "start": "node app.js",
+    "dev": "node whatsapp-server.js",
+    "production": "NODE_ENV=production node app.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   },
   "dependencies": {
     "axios": "^1.11.0",
