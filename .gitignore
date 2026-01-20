@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.env
+*.egg-info/
+dist/
+build/
+
+# Fichiers temporaires Claude
+tmpclaude*
+
+# Modeles ML (trop gros pour GitHub - telecharger separement)
+modeles_manuels/*.safetensors
+modeles_manuels/paraphrase-multilingual-MiniLM-L12-v2/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# Fichiers audio generes
+static/audio/*.wav
+static/audio/*.ogg
+static/audio/*.mp3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+*.cache
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+tmp/
+temp/
+*.tmp

@@ -1,0 +1,92 @@
+"""
+WOURI - Pydantic Schemas
+"""
+from pydantic import BaseModel
+from enum import Enum
+from typing import Optional
+
+
+class Language(str, Enum):
+    """Langues supportées"""
+    FRENCH = "french"
+    DIOULA = "dioula"
+    BOTH = "both"  # Français ET Dioula
+
+
+class ChatRequest(BaseModel):
+    """Requête de chat"""
+    message: str
+    city: str = "Abidjan"
+    language: Language = Language.BOTH  # Par défaut: les deux langues
+    include_audio: bool = True
+
+
+class ChatResponse(BaseModel):
+    """Réponse de chat"""
+    response: str
+    response_dioula: Optional[str] = None  # Traduction Dioula
+    audio_url: Optional[str] = None
+    city: str
+    language: str
+
+
+class WeatherRequest(BaseModel):
+    """Requête météo"""
+    city: str
+
+
+class WeatherData(BaseModel):
+    """Données météo"""
+    city: str
+    region: str
+    temperature: float
+    humidity: int
+    precipitation: float
+    wind_speed: float
+    weather_code: int
+    weather_description: str
+    advice: str
+
+
+class TTSRequest(BaseModel):
+    """Requête TTS"""
+    text: str
+    language: Language = Language.FRENCH
+
+
+class TTSResponse(BaseModel):
+    """Réponse TTS"""
+    audio_url: str
+    text: str
+    language: str
+
+
+class TranslateRequest(BaseModel):
+    """Requête de traduction"""
+    text: str
+    source: str = "fra_Latn"
+    target: str = "bam_Latn"
+
+
+class TranslateResponse(BaseModel):
+    """Réponse de traduction"""
+    original: str
+    translated: str
+    source: str
+    target: str
+
+
+class CityInfo(BaseModel):
+    """Informations sur une ville"""
+    name: str
+    lat: float
+    lon: float
+    region: str
+
+
+class HealthResponse(BaseModel):
+    """Réponse de santé"""
+    status: str
+    app_name: str
+    version: str
+    services: dict
