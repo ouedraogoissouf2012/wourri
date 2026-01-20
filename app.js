@@ -3,9 +3,13 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const cors = require('cors');
 const path = require('path');
+const axios = require('axios');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
+const DEFAULT_CITY = process.env.DEFAULT_CITY || 'Abidjan';
 
 app.use(express.json());
 app.use(cors());
@@ -14,6 +18,39 @@ let client;
 let qrCodeData = null;
 let isConnected = false;
 let isReady = false;
+
+// Mode bilingue: Français ET Dioula par défaut
+// L'utilisateur peut choisir: "both" (les deux), "french" (français seul), "dioula" (dioula seul)
+const userLanguagePrefs = new Map();
+
+// Mots-cles pour detecter la langue souhaitee
+const BOTH_KEYWORDS = ['les deux', 'both', 'deux langues', 'francais et dioula', 'dioula et francais'];
+const DIOULA_ONLY_KEYWORDS = ['seulement dioula', 'dioula seul', 'uniquement dioula', 'only dioula'];
+const FRENCH_ONLY_KEYWORDS = ['seulement francais', 'francais seul', 'uniquement francais', 'only french'];
+
+// Fonction pour detecter la langue souhaitee dans un message
+function detectLanguagePreference(message) {
+    const lowerMessage = message.toLowerCase();
+
+    // Verifier les preferences
+    for (const keyword of BOTH_KEYWORDS) {
+        if (lowerMessage.includes(keyword)) {
+            return 'both';
+        }
+    }
+    for (const keyword of DIOULA_ONLY_KEYWORDS) {
+        if (lowerMessage.includes(keyword)) {
+            return 'dioula';
+        }
+    }
+    for (const keyword of FRENCH_ONLY_KEYWORDS) {
+        if (lowerMessage.includes(keyword)) {
+            return 'french';
+        }
+    }
+
+    return null; // Pas de preference detectee
+}
 
 // Configuration pour la production
 const authPath = process.env.NODE_ENV === 'production'
@@ -96,6 +133,106 @@ function initializeWhatsApp() {
     // État de chargement
     client.on('loading_screen', (percent, message) => {
         console.log('⏳ Chargement:', percent, message);
+    });
+
+    // === WOURI: Réception des messages ===
+    client.on('message', async (message) => {
+        try {
+            // Ignorer les messages de groupe et les messages envoyés par nous
+            if (message.from.includes('@g.us') || message.fromMe) {
+                return;
+            }
+
+            // Ignorer les messages non-texte (images, audio, etc.)
+            if (message.type !== 'chat') {
+                console.log(`📎 Message non-texte ignoré (type: ${message.type})`);
+                return;
+            }
+
+            const userMessage = message.body;
+            const userNumber = message.from.replace('@c.us', '');
+
+            console.log(`\n📩 Message reçu de ${userNumber}:`);
+            console.log(`   "${userMessage}"`);
+
+            // Envoyer un indicateur de saisie
+            const chat = await message.getChat();
+            chat.sendStateTyping();
+
+            // Detecter si l'utilisateur veut changer de langue
+            const detectedLanguage = detectLanguagePreference(userMessage);
+            if (detectedLanguage) {
+                userLanguagePrefs.set(userNumber, detectedLanguage);
+                console.log(`🌍 Langue changée pour ${userNumber}: ${detectedLanguage}`);
+            }
+
+            // Obtenir la langue preferee de l'utilisateur (defaut: french)
+            const userLanguage = userLanguagePrefs.get(userNumber) || 'french';
+            console.log(`🌍 Langue utilisée: ${userLanguage}`);
+
+            // Appeler l'API WOURI
+            console.log(`🌾 Envoi à WOURI API...`);
+
+            const response = await axios.post(`${WOURI_API_URL}/api/chat/`, {
+                message: userMessage,
+                city: DEFAULT_CITY,
+                language: userLanguage,
+                include_audio: userLanguage === 'dioula' // Audio seulement pour Dioula
+            }, {
+                timeout: 60000, // Timeout plus long pour la génération audio
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const wouriResponse = response.data.response;
+            const audioUrl = response.data.audio_url;
+
+            console.log(`✅ Réponse WOURI: "${wouriResponse.substring(0, 50)}..."`);
+
+            // Envoyer la réponse textuelle à l'utilisateur
+            await client.sendMessage(message.from, wouriResponse);
+
+            // Si un audio est disponible (pour Dioula), l'envoyer aussi
+            if (audioUrl && userLanguage === 'dioula') {
+                try {
+                    const fullAudioUrl = `${WOURI_API_URL}${audioUrl}`;
+                    console.log(`🔊 Envoi audio: ${fullAudioUrl}`);
+
+                    // Telecharger l'audio et l'envoyer
+                    const { MessageMedia } = require('whatsapp-web.js');
+                    const media = await MessageMedia.fromUrl(fullAudioUrl);
+                    await client.sendMessage(message.from, media, { sendAudioAsVoice: true });
+                    console.log(`🔊 Audio envoyé à ${userNumber}`);
+                } catch (audioError) {
+                    console.log(`⚠️ Impossible d'envoyer l'audio: ${audioError.message}`);
+                }
+            }
+
+            console.log(`📤 Réponse envoyée à ${userNumber}`);
+
+            // Message d'aide pour changer de langue (première interaction ou changement)
+            if (detectedLanguage) {
+                const langName = detectedLanguage === 'dioula' ? 'Dioula/Bambara' : 'Français';
+                await client.sendMessage(message.from,
+                    `✅ Langue changée en ${langName}!\n\n` +
+                    `💡 Pour changer de langue, dites:\n` +
+                    `• "en français" pour le Français\n` +
+                    `• "en dioula" ou "en bambara" pour le Dioula`
+                );
+            }
+
+        } catch (error) {
+            console.error('❌ Erreur traitement message:', error.message);
+
+            // Envoyer un message d'erreur à l'utilisateur
+            try {
+                await client.sendMessage(
+                    message.from,
+                    "Désolé, je rencontre des difficultés techniques. Réessayez dans quelques instants. 🌾"
+                );
+            } catch (e) {
+                console.error('❌ Impossible d\'envoyer le message d\'erreur');
+            }
+        }
     });
 
     client.initialize();
