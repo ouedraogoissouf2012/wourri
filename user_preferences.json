@@ -1,0 +1,32 @@
+{
+  "199115472400530@lid": {
+    "city": "Gagnoa",
+    "language": "dioula",
+    "step": "complete",
+    "pendingQuestion": null
+  },
+  "22578377695@s.whatsapp.net": {
+    "city": "C'est pas toi",
+    "language": "french",
+    "step": "complete",
+    "pendingQuestion": null
+  },
+  "52390346658042@lid": {
+    "city": "Bonoua",
+    "language": "french",
+    "step": "complete",
+    "pendingQuestion": null
+  },
+  "120363418618222855@newsletter": {
+    "city": null,
+    "language": null,
+    "step": "new",
+    "pendingQuestion": null
+  },
+  "172047850283090@lid": {
+    "city": null,
+    "language": null,
+    "step": "waiting_city",
+    "pendingQuestion": "Aie"
+  }
+}

@@ -1,7 +1,7 @@
 /**
  * WOURI WhatsApp Server - Version Baileys
- * Serveur WhatsApp plus stable et leger utilisant Baileys
- * Support bilingue: Francais ET Dioula
+ * Serveur WhatsApp avec onboarding utilisateur
+ * Demande ville et langue preferee avant de repondre
  */
 
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, downloadMediaMessage } = require('@whiskeysockets/baileys');
@@ -19,6 +19,7 @@ const PORT = process.env.PORT || 3001;
 const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
 const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
+const USER_PREFS_FILE = path.join(__dirname, 'user_preferences.json');
 
 // Creer le dossier temporaire pour les audios
 if (!fs.existsSync(TEMP_AUDIO_FOLDER)) {
@@ -35,13 +36,110 @@ let sock = null;
 let qrCodeData = null;
 let isConnected = false;
 
-// Mode bilingue: Francais ET Dioula par defaut
-const userLanguagePrefs = new Map();
+// ========================================
+// GESTION DES PREFERENCES UTILISATEURS
+// ========================================
 
-// Mots-cles pour detecter la langue souhaitee
-const BOTH_KEYWORDS = ['les deux', 'both', 'deux langues', 'francais et dioula', 'dioula et francais'];
-const DIOULA_ONLY_KEYWORDS = ['seulement dioula', 'dioula seul', 'uniquement dioula', 'only dioula'];
-const FRENCH_ONLY_KEYWORDS = ['seulement francais', 'francais seul', 'uniquement francais', 'only french'];
+// Structure: { "22541540178@s.whatsapp.net": { city: "Bonoua", language: "both", step: "complete", pendingQuestion: null } }
+let userPreferences = {};
+
+// Etapes d'onboarding
+const STEPS = {
+    NEW: 'new',           // Nouvel utilisateur
+    WAITING_CITY: 'waiting_city',     // En attente de la ville
+    WAITING_LANGUAGE: 'waiting_language', // En attente de la langue
+    COMPLETE: 'complete'  // Onboarding termine
+};
+
+// Charger les preferences depuis le fichier
+function loadUserPreferences() {
+    try {
+        if (fs.existsSync(USER_PREFS_FILE)) {
+            const data = fs.readFileSync(USER_PREFS_FILE, 'utf8');
+            userPreferences = JSON.parse(data);
+            console.log(`[PREFS] ${Object.keys(userPreferences).length} utilisateurs charges`);
+        }
+    } catch (error) {
+        console.error('[PREFS] Erreur chargement:', error.message);
+        userPreferences = {};
+    }
+}
+
+// Sauvegarder les preferences dans le fichier
+function saveUserPreferences() {
+    try {
+        fs.writeFileSync(USER_PREFS_FILE, JSON.stringify(userPreferences, null, 2));
+        console.log('[PREFS] Preferences sauvegardees');
+    } catch (error) {
+        console.error('[PREFS] Erreur sauvegarde:', error.message);
+    }
+}
+
+// Obtenir les preferences d'un utilisateur
+function getUserPrefs(userNumber) {
+    if (!userPreferences[userNumber]) {
+        userPreferences[userNumber] = {
+            city: null,
+            language: null,
+            step: STEPS.NEW,
+            pendingQuestion: null
+        };
+    }
+    return userPreferences[userNumber];
+}
+
+// Liste des villes ivoiriennes connues (pour validation)
+const KNOWN_CITIES = [
+    'abidjan', 'bouake', 'yamoussoukro', 'korhogo', 'san-pedro', 'san pedro',
+    'daloa', 'divo', 'man', 'gagnoa', 'bonoua', 'soubre', 'abengourou',
+    'ferkessedougou', 'ferke', 'odienne', 'seguela', 'bondoukou', 'aboisso',
+    'danane', 'duekoue', 'guiglo', 'tabou', 'sassandra', 'grand-bassam',
+    'jacqueville', 'agboville', 'dabou', 'dimbokro', 'toumodi', 'tiebissou',
+    'katiola', 'boundiali', 'tengrela', 'anyama', 'bingerville', 'bouafle',
+    'issia', 'lakota', 'sinfra', 'vavoua', 'zuenoula', 'beoumi', 'sakassou',
+    'botro', 'daoukro', 'bocanda', 'mbahiakro', 'prikro', 'agnibilekrou',
+    'tanda', 'transua', 'nassian', 'bouna', 'doropo', 'tehini', 'kong'
+];
+
+// Verifier si c'est une ville valide
+function isValidCity(text) {
+    const normalized = text.toLowerCase().trim();
+    return KNOWN_CITIES.some(city =>
+        normalized.includes(city) || city.includes(normalized)
+    );
+}
+
+// Extraire le nom de la ville du texte
+function extractCity(text) {
+    const normalized = text.toLowerCase().trim();
+    for (const city of KNOWN_CITIES) {
+        if (normalized.includes(city)) {
+            // Retourner avec majuscule
+            return city.charAt(0).toUpperCase() + city.slice(1);
+        }
+    }
+    // Si pas trouve, retourner le texte tel quel (premiere lettre majuscule)
+    return text.trim().charAt(0).toUpperCase() + text.trim().slice(1).toLowerCase();
+}
+
+// Detecter commande de changement
+function detectChangeCommand(text) {
+    const lower = text.toLowerCase();
+    if (lower.includes('changer') && (lower.includes('ville') || lower.includes('localisation'))) {
+        return 'city';
+    }
+    if (lower.includes('changer') && (lower.includes('langue') || lower.includes('language'))) {
+        return 'language';
+    }
+    if (lower.includes('reinitialiser') || lower.includes('reset') || lower.includes('recommencer')) {
+        return 'reset';
+    }
+    return null;
+}
+
+// ========================================
+// FONCTIONS UTILITAIRES
+// ========================================
 
 // Fonction pour transcrire un audio via l'API STT
 async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
@@ -52,14 +150,14 @@ async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
             filename: filename,
             contentType: 'audio/ogg'
         });
-        formData.append('language', 'fr'); // Francais par defaut
+        formData.append('language', 'fr');
 
         console.log(`[STT] Appel API: ${WOURI_API_URL}/api/stt/transcribe`);
         const response = await axios.post(`${WOURI_API_URL}/api/stt/transcribe`, formData, {
             headers: {
                 ...formData.getHeaders()
             },
-            timeout: 180000 // 3 minutes pour la transcription (Whisper peut etre lent au premier chargement)
+            timeout: 180000
         });
         console.log(`[STT] Reponse API recue: ${response.status}`);
 
@@ -73,25 +171,19 @@ async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
     }
 }
 
-// Fonction pour detecter la langue souhaitee
-function detectLanguagePreference(message) {
-    const lowerMessage = message.toLowerCase();
-
-    for (const keyword of BOTH_KEYWORDS) {
-        if (lowerMessage.includes(keyword)) return 'both';
-    }
-    for (const keyword of DIOULA_ONLY_KEYWORDS) {
-        if (lowerMessage.includes(keyword)) return 'dioula';
-    }
-    for (const keyword of FRENCH_ONLY_KEYWORDS) {
-        if (lowerMessage.includes(keyword)) return 'french';
-    }
-    return null;
+// Fonction pour simuler un delai humain
+function randomDelay(min, max) {
+    return new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
 }
 
-// Connexion WhatsApp avec Baileys
+// Charger les preferences au demarrage
+loadUserPreferences();
+
+// ========================================
+// CONNEXION WHATSAPP
+// ========================================
+
 async function connectWhatsApp() {
-    // Creer le dossier d'authentification s'il n'existe pas
     if (!fs.existsSync(AUTH_FOLDER)) {
         fs.mkdirSync(AUTH_FOLDER, { recursive: true });
     }
@@ -137,50 +229,32 @@ async function connectWhatsApp() {
             qrCodeData = null;
             console.log('\n========================================');
             console.log('   WOURI CONNECTE A WHATSAPP!');
-            console.log('   Mode: Bilingue (Francais + Dioula)');
+            console.log('   Systeme d\'onboarding actif');
             console.log('========================================\n');
         }
     });
 
-    // Sauvegarder les credentials
     sock.ev.on('creds.update', saveCreds);
 
-    // Fonction pour simuler un delai humain (entre min et max ms)
-    function randomDelay(min, max) {
-        return new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
-    }
+    // ========================================
+    // GESTION DES MESSAGES ENTRANTS
+    // ========================================
 
-    // Gestion des messages entrants
     sock.ev.on('messages.upsert', async ({ messages }) => {
-        console.log(`\n[DEBUG] messages.upsert recu: ${messages.length} message(s)`);
-
         for (const msg of messages) {
-            // Log complet du message pour debug
-            console.log(`[DEBUG] Message brut:`, JSON.stringify(msg, null, 2).substring(0, 500));
-
             // Ignorer les messages envoyes par nous-meme
-            if (msg.key.fromMe) {
-                console.log('[DEBUG] Message ignore: fromMe=true');
-                continue;
-            }
+            if (msg.key.fromMe) continue;
 
-            // Ignorer les messages de groupe (optionnel)
-            if (msg.key.remoteJid.endsWith('@g.us')) {
-                console.log('[DEBUG] Message ignore: groupe');
-                continue;
-            }
+            // Ignorer les messages de groupe
+            if (msg.key.remoteJid.endsWith('@g.us')) continue;
 
-            // Ignorer les statuts WhatsApp (stories)
-            if (msg.key.remoteJid === 'status@broadcast') {
-                console.log('[DEBUG] Message ignore: status broadcast');
-                continue;
-            }
+            // Ignorer les statuts WhatsApp
+            if (msg.key.remoteJid === 'status@broadcast') continue;
 
             const userNumber = msg.key.remoteJid;
-            console.log(`[DEBUG] Message de: ${userNumber}`);
-            console.log(`[DEBUG] Type de msg.message:`, Object.keys(msg.message || {}));
+            const prefs = getUserPrefs(userNumber);
 
-            // Extraction du texte - couvrir tous les types possibles (AVANT de verifier l'audio)
+            // Extraction du texte
             let messageText = msg.message?.conversation ||
                              msg.message?.extendedTextMessage?.text ||
                              msg.message?.buttonsResponseMessage?.selectedButtonId ||
@@ -188,37 +262,22 @@ async function connectWhatsApp() {
                              msg.message?.templateButtonReplyMessage?.selectedId ||
                              '';
 
-            console.log(`[DEBUG] Texte extrait: "${messageText}"`);
-
-            // Detecter le type de message - SEULEMENT si pas de texte
+            // Detecter si c'est un message vocal (pour adapter la reponse)
             const audioMsg = msg.message?.audioMessage;
             const isAudioMessage = audioMsg !== undefined && audioMsg !== null && !messageText;
-            const isPttMessage = audioMsg?.ptt === true;
+            let isVoiceInput = false; // Pour savoir si l'utilisateur a envoye un vocal
 
-            console.log(`[DEBUG] isAudioMessage: ${isAudioMessage}, audioMsg existe: ${audioMsg !== undefined}`);
-
-            // Si c'est un message vocal (et PAS un message texte), le transcrire
             if (isAudioMessage) {
                 console.log(`\n[AUDIO] Message vocal recu de: ${userNumber}`);
-                console.log(`[AUDIO] Type: ${isPttMessage ? 'Note vocale' : 'Fichier audio'}`);
 
-                // Verifier que le message a une cle media valide
                 if (!audioMsg?.mediaKey || !audioMsg?.url) {
                     console.log('[AUDIO] Message sans cle media valide - ignore');
                     continue;
                 }
 
                 try {
-                    // Marquer comme lu
                     await sock.readMessages([msg.key]);
-                    console.log('[STATUS] Audio marque comme lu');
-
-                    // Afficher "en train d'ecrire" pendant la transcription
                     await sock.sendPresenceUpdate('composing', userNumber);
-
-                    // Telecharger l'audio
-                    console.log('[AUDIO] Telechargement en cours...');
-                    console.log(`[AUDIO] URL: ${audioMsg.url ? 'presente' : 'absente'}, MediaKey: ${audioMsg.mediaKey ? 'presente' : 'absente'}`);
 
                     const audioBuffer = await downloadMediaMessage(
                         msg,
@@ -231,7 +290,6 @@ async function connectWhatsApp() {
                     );
 
                     if (!audioBuffer) {
-                        console.log('[AUDIO] Erreur: impossible de telecharger');
                         await sock.sendPresenceUpdate('paused', userNumber);
                         await sock.sendMessage(userNumber, {
                             text: "Desole, je n'ai pas pu recevoir votre message vocal. Reessayez."
@@ -241,179 +299,377 @@ async function connectWhatsApp() {
 
                     console.log(`[AUDIO] Telecharge: ${audioBuffer.length} bytes`);
 
-                    // Transcrire l'audio
-                    console.log('[STT] Transcription en cours...');
                     const transcribedText = await transcribeAudio(audioBuffer, 'voice_message.ogg');
 
                     if (!transcribedText || transcribedText.trim() === '') {
-                        console.log('[STT] Erreur: transcription vide ou echec');
                         await sock.sendPresenceUpdate('paused', userNumber);
                         await sock.sendMessage(userNumber, {
-                            text: "Desole, je n'ai pas compris votre message vocal. Pouvez-vous repeter ou ecrire votre question?"
+                            text: "Desole, je n'ai pas compris votre message vocal. Pouvez-vous repeter?"
                         });
                         continue;
                     }
 
                     console.log(`[STT] Transcription: "${transcribedText}"`);
                     messageText = transcribedText;
-
-                    // NE PAS envoyer de message de confirmation ici
-                    // Le traitement continue directement avec le texte transcrit
-                    console.log('[AUDIO] Transcription reussie, traitement du message...');
+                    isVoiceInput = true; // Marquer comme message vocal
 
                 } catch (audioError) {
                     console.error('[AUDIO] Erreur:', audioError.message);
                     await sock.sendPresenceUpdate('paused', userNumber);
                     await sock.sendMessage(userNumber, {
-                        text: "Desole, je n'ai pas pu traiter votre message vocal. Essayez d'envoyer un message texte."
+                        text: "Desole, je n'ai pas pu traiter votre message vocal."
                     });
                     continue;
                 }
             }
 
-            if (!messageText) {
-                console.log('[DEBUG] Message ignore: texte vide apres extraction');
-                console.log('[DEBUG] msg.message complet:', JSON.stringify(msg.message, null, 2));
-                continue;
-            }
+            if (!messageText) continue;
 
             console.log(`\n[MESSAGE] De: ${userNumber}`);
             console.log(`[MESSAGE] Texte: ${messageText}`);
+            console.log(`[MESSAGE] Etape: ${prefs.step}`);
 
             try {
-                // 1. Marquer le message comme lu (coches bleues)
                 await sock.readMessages([msg.key]);
-                console.log('[STATUS] Message marque comme lu');
-
-                // 2. Petit delai avant de commencer a "ecrire" (plus naturel)
-                await randomDelay(500, 1500);
-
-                // 3. Afficher "en train d'ecrire..."
+                await randomDelay(500, 1000);
                 await sock.sendPresenceUpdate('composing', userNumber);
-                console.log('[STATUS] En train d\'ecrire...');
 
-                // Detecter si l'utilisateur veut changer de langue
-                const detectedPref = detectLanguagePreference(messageText);
-                if (detectedPref) {
-                    // Simuler un temps de lecture/ecriture
-                    await randomDelay(1000, 2000);
+                // ========================================
+                // DETECTER COMMANDES DE CHANGEMENT
+                // ========================================
+                const changeCommand = detectChangeCommand(messageText);
+                if (changeCommand && prefs.step === STEPS.COMPLETE) {
+                    if (changeCommand === 'city') {
+                        prefs.step = STEPS.WAITING_CITY;
+                        saveUserPreferences();
+                        await sock.sendPresenceUpdate('paused', userNumber);
+                        await sock.sendMessage(userNumber, {
+                            text: "📍 D'accord ! Dans quelle ville etes-vous maintenant ?\n\n(Repondez avec le nom de votre ville)"
+                        });
+                        continue;
+                    }
+                    if (changeCommand === 'language') {
+                        prefs.step = STEPS.WAITING_LANGUAGE;
+                        saveUserPreferences();
+                        await sock.sendPresenceUpdate('paused', userNumber);
+                        await sock.sendMessage(userNumber, {
+                            text: "🗣️ Dans quelle langue souhaitez-vous les reponses ?\n\n1️⃣ Francais\n2️⃣ Dioula\n3️⃣ Les deux\n\n(Repondez avec 1, 2 ou 3)"
+                        });
+                        continue;
+                    }
+                    if (changeCommand === 'reset') {
+                        prefs.step = STEPS.NEW;
+                        prefs.city = null;
+                        prefs.language = null;
+                        prefs.pendingQuestion = null;
+                        saveUserPreferences();
+                        await sock.sendPresenceUpdate('paused', userNumber);
+                        await sock.sendMessage(userNumber, {
+                            text: "🔄 Preferences reinitialises ! Envoyez un message pour recommencer."
+                        });
+                        continue;
+                    }
+                }
 
-                    userLanguagePrefs.set(userNumber, detectedPref);
-                    const prefMsg = detectedPref === 'both'
-                        ? "Mode bilingue active (Francais + Dioula)"
-                        : detectedPref === 'dioula'
-                            ? "Mode Dioula uniquement active"
-                            : "Mode Francais uniquement active";
+                // ========================================
+                // ONBOARDING - ETAPE 1: NOUVEAU UTILISATEUR
+                // ========================================
+                if (prefs.step === STEPS.NEW) {
+                    // Sauvegarder le message initial comme question en attente
+                    prefs.pendingQuestion = messageText;
+                    prefs.step = STEPS.WAITING_CITY;
+                    saveUserPreferences();
 
-                    // Arreter "en train d'ecrire" avant d'envoyer
                     await sock.sendPresenceUpdate('paused', userNumber);
-                    await sock.sendMessage(userNumber, { text: prefMsg });
-                    console.log(`[LANGUE] Preference mise a jour: ${detectedPref}`);
+                    await sock.sendMessage(userNumber, {
+                        text: "🌾 *Bienvenue sur WOURI !*\nVotre assistant agricole intelligent.\n\n📍 Dans quelle ville etes-vous ?\n\n(Repondez avec le nom de votre ville : Abidjan, Bouake, Divo, Bonoua, etc.)"
+                    });
                     continue;
                 }
 
-                // Langue par defaut: both (les deux)
-                const userLanguage = userLanguagePrefs.get(userNumber) || 'both';
+                // ========================================
+                // ONBOARDING - ETAPE 2: ATTENTE VILLE
+                // ========================================
+                if (prefs.step === STEPS.WAITING_CITY) {
+                    const cityName = extractCity(messageText);
+                    prefs.city = cityName;
+                    prefs.step = STEPS.WAITING_LANGUAGE;
+                    saveUserPreferences();
 
-                // Appeler l'API WOURI avec maintien du statut "composing"
-                console.log(`[API] Appel avec langue: ${userLanguage}`);
+                    await sock.sendPresenceUpdate('paused', userNumber);
+                    await sock.sendMessage(userNumber, {
+                        text: `✅ Ville enregistree : *${cityName}*\n\n🗣️ Dans quelle langue souhaitez-vous les reponses ?\n\n1️⃣ Francais\n2️⃣ Dioula\n3️⃣ Les deux (Francais ecrit + Dioula audio)\n\n(Repondez avec 1, 2 ou 3)`
+                    });
+                    continue;
+                }
 
-                // Maintenir "en train d'ecrire" pendant l'appel API
-                // Envoyer un signal toutes les 5 secondes pour maintenir le statut actif
-                let keepTyping = true;
-                const typingInterval = setInterval(async () => {
-                    if (keepTyping) {
-                        try {
-                            await sock.sendPresenceUpdate('composing', userNumber);
-                            console.log('[STATUS] Refresh typing...');
-                        } catch (e) {
-                            // Ignorer les erreurs
+                // ========================================
+                // ONBOARDING - ETAPE 3: ATTENTE LANGUE
+                // ========================================
+                if (prefs.step === STEPS.WAITING_LANGUAGE) {
+                    const input = messageText.trim().toLowerCase();
+                    let language = null;
+
+                    if (input === '1' || input.includes('francais') || input.includes('français')) {
+                        language = 'french';
+                    } else if (input === '2' || input.includes('dioula') || input.includes('bambara')) {
+                        language = 'dioula';
+                    } else if (input === '3' || input.includes('deux') || input.includes('both')) {
+                        language = 'both';
+                    }
+
+                    if (!language) {
+                        await sock.sendPresenceUpdate('paused', userNumber);
+                        await sock.sendMessage(userNumber, {
+                            text: "❓ Je n'ai pas compris. Repondez avec :\n\n1️⃣ pour Francais\n2️⃣ pour Dioula\n3️⃣ pour Les deux"
+                        });
+                        continue;
+                    }
+
+                    prefs.language = language;
+                    prefs.step = STEPS.COMPLETE;
+
+                    const langText = language === 'french' ? 'Francais' :
+                                    language === 'dioula' ? 'Dioula' : 'Francais + Dioula';
+
+                    await sock.sendPresenceUpdate('paused', userNumber);
+                    await sock.sendMessage(userNumber, {
+                        text: `✅ *Preferences enregistrees !*\n\n📍 Ville : ${prefs.city}\n🗣️ Langue : ${langText}\n\n💡 Pour changer : dites "changer ville" ou "changer langue"\n\nPosez-moi vos questions sur l'agriculture ! 🌱`
+                    });
+
+                    // Traiter la question en attente s'il y en a une
+                    if (prefs.pendingQuestion) {
+                        messageText = prefs.pendingQuestion;
+                        prefs.pendingQuestion = null;
+                        saveUserPreferences();
+
+                        // Continuer le traitement ci-dessous
+                        await randomDelay(1000, 2000);
+                        await sock.sendPresenceUpdate('composing', userNumber);
+                    } else {
+                        saveUserPreferences();
+                        continue;
+                    }
+                }
+
+                // ========================================
+                // TRAITEMENT DES QUESTIONS (ONBOARDING COMPLETE)
+                // ========================================
+                if (prefs.step === STEPS.COMPLETE) {
+                    console.log(`[API] Appel avec ville: ${prefs.city}, langue: ${prefs.language}, voiceInput: ${isVoiceInput}`);
+
+                    // Maintenir "en train d'ecrire"
+                    let keepTyping = true;
+                    const typingInterval = setInterval(async () => {
+                        if (keepTyping) {
+                            try {
+                                await sock.sendPresenceUpdate('composing', userNumber);
+                            } catch (e) {}
+                        }
+                    }, 5000);
+
+                    let data;
+                    try {
+                        const response = await axios.post(`${WOURI_API_URL}/api/chat/`, {
+                            message: messageText,
+                            city: prefs.city,
+                            language: prefs.language,
+                            include_audio: true
+                        }, { timeout: 180000 });
+                        data = response.data;
+                    } finally {
+                        keepTyping = false;
+                        clearInterval(typingInterval);
+                    }
+
+                    console.log(`[API] Reponse recue`);
+                    await sock.sendPresenceUpdate('paused', userNumber);
+                    await randomDelay(300, 800);
+
+                    // ========================================
+                    // ENVOI DES REPONSES SELON LA LANGUE ET LE TYPE D'ENTREE
+                    // ========================================
+                    // Logique:
+                    // - Message texte recu -> Reponse texte
+                    // - Message vocal recu -> Reponse audio
+
+                    // FRANCAIS
+                    if (prefs.language === 'french') {
+                        if (isVoiceInput) {
+                            // Entree vocale -> Reponse audio francais
+                            // Note: Pour french, l'audio est dans audio_url (pas audio_url_fr)
+                            if (data.audio_url) {
+                                try {
+                                    const audioUrl = data.audio_url.startsWith('http')
+                                        ? data.audio_url
+                                        : `${WOURI_API_URL}${data.audio_url}`;
+
+                                    const audioResponse = await axios.get(audioUrl, {
+                                        responseType: 'arraybuffer',
+                                        timeout: 30000
+                                    });
+
+                                    await sock.sendPresenceUpdate('recording', userNumber);
+                                    await randomDelay(1000, 2000);
+                                    await sock.sendPresenceUpdate('paused', userNumber);
+
+                                    await sock.sendMessage(userNumber, {
+                                        audio: Buffer.from(audioResponse.data),
+                                        mimetype: 'audio/ogg; codecs=opus',
+                                        ptt: true
+                                    });
+                                    console.log('[ENVOYE] Audio francais (reponse a vocal)');
+                                } catch (audioErr) {
+                                    console.log('[AUDIO FR] Erreur:', audioErr.message);
+                                    // Fallback: envoyer le texte si audio echoue
+                                    if (data.response) {
+                                        await sock.sendMessage(userNumber, {
+                                            text: `🇫🇷 ${data.response}`
+                                        });
+                                    }
+                                }
+                            } else if (data.response) {
+                                // Pas d'audio disponible, envoyer le texte
+                                await sock.sendMessage(userNumber, {
+                                    text: `🇫🇷 ${data.response}`
+                                });
+                                console.log('[ENVOYE] Texte francais (audio non disponible)');
+                            }
+                        } else {
+                            // Entree texte -> Reponse texte francais
+                            if (data.response) {
+                                await sock.sendMessage(userNumber, {
+                                    text: `🇫🇷 ${data.response}`
+                                });
+                                console.log('[ENVOYE] Texte francais (reponse a texte)');
+                            }
                         }
                     }
-                }, 5000); // Toutes les 5 secondes (WhatsApp expire le statut après ~10-15s)
 
-                let data;
-                try {
-                    const response = await axios.post(`${WOURI_API_URL}/api/chat/`, {
-                        message: messageText,
-                        city: 'Abidjan',
-                        language: userLanguage,
-                        include_audio: true
-                    }, { timeout: 180000 }); // 3 minutes timeout
-                    data = response.data;
-                } finally {
-                    // Arreter l'intervalle de "typing"
-                    keepTyping = false;
-                    clearInterval(typingInterval);
-                }
+                    // DIOULA: Audio Dioula uniquement (pas de texte)
+                    else if (prefs.language === 'dioula') {
+                        if (data.audio_url) {
+                            try {
+                                const audioUrl = data.audio_url.startsWith('http')
+                                    ? data.audio_url
+                                    : `${WOURI_API_URL}${data.audio_url}`;
 
-                console.log(`[API] Reponse recue`);
+                                const audioResponse = await axios.get(audioUrl, {
+                                    responseType: 'arraybuffer',
+                                    timeout: 30000
+                                });
 
-                // Arreter "en train d'ecrire" avant d'envoyer
-                await sock.sendPresenceUpdate('paused', userNumber);
+                                await sock.sendPresenceUpdate('recording', userNumber);
+                                await randomDelay(1000, 2000);
+                                await sock.sendPresenceUpdate('paused', userNumber);
 
-                // Petit delai avant le premier message (naturel)
-                await randomDelay(300, 800);
+                                await sock.sendMessage(userNumber, {
+                                    audio: Buffer.from(audioResponse.data),
+                                    mimetype: 'audio/ogg; codecs=opus',
+                                    ptt: true
+                                });
+                                console.log('[ENVOYE] Audio dioula (pas de texte)');
+                            } catch (audioErr) {
+                                console.log('[AUDIO DIOULA] Erreur:', audioErr.message);
+                                // Fallback: envoyer le texte dioula si audio echoue
+                                if (data.response_dioula) {
+                                    await sock.sendMessage(userNumber, {
+                                        text: `🇲🇱 ${data.response_dioula}`
+                                    });
+                                }
+                            }
+                        } else if (data.response_dioula) {
+                            // Pas d'audio disponible, envoyer le texte
+                            await sock.sendMessage(userNumber, {
+                                text: `🇲🇱 ${data.response_dioula}`
+                            });
+                            console.log('[ENVOYE] Texte dioula (audio non disponible)');
+                        }
+                    }
 
-                // Envoyer la reponse en francais
-                if (data.response) {
-                    await sock.sendMessage(userNumber, {
-                        text: `🇫🇷 *Français:*\n${data.response}`
-                    });
-                    console.log('[ENVOYE] Reponse francais');
-                }
+                    // LES DEUX: Adapte selon le type d'entree
+                    // - Texte recu -> Texte FR + Audio Dioula
+                    // - Vocal recu -> Audio FR + Audio Dioula (ou juste Audio Dioula)
+                    else if (prefs.language === 'both') {
+                        if (isVoiceInput) {
+                            // Entree vocale -> Reponse audio (Texte FR + Audio Dioula)
+                            // On envoie le texte FR pour qu'il puisse lire aussi
+                            if (data.response) {
+                                await sock.sendMessage(userNumber, {
+                                    text: `🇫🇷 ${data.response}`
+                                });
+                                console.log('[ENVOYE] Texte francais');
+                            }
 
-                // Envoyer la traduction Dioula si disponible
-                if (data.response_dioula && userLanguage !== 'french') {
-                    // Simuler "en train d'ecrire" entre les messages
-                    await sock.sendPresenceUpdate('composing', userNumber);
-                    await randomDelay(1500, 3000); // Delai naturel pour "taper" le Dioula
-                    await sock.sendPresenceUpdate('paused', userNumber);
+                            // Audio dioula
+                            if (data.audio_url) {
+                                try {
+                                    await randomDelay(500, 1000);
+                                    const audioUrl = data.audio_url.startsWith('http')
+                                        ? data.audio_url
+                                        : `${WOURI_API_URL}${data.audio_url}`;
 
-                    await sock.sendMessage(userNumber, {
-                        text: `🇲🇱 *Dioula:*\n${data.response_dioula}`
-                    });
-                    console.log('[ENVOYE] Traduction dioula');
-                }
+                                    const audioResponse = await axios.get(audioUrl, {
+                                        responseType: 'arraybuffer',
+                                        timeout: 30000
+                                    });
 
-                // Envoyer l'audio si disponible
-                if (data.audio_url) {
-                    try {
-                        // Petit delai avant l'audio
-                        await randomDelay(500, 1000);
+                                    await sock.sendPresenceUpdate('recording', userNumber);
+                                    await randomDelay(1000, 2000);
+                                    await sock.sendPresenceUpdate('paused', userNumber);
 
-                        const audioUrl = data.audio_url.startsWith('http')
-                            ? data.audio_url
-                            : `${WOURI_API_URL}${data.audio_url}`;
+                                    await sock.sendMessage(userNumber, {
+                                        audio: Buffer.from(audioResponse.data),
+                                        mimetype: 'audio/ogg; codecs=opus',
+                                        ptt: true
+                                    });
+                                    console.log('[ENVOYE] Audio dioula (reponse a vocal)');
+                                } catch (audioErr) {
+                                    console.log('[AUDIO DIOULA] Erreur:', audioErr.message);
+                                }
+                            }
+                        } else {
+                            // Entree texte -> Texte FR + Audio Dioula
+                            if (data.response) {
+                                await sock.sendMessage(userNumber, {
+                                    text: `🇫🇷 ${data.response}`
+                                });
+                                console.log('[ENVOYE] Texte francais (reponse a texte)');
+                            }
 
-                        const audioResponse = await axios.get(audioUrl, {
-                            responseType: 'arraybuffer',
-                            timeout: 30000
-                        });
+                            // Audio dioula
+                            if (data.audio_url) {
+                                try {
+                                    await randomDelay(500, 1000);
+                                    const audioUrl = data.audio_url.startsWith('http')
+                                        ? data.audio_url
+                                        : `${WOURI_API_URL}${data.audio_url}`;
 
-                        // Detecter le type MIME selon l'extension
-                        const isOgg = audioUrl.endsWith('.ogg');
-                        const mimetype = isOgg ? 'audio/ogg; codecs=opus' : 'audio/wav';
+                                    const audioResponse = await axios.get(audioUrl, {
+                                        responseType: 'arraybuffer',
+                                        timeout: 30000
+                                    });
 
-                        // Simuler "enregistrement vocal" avant d'envoyer l'audio
-                        await sock.sendPresenceUpdate('recording', userNumber);
-                        await randomDelay(1000, 2000);
-                        await sock.sendPresenceUpdate('paused', userNumber);
+                                    await sock.sendPresenceUpdate('recording', userNumber);
+                                    await randomDelay(1000, 2000);
+                                    await sock.sendPresenceUpdate('paused', userNumber);
 
-                        await sock.sendMessage(userNumber, {
-                            audio: Buffer.from(audioResponse.data),
-                            mimetype: mimetype,
-                            ptt: true // Voice message
-                        });
-                        console.log('[ENVOYE] Audio vocal');
-                    } catch (audioErr) {
-                        console.log('[AUDIO] Erreur:', audioErr.message);
+                                    await sock.sendMessage(userNumber, {
+                                        audio: Buffer.from(audioResponse.data),
+                                        mimetype: 'audio/ogg; codecs=opus',
+                                        ptt: true
+                                    });
+                                    console.log('[ENVOYE] Audio dioula');
+                                } catch (audioErr) {
+                                    console.log('[AUDIO DIOULA] Erreur:', audioErr.message);
+                                }
+                            }
+                        }
                     }
                 }
 
             } catch (error) {
                 console.error('[ERREUR]', error.message);
-                // Arreter le statut "en train d'ecrire" en cas d'erreur
                 await sock.sendPresenceUpdate('paused', userNumber);
                 await randomDelay(500, 1000);
                 await sock.sendMessage(userNumber, {
@@ -424,13 +680,16 @@ async function connectWhatsApp() {
     });
 }
 
-// Routes API Express
+// ========================================
+// ROUTES API EXPRESS
+// ========================================
+
 app.get('/', (req, res) => {
     res.json({
         status: 'running',
-        name: 'WOURI WhatsApp Server (Baileys)',
+        name: 'WOURI WhatsApp Server',
         connected: isConnected,
-        mode: 'bilingue'
+        users: Object.keys(userPreferences).length
     });
 });
 
@@ -438,9 +697,19 @@ app.get('/status', (req, res) => {
     res.json({
         connected: isConnected,
         qrCode: qrCodeData,
-        mode: 'bilingue (Francais + Dioula)',
-        users: userLanguagePrefs.size
+        users: Object.keys(userPreferences).length
     });
+});
+
+app.get('/users', (req, res) => {
+    // Retourne les preferences de tous les utilisateurs (sans numero complet pour confidentialite)
+    const users = Object.entries(userPreferences).map(([number, prefs]) => ({
+        number: number.substring(0, 8) + '***',
+        city: prefs.city,
+        language: prefs.language,
+        step: prefs.step
+    }));
+    res.json(users);
 });
 
 app.get('/qr', (req, res) => {
@@ -453,7 +722,6 @@ app.get('/qr', (req, res) => {
     }
 });
 
-// Page web pour scanner le QR code
 app.get('/qr-page', async (req, res) => {
     let qrImageHtml = '';
     let statusMessage = '';
@@ -498,44 +766,20 @@ app.get('/qr-page', async (req, res) => {
                 text-align: center;
                 box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             }
-            h1 {
-                color: #075E54;
-                margin-bottom: 10px;
-            }
-            h2 {
-                color: #666;
-                font-weight: normal;
-                margin-top: 0;
-            }
-            .qr-container {
-                margin: 20px 0;
-            }
-            .instructions {
-                color: #666;
-                margin-top: 20px;
-                text-align: left;
-            }
-            .instructions ol {
-                padding-left: 20px;
-            }
-            .refresh-note {
-                color: #999;
-                font-size: 12px;
-                margin-top: 15px;
-            }
+            h1 { color: #075E54; margin-bottom: 10px; }
+            h2 { color: #666; font-weight: normal; margin-top: 0; }
+            .qr-container { margin: 20px 0; }
+            .instructions { color: #666; margin-top: 20px; text-align: left; }
+            .instructions ol { padding-left: 20px; }
+            .refresh-note { color: #999; font-size: 12px; margin-top: 15px; }
         </style>
     </head>
     <body>
         <div class="container">
             <h1>🌾 WOURI</h1>
             <h2>Assistant Agricole WhatsApp</h2>
-
-            <div class="qr-container">
-                ${qrImageHtml}
-            </div>
-
+            <div class="qr-container">${qrImageHtml}</div>
             ${statusMessage}
-
             <div class="instructions">
                 <strong>Pour connecter WhatsApp:</strong>
                 <ol>
@@ -545,10 +789,7 @@ app.get('/qr-page', async (req, res) => {
                     <li>Scannez ce QR code</li>
                 </ol>
             </div>
-
-            <div class="refresh-note">
-                Cette page se rafraichit automatiquement toutes les 5 secondes
-            </div>
+            <div class="refresh-note">Page auto-refresh toutes les 5 secondes</div>
         </div>
     </body>
     </html>
@@ -560,7 +801,6 @@ app.post('/logout', async (req, res) => {
         if (sock) {
             await sock.logout();
         }
-        // Supprimer les fichiers d'auth
         if (fs.existsSync(AUTH_FOLDER)) {
             fs.rmSync(AUTH_FOLDER, { recursive: true });
         }
@@ -570,16 +810,18 @@ app.post('/logout', async (req, res) => {
     }
 });
 
-// Demarrer le serveur
+// ========================================
+// DEMARRAGE DU SERVEUR
+// ========================================
+
 app.listen(PORT, () => {
     console.log('\n========================================');
-    console.log('   WOURI WhatsApp Server (Baileys)');
+    console.log('   WOURI WhatsApp Server');
     console.log('========================================');
     console.log(`API: http://localhost:${PORT}`);
     console.log(`WOURI API: ${WOURI_API_URL}`);
-    console.log('Mode: Bilingue (Francais + Dioula)');
+    console.log(`Utilisateurs: ${Object.keys(userPreferences).length}`);
     console.log('========================================\n');
 
-    // Demarrer la connexion WhatsApp
     connectWhatsApp();
 });
