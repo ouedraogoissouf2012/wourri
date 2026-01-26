@@ -1,14 +1,19 @@
 """
 WOURI - TTS Français (Edge-TTS)
 100% GRATUIT - Microsoft Edge TTS
+Conversion en OGG Opus pour compatibilité WhatsApp
 """
 import edge_tts
 import uuid
 import os
 import re
+import subprocess
 from app.config import get_settings
 
 settings = get_settings()
+
+# Chemin vers ffmpeg
+FFMPEG_PATH = r"C:\Users\USER PC\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe"
 
 
 def clean_text(text: str) -> str:
@@ -34,10 +39,11 @@ def clean_text(text: str) -> str:
 
 async def synthesize_french(text: str) -> str | None:
     """
-    Génère un fichier audio MP3 à partir de texte français
+    Génère un fichier audio OGG Opus à partir de texte français
+    Format OGG Opus = format natif WhatsApp pour meilleure compatibilité
 
     Returns:
-        str: URL relative du fichier audio (/static/audio/xxx.mp3)
+        str: URL relative du fichier audio (/static/audio/xxx.ogg)
     """
     if not text:
         return None
@@ -48,20 +54,48 @@ async def synthesize_french(text: str) -> str | None:
         return None
 
     try:
-        # Générer le nom du fichier
-        filename = f"fr_{uuid.uuid4()}.mp3"
-        filepath = os.path.join(settings.audio_output_dir, filename)
+        # Générer les noms de fichiers
+        file_id = uuid.uuid4()
+        mp3_filename = f"fr_{file_id}_temp.mp3"
+        ogg_filename = f"fr_{file_id}.ogg"
+        mp3_filepath = os.path.join(settings.audio_output_dir, mp3_filename)
+        ogg_filepath = os.path.join(settings.audio_output_dir, ogg_filename)
 
         # Créer le dossier si nécessaire
         os.makedirs(settings.audio_output_dir, exist_ok=True)
 
-        # Générer l'audio avec Edge-TTS
+        # Générer l'audio avec Edge-TTS (MP3 temporaire)
         communicate = edge_tts.Communicate(clean, settings.tts_french_voice)
-        await communicate.save(filepath)
+        await communicate.save(mp3_filepath)
 
-        # Vérifier que le fichier a été créé
-        if os.path.exists(filepath) and os.path.getsize(filepath) > 0:
-            return f"/static/audio/{filename}"
+        # Convertir en OGG Opus pour WhatsApp
+        if os.path.exists(mp3_filepath) and os.path.getsize(mp3_filepath) > 0:
+            try:
+                # Conversion MP3 -> OGG Opus (format WhatsApp)
+                result = subprocess.run([
+                    FFMPEG_PATH,
+                    '-i', mp3_filepath,
+                    '-c:a', 'libopus',
+                    '-b:a', '64k',
+                    '-ar', '48000',
+                    '-ac', '1',
+                    '-y',
+                    ogg_filepath
+                ], capture_output=True, timeout=30)
+
+                # Supprimer le fichier MP3 temporaire
+                os.remove(mp3_filepath)
+
+                if os.path.exists(ogg_filepath) and os.path.getsize(ogg_filepath) > 0:
+                    return f"/static/audio/{ogg_filename}"
+
+            except Exception as conv_err:
+                print(f"Erreur conversion ffmpeg: {conv_err}")
+                # Fallback: retourner le MP3 si conversion échoue
+                if os.path.exists(mp3_filepath):
+                    final_mp3 = f"fr_{file_id}.mp3"
+                    os.rename(mp3_filepath, os.path.join(settings.audio_output_dir, final_mp3))
+                    return f"/static/audio/{final_mp3}"
 
     except Exception as e:
         print(f"Erreur TTS français: {e}")
@@ -85,8 +119,9 @@ async def get_available_voices() -> list[dict]:
 
 # Voix recommandées
 RECOMMENDED_VOICES = [
-    "fr-FR-DeniseNeural",      # Femme, standard (recommandée)
-    "fr-FR-HenriNeural",        # Homme, standard
-    "fr-FR-EloiseNeural",       # Femme, jeune
-    "fr-FR-RemyMultilingualNeural",  # Homme, multilingue
+    "fr-FR-VivienneMultilingualNeural",  # Femme, multilingue, très naturelle (recommandée)
+    "fr-FR-DeniseNeural",                 # Femme, standard
+    "fr-FR-HenriNeural",                  # Homme, standard
+    "fr-FR-EloiseNeural",                 # Femme, jeune
+    "fr-FR-RemyMultilingualNeural",       # Homme, multilingue
 ]

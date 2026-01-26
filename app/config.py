@@ -22,8 +22,8 @@ class Settings(BaseSettings):
     # Open-Meteo (gratuit, pas de clé)
     openmeteo_base_url: str = "https://api.open-meteo.com/v1"
 
-    # TTS
-    tts_french_voice: str = "fr-FR-DeniseNeural"
+    # TTS - VivienneMultilingualNeural: voix féminine plus naturelle et expressive
+    tts_french_voice: str = "fr-FR-VivienneMultilingualNeural"
     audio_output_dir: str = "static/audio"
 
     # Hugging Face (local, pas de clé requise)
