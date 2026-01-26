@@ -1,11 +1,16 @@
 """
-WOURI - Speech-to-Text avec Whisper
-100% GRATUIT - OpenAI Whisper (local)
+WOURI - Speech-to-Text avec Faster-Whisper
+Utilise CTranslate2 pour des performances 4x plus rapides
 
-NOTE: Necessite openai-whisper
-Pour installer: pip install openai-whisper
+NOTE: Necessite faster-whisper
+Pour installer: pip install faster-whisper
 """
 import os
+
+# Désactiver les symlinks sur Windows (évite les erreurs de permission)
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+os.environ["HF_HUB_DISABLE_SYMLINKS"] = "1"
+
 import uuid
 import tempfile
 import subprocess
@@ -81,7 +86,7 @@ def convert_audio_to_wav(input_path: str) -> str | None:
             wav_path
         ]
 
-        result = subprocess.run(cmd, capture_output=True, timeout=10)  # Réduit de 30s à 10s
+        result = subprocess.run(cmd, capture_output=True, timeout=10)
 
         if result.returncode == 0 and os.path.exists(wav_path):
             print(f"[STT] Audio converti en WAV: {wav_path}")
@@ -97,26 +102,27 @@ def convert_audio_to_wav(input_path: str) -> str | None:
         print(f"[STT] Erreur conversion: {e}")
         return None
 
-# Verifier si whisper est disponible
+# Verifier si faster-whisper est disponible
 WHISPER_AVAILABLE = False
-whisper = None
+WhisperModel = None
 
 try:
-    import whisper as _whisper
-    whisper = _whisper
+    from faster_whisper import WhisperModel as _WhisperModel
+    WhisperModel = _WhisperModel
     WHISPER_AVAILABLE = True
+    print("faster-whisper disponible")
 except ImportError:
-    print("INFO: whisper non installe - STT desactive")
-    print("Pour activer: pip install openai-whisper")
+    print("INFO: faster-whisper non installe - STT desactive")
+    print("Pour activer: pip install faster-whisper")
 
 # Cache du modele
 _whisper_model = None
-_model_name = "medium"  # tiny, base, small, medium, large
-# Note: "medium" offre une excellente qualité pour le français africain
+_model_name = "large-v3-turbo"  # Modèle ultra-rapide et précis (Oct 2024)
+# Note: "large-v3-turbo" est 6-8x plus rapide que large-v3, précision équivalente à large-v2
 
 
 def get_whisper_model(model_name: str = None):
-    """Charge le modele Whisper (lazy loading)"""
+    """Charge le modele Faster-Whisper (lazy loading)"""
     global _whisper_model, _model_name
 
     if not WHISPER_AVAILABLE:
@@ -126,16 +132,27 @@ def get_whisper_model(model_name: str = None):
         _model_name = model_name
 
     if _whisper_model is None:
-        print(f"Chargement du modele Whisper ({_model_name})...")
-        _whisper_model = whisper.load_model(_model_name)
-        print(f"Modele Whisper ({_model_name}) charge!")
+        print(f"Chargement du modele Faster-Whisper ({_model_name})...")
+        print("(Premier chargement peut prendre 1-2 minutes pour telecharger le modele)")
+
+        # Configuration optimisée pour CPU Windows
+        # compute_type: int8 pour CPU (plus rapide et moins de RAM)
+        # device: cpu pour compatibilité maximale
+        _whisper_model = WhisperModel(
+            _model_name,
+            device="cpu",
+            compute_type="int8",  # Quantification int8 pour vitesse CPU
+            cpu_threads=4,        # Utiliser 4 threads CPU
+            num_workers=1         # 1 worker pour la stabilité
+        )
+        print(f"Modele Faster-Whisper ({_model_name}) charge!")
 
     return _whisper_model
 
 
 def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
     """
-    Transcrit un fichier audio en texte.
+    Transcrit un fichier audio en texte avec Faster-Whisper.
 
     Args:
         audio_path: Chemin vers le fichier audio (mp3, wav, ogg, etc.)
@@ -152,80 +169,91 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
         return None
 
     # Convertir l'audio en WAV pour une meilleure qualité
-    # Whisper supporte directement OGG/Opus - conversion WAV uniquement si nécessaire
     wav_path = None
     transcribe_path = audio_path
 
     try:
-        # Ne convertir que les formats problématiques (MP3, M4A, FLAC)
-        # OGG de WhatsApp fonctionne directement avec Whisper
+        # Ne convertir que les formats problématiques
         formats_needing_conversion = ['.mp3', '.m4a', '.flac', '.aac']
         if any(audio_path.lower().endswith(f) for f in formats_needing_conversion):
             wav_path = convert_audio_to_wav(audio_path)
             if wav_path and os.path.exists(wav_path):
                 transcribe_path = wav_path
                 print(f"[Whisper] Fichier converti en WAV")
-        # OGG et WAV passent directement à Whisper (plus rapide)
 
         model = get_whisper_model()
         if model is None:
             return None
 
-        # Options de transcription optimisées pour le français ivoirien
-        # Prompt structuré pour meilleure reconnaissance des villes
+        # Prompt initial pour guider la reconnaissance
         initial_prompt = (
-            "Transcription français Côte d'Ivoire.\n"
+            "Transcription français Côte d'Ivoire. "
             "Villes: Ferkessédougou, Korhogo, Bouaké, Yamoussoukro, Abidjan, "
-            "San-Pédro, Daloa, Divo, Man, Gagnoa, Bonoua, Soubré, Abengourou.\n"
+            "San-Pedro, Daloa, Divo, Man, Gagnoa, Bonoua, Soubré, Abengourou. "
             "Agriculture: manioc, maïs, riz, cacao, igname, planter, cultiver, récolter."
         )
 
-        options = {
-            "fp16": False,  # Desactive pour compatibilite CPU
-            "language": "fr",  # Toujours forcer le français
-            "task": "transcribe",
-            "beam_size": 2,  # Réduit pour plus de vitesse (3 -> 2)
-            "best_of": 2,  # Réduit pour plus de vitesse (3 -> 2)
-            "temperature": 0,  # Désactiver l'échantillonnage
-            "condition_on_previous_text": False,  # Éviter hallucinations
-            "initial_prompt": initial_prompt,
-            "compression_ratio_threshold": 2.4,
-            "no_speech_threshold": 0.6,
-        }
+        # Transcrire avec Faster-Whisper
+        print(f"[Faster-Whisper] Transcription avec modele {_model_name}")
+        print(f"[Faster-Whisper] Fichier: {transcribe_path}")
 
-        # Transcrire
-        print(f"[Whisper] Transcription avec modele {_model_name}")
-        print(f"[Whisper] Fichier: {transcribe_path}")
-        result = model.transcribe(transcribe_path, **options)
+        # Configuration optimisée pour vitesse et précision
+        segments, info = model.transcribe(
+            transcribe_path,
+            language="fr",           # Forcer le français
+            task="transcribe",
+            beam_size=2,             # Réduit pour vitesse (5 -> 2)
+            best_of=1,               # Pas de sampling multiple
+            patience=1.0,            # Patience standard
+            temperature=0.0,         # Pas de sampling (déterministe)
+            compression_ratio_threshold=2.4,
+            log_prob_threshold=-1.0,
+            no_speech_threshold=0.6,
+            condition_on_previous_text=False,  # Éviter les hallucinations
+            initial_prompt=initial_prompt,
+            vad_filter=True,         # Filtrage VAD pour ignorer le silence
+            vad_parameters={
+                "min_silence_duration_ms": 500,  # Silence min 500ms
+                "speech_pad_ms": 200             # Padding autour de la parole
+            }
+        )
 
-        transcribed_text = result["text"].strip()
-        print(f"[Whisper] Résultat brut: '{transcribed_text}'")
+        # Collecter tous les segments
+        all_segments = []
+        transcribed_texts = []
+
+        for segment in segments:
+            all_segments.append({
+                "start": segment.start,
+                "end": segment.end,
+                "text": segment.text.strip()
+            })
+            transcribed_texts.append(segment.text.strip())
+
+        transcribed_text = " ".join(transcribed_texts).strip()
+        print(f"[Faster-Whisper] Résultat brut: '{transcribed_text}'")
+        print(f"[Faster-Whisper] Langue détectée: {info.language} (prob: {info.language_probability:.2f})")
+        print(f"[Faster-Whisper] Durée audio: {info.duration:.1f}s")
 
         # Corriger les noms de villes mal transcrits
         transcribed_text = correct_city_names(transcribed_text)
-        print(f"[Whisper] Après correction villes: '{transcribed_text}'")
+        print(f"[Faster-Whisper] Après correction villes: '{transcribed_text}'")
 
         # Vérifier si le résultat semble être une hallucination
-        # Les hallucinations ont souvent des caractéristiques spécifiques
         if is_likely_hallucination(transcribed_text):
-            print(f"[Whisper] Détection d'hallucination possible, texte ignoré")
+            print(f"[Faster-Whisper] Détection d'hallucination possible, texte ignoré")
             return None
 
         return {
             "text": transcribed_text,
-            "language": result.get("language", language),
-            "segments": [
-                {
-                    "start": seg["start"],
-                    "end": seg["end"],
-                    "text": seg["text"].strip()
-                }
-                for seg in result.get("segments", [])
-            ]
+            "language": info.language,
+            "segments": all_segments
         }
 
     except Exception as e:
-        print(f"Erreur transcription Whisper: {e}")
+        print(f"Erreur transcription Faster-Whisper: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
     finally:
@@ -297,7 +325,6 @@ def correct_city_names(text: str) -> str:
         # Daloa
         "dalois": "Daloa",
         "da loa": "Daloa",
-        "dalois": "Daloa",
 
         # Man
         "manne": "Man",
@@ -330,7 +357,6 @@ def correct_city_names(text: str) -> str:
 
         # Issia
         "issias": "Issia",
-        "issia": "Issia",
         "isiat": "Issia",
 
         # Ferkessédougou (nombreuses variantes phonétiques)
@@ -364,7 +390,6 @@ def correct_city_names(text: str) -> str:
         "seguelas": "Séguéla",
 
         # Bondoukou
-        "bondoukou": "Bondoukou",
         "bonduku": "Bondoukou",
         "bondukou": "Bondoukou",
 
@@ -407,7 +432,6 @@ def correct_city_names(text: str) -> str:
         "jack ville": "Jacqueville",
 
         # Agboville
-        "agboville": "Agboville",
         "agbovilles": "Agboville",
         "agbo ville": "Agboville",
 
@@ -466,7 +490,7 @@ def correct_city_names(text: str) -> str:
             import re
             pattern = re.compile(re.escape(wrong), re.IGNORECASE)
             result = pattern.sub(correct, result)
-            print(f"[Whisper] Correction ville: '{wrong}' -> '{correct}'")
+            print(f"[Faster-Whisper] Correction ville: '{wrong}' -> '{correct}'")
 
     return result
 
@@ -486,7 +510,7 @@ def is_likely_hallucination(text: str) -> bool:
     if not text:
         return True
 
-    # Texte trop court (moins de 3 mots)
+    # Texte trop court (moins de 2 mots)
     words = text.split()
     if len(words) < 2:
         return True
@@ -494,7 +518,7 @@ def is_likely_hallucination(text: str) -> bool:
     # Caractères non-latins (signe d'hallucination)
     non_latin_chars = sum(1 for c in text if ord(c) > 0x024F and not c.isspace())
     if non_latin_chars > len(text) * 0.2:  # Plus de 20% de caractères non-latins
-        print(f"[Whisper] Trop de caractères non-latins détectés")
+        print(f"[Faster-Whisper] Trop de caractères non-latins détectés")
         return True
 
     # Phrases répétitives (signe d'hallucination)
@@ -509,7 +533,7 @@ def is_likely_hallucination(text: str) -> bool:
             # Si un mot apparaît plus de 50% du temps, c'est suspect
             max_count = max(word_counts.values())
             if max_count > len(words) * 0.5:
-                print(f"[Whisper] Répétition excessive détectée")
+                print(f"[Faster-Whisper] Répétition excessive détectée")
                 return True
 
     # Phrases génériques connues comme hallucinations de Whisper
@@ -530,7 +554,7 @@ def is_likely_hallucination(text: str) -> bool:
     text_lower = text.lower()
     for pattern in hallucination_patterns:
         if pattern in text_lower:
-            print(f"[Whisper] Pattern d'hallucination détecté: {pattern}")
+            print(f"[Faster-Whisper] Pattern d'hallucination détecté: {pattern}")
             return True
 
     return False
@@ -592,10 +616,11 @@ async def transcribe_audio_bytes(audio_bytes: bytes, filename: str = "audio.wav"
 
 
 def check_whisper_status() -> dict:
-    """Verifie le statut de Whisper"""
+    """Verifie le statut de Faster-Whisper"""
     return {
         "whisper_available": WHISPER_AVAILABLE,
         "model_loaded": _whisper_model is not None,
         "model_name": _model_name,
+        "engine": "faster-whisper (CTranslate2)",
         "supported_languages": ["fr", "en", "bam", "wo", "ff"]  # Langues principales
     }

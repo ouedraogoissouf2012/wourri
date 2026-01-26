@@ -34,12 +34,12 @@ async def lifespan(app: FastAPI):
     # Précharger les modèles pour des réponses plus rapides
     print("\n[PRELOAD] Chargement des modèles en arrière-plan...")
 
-    # 1. Précharger Whisper (STT)
+    # 1. Précharger Faster-Whisper (STT)
     try:
         from app.services.stt_whisper import get_whisper_model
-        print("[PRELOAD] Chargement de Whisper (medium)...")
+        print("[PRELOAD] Chargement de Faster-Whisper (large-v3-turbo)...")
         get_whisper_model()
-        print("[PRELOAD] Whisper: OK")
+        print("[PRELOAD] Faster-Whisper: OK")
     except Exception as e:
         print(f"[PRELOAD] Whisper: ERREUR - {e}")
 
