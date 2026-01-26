@@ -4,7 +4,7 @@
  * Support bilingue: Francais ET Dioula
  */
 
-const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, downloadMediaMessage } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const axios = require('axios');
 const fs = require('fs');
@@ -18,6 +18,12 @@ const QRCode = require('qrcode');
 const PORT = process.env.PORT || 3001;
 const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
+const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
+
+// Creer le dossier temporaire pour les audios
+if (!fs.existsSync(TEMP_AUDIO_FOLDER)) {
+    fs.mkdirSync(TEMP_AUDIO_FOLDER, { recursive: true });
+}
 
 // Express app pour API de status
 const app = express();
@@ -36,6 +42,36 @@ const userLanguagePrefs = new Map();
 const BOTH_KEYWORDS = ['les deux', 'both', 'deux langues', 'francais et dioula', 'dioula et francais'];
 const DIOULA_ONLY_KEYWORDS = ['seulement dioula', 'dioula seul', 'uniquement dioula', 'only dioula'];
 const FRENCH_ONLY_KEYWORDS = ['seulement francais', 'francais seul', 'uniquement francais', 'only french'];
+
+// Fonction pour transcrire un audio via l'API STT
+async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
+    try {
+        const FormData = require('form-data');
+        const formData = new FormData();
+        formData.append('audio', audioBuffer, {
+            filename: filename,
+            contentType: 'audio/ogg'
+        });
+        formData.append('language', 'fr'); // Francais par defaut
+
+        console.log(`[STT] Appel API: ${WOURI_API_URL}/api/stt/transcribe`);
+        const response = await axios.post(`${WOURI_API_URL}/api/stt/transcribe`, formData, {
+            headers: {
+                ...formData.getHeaders()
+            },
+            timeout: 180000 // 3 minutes pour la transcription (Whisper peut etre lent au premier chargement)
+        });
+        console.log(`[STT] Reponse API recue: ${response.status}`);
+
+        if (response.data && response.data.text) {
+            return response.data.text;
+        }
+        return null;
+    } catch (error) {
+        console.log('[STT] Erreur transcription:', error.message);
+        return null;
+    }
+}
 
 // Fonction pour detecter la langue souhaitee
 function detectLanguagePreference(message) {
@@ -123,10 +159,93 @@ async function connectWhatsApp() {
             // Ignorer les messages de groupe (optionnel)
             if (msg.key.remoteJid.endsWith('@g.us')) continue;
 
+            // Ignorer les statuts WhatsApp (stories)
+            if (msg.key.remoteJid === 'status@broadcast') continue;
+
             const userNumber = msg.key.remoteJid;
-            const messageText = msg.message?.conversation ||
-                               msg.message?.extendedTextMessage?.text ||
-                               '';
+
+            // Detecter le type de message
+            const isAudioMessage = msg.message?.audioMessage !== undefined;
+            const isPttMessage = msg.message?.audioMessage?.ptt === true; // Voice note (PTT = Push To Talk)
+
+            let messageText = msg.message?.conversation ||
+                             msg.message?.extendedTextMessage?.text ||
+                             '';
+
+            // Si c'est un message vocal, le transcrire
+            if (isAudioMessage) {
+                console.log(`\n[AUDIO] Message vocal recu de: ${userNumber}`);
+                console.log(`[AUDIO] Type: ${isPttMessage ? 'Note vocale' : 'Fichier audio'}`);
+
+                // Verifier que le message a une cle media valide
+                const audioMsg = msg.message?.audioMessage;
+                if (!audioMsg?.mediaKey || !audioMsg?.url) {
+                    console.log('[AUDIO] Message sans cle media valide - ignore');
+                    continue;
+                }
+
+                try {
+                    // Marquer comme lu
+                    await sock.readMessages([msg.key]);
+                    console.log('[STATUS] Audio marque comme lu');
+
+                    // Afficher "en train d'ecrire" pendant la transcription
+                    await sock.sendPresenceUpdate('composing', userNumber);
+
+                    // Telecharger l'audio
+                    console.log('[AUDIO] Telechargement en cours...');
+                    console.log(`[AUDIO] URL: ${audioMsg.url ? 'presente' : 'absente'}, MediaKey: ${audioMsg.mediaKey ? 'presente' : 'absente'}`);
+
+                    const audioBuffer = await downloadMediaMessage(
+                        msg,
+                        'buffer',
+                        {},
+                        {
+                            logger: pino({ level: 'silent' }),
+                            reuploadRequest: sock.updateMediaMessage
+                        }
+                    );
+
+                    if (!audioBuffer) {
+                        console.log('[AUDIO] Erreur: impossible de telecharger');
+                        await sock.sendPresenceUpdate('paused', userNumber);
+                        await sock.sendMessage(userNumber, {
+                            text: "Desole, je n'ai pas pu recevoir votre message vocal. Reessayez."
+                        });
+                        continue;
+                    }
+
+                    console.log(`[AUDIO] Telecharge: ${audioBuffer.length} bytes`);
+
+                    // Transcrire l'audio
+                    console.log('[STT] Transcription en cours...');
+                    const transcribedText = await transcribeAudio(audioBuffer, 'voice_message.ogg');
+
+                    if (!transcribedText || transcribedText.trim() === '') {
+                        console.log('[STT] Erreur: transcription vide ou echec');
+                        await sock.sendPresenceUpdate('paused', userNumber);
+                        await sock.sendMessage(userNumber, {
+                            text: "Desole, je n'ai pas compris votre message vocal. Pouvez-vous repeter ou ecrire votre question?"
+                        });
+                        continue;
+                    }
+
+                    console.log(`[STT] Transcription: "${transcribedText}"`);
+                    messageText = transcribedText;
+
+                    // NE PAS envoyer de message de confirmation ici
+                    // Le traitement continue directement avec le texte transcrit
+                    console.log('[AUDIO] Transcription reussie, traitement du message...');
+
+                } catch (audioError) {
+                    console.error('[AUDIO] Erreur:', audioError.message);
+                    await sock.sendPresenceUpdate('paused', userNumber);
+                    await sock.sendMessage(userNumber, {
+                        text: "Desole, je n'ai pas pu traiter votre message vocal. Essayez d'envoyer un message texte."
+                    });
+                    continue;
+                }
+            }
 
             if (!messageText) continue;
 
@@ -168,17 +287,38 @@ async function connectWhatsApp() {
                 // Langue par defaut: both (les deux)
                 const userLanguage = userLanguagePrefs.get(userNumber) || 'both';
 
-                // Appeler l'API WOURI
+                // Appeler l'API WOURI avec maintien du statut "composing"
                 console.log(`[API] Appel avec langue: ${userLanguage}`);
 
-                const response = await axios.post(`${WOURI_API_URL}/api/chat/`, {
-                    message: messageText,
-                    city: 'Abidjan',
-                    language: userLanguage,
-                    include_audio: true
-                }, { timeout: 180000 }); // 3 minutes timeout
+                // Maintenir "en train d'ecrire" pendant l'appel API
+                // Envoyer un signal toutes les 5 secondes pour maintenir le statut actif
+                let keepTyping = true;
+                const typingInterval = setInterval(async () => {
+                    if (keepTyping) {
+                        try {
+                            await sock.sendPresenceUpdate('composing', userNumber);
+                            console.log('[STATUS] Refresh typing...');
+                        } catch (e) {
+                            // Ignorer les erreurs
+                        }
+                    }
+                }, 5000); // Toutes les 5 secondes (WhatsApp expire le statut après ~10-15s)
 
-                const data = response.data;
+                let data;
+                try {
+                    const response = await axios.post(`${WOURI_API_URL}/api/chat/`, {
+                        message: messageText,
+                        city: 'Abidjan',
+                        language: userLanguage,
+                        include_audio: true
+                    }, { timeout: 180000 }); // 3 minutes timeout
+                    data = response.data;
+                } finally {
+                    // Arreter l'intervalle de "typing"
+                    keepTyping = false;
+                    clearInterval(typingInterval);
+                }
+
                 console.log(`[API] Reponse recue`);
 
                 // Arreter "en train d'ecrire" avant d'envoyer
