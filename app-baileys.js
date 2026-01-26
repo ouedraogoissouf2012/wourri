@@ -152,33 +152,57 @@ async function connectWhatsApp() {
 
     // Gestion des messages entrants
     sock.ev.on('messages.upsert', async ({ messages }) => {
+        console.log(`\n[DEBUG] messages.upsert recu: ${messages.length} message(s)`);
+
         for (const msg of messages) {
+            // Log complet du message pour debug
+            console.log(`[DEBUG] Message brut:`, JSON.stringify(msg, null, 2).substring(0, 500));
+
             // Ignorer les messages envoyes par nous-meme
-            if (msg.key.fromMe) continue;
+            if (msg.key.fromMe) {
+                console.log('[DEBUG] Message ignore: fromMe=true');
+                continue;
+            }
 
             // Ignorer les messages de groupe (optionnel)
-            if (msg.key.remoteJid.endsWith('@g.us')) continue;
+            if (msg.key.remoteJid.endsWith('@g.us')) {
+                console.log('[DEBUG] Message ignore: groupe');
+                continue;
+            }
 
             // Ignorer les statuts WhatsApp (stories)
-            if (msg.key.remoteJid === 'status@broadcast') continue;
+            if (msg.key.remoteJid === 'status@broadcast') {
+                console.log('[DEBUG] Message ignore: status broadcast');
+                continue;
+            }
 
             const userNumber = msg.key.remoteJid;
+            console.log(`[DEBUG] Message de: ${userNumber}`);
+            console.log(`[DEBUG] Type de msg.message:`, Object.keys(msg.message || {}));
 
-            // Detecter le type de message
-            const isAudioMessage = msg.message?.audioMessage !== undefined;
-            const isPttMessage = msg.message?.audioMessage?.ptt === true; // Voice note (PTT = Push To Talk)
-
+            // Extraction du texte - couvrir tous les types possibles (AVANT de verifier l'audio)
             let messageText = msg.message?.conversation ||
                              msg.message?.extendedTextMessage?.text ||
+                             msg.message?.buttonsResponseMessage?.selectedButtonId ||
+                             msg.message?.listResponseMessage?.singleSelectReply?.selectedRowId ||
+                             msg.message?.templateButtonReplyMessage?.selectedId ||
                              '';
 
-            // Si c'est un message vocal, le transcrire
+            console.log(`[DEBUG] Texte extrait: "${messageText}"`);
+
+            // Detecter le type de message - SEULEMENT si pas de texte
+            const audioMsg = msg.message?.audioMessage;
+            const isAudioMessage = audioMsg !== undefined && audioMsg !== null && !messageText;
+            const isPttMessage = audioMsg?.ptt === true;
+
+            console.log(`[DEBUG] isAudioMessage: ${isAudioMessage}, audioMsg existe: ${audioMsg !== undefined}`);
+
+            // Si c'est un message vocal (et PAS un message texte), le transcrire
             if (isAudioMessage) {
                 console.log(`\n[AUDIO] Message vocal recu de: ${userNumber}`);
                 console.log(`[AUDIO] Type: ${isPttMessage ? 'Note vocale' : 'Fichier audio'}`);
 
                 // Verifier que le message a une cle media valide
-                const audioMsg = msg.message?.audioMessage;
                 if (!audioMsg?.mediaKey || !audioMsg?.url) {
                     console.log('[AUDIO] Message sans cle media valide - ignore');
                     continue;
@@ -247,7 +271,11 @@ async function connectWhatsApp() {
                 }
             }
 
-            if (!messageText) continue;
+            if (!messageText) {
+                console.log('[DEBUG] Message ignore: texte vide apres extraction');
+                console.log('[DEBUG] msg.message complet:', JSON.stringify(msg.message, null, 2));
+                continue;
+            }
 
             console.log(`\n[MESSAGE] De: ${userNumber}`);
             console.log(`[MESSAGE] Texte: ${messageText}`);
