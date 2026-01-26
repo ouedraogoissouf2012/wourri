@@ -8,9 +8,94 @@ Pour installer: pip install openai-whisper
 import os
 import uuid
 import tempfile
+import subprocess
 from app.config import get_settings
 
 settings = get_settings()
+
+# Chemin ffmpeg global
+_ffmpeg_executable = None
+
+# Configurer ffmpeg pour Windows
+def find_ffmpeg():
+    """Trouve et configure ffmpeg"""
+    global _ffmpeg_executable
+
+    possible_paths = [
+        'ffmpeg',  # Dans le PATH
+        r'C:\Users\USER PC\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe',
+    ]
+
+    for ffmpeg_path in possible_paths:
+        try:
+            result = subprocess.run([ffmpeg_path, '-version'],
+                                  capture_output=True, timeout=5)
+            if result.returncode == 0:
+                # Ajouter le dossier bin au PATH
+                if ffmpeg_path != 'ffmpeg':
+                    bin_dir = os.path.dirname(ffmpeg_path)
+                    if bin_dir not in os.environ.get('PATH', ''):
+                        os.environ['PATH'] = bin_dir + os.pathsep + os.environ.get('PATH', '')
+                        print(f"FFmpeg ajoute au PATH: {bin_dir}")
+                _ffmpeg_executable = ffmpeg_path
+                return ffmpeg_path
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            continue
+    return None
+
+# Configurer ffmpeg au demarrage
+ffmpeg_path = find_ffmpeg()
+if ffmpeg_path:
+    print(f"FFmpeg trouve: {ffmpeg_path}")
+else:
+    print("ATTENTION: FFmpeg non trouve - STT peut ne pas fonctionner")
+
+
+def convert_audio_to_wav(input_path: str) -> str | None:
+    """
+    Convertit un fichier audio (OGG, MP3, etc.) en WAV 16kHz mono.
+    Ceci améliore considérablement la qualité de transcription Whisper.
+
+    Args:
+        input_path: Chemin vers le fichier audio source
+
+    Returns:
+        Chemin vers le fichier WAV converti ou None si erreur
+    """
+    if not _ffmpeg_executable:
+        print("[STT] FFmpeg non disponible - utilisation du fichier original")
+        return None
+
+    # Créer un chemin pour le fichier WAV temporaire
+    wav_path = os.path.splitext(input_path)[0] + "_converted.wav"
+
+    try:
+        # Convertir en WAV 16kHz mono (optimal pour Whisper)
+        cmd = [
+            _ffmpeg_executable,
+            '-i', input_path,
+            '-ar', '16000',      # 16kHz sample rate (requis par Whisper)
+            '-ac', '1',          # Mono
+            '-c:a', 'pcm_s16le', # PCM 16-bit
+            '-y',                # Écraser si existe
+            wav_path
+        ]
+
+        result = subprocess.run(cmd, capture_output=True, timeout=10)  # Réduit de 30s à 10s
+
+        if result.returncode == 0 and os.path.exists(wav_path):
+            print(f"[STT] Audio converti en WAV: {wav_path}")
+            return wav_path
+        else:
+            print(f"[STT] Erreur conversion audio: {result.stderr.decode() if result.stderr else 'Unknown'}")
+            return None
+
+    except subprocess.TimeoutExpired:
+        print("[STT] Timeout conversion audio")
+        return None
+    except Exception as e:
+        print(f"[STT] Erreur conversion: {e}")
+        return None
 
 # Verifier si whisper est disponible
 WHISPER_AVAILABLE = False
@@ -26,7 +111,8 @@ except ImportError:
 
 # Cache du modele
 _whisper_model = None
-_model_name = "base"  # tiny, base, small, medium, large
+_model_name = "medium"  # tiny, base, small, medium, large
+# Note: "medium" offre une excellente qualité pour le français africain
 
 
 def get_whisper_model(model_name: str = None):
@@ -65,24 +151,68 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
         print(f"Fichier audio non trouve: {audio_path}")
         return None
 
+    # Convertir l'audio en WAV pour une meilleure qualité
+    # Whisper supporte directement OGG/Opus - conversion WAV uniquement si nécessaire
+    wav_path = None
+    transcribe_path = audio_path
+
     try:
+        # Ne convertir que les formats problématiques (MP3, M4A, FLAC)
+        # OGG de WhatsApp fonctionne directement avec Whisper
+        formats_needing_conversion = ['.mp3', '.m4a', '.flac', '.aac']
+        if any(audio_path.lower().endswith(f) for f in formats_needing_conversion):
+            wav_path = convert_audio_to_wav(audio_path)
+            if wav_path and os.path.exists(wav_path):
+                transcribe_path = wav_path
+                print(f"[Whisper] Fichier converti en WAV")
+        # OGG et WAV passent directement à Whisper (plus rapide)
+
         model = get_whisper_model()
         if model is None:
             return None
 
-        # Options de transcription
+        # Options de transcription optimisées pour le français ivoirien
+        # Prompt structuré pour meilleure reconnaissance des villes
+        initial_prompt = (
+            "Transcription français Côte d'Ivoire.\n"
+            "Villes: Ferkessédougou, Korhogo, Bouaké, Yamoussoukro, Abidjan, "
+            "San-Pédro, Daloa, Divo, Man, Gagnoa, Bonoua, Soubré, Abengourou.\n"
+            "Agriculture: manioc, maïs, riz, cacao, igname, planter, cultiver, récolter."
+        )
+
         options = {
             "fp16": False,  # Desactive pour compatibilite CPU
+            "language": "fr",  # Toujours forcer le français
+            "task": "transcribe",
+            "beam_size": 2,  # Réduit pour plus de vitesse (3 -> 2)
+            "best_of": 2,  # Réduit pour plus de vitesse (3 -> 2)
+            "temperature": 0,  # Désactiver l'échantillonnage
+            "condition_on_previous_text": False,  # Éviter hallucinations
+            "initial_prompt": initial_prompt,
+            "compression_ratio_threshold": 2.4,
+            "no_speech_threshold": 0.6,
         }
 
-        if language:
-            options["language"] = language
-
         # Transcrire
-        result = model.transcribe(audio_path, **options)
+        print(f"[Whisper] Transcription avec modele {_model_name}")
+        print(f"[Whisper] Fichier: {transcribe_path}")
+        result = model.transcribe(transcribe_path, **options)
+
+        transcribed_text = result["text"].strip()
+        print(f"[Whisper] Résultat brut: '{transcribed_text}'")
+
+        # Corriger les noms de villes mal transcrits
+        transcribed_text = correct_city_names(transcribed_text)
+        print(f"[Whisper] Après correction villes: '{transcribed_text}'")
+
+        # Vérifier si le résultat semble être une hallucination
+        # Les hallucinations ont souvent des caractéristiques spécifiques
+        if is_likely_hallucination(transcribed_text):
+            print(f"[Whisper] Détection d'hallucination possible, texte ignoré")
+            return None
 
         return {
-            "text": result["text"].strip(),
+            "text": transcribed_text,
             "language": result.get("language", language),
             "segments": [
                 {
@@ -97,6 +227,313 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
     except Exception as e:
         print(f"Erreur transcription Whisper: {e}")
         return None
+
+    finally:
+        # Nettoyer le fichier WAV temporaire
+        if wav_path and os.path.exists(wav_path):
+            try:
+                os.remove(wav_path)
+            except:
+                pass
+
+
+def correct_city_names(text: str) -> str:
+    """
+    Corrige les noms de villes ivoiriennes mal transcrits par Whisper.
+    Utilise une correspondance phonétique pour trouver la ville correcte.
+
+    Args:
+        text: Le texte transcrit
+
+    Returns:
+        Le texte avec les noms de villes corrigés
+    """
+    if not text:
+        return text
+
+    # Dictionnaire de corrections phonétiques
+    # Clé: ce que Whisper peut transcrire (en minuscules)
+    # Valeur: le nom correct de la ville
+    city_corrections = {
+        # Bonoua
+        "bonnois": "Bonoua",
+        "bonois": "Bonoua",
+        "bono wa": "Bonoua",
+        "bono oua": "Bonoua",
+        "bonwa": "Bonoua",
+        "bonouas": "Bonoua",
+        "bono": "Bonoua",
+
+        # Bouaké
+        "bouaquer": "Bouaké",
+        "bouake": "Bouaké",
+        "bouaker": "Bouaké",
+        "boua ké": "Bouaké",
+        "bouakais": "Bouaké",
+
+        # Yamoussoukro
+        "yamoussoukros": "Yamoussoukro",
+        "yamou soukro": "Yamoussoukro",
+        "yamoussokro": "Yamoussoukro",
+        "yamoussoukroi": "Yamoussoukro",
+
+        # Korhogo
+        "khorogo": "Korhogo",
+        "korogho": "Korhogo",
+        "korogau": "Korhogo",
+        "korogo": "Korhogo",
+
+        # San-Pedro / San Pedro
+        "sain pedro": "San-Pedro",
+        "saint pedro": "San-Pedro",
+        "san pédro": "San-Pedro",
+        "sampedro": "San-Pedro",
+
+        # Abidjan
+        "abijean": "Abidjan",
+        "abidjean": "Abidjan",
+        "abijan": "Abidjan",
+
+        # Daloa
+        "dalois": "Daloa",
+        "da loa": "Daloa",
+        "dalois": "Daloa",
+
+        # Man
+        "manne": "Man",
+        "mann": "Man",
+
+        # Gagnoa
+        "gagnois": "Gagnoa",
+        "ganyoa": "Gagnoa",
+        "gagnoua": "Gagnoa",
+
+        # Divo
+        "divaux": "Divo",
+        "divos": "Divo",
+        "divot": "Divo",
+
+        # Abengourou
+        "abenguru": "Abengourou",
+        "abengouroux": "Abengourou",
+        "abengrou": "Abengourou",
+
+        # Soubré
+        "soubres": "Soubré",
+        "soubre": "Soubré",
+        "soubrer": "Soubré",
+
+        # Bouaflé
+        "bouaflée": "Bouaflé",
+        "bouafler": "Bouaflé",
+        "boua flé": "Bouaflé",
+
+        # Issia
+        "issias": "Issia",
+        "issia": "Issia",
+        "isiat": "Issia",
+
+        # Ferkessédougou (nombreuses variantes phonétiques)
+        "ferké": "Ferkessédougou",
+        "ferkessedougou": "Ferkessédougou",
+        "ferke": "Ferkessédougou",
+        "ferké seingou": "Ferkessédougou",
+        "ferké selon dougou": "Ferkessédougou",
+        "ferkesse dougou": "Ferkessédougou",
+        "fer ké": "Ferkessédougou",
+        "ferk sédougou": "Ferkessédougou",
+        "ferke sédougou": "Ferkessédougou",
+        "ferkessédou": "Ferkessédougou",
+        "ferkessedou": "Ferkessédougou",
+        "ferke seindou": "Ferkessédougou",
+        "ferkeu": "Ferkessédougou",
+        "ferkes": "Ferkessédougou",
+        "ferkès": "Ferkessédougou",
+        "ferkéssédougou": "Ferkessédougou",
+        "ferquessedougou": "Ferkessédougou",
+        "fer kesse dougou": "Ferkessédougou",
+
+        # Odienné
+        "odiénné": "Odienné",
+        "odienne": "Odienné",
+        "odienner": "Odienné",
+
+        # Séguéla
+        "seguéla": "Séguéla",
+        "seguela": "Séguéla",
+        "seguelas": "Séguéla",
+
+        # Bondoukou
+        "bondoukou": "Bondoukou",
+        "bonduku": "Bondoukou",
+        "bondukou": "Bondoukou",
+
+        # Aboisso
+        "aboiso": "Aboisso",
+        "aboisos": "Aboisso",
+        "abois so": "Aboisso",
+
+        # Danané
+        "dananer": "Danané",
+        "danane": "Danané",
+        "da nané": "Danané",
+
+        # Duékoué
+        "duékouer": "Duékoué",
+        "duekoue": "Duékoué",
+        "duekwe": "Duékoué",
+
+        # Guiglo
+        "guigleau": "Guiglo",
+        "guiglos": "Guiglo",
+        "gui glo": "Guiglo",
+
+        # Tabou
+        "tabous": "Tabou",
+        "taboue": "Tabou",
+
+        # Sassandra
+        "sassandras": "Sassandra",
+        "sassandrat": "Sassandra",
+
+        # Grand-Bassam
+        "grand bassam": "Grand-Bassam",
+        "grandbassam": "Grand-Bassam",
+        "grand-bassams": "Grand-Bassam",
+
+        # Jacqueville
+        "jackville": "Jacqueville",
+        "jacquevilles": "Jacqueville",
+        "jack ville": "Jacqueville",
+
+        # Agboville
+        "agboville": "Agboville",
+        "agbovilles": "Agboville",
+        "agbo ville": "Agboville",
+
+        # Dabou
+        "dabous": "Dabou",
+        "da bou": "Dabou",
+
+        # Dimbokro
+        "dimbokros": "Dimbokro",
+        "dim bokro": "Dimbokro",
+        "dimbocro": "Dimbokro",
+
+        # Toumodi
+        "toumodis": "Toumodi",
+        "tou modi": "Toumodi",
+        "toumaudit": "Toumodi",
+
+        # Tiébissou
+        "tiébissous": "Tiébissou",
+        "tiebissou": "Tiébissou",
+        "tié bissou": "Tiébissou",
+
+        # Katiola
+        "katiolas": "Katiola",
+        "katio la": "Katiola",
+        "cattiola": "Katiola",
+
+        # Boundiali
+        "boundialis": "Boundiali",
+        "boundi ali": "Boundiali",
+        "boundialy": "Boundiali",
+
+        # Tengrela
+        "tengrelas": "Tengrela",
+        "tengré la": "Tengrela",
+        "tangrela": "Tengrela",
+
+        # Anyama
+        "anyamas": "Anyama",
+        "ani ama": "Anyama",
+        "annyama": "Anyama",
+
+        # Bingerville
+        "bingervilles": "Bingerville",
+        "binger ville": "Bingerville",
+        "binguer ville": "Bingerville",
+    }
+
+    # Appliquer les corrections (insensible à la casse)
+    result = text
+    text_lower = text.lower()
+
+    for wrong, correct in city_corrections.items():
+        if wrong in text_lower:
+            # Trouver la position et remplacer en préservant la casse environnante
+            import re
+            pattern = re.compile(re.escape(wrong), re.IGNORECASE)
+            result = pattern.sub(correct, result)
+            print(f"[Whisper] Correction ville: '{wrong}' -> '{correct}'")
+
+    return result
+
+
+def is_likely_hallucination(text: str) -> bool:
+    """
+    Détecte si un texte semble être une hallucination de Whisper.
+    Les hallucinations sont des textes générés par le modèle qui ne correspondent pas
+    à ce qui a été dit dans l'audio.
+
+    Args:
+        text: Le texte transcrit
+
+    Returns:
+        True si le texte semble être une hallucination
+    """
+    if not text:
+        return True
+
+    # Texte trop court (moins de 3 mots)
+    words = text.split()
+    if len(words) < 2:
+        return True
+
+    # Caractères non-latins (signe d'hallucination)
+    non_latin_chars = sum(1 for c in text if ord(c) > 0x024F and not c.isspace())
+    if non_latin_chars > len(text) * 0.2:  # Plus de 20% de caractères non-latins
+        print(f"[Whisper] Trop de caractères non-latins détectés")
+        return True
+
+    # Phrases répétitives (signe d'hallucination)
+    if len(text) > 50:
+        # Vérifier les répétitions de mots
+        if len(words) > 4:
+            word_counts = {}
+            for word in words:
+                word_lower = word.lower()
+                word_counts[word_lower] = word_counts.get(word_lower, 0) + 1
+
+            # Si un mot apparaît plus de 50% du temps, c'est suspect
+            max_count = max(word_counts.values())
+            if max_count > len(words) * 0.5:
+                print(f"[Whisper] Répétition excessive détectée")
+                return True
+
+    # Phrases génériques connues comme hallucinations de Whisper
+    hallucination_patterns = [
+        "sous-titres réalisés",
+        "sous-titrage",
+        "merci d'avoir regardé",
+        "thank you for watching",
+        "subscribe",
+        "abonnez-vous",
+        "like and subscribe",
+        "www.",
+        "http",
+        "copyright",
+        "tous droits réservés",
+    ]
+
+    text_lower = text.lower()
+    for pattern in hallucination_patterns:
+        if pattern in text_lower:
+            print(f"[Whisper] Pattern d'hallucination détecté: {pattern}")
+            return True
+
+    return False
 
 
 async def transcribe_audio_bytes(audio_bytes: bytes, filename: str = "audio.wav", language: str = "fr") -> dict | None:
@@ -120,11 +557,29 @@ async def transcribe_audio_bytes(audio_bytes: bytes, filename: str = "audio.wav"
     # Sauvegarder temporairement
     temp_path = os.path.join(tempfile.gettempdir(), f"whisper_{uuid.uuid4()}{ext}")
 
+    # DEBUG: Sauvegarder une copie pour analyse
+    debug_dir = r"c:\Users\USER PC\Documents\propre à moi\wourri\debug_audio"
+    if not os.path.exists(debug_dir):
+        os.makedirs(debug_dir)
+    debug_path = os.path.join(debug_dir, f"audio_{uuid.uuid4()}{ext}")
+
     try:
         with open(temp_path, "wb") as f:
             f.write(audio_bytes)
 
+        # DEBUG: Copier pour analyse
+        with open(debug_path, "wb") as f:
+            f.write(audio_bytes)
+        print(f"[STT DEBUG] Audio sauvegarde: {debug_path} ({len(audio_bytes)} bytes)")
+
         result = transcribe_audio(temp_path, language)
+
+        # DEBUG: Log le resultat
+        if result:
+            print(f"[STT DEBUG] Resultat transcription: '{result['text']}'")
+        else:
+            print(f"[STT DEBUG] Transcription echouee (None)")
+
         return result
 
     finally:

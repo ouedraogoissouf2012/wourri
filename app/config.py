@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     hf_tts_model: str = "facebook/mms-tts-bam"
     hf_translator_model: str = "facebook/nllb-200-distilled-600M"
 
+    # Langue TTS ivoirienne par défaut
+    default_ivorian_language: str = "bam"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

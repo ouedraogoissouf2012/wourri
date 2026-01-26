@@ -234,6 +234,72 @@
             cursor: not-allowed;
         }
 
+        /* Mic button */
+        .mic-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: #e74c3c;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mic-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .mic-btn.recording {
+            background: #e74c3c;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .mic-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Recording status */
+        .recording-status {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: #fee;
+            border-radius: 20px;
+            color: #c0392b;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .recording-status.active {
+            display: flex;
+        }
+
+        .recording-dot {
+            width: 10px;
+            height: 10px;
+            background: #e74c3c;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
         /* Bottom bar */
         .bottom-bar {
             display: flex;
@@ -355,6 +421,11 @@
                         <li>📅 Calendrier cultural de Cote d'Ivoire</li>
                         <li>🔔 Alertes meteo importantes</li>
                     </ul>
+                    <br>
+                    <strong>🎤 Parlez en Dioula ou Bambara!</strong>
+                    <br>
+                    <small>2 dialectes 100% fonctionnels: Dioula (CI) et Bambara (Mali)</small>
+                    <br><br>
                     Comment puis-je vous aider?
                 </div>
             </div>
@@ -375,8 +446,13 @@
 
         <!-- Input area -->
         <div class="input-area">
+            <div class="recording-status" id="recordingStatus">
+                <div class="recording-dot"></div>
+                <span id="recordingText">Enregistrement en cours...</span>
+            </div>
             <div class="input-container">
-                <input type="text" id="messageInput" placeholder="Posez votre question..."
+                <button class="mic-btn" id="micBtn" onclick="toggleRecording()" title="Parler en langue locale">🎤</button>
+                <input type="text" id="messageInput" placeholder="Posez votre question ou parlez..."
                        onkeypress="if(event.key==='Enter') sendMessage()">
                 <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
             </div>
@@ -385,16 +461,17 @@
         <!-- Bottom bar -->
         <div class="bottom-bar">
             <div>
-                <label>Langue:</label>
+                <label>Langue texte:</label>
                 <select id="language">
-                    <option value="french">Francais</option>
-                    <option value="dioula">Dioula/Bambara</option>
+                    <option value="both" selected>Francais + Bambara</option>
+                    <option value="french">Francais uniquement</option>
+                    <option value="dioula">Bambara uniquement</option>
                 </select>
             </div>
 
             <div class="voice-toggle">
                 <input type="checkbox" id="voiceEnabled" checked>
-                <label for="voiceEnabled">🔊 Reponse vocale</label>
+                <label for="voiceEnabled">🔊 Audio</label>
             </div>
 
             <div>
@@ -576,6 +653,156 @@
 
         // Initial load
         loadWeather();
+
+        // ========== VOICE RECORDING ==========
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+
+        async function toggleRecording() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                // Determiner le format supporte
+                let mimeType = 'audio/webm';
+                if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                    mimeType = 'audio/webm;codecs=opus';
+                } else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
+                    mimeType = 'audio/ogg;codecs=opus';
+                }
+
+                mediaRecorder = new MediaRecorder(stream, { mimeType });
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: mimeType });
+                    await sendAudioForTranscription(audioBlob);
+
+                    // Arreter le stream
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+
+                // UI updates
+                document.getElementById('micBtn').classList.add('recording');
+                document.getElementById('recordingStatus').classList.add('active');
+                document.getElementById('recordingText').textContent = 'Parlez maintenant...';
+
+            } catch (error) {
+                console.error('Erreur acces microphone:', error);
+                alert('Impossible d\'acceder au microphone. Verifiez les permissions.');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                isRecording = false;
+
+                // UI updates
+                document.getElementById('micBtn').classList.remove('recording');
+                document.getElementById('recordingStatus').classList.remove('active');
+            }
+        }
+
+        async function sendAudioForTranscription(audioBlob) {
+            const recordingStatus = document.getElementById('recordingStatus');
+            const recordingText = document.getElementById('recordingText');
+
+            // Montrer le statut de traitement
+            recordingStatus.classList.add('active');
+            recordingText.textContent = 'Transcription en cours...';
+
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.webm');
+                formData.append('language', 'bam');  // Bambara/Dioula uniquement
+
+                const response = await fetch('/api/asr/transcribe-and-translate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur transcription');
+                }
+
+                const data = await response.json();
+
+                // Si on a une traduction francaise, l'utiliser pour envoyer au chat
+                // Sinon utiliser la transcription brute
+                let messageToSend = data.french_translation || data.transcription;
+
+                if (messageToSend) {
+                    // Afficher ce que l'utilisateur a dit
+                    const langName = data.language_name || data.language;
+                    let userMessage = data.transcription;
+                    if (data.french_translation) {
+                        userMessage = `[${langName}] ${data.transcription}\n(Traduction: ${data.french_translation})`;
+                    } else {
+                        userMessage = `[${langName}] ${data.transcription}`;
+                    }
+
+                    addMessage(userMessage, 'user');
+
+                    // Envoyer la version francaise (ou originale) au chat
+                    await sendMessageText(messageToSend);
+                } else {
+                    addMessage('Desole, je n\'ai pas compris. Reessayez.', 'bot');
+                }
+
+            } catch (error) {
+                console.error('Erreur transcription:', error);
+                addMessage('Erreur lors de la transcription audio.', 'bot');
+            } finally {
+                recordingStatus.classList.remove('active');
+            }
+        }
+
+        // Envoyer un message texte au chat (sans l'ajouter a l'interface)
+        async function sendMessageText(message) {
+            const typingId = showTyping();
+            document.getElementById('sendBtn').disabled = true;
+
+            try {
+                const res = await fetch('/api/chat/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        city: document.getElementById('city').value,
+                        language: document.getElementById('language').value,
+                        include_audio: document.getElementById('voiceEnabled').checked
+                    })
+                });
+
+                const data = await res.json();
+                removeTyping(typingId);
+                addMessage(data.response, 'bot', data.audio_url);
+
+            } catch (error) {
+                removeTyping(typingId);
+                addMessage('Desole, une erreur est survenue.', 'bot');
+            }
+
+            document.getElementById('sendBtn').disabled = false;
+        }
     </script>
 </body>
 </html>

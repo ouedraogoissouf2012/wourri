@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 import os
 
 from app.config import get_settings
-from app.routers import weather, chat, tts, stt, rag
+from app.routers import weather, chat, tts, stt, rag, asr
 from app.services.deepseek import check_deepseek_status
 from app.services.tts_bambara import check_models_status
 from app.services.stt_whisper import check_whisper_status
@@ -30,6 +30,40 @@ async def lifespan(app: FastAPI):
     print(f"Debug: {settings.debug}")
     print(f"Villes disponibles: {len(get_all_cities())}")
     print("=" * 50)
+
+    # Précharger les modèles pour des réponses plus rapides
+    print("\n[PRELOAD] Chargement des modèles en arrière-plan...")
+
+    # 1. Précharger Whisper (STT)
+    try:
+        from app.services.stt_whisper import get_whisper_model
+        print("[PRELOAD] Chargement de Whisper (medium)...")
+        get_whisper_model()
+        print("[PRELOAD] Whisper: OK")
+    except Exception as e:
+        print(f"[PRELOAD] Whisper: ERREUR - {e}")
+
+    # 2. Précharger NLLB (Traduction)
+    try:
+        from app.services.tts_bambara import get_translator
+        print("[PRELOAD] Chargement de NLLB (traduction)...")
+        get_translator()
+        print("[PRELOAD] NLLB: OK")
+    except Exception as e:
+        print(f"[PRELOAD] NLLB: ERREUR - {e}")
+
+    # 3. Précharger TTS Bambara
+    try:
+        from app.services.tts_bambara import get_tts_model
+        print("[PRELOAD] Chargement de TTS Bambara...")
+        get_tts_model()
+        print("[PRELOAD] TTS Bambara: OK")
+    except Exception as e:
+        print(f"[PRELOAD] TTS Bambara: ERREUR - {e}")
+
+    print("\n[PRELOAD] Tous les modèles sont chargés!")
+    print("=" * 50)
+
     yield
     print("WOURI - Arrêt")
 
@@ -72,6 +106,7 @@ app.include_router(chat.router)
 app.include_router(tts.router)
 app.include_router(stt.router)
 app.include_router(rag.router)
+app.include_router(asr.router)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -122,7 +157,10 @@ async def api_info():
             "weather": "/api/weather/{city}",
             "chat": "/api/chat/",
             "tts": "/api/tts/",
+            "tts_ivorian": "/api/tts/ivorian/{language_code}",
             "stt": "/api/stt/transcribe",
+            "asr": "/api/asr/transcribe",
+            "asr_translate": "/api/asr/transcribe-and-translate",
             "rag": "/api/rag/search",
             "translate": "/api/tts/translate",
             "cities": "/api/weather/cities/list"

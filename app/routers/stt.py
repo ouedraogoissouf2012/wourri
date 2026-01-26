@@ -32,14 +32,21 @@ async def transcribe_audio(
         raise HTTPException(status_code=400, detail="Fichier audio vide")
 
     # Transcrire
-    result = await stt_whisper.transcribe_audio_bytes(
-        audio_bytes,
-        filename=audio.filename,
-        language=language
-    )
+    print(f"[STT] Transcription demandee: {len(audio_bytes)} bytes, langue={language}, fichier={audio.filename}")
+
+    try:
+        result = await stt_whisper.transcribe_audio_bytes(
+            audio_bytes,
+            filename=audio.filename or "audio.ogg",
+            language=language
+        )
+    except Exception as e:
+        print(f"[STT] Erreur exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur transcription: {str(e)}")
 
     if result is None:
-        raise HTTPException(status_code=500, detail="Erreur lors de la transcription")
+        print("[STT] Resultat None - transcription echouee")
+        raise HTTPException(status_code=500, detail="Erreur lors de la transcription - resultat vide")
 
     return JSONResponse(content={
         "success": True,

@@ -1,9 +1,18 @@
 """
 WOURI - Router TTS (Text-to-Speech)
+Support multi-langues ivoiriennes
 """
 from fastapi import APIRouter, HTTPException
 from app.services.tts_french import synthesize_french, get_available_voices
 from app.services.tts_bambara import synthesize_bambara, synthesize_bambara_text, translate_to_bambara
+from app.services.tts_ivoirian import (
+    synthesize_ivorian,
+    synthesize_ivorian_text,
+    get_supported_languages,
+    check_models_status,
+    resolve_language_code,
+    IVORIAN_LANGUAGES
+)
 from app.models.schemas import TTSRequest, TTSResponse, TranslateRequest, TranslateResponse, Language
 
 router = APIRouter(prefix="/api/tts", tags=["TTS"])
@@ -108,3 +117,107 @@ async def translate(request: TranslateRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur de traduction: {str(e)}")
+
+
+# ============ LANGUES IVOIRIENNES ============
+
+@router.get("/ivorian/languages")
+async def list_ivorian_languages():
+    """
+    Liste toutes les langues ivoiriennes supportées pour le TTS
+
+    Retourne les codes ISO et noms des langues disponibles
+    """
+    languages = get_supported_languages()
+    return {
+        "languages": languages,
+        "total": len(languages),
+        "note": "Utilisez le code ISO (ex: 'ati' pour Attié) dans les requêtes TTS"
+    }
+
+
+@router.get("/ivorian/status")
+async def ivorian_tts_status():
+    """
+    Vérifie le statut des modèles TTS ivoiriens
+
+    Retourne quels modèles sont chargés en mémoire
+    """
+    return check_models_status()
+
+
+@router.post("/ivorian/{language_code}")
+async def tts_ivorian_language(language_code: str, text: str):
+    """
+    TTS pour une langue ivoirienne spécifique
+
+    - **language_code**: Code ISO de la langue (bam, ati, dyi, myk, gud, adj, dnj, wob)
+    - **text**: Texte à synthétiser (dans la langue cible)
+
+    Langues disponibles:
+    - bam: Bambara/Dioula
+    - ati: Attié
+    - dyi: Sénoufo Djimini
+    - myk: Sénoufo Mamara
+    - gud: Dida Yocoboué
+    - adj: Adioukrou
+    - dnj: Dan/Yacouba
+    - wob: Wobé
+    """
+    # Vérifier que la langue est supportée
+    resolved = resolve_language_code(language_code)
+    if not resolved:
+        supported = get_supported_languages()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Langue '{language_code}' non supportée. Langues disponibles: {list(supported.keys())}"
+        )
+
+    # Générer l'audio
+    audio_url = synthesize_ivorian_text(text, resolved)
+
+    if not audio_url:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Échec de la synthèse TTS pour {IVORIAN_LANGUAGES[resolved][0]}"
+        )
+
+    return TTSResponse(
+        audio_url=audio_url,
+        text=text,
+        language=IVORIAN_LANGUAGES[resolved][0]
+    )
+
+
+@router.post("/ivorian")
+async def tts_ivorian_auto(text: str, language: str = "bam"):
+    """
+    TTS ivoirien avec détection automatique de langue par alias
+
+    - **text**: Texte à synthétiser
+    - **language**: Code ou nom de la langue (ex: "bambara", "attie", "senoufo")
+
+    Alias supportés:
+    - bambara, dioula, jula → bam
+    - attie → ati
+    - senoufo, senoufo_djimini → dyi
+    - senoufo_mamara → myk
+    - dida → gud
+    - adioukrou → adj
+    - dan, yacouba → dnj
+    - wobe → wob
+    """
+    audio_url, lang_name = await synthesize_ivorian(text, language)
+
+    if not audio_url:
+        supported = get_supported_languages()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Échec TTS. Vérifiez que la langue est supportée: {list(supported.keys())}"
+        )
+
+    return TTSResponse(
+        audio_url=audio_url,
+        text=text,
+        language=lang_name
+    )

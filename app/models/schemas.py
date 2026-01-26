@@ -7,10 +7,22 @@ from typing import Optional
 
 
 class Language(str, Enum):
-    """Langues supportées"""
+    """Langues supportées pour les réponses"""
     FRENCH = "french"
     DIOULA = "dioula"
     BOTH = "both"  # Français ET Dioula
+
+
+class IvorianLanguage(str, Enum):
+    """Langues ivoiriennes TTS disponibles (Facebook MMS)"""
+    BAMBARA = "bam"       # Bambara/Dioula
+    ATTIE = "ati"         # Attié
+    SENOUFO_DJIMINI = "dyi"  # Sénoufo Djimini
+    SENOUFO_MAMARA = "myk"   # Sénoufo Mamara
+    DIDA = "gud"          # Dida Yocoboué
+    ADIOUKROU = "adj"     # Adioukrou
+    DAN = "dnj"           # Dan/Yacouba
+    WOBE = "wob"          # Wobé
 
 
 class ChatRequest(BaseModel):
@@ -24,10 +36,12 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     """Réponse de chat"""
     response: str
-    response_dioula: Optional[str] = None  # Traduction Dioula
+    response_dioula: Optional[str] = None  # Traduction Dioula/Bambara
+    response_local: Optional[str] = None   # Texte dans la langue locale (si différent de Dioula)
     audio_url: Optional[str] = None
     city: str
     language: str
+    audio_language: Optional[str] = None   # Langue de l'audio généré
 
 
 class WeatherRequest(BaseModel):

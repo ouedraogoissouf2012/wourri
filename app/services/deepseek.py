@@ -79,8 +79,9 @@ IMPORTANT:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": message}
         ],
-        "temperature": 0.7,
-        "max_tokens": 500
+        "temperature": 0.5,  # Réduit pour réponses plus précises
+        "max_tokens": 200,   # Réduit de 500 à 200 (réponses courtes suffisent)
+        "top_p": 0.9         # Meilleur débit
     }
 
     try:
