@@ -101,9 +101,43 @@ const KNOWN_CITIES = [
     'tanda', 'transua', 'nassian', 'bouna', 'doropo', 'tehini', 'kong'
 ];
 
+// Corrections courantes STT pour les noms de villes
+const CITY_CORRECTIONS = {
+    // Man
+    'main': 'man', 'mane': 'man', 'mens': 'man', 'mang': 'man', 'mont': 'man',
+    // Bouake
+    'bouaké': 'bouake', 'bouakais': 'bouake', 'bouakay': 'bouake',
+    // Korhogo
+    'corogo': 'korhogo', 'korogho': 'korhogo', 'korhogho': 'korhogo',
+    // San-Pedro
+    'sampedro': 'san-pedro', 'san pédro': 'san-pedro', 'saint pedro': 'san-pedro',
+    // Yamoussoukro
+    'yamoussokro': 'yamoussoukro', 'yamouso': 'yamoussoukro', 'yamoussou': 'yamoussoukro',
+    // Daloa
+    'dalois': 'daloa', 'dalwa': 'daloa',
+    // Gagnoa
+    'ganyoa': 'gagnoa', 'ganoa': 'gagnoa',
+    // Divo
+    'divos': 'divo', 'divot': 'divo',
+    // Abidjan
+    'abijan': 'abidjan', 'abidjan': 'abidjan',
+    // Bonoua
+    'bonouat': 'bonoua', 'bonois': 'bonoua',
+    // Ferkessedougou
+    'ferké': 'ferkessedougou', 'ferke': 'ferkessedougou',
+    // Grand-Bassam
+    'bassam': 'grand-bassam', 'gran bassam': 'grand-bassam',
+    // Kong
+    'kong': 'kong', 'con': 'kong', 'quand': 'kong'
+};
+
 // Verifier si c'est une ville valide
 function isValidCity(text) {
     const normalized = text.toLowerCase().trim();
+    // Verifier corrections d'abord
+    for (const [wrong, correct] of Object.entries(CITY_CORRECTIONS)) {
+        if (normalized.includes(wrong)) return true;
+    }
     return KNOWN_CITIES.some(city =>
         normalized.includes(city) || city.includes(normalized)
     );
@@ -112,14 +146,47 @@ function isValidCity(text) {
 // Extraire le nom de la ville du texte
 function extractCity(text) {
     const normalized = text.toLowerCase().trim();
+
+    // Extraire les mots individuels pour mieux matcher
+    const words = normalized.split(/\s+/);
+
+    // 1. Chercher d'abord dans les corrections STT (mot par mot)
+    for (const word of words) {
+        if (CITY_CORRECTIONS[word]) {
+            const corrected = CITY_CORRECTIONS[word];
+            return corrected.charAt(0).toUpperCase() + corrected.slice(1);
+        }
+    }
+
+    // 2. Chercher dans la phrase complete (pour noms composes comme "san pedro")
+    for (const [wrong, correct] of Object.entries(CITY_CORRECTIONS)) {
+        if (normalized.includes(wrong)) {
+            return correct.charAt(0).toUpperCase() + correct.slice(1);
+        }
+    }
+
+    // 3. Chercher dans les villes connues
     for (const city of KNOWN_CITIES) {
         if (normalized.includes(city)) {
-            // Retourner avec majuscule
             return city.charAt(0).toUpperCase() + city.slice(1);
         }
     }
-    // Si pas trouve, retourner le texte tel quel (premiere lettre majuscule)
-    return text.trim().charAt(0).toUpperCase() + text.trim().slice(1).toLowerCase();
+
+    // 4. Chercher similarite phonetique (derniere chance)
+    for (const word of words) {
+        if (word.length >= 3) {
+            for (const city of KNOWN_CITIES) {
+                // Verifier si le mot ressemble a une ville (debut similaire)
+                if (city.startsWith(word.substring(0, 3)) || word.startsWith(city.substring(0, 3))) {
+                    return city.charAt(0).toUpperCase() + city.slice(1);
+                }
+            }
+        }
+    }
+
+    // Si pas trouve, retourner le dernier mot significatif (probable nom de ville)
+    const lastWord = words.filter(w => w.length > 2).pop() || text.trim();
+    return lastWord.charAt(0).toUpperCase() + lastWord.slice(1).toLowerCase();
 }
 
 // Detecter commande de changement
@@ -141,7 +208,8 @@ function detectChangeCommand(text) {
 // FONCTIONS UTILITAIRES
 // ========================================
 
-// Fonction pour transcrire un audio via l'API STT
+// Fonction pour transcrire un audio via l'API STT (Whisper - Français)
+// Retourne un objet avec text, likely_dioula_input, etc.
 async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
     try {
         const FormData = require('form-data');
@@ -162,12 +230,59 @@ async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
         console.log(`[STT] Reponse API recue: ${response.status}`);
 
         if (response.data && response.data.text) {
-            return response.data.text;
+            return {
+                text: response.data.text,
+                likely_dioula_input: response.data.likely_dioula_input || false,
+                language_probability: response.data.language_probability || 0
+            };
         }
         return null;
     } catch (error) {
         console.log('[STT] Erreur transcription:', error.message);
         return null;
+    }
+}
+
+// Fonction pour transcrire un audio en Bambara/Dioula via l'API ASR
+// Utilise facebook/mms-1b-all pour la reconnaissance vocale Bambara
+async function transcribeAudioBambara(audioBuffer, filename = 'audio.ogg') {
+    try {
+        const FormData = require('form-data');
+        const formData = new FormData();
+        formData.append('audio', audioBuffer, {
+            filename: filename,
+            contentType: 'audio/ogg'
+        });
+        formData.append('language', 'bam');  // Bambara/Dioula
+
+        console.log(`[ASR-BAMBARA] Appel API: ${WOURI_API_URL}/api/asr/transcribe-and-translate`);
+        const response = await axios.post(`${WOURI_API_URL}/api/asr/transcribe-and-translate`, formData, {
+            headers: {
+                ...formData.getHeaders()
+            },
+            timeout: 180000
+        });
+        console.log(`[ASR-BAMBARA] Reponse API recue: ${response.status}`);
+
+        if (response.data) {
+            const transcription = response.data.transcription || '';
+            const frenchTranslation = response.data.french_translation || '';
+
+            console.log(`[ASR-BAMBARA] Transcription Bambara: "${transcription}"`);
+            console.log(`[ASR-BAMBARA] Traduction Francais: "${frenchTranslation}"`);
+
+            return {
+                text: frenchTranslation || transcription,  // Utiliser la traduction FR si disponible
+                bambara_text: transcription,
+                is_bambara: true
+            };
+        }
+        return null;
+    } catch (error) {
+        console.log('[ASR-BAMBARA] Erreur transcription:', error.message);
+        // Fallback vers Whisper français si ASR Bambara echoue
+        console.log('[ASR-BAMBARA] Fallback vers Whisper francais...');
+        return await transcribeAudio(audioBuffer, filename);
     }
 }
 
@@ -277,7 +392,8 @@ async function connectWhatsApp() {
 
                 try {
                     await sock.readMessages([msg.key]);
-                    await sock.sendPresenceUpdate('composing', userNumber);
+                    // Message vocal recu -> reponse sera audio -> afficher 'recording'
+                    await sock.sendPresenceUpdate('recording', userNumber);
 
                     const audioBuffer = await downloadMediaMessage(
                         msg,
@@ -299,9 +415,21 @@ async function connectWhatsApp() {
 
                     console.log(`[AUDIO] Telecharge: ${audioBuffer.length} bytes`);
 
-                    const transcribedText = await transcribeAudio(audioBuffer, 'voice_message.ogg');
+                    // Choisir le moteur de transcription selon la langue de l'utilisateur
+                    // - Si langue = dioula -> utiliser ASR Bambara (MMS)
+                    // - Sinon -> utiliser Whisper (francais)
+                    let transcriptionResult;
+                    const userLanguage = prefs.language || 'french';
 
-                    if (!transcribedText || transcribedText.trim() === '') {
+                    if (userLanguage === 'dioula') {
+                        console.log(`[AUDIO] Utilisateur en mode Dioula -> ASR Bambara`);
+                        transcriptionResult = await transcribeAudioBambara(audioBuffer, 'voice_message.ogg');
+                    } else {
+                        console.log(`[AUDIO] Utilisateur en mode ${userLanguage} -> Whisper francais`);
+                        transcriptionResult = await transcribeAudio(audioBuffer, 'voice_message.ogg');
+                    }
+
+                    if (!transcriptionResult || !transcriptionResult.text || transcriptionResult.text.trim() === '') {
                         await sock.sendPresenceUpdate('paused', userNumber);
                         await sock.sendMessage(userNumber, {
                             text: "Desole, je n'ai pas compris votre message vocal. Pouvez-vous repeter?"
@@ -309,7 +437,20 @@ async function connectWhatsApp() {
                         continue;
                     }
 
+                    const transcribedText = transcriptionResult.text;
+                    const likelyDioulaInput = transcriptionResult.likely_dioula_input || false;
+                    const isBambaraTranscription = transcriptionResult.is_bambara || false;
+
                     console.log(`[STT] Transcription: "${transcribedText}"`);
+                    if (isBambaraTranscription) {
+                        console.log(`[STT] Transcription Bambara reussie!`);
+                        if (transcriptionResult.bambara_text) {
+                            console.log(`[STT] Texte Bambara original: "${transcriptionResult.bambara_text}"`);
+                        }
+                    } else if (likelyDioulaInput) {
+                        console.log(`[STT] ATTENTION: Audio probablement en Dioula - transcription peut etre incorrecte`);
+                    }
+
                     messageText = transcribedText;
                     isVoiceInput = true; // Marquer comme message vocal
 
@@ -458,12 +599,18 @@ async function connectWhatsApp() {
                 if (prefs.step === STEPS.COMPLETE) {
                     console.log(`[API] Appel avec ville: ${prefs.city}, langue: ${prefs.language}, voiceInput: ${isVoiceInput}`);
 
-                    // Maintenir "en train d'ecrire"
-                    let keepTyping = true;
-                    const typingInterval = setInterval(async () => {
-                        if (keepTyping) {
+                    // Determiner le type de presence selon le contexte
+                    // - Si entree vocale OU langue dioula/both -> reponse audio probable -> 'recording'
+                    // - Sinon -> reponse texte -> 'composing'
+                    const willBeAudio = isVoiceInput || prefs.language === 'dioula' || prefs.language === 'both';
+                    const presenceType = willBeAudio ? 'recording' : 'composing';
+
+                    // Maintenir le statut pendant le traitement
+                    let keepPresence = true;
+                    const presenceInterval = setInterval(async () => {
+                        if (keepPresence) {
                             try {
-                                await sock.sendPresenceUpdate('composing', userNumber);
+                                await sock.sendPresenceUpdate(presenceType, userNumber);
                             } catch (e) {}
                         }
                     }, 5000);
@@ -474,12 +621,13 @@ async function connectWhatsApp() {
                             message: messageText,
                             city: prefs.city,
                             language: prefs.language,
-                            include_audio: true
+                            include_audio: true,
+                            user_id: userNumber  // Pour l'historique de conversation
                         }, { timeout: 180000 });
                         data = response.data;
                     } finally {
-                        keepTyping = false;
-                        clearInterval(typingInterval);
+                        keepPresence = false;
+                        clearInterval(presenceInterval);
                     }
 
                     console.log(`[API] Reponse recue`);
