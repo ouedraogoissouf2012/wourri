@@ -186,11 +186,15 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
             return None
 
         # Prompt initial pour guider la reconnaissance
+        # Ce prompt aide Whisper à mieux reconnaître les termes agricoles et villes ivoiriennes
         initial_prompt = (
-            "Transcription français Côte d'Ivoire. "
+            "Transcription français Côte d'Ivoire, contexte agricole. "
             "Villes: Ferkessédougou, Korhogo, Bouaké, Yamoussoukro, Abidjan, "
             "San-Pedro, Daloa, Divo, Man, Gagnoa, Bonoua, Soubré, Abengourou. "
-            "Agriculture: manioc, maïs, riz, cacao, igname, planter, cultiver, récolter."
+            "Cultures: banane, manioc, maïs, riz, cacao, café, igname, arachide, "
+            "palmier, hévéa, anacarde, coton, tomate, aubergine, piment, oignon, gombo. "
+            "Termes agricoles: planter, cultiver, récolter, semer, période, saison, "
+            "pluie, irrigation, engrais, pesticide, rendement, parcelle, tubercule."
         )
 
         # Transcrire avec Faster-Whisper
@@ -235,6 +239,10 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
         print(f"[Faster-Whisper] Langue détectée: {info.language} (prob: {info.language_probability:.2f})")
         print(f"[Faster-Whisper] Durée audio: {info.duration:.1f}s")
 
+        # Corriger les termes agricoles mal transcrits (AVANT les villes)
+        transcribed_text = correct_agricultural_terms(transcribed_text)
+        print(f"[Faster-Whisper] Après correction agricole: '{transcribed_text}'")
+
         # Corriger les noms de villes mal transcrits
         transcribed_text = correct_city_names(transcribed_text)
         print(f"[Faster-Whisper] Après correction villes: '{transcribed_text}'")
@@ -244,9 +252,16 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
             print(f"[Faster-Whisper] Détection d'hallucination possible, texte ignoré")
             return None
 
+        # Détecter si l'audio était probablement en Dioula
+        likely_dioula = is_likely_dioula_input(transcribed_text, info.language_probability)
+        if likely_dioula:
+            print(f"[Faster-Whisper] ATTENTION: Audio probablement en Dioula, transcription peut être incorrecte")
+
         return {
             "text": transcribed_text,
             "language": info.language,
+            "language_probability": info.language_probability,
+            "likely_dioula_input": likely_dioula,
             "segments": all_segments
         }
 
@@ -263,6 +278,211 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
                 os.remove(wav_path)
             except:
                 pass
+
+
+def correct_agricultural_terms(text: str) -> str:
+    """
+    Corrige les termes agricoles mal transcrits par Whisper.
+    Whisper confond souvent les termes agricoles avec des mots plus courants.
+
+    Args:
+        text: Le texte transcrit
+
+    Returns:
+        Le texte avec les termes agricoles corrigés
+    """
+    if not text:
+        return text
+
+    # Dictionnaire de corrections pour termes agricoles
+    # Clé: ce que Whisper transcrit (en minuscules)
+    # Valeur: le terme correct
+    agricultural_corrections = {
+        # Période (très souvent mal transcrit)
+        "pégole": "période",
+        "pégo": "période",
+        "pégol": "période",
+        "pegole": "période",
+        "pégole": "période",
+        "pégolle": "période",
+
+        # Banane (Paname = argot pour Paris!)
+        "paname": "banane",
+        "panama": "banane",
+        "panane": "banane",
+        "bannan": "banane",
+        "banan": "banane",
+
+        # Manioc
+        "manioque": "manioc",
+        "manioq": "manioc",
+        "manyoc": "manioc",
+        "maniac": "manioc",
+
+        # Igname (très souvent mal transcrit!)
+        "inyam": "igname",
+        "ignam": "igname",
+        "igniam": "igname",
+        "yam": "igname",
+        "signes d'igname": "igname",
+        "signe d'igname": "igname",
+        "signe igname": "igname",
+        "signes igname": "igname",
+        "des signes d'igname": "de l'igname",
+        "cygne": "igname",
+
+        # Cacao
+        "kakao": "cacao",
+        "cacau": "cacao",
+        "cacaou": "cacao",
+
+        # Café
+        "caffé": "café",
+        "caffet": "café",
+        "caffer": "café",
+
+        # Maïs
+        "maïsse": "maïs",
+        "maisse": "maïs",
+        "mais": "maïs",
+        "maize": "maïs",
+
+        # Riz
+        "rize": "riz",
+        "rise": "riz",
+
+        # Arachide
+        "arachid": "arachide",
+        "arachyde": "arachide",
+        "arachidé": "arachide",
+
+        # Palmier
+        "palmié": "palmier",
+        "palmyer": "palmier",
+
+        # Hévéa (caoutchouc)
+        "évéa": "hévéa",
+        "hévéat": "hévéa",
+        "heveya": "hévéa",
+
+        # Anacarde (noix de cajou)
+        "anacardé": "anacarde",
+        "anakard": "anacarde",
+        "anacart": "anacarde",
+
+        # Coton
+        "cotton": "coton",
+        "cotont": "coton",
+
+        # Planter
+        "planté": "planter",
+        "plantée": "planter",
+        "plentée": "planter",
+
+        # Récolte/Récolter
+        "récolt": "récolte",
+        "recolter": "récolter",
+        "récoltée": "récolte",
+
+        # Semer
+        "semée": "semer",
+        "semé": "semer",
+        "semer": "semer",
+
+        # Cultiver
+        "cultivée": "cultiver",
+        "cultivé": "cultiver",
+
+        # Engrais
+        "engraie": "engrais",
+        "angrai": "engrais",
+        "engraît": "engrais",
+
+        # Irrigation
+        "irrégation": "irrigation",
+        "irriguation": "irrigation",
+
+        # Saison
+        "sèson": "saison",
+        "séson": "saison",
+
+        # Pluie
+        "pluies": "pluie",
+        "pluît": "pluie",
+
+        # Sécheresse
+        "sécherese": "sécheresse",
+        "secheresse": "sécheresse",
+
+        # Parcelle
+        "parcel": "parcelle",
+        "parselle": "parcelle",
+
+        # Rendement
+        "rendent": "rendement",
+        "randement": "rendement",
+
+        # Pesticide
+        "pésticide": "pesticide",
+        "pestissid": "pesticide",
+
+        # Fongicide
+        "fongissid": "fongicide",
+        "fongicid": "fongicide",
+
+        # Herbicide
+        "erbicide": "herbicide",
+        "herbissid": "herbicide",
+
+        # Légumes
+        "légum": "légumes",
+        "legume": "légumes",
+
+        # Tomate
+        "tomat": "tomate",
+        "tomatte": "tomate",
+
+        # Aubergine
+        "aubergin": "aubergine",
+        "obergin": "aubergine",
+
+        # Piment
+        "piman": "piment",
+        "pimant": "piment",
+
+        # Oignon
+        "oignont": "oignon",
+        "ognon": "oignon",
+
+        # Gombo
+        "gombeau": "gombo",
+        "gombos": "gombo",
+
+        # Patate (douce)
+        "patat": "patate",
+        "patatte": "patate",
+
+        # Haricot
+        "aricot": "haricot",
+        "haricots": "haricot",
+
+        # Tubercule
+        "tubercul": "tubercule",
+        "tuberkul": "tubercule",
+    }
+
+    # Appliquer les corrections (insensible à la casse)
+    result = text
+    text_lower = text.lower()
+
+    for wrong, correct in agricultural_corrections.items():
+        if wrong in text_lower:
+            import re
+            pattern = re.compile(re.escape(wrong), re.IGNORECASE)
+            result = pattern.sub(correct, result)
+            print(f"[Faster-Whisper] Correction agricole: '{wrong}' -> '{correct}'")
+
+    return result
 
 
 def correct_city_names(text: str) -> str:
@@ -326,9 +546,17 @@ def correct_city_names(text: str) -> str:
         "dalois": "Daloa",
         "da loa": "Daloa",
 
-        # Man
+        # Man (très court, souvent confondu)
         "manne": "Man",
         "mann": "Man",
+        "main": "Man",
+        "mane": "Man",
+        "mans": "Man",
+        "ment": "Man",
+        "mont": "Man",
+        "mène": "Man",
+        "mens": "Man",
+        "mang": "Man",
 
         # Gagnoa
         "gagnois": "Gagnoa",
@@ -556,6 +784,63 @@ def is_likely_hallucination(text: str) -> bool:
         if pattern in text_lower:
             print(f"[Faster-Whisper] Pattern d'hallucination détecté: {pattern}")
             return True
+
+    return False
+
+
+def is_likely_dioula_input(text: str, language_probability: float = 0.0) -> bool:
+    """
+    Détecte si l'audio original était probablement en Dioula/Bambara
+    mais a été mal transcrit en français par Whisper.
+
+    Indices:
+    - Phrases incohérentes en français
+    - Questions qui n'ont pas de sens
+    - Probabilité de langue française basse
+    - Mots répétés ou sons étranges
+
+    Args:
+        text: Le texte transcrit
+        language_probability: Probabilité de la langue détectée par Whisper
+
+    Returns:
+        True si l'audio était probablement en Dioula
+    """
+    if not text:
+        return False
+
+    text_lower = text.lower()
+
+    # Indices de transcription incorrecte (Dioula parlé -> français charabia)
+    incoherent_patterns = [
+        # Questions qui n'ont pas de sens en français
+        "est-ce que tu parles plus là",
+        "tu parles plus là",
+        "parles plus là",
+        "est-ce que tu parles",
+        # Phrases répétitives typiques des mauvaises transcriptions
+        "dis-moi dis-moi",
+        "oui oui oui",
+        "non non non",
+        # Sons/mots qui ressemblent au Dioula mal interprétés
+        "ala", "allah", "wala", "walahi",
+        "n'golo", "ngolo",
+        "fola", "fo la",
+        # Onomatopées fréquentes
+        "hein hein",
+        "eh eh",
+        "mmh mmh",
+    ]
+
+    for pattern in incoherent_patterns:
+        if pattern in text_lower:
+            print(f"[STT] Détection Dioula probable: pattern '{pattern}' trouvé")
+            return True
+
+    # Si la probabilité de langue est basse (<70%), c'est suspect
+    if 0 < language_probability < 0.7:
+        print(f"[STT] Détection Dioula probable: probabilité langue faible ({language_probability:.2f})")
+        return True
 
     return False
 

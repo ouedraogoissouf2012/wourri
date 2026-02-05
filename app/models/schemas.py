@@ -31,6 +31,7 @@ class ChatRequest(BaseModel):
     city: str = "Abidjan"
     language: Language = Language.BOTH  # Par défaut: les deux langues
     include_audio: bool = True
+    user_id: Optional[str] = None  # ID utilisateur pour l'historique de conversation
 
 
 class ChatResponse(BaseModel):

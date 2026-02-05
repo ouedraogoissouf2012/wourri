@@ -119,14 +119,17 @@ async def transcribe_and_translate(
         extension = "ogg"
 
     # Transcrire
+    print(f"[ASR] Debut transcription en {language}...")
     transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
 
     if transcription is None:
+        print(f"[ASR] Transcription echouee - None retourne")
         raise HTTPException(
             status_code=500,
             detail="Echec de la transcription"
         )
 
+    print(f"[ASR] Transcription Bambara brute: '{transcription}'")
     lang_name = IVORIAN_ASR_LANGUAGES[language][0]
 
     # Traduire en francais - UNIQUEMENT pour Bambara
@@ -136,11 +139,13 @@ async def transcribe_and_translate(
 
     if transcription and language == "bam":
         try:
+            print(f"[ASR] Traduction Bambara -> Francais...")
             french_translation = translate_to_french(transcription)
+            print(f"[ASR] Traduction Francais: '{french_translation}'")
             translation_model = "NLLB-200"
             translation_available = True
         except Exception as e:
-            print(f"Erreur traduction: {e}")
+            print(f"[ASR] Erreur traduction: {e}")
 
     return {
         "transcription": transcription,

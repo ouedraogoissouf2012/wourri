@@ -1,9 +1,8 @@
 """
-WOURI - TTS Français (Edge-TTS)
-100% GRATUIT - Microsoft Edge TTS
+WOURI - TTS Français (Piper TTS)
+100% GRATUIT - Voix locale haute qualité
 Conversion en OGG Opus pour compatibilité WhatsApp
 """
-import edge_tts
 import uuid
 import os
 import re
@@ -11,6 +10,11 @@ import subprocess
 from app.config import get_settings
 
 settings = get_settings()
+
+# Chemins Piper TTS
+PIPER_PATH = r"C:\piper-tts\piper.exe"
+# Voix masculine Tom (homme français)
+PIPER_MODEL = r"C:\piper-tts\fr_FR-tom-medium.onnx"
 
 # Chemin vers ffmpeg
 FFMPEG_PATH = r"C:\Users\USER PC\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe"
@@ -39,7 +43,7 @@ def clean_text(text: str) -> str:
 
 async def synthesize_french(text: str) -> str | None:
     """
-    Génère un fichier audio OGG Opus à partir de texte français
+    Génère un fichier audio OGG Opus à partir de texte français avec Piper TTS
     Format OGG Opus = format natif WhatsApp pour meilleure compatibilité
 
     Returns:
@@ -56,25 +60,34 @@ async def synthesize_french(text: str) -> str | None:
     try:
         # Générer les noms de fichiers
         file_id = uuid.uuid4()
-        mp3_filename = f"fr_{file_id}_temp.mp3"
+        wav_filename = f"fr_{file_id}_temp.wav"
         ogg_filename = f"fr_{file_id}.ogg"
-        mp3_filepath = os.path.join(settings.audio_output_dir, mp3_filename)
-        ogg_filepath = os.path.join(settings.audio_output_dir, ogg_filename)
+
+        # Utiliser des chemins absolus pour Piper
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        audio_dir = os.path.join(base_dir, settings.audio_output_dir)
+        wav_filepath = os.path.join(audio_dir, wav_filename)
+        ogg_filepath = os.path.join(audio_dir, ogg_filename)
 
         # Créer le dossier si nécessaire
-        os.makedirs(settings.audio_output_dir, exist_ok=True)
+        os.makedirs(audio_dir, exist_ok=True)
 
-        # Générer l'audio avec Edge-TTS (MP3 temporaire)
-        communicate = edge_tts.Communicate(clean, settings.tts_french_voice)
-        await communicate.save(mp3_filepath)
+        # Générer l'audio avec Piper TTS (chemins absolus obligatoires)
+        piper_process = subprocess.run(
+            [PIPER_PATH, '--model', PIPER_MODEL, '--output_file', wav_filepath],
+            input=clean.encode('utf-8'),
+            capture_output=True,
+            timeout=30,
+            cwd=r"C:\piper-tts"
+        )
 
-        # Convertir en OGG Opus pour WhatsApp
-        if os.path.exists(mp3_filepath) and os.path.getsize(mp3_filepath) > 0:
+        # Convertir WAV en OGG Opus pour WhatsApp
+        if os.path.exists(wav_filepath) and os.path.getsize(wav_filepath) > 0:
             try:
-                # Conversion MP3 -> OGG Opus (format WhatsApp)
+                # Conversion WAV -> OGG Opus (format WhatsApp)
                 result = subprocess.run([
                     FFMPEG_PATH,
-                    '-i', mp3_filepath,
+                    '-i', wav_filepath,
                     '-c:a', 'libopus',
                     '-b:a', '64k',
                     '-ar', '48000',
@@ -83,45 +96,31 @@ async def synthesize_french(text: str) -> str | None:
                     ogg_filepath
                 ], capture_output=True, timeout=30)
 
-                # Supprimer le fichier MP3 temporaire
-                os.remove(mp3_filepath)
+                # Supprimer le fichier WAV temporaire
+                os.remove(wav_filepath)
 
                 if os.path.exists(ogg_filepath) and os.path.getsize(ogg_filepath) > 0:
                     return f"/static/audio/{ogg_filename}"
 
             except Exception as conv_err:
                 print(f"Erreur conversion ffmpeg: {conv_err}")
-                # Fallback: retourner le MP3 si conversion échoue
-                if os.path.exists(mp3_filepath):
-                    final_mp3 = f"fr_{file_id}.mp3"
-                    os.rename(mp3_filepath, os.path.join(settings.audio_output_dir, final_mp3))
-                    return f"/static/audio/{final_mp3}"
+                # Fallback: retourner le WAV si conversion échoue
+                if os.path.exists(wav_filepath):
+                    return f"/static/audio/{wav_filename}"
 
     except Exception as e:
-        print(f"Erreur TTS français: {e}")
+        print(f"Erreur TTS français Piper: {e}")
 
     return None
 
 
 async def get_available_voices() -> list[dict]:
-    """Liste les voix françaises disponibles"""
-    try:
-        voices = await edge_tts.list_voices()
-        french_voices = [
-            {"name": v["Name"], "gender": v["Gender"], "locale": v["Locale"]}
-            for v in voices
-            if v["Locale"].startswith("fr-")
-        ]
-        return french_voices
-    except:
-        return []
+    """Liste les voix Piper disponibles"""
+    return [
+        {"name": "fr_FR-tom-medium", "gender": "Male", "locale": "fr-FR", "quality": "medium"},
+        {"name": "fr_FR-siwis-medium", "gender": "Female", "locale": "fr-FR", "quality": "medium"}
+    ]
 
 
-# Voix recommandées
-RECOMMENDED_VOICES = [
-    "fr-FR-VivienneMultilingualNeural",  # Femme, multilingue, très naturelle (recommandée)
-    "fr-FR-DeniseNeural",                 # Femme, standard
-    "fr-FR-HenriNeural",                  # Homme, standard
-    "fr-FR-EloiseNeural",                 # Femme, jeune
-    "fr-FR-RemyMultilingualNeural",       # Homme, multilingue
-]
+# Voix Piper installée (Tom = homme)
+PIPER_VOICE = "fr_FR-tom-medium"

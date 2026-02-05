@@ -34,7 +34,8 @@ async def chat(request: ChatRequest):
         response_text = await chat_with_deepseek(
             message=request.message,
             weather_data=weather_data,
-            language=Language.FRENCH  # Réponse de base toujours en français
+            language=Language.FRENCH,  # Réponse de base toujours en français
+            user_id=request.user_id  # Pour l'historique de conversation
         )
 
         audio_url = None

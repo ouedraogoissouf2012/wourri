@@ -88,9 +88,53 @@ def get_translator():
 
         _translator_tokenizer = AutoTokenizer.from_pretrained(settings.hf_translator_model)
         _translator_model = AutoModelForSeq2SeqLM.from_pretrained(settings.hf_translator_model)
+        _translator_model.eval()
         print("Modèle de traduction chargé!")
 
     return _translator_model, _translator_tokenizer
+
+
+# Noms de villes ivoiriennes à ne PAS traduire (NLLB les déforme)
+IVORIAN_CITIES = [
+    "Man", "Korhogo", "Bouaké", "Yamoussoukro", "Abidjan", "San-Pedro",
+    "Daloa", "Divo", "Gagnoa", "Bonoua", "Soubré", "Abengourou",
+    "Ferkessédougou", "Odienné", "Séguéla", "Bondoukou", "Aboisso",
+    "Danané", "Duékoué", "Guiglo", "Tabou", "Sassandra", "Grand-Bassam",
+    "Jacqueville", "Agboville", "Dabou", "Dimbokro", "Toumodi",
+    "Tiébissou", "Katiola", "Boundiali", "Tengrela", "Anyama", "Bingerville"
+]
+
+# Placeholder pour protéger les villes pendant la traduction
+CITY_PLACEHOLDER = "VILLE_PROTEGEE_{}"
+
+
+def protect_city_names(text: str) -> tuple[str, dict]:
+    """
+    Remplace les noms de villes par des placeholders avant la traduction.
+    Retourne le texte modifié et un dictionnaire de correspondance.
+    """
+    city_map = {}
+    result = text
+
+    for i, city in enumerate(IVORIAN_CITIES):
+        # Recherche insensible à la casse
+        pattern = re.compile(re.escape(city), re.IGNORECASE)
+        if pattern.search(result):
+            placeholder = CITY_PLACEHOLDER.format(i)
+            city_map[placeholder] = city
+            result = pattern.sub(placeholder, result)
+
+    return result, city_map
+
+
+def restore_city_names(text: str, city_map: dict) -> str:
+    """
+    Restaure les noms de villes après la traduction.
+    """
+    result = text
+    for placeholder, city in city_map.items():
+        result = result.replace(placeholder, city)
+    return result
 
 
 def preprocess_french_text(text: str) -> str:
@@ -303,10 +347,12 @@ def translate_to_bambara(french_text: str) -> str:
     Traduit du français vers le Bambara avec un système amélioré.
 
     Processus:
-    1. Prétraitement du texte français
-    2. Division en phrases courtes
-    3. Traduction phrase par phrase
-    4. Post-traitement et nettoyage
+    1. Protection des noms de villes (ne pas traduire)
+    2. Prétraitement du texte français
+    3. Division en phrases courtes
+    4. Traduction phrase par phrase
+    5. Post-traitement et nettoyage
+    6. Restauration des noms de villes
     """
     if not TORCH_AVAILABLE:
         return french_text
@@ -315,8 +361,13 @@ def translate_to_bambara(french_text: str) -> str:
     if model is None:
         return french_text
 
+    # ÉTAPE 1: Protéger les noms de villes avant toute transformation
+    protected_text, city_map = protect_city_names(french_text)
+    if city_map:
+        print(f"[Traduction] Villes protégées: {list(city_map.values())}")
+
     # Prétraitement
-    preprocessed = preprocess_french_text(french_text)
+    preprocessed = preprocess_french_text(protected_text)
     if not preprocessed:
         return french_text
 
@@ -354,6 +405,11 @@ def translate_to_bambara(french_text: str) -> str:
 
     # Nettoyage final
     result = clean_bambara_text(result)
+
+    # ÉTAPE FINALE: Restaurer les noms de villes
+    if city_map:
+        result = restore_city_names(result, city_map)
+        print(f"[Traduction] Villes restaurées dans le résultat")
 
     # Log pour debug (encodage sécurisé)
     try:

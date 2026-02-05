@@ -4,6 +4,7 @@ WOURI - Routes Speech-to-Text (Whisper)
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from app.services import stt_whisper
+from app.services.deepseek import correct_stt_transcription
 
 router = APIRouter(prefix="/api/stt", tags=["Speech-to-Text"])
 
@@ -48,10 +49,22 @@ async def transcribe_audio(
         print("[STT] Resultat None - transcription echouee")
         raise HTTPException(status_code=500, detail="Erreur lors de la transcription - resultat vide")
 
+    # Correction intelligente via DeepSeek (corrige villes et termes agricoles)
+    raw_text = result["text"]
+    corrected_text = await correct_stt_transcription(raw_text)
+
+    # Vérifier si l'audio était probablement en Dioula
+    likely_dioula = result.get("likely_dioula_input", False)
+    if likely_dioula:
+        print(f"[STT] Audio détecté comme Dioula - transcription peut être incorrecte")
+
     return JSONResponse(content={
         "success": True,
-        "text": result["text"],
+        "text": corrected_text,  # Texte corrigé par DeepSeek
+        "raw_text": raw_text,    # Texte brut pour debug
         "language": result["language"],
+        "language_probability": result.get("language_probability", 0),
+        "likely_dioula_input": likely_dioula,  # Indique si audio probablement en Dioula
         "segments": result["segments"]
     })
 

@@ -1,12 +1,44 @@
 """
 WOURI - Service Météo (Open-Meteo)
 100% GRATUIT - Pas de clé API requise
+Avec cache pour réduire les appels API
 """
 import httpx
+import time
 from app.data.cities import get_city, get_all_cities
 from app.config import get_settings
 
 settings = get_settings()
+
+# ========================================
+# CACHE MÉTÉO - 15 minutes
+# ========================================
+_weather_cache = {}  # { "city_name": { "data": {...}, "timestamp": 123456 } }
+CACHE_DURATION = 15 * 60  # 15 minutes en secondes
+
+
+def get_cached_weather(city_name: str) -> dict | None:
+    """Récupère la météo depuis le cache si elle est encore valide"""
+    city_lower = city_name.lower()
+    if city_lower in _weather_cache:
+        cached = _weather_cache[city_lower]
+        age = time.time() - cached["timestamp"]
+        if age < CACHE_DURATION:
+            print(f"[MÉTÉO] Cache HIT pour {city_name} (age: {int(age)}s)")
+            return cached["data"]
+        else:
+            print(f"[MÉTÉO] Cache EXPIRÉ pour {city_name} (age: {int(age)}s)")
+    return None
+
+
+def set_cached_weather(city_name: str, data: dict):
+    """Stocke la météo dans le cache"""
+    city_lower = city_name.lower()
+    _weather_cache[city_lower] = {
+        "data": data,
+        "timestamp": time.time()
+    }
+    print(f"[MÉTÉO] Cache SET pour {city_name}")
 
 # Codes météo WMO
 WEATHER_CODES = {
@@ -34,7 +66,14 @@ WEATHER_CODES = {
 async def get_weather(city_name: str) -> dict | None:
     """
     Récupère la météo d'une ville via Open-Meteo (GRATUIT)
+    Utilise un cache de 15 minutes pour réduire les appels API
     """
+    # 1. Vérifier le cache d'abord
+    cached = get_cached_weather(city_name)
+    if cached:
+        return cached
+
+    # 2. Pas de cache, appeler l'API
     city = get_city(city_name)
     if not city:
         return None
@@ -48,7 +87,8 @@ async def get_weather(city_name: str) -> dict | None:
     }
 
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        # Timeout réduit à 5 secondes (était 15s)
+        async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.get(url, params=params)
 
             if response.status_code == 200:
@@ -58,7 +98,7 @@ async def get_weather(city_name: str) -> dict | None:
                 weather_code = current.get("weather_code", 0)
                 weather_desc = WEATHER_CODES.get(weather_code, "Inconnu")
 
-                return {
+                result = {
                     "city": city["name"],
                     "region": city["region"],
                     "temperature": current.get("temperature_2m", 0),
@@ -73,8 +113,13 @@ async def get_weather(city_name: str) -> dict | None:
                         weather_code
                     )
                 }
+
+                # 3. Stocker dans le cache
+                set_cached_weather(city_name, result)
+                return result
+
     except Exception as e:
-        print(f"Erreur météo: {e}")
+        print(f"[MÉTÉO] Erreur API: {e}")
         return None
 
     return None
