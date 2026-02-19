@@ -49,7 +49,7 @@
   },
   "232358099845226@lid": {
     "city": "Bouake",
-    "language": "french",
+    "language": "dioula",
     "step": "complete",
     "pendingQuestion": null
   },
@@ -96,9 +96,15 @@
     "pendingQuestion": null
   },
   "191053097378044@lid": {
-    "city": "Marche",
+    "city": "Ouagadougou",
+    "language": "french",
+    "step": "complete",
+    "pendingQuestion": null
+  },
+  "75475846185140@lid": {
+    "city": "Beaucoup",
     "language": null,
     "step": "waiting_language",
-    "pendingQuestion": "Cc"
+    "pendingQuestion": "Je te dis hein"
   }
 }
