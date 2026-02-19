@@ -1,0 +1,41 @@
+{
+  "langues": {
+    "bam": {
+      "nom": "Bambara/Dioula",
+      "code_iso": "bam",
+      "dictionnaire": "bambara_francais.json",
+      "phrases": "bambara_phrases.json",
+      "direction_nllb": {
+        "source": "bam_Latn",
+        "cible": "fra_Latn"
+      },
+      "actif": true
+    }
+  },
+  "sources": {
+    "bamadaba": {
+      "type": "github_toolbox",
+      "url": "https://raw.githubusercontent.com/maslinych/bamadaba/master/bamadaba.txt",
+      "description": "Dictionnaire Bambara-Français (25 000+ entrées)",
+      "priorite": 1
+    },
+    "huggingface_bambara_mt": {
+      "type": "huggingface_dataset",
+      "dataset_id": "oza75/bambara-mt",
+      "description": "Phrases parallèles Bambara-Français",
+      "priorite": 2
+    },
+    "nllb_seed": {
+      "type": "huggingface_dataset",
+      "dataset_id": "openlanguagedata/oldi_seed",
+      "description": "6000 phrases professionnelles NLLB",
+      "priorite": 3
+    },
+    "csv_manuel": {
+      "type": "csv",
+      "fichier": "sources/manuel.csv",
+      "description": "Ajouts manuels par locuteurs natifs",
+      "priorite": 0
+    }
+  }
+}

@@ -43,14 +43,15 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"[PRELOAD] Whisper: ERREUR - {e}")
 
-    # 2. Précharger NLLB (Traduction)
+    # 2. Précharger le TranslationService (dictionnaire + NLLB)
     try:
-        from app.services.tts_bambara import get_translator
-        print("[PRELOAD] Chargement de NLLB (traduction)...")
-        get_translator()
-        print("[PRELOAD] NLLB: OK")
+        from app.services.translation import get_translation_service
+        print("[PRELOAD] Chargement du TranslationService (dictionnaire + NLLB)...")
+        service = get_translation_service()
+        stats = service.get_stats()
+        print(f"[PRELOAD] TranslationService: OK ({stats['dictionnaire']['total_mots']} mots)")
     except Exception as e:
-        print(f"[PRELOAD] NLLB: ERREUR - {e}")
+        print(f"[PRELOAD] TranslationService: ERREUR - {e}")
 
     # 3. Précharger TTS Bambara
     try:

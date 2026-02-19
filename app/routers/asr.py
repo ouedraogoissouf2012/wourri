@@ -4,6 +4,7 @@ Reconnaissance vocale pour langues ivoiriennes
 Traduction disponible uniquement pour Bambara/Dioula via NLLB-200
 """
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+import re
 from app.services.asr_ivorian import (
     transcribe_audio_bytes,
     get_supported_asr_languages,
@@ -13,6 +14,43 @@ from app.services.asr_ivorian import (
 from app.services.tts_bambara import translate_to_french
 
 router = APIRouter(prefix="/api/asr", tags=["ASR"])
+
+
+# Nettoyage post-ASR : l'ASR MMS-1B-ALL fait des erreurs phonétiques récurrentes
+# Ces corrections sont appliquées AVANT la traduction BAM→FR
+_ASR_FIXES = {
+    # Salutations déformées par l'ASR (toutes les variantes observées)
+    "sɔrɔma": "sɔgɔma",       # r/g confusion
+    "sorɔma": "sɔgɔma",
+    "soroma": "sogoma",
+    "sɔrɔ ma": "sɔgɔma",
+    "sagɔma": "sɔgɔma",       # a/ɔ confusion (vu dans les logs)
+    "sagoma": "sogoma",         # a/o confusion
+    "sɔgɔ ma": "sɔgɔma",     # espace parasite
+    "sogo ma": "sogoma",
+    # Mots avec 'n' parasite ajouté par l'ASR
+    "malon": "malo",            # "riz" avec n parasite
+    "kaban": "kaba",            # "maïs" avec n parasite
+    "tigan": "tiga",            # "arachide" avec n parasite
+    "foron": "foro",            # "champ" avec n parasite
+    "senɛ": "sɛnɛ",           # voyelle e au lieu de ɛ
+    # ka/kan confusion (très fréquent avec MMS-1B-ALL)
+    " kan ": " ka ",            # "kan" → "ka" (marqueur verbal)
+    # Salutations collées fréquentes
+    "ani sɔgɔma": "i ni sɔgɔma",
+    "ani sogoma": "i ni sogoma",
+    "ani ce": "i ni ce",
+}
+
+
+def clean_asr_transcription(text: str) -> str:
+    """Corrige les erreurs ASR courantes de MMS-1B-ALL pour le bambara."""
+    if not text:
+        return text
+    result = f" {text} "  # Ajouter espaces pour matcher les limites de mots
+    for wrong, correct in _ASR_FIXES.items():
+        result = result.replace(wrong, correct)
+    return result.strip()
 
 
 @router.post("/transcribe")
@@ -130,6 +168,14 @@ async def transcribe_and_translate(
         )
 
     print(f"[ASR] Transcription Bambara brute: '{transcription}'")
+
+    # Nettoyage post-ASR : corriger les erreurs phonétiques courantes
+    if language == "bam" and transcription:
+        cleaned = clean_asr_transcription(transcription)
+        if cleaned != transcription:
+            print(f"[ASR] Après nettoyage: '{cleaned}'")
+            transcription = cleaned
+
     lang_name = IVORIAN_ASR_LANGUAGES[language][0]
 
     # Traduire en francais - UNIQUEMENT pour Bambara

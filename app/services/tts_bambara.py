@@ -5,11 +5,9 @@ WOURI - TTS Bambara (Hugging Face)
 NOTE: Necessite torch, transformers, scipy (environ 2GB)
 Pour installer: pip install torch transformers scipy pydub
 
-Système de traduction amélioré:
-- Prétraitement du texte français (simplification, segmentation)
-- Traduction par phrases courtes pour meilleure qualité
-- Post-traitement anti-répétition avancé
-- Paramètres NLLB optimisés
+Traduction déléguée au TranslationService (Strategy Pattern):
+  1. Dictionnaire (11k+ mots Bamadaba + phrases manuelles)
+  2. NLLB-200 (fallback IA)
 """
 import uuid
 import os
@@ -43,11 +41,9 @@ except ImportError:
     print("INFO: torch non installé - TTS Bambara désactivé")
     print("Pour activer: pip install torch transformers scipy")
 
-# Cache des modèles
+# Cache des modèles TTS
 _tts_model = None
 _tts_tokenizer = None
-_translator_model = None
-_translator_tokenizer = None
 
 
 def get_tts_model():
@@ -73,25 +69,6 @@ def get_tts_model():
         print("Modele TTS Bambara charge!")
 
     return _tts_model, _tts_tokenizer
-
-
-def get_translator():
-    """Charge le modèle de traduction NLLB (lazy loading)"""
-    global _translator_model, _translator_tokenizer
-
-    if not TORCH_AVAILABLE:
-        return None, None
-
-    if _translator_model is None:
-        print("Chargement du modèle de traduction (NLLB-200)...")
-        from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-
-        _translator_tokenizer = AutoTokenizer.from_pretrained(settings.hf_translator_model)
-        _translator_model = AutoModelForSeq2SeqLM.from_pretrained(settings.hf_translator_model)
-        _translator_model.eval()
-        print("Modèle de traduction chargé!")
-
-    return _translator_model, _translator_tokenizer
 
 
 # Noms de villes ivoiriennes à ne PAS traduire (NLLB les déforme)
@@ -202,70 +179,41 @@ def split_into_sentences(text: str) -> list[str]:
     return result
 
 
-def translate_single_sentence(text: str, model, tokenizer, forced_bos_token_id) -> str:
-    """Traduit une seule phrase courte avec des paramètres optimisés."""
-    if not text or len(text.strip()) < 2:
-        return ""
+# Corrections NLLB connues : le modèle confond certains mots bambara
+# Format : {mauvais_mot: bon_mot}
+_NLLB_FR_TO_BAM_FIXES = {
+    # NLLB traduit "riz" comme "wari" (argent) au lieu de "malo" (riz)
+    "wari sɛnɛ": "malo sɛnɛ",    # "planter de l'argent" → "planter du riz"
+    "wari sene": "malo sene",
+    "i ka wari sɛnɛ": "i ka malo sɛnɛ",  # "planter ton argent" → "planter ton riz"
+    "i ka wari": "i ka malo",       # "ton argent" → "ton riz" (dans contexte agricole)
+    "ka wari sɛnɛ": "ka malo sɛnɛ",
+    # Corrections de mots agricoles courants mal traduits par NLLB
+    "shɛfan tobi": "foro labɛn",   # "cuire des œufs" → "préparer le champ"
+}
 
-    # Dictionnaire de traductions directes pour éviter les hallucinations NLLB
-    # sur les mots courts courants
-    direct_translations = {
-        "bonjour": "I ni ce",
-        "bonsoir": "I ni wula",
-        "bonne nuit": "I ni su",
-        "merci": "I ni ce",
-        "au revoir": "K'an bɛn",
-        "oui": "Ɔwɔ",
-        "non": "Ayi",
-        "salut": "I ni ce",
-    }
 
-    text_lower = text.lower().strip().rstrip('.!?,;:')
-    if text_lower in direct_translations:
-        return direct_translations[text_lower]
-
-    inputs = tokenizer(
-        text,
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        max_length=128  # Phrases courtes = limite plus basse
-    )
-
-    with torch.no_grad():
-        generated_tokens = model.generate(
-            **inputs,
-            forced_bos_token_id=forced_bos_token_id,
-            max_length=80,   # Réduit pour plus de vitesse (100 -> 80)
-            num_beams=1,     # Greedy decoding = plus rapide (2 -> 1)
-            no_repeat_ngram_size=2,
-            repetition_penalty=1.3,
-            early_stopping=True,
-            do_sample=False
-        )
-
-    result = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
-
-    # Filtrer les hallucinations connues de NLLB
-    hallucinations = ["bonjour bébé", "bonjour bebe", "bébé", "bebe"]
-    result_lower = result.lower().strip()
-    for hallucination in hallucinations:
-        if result_lower.startswith(hallucination):
-            # Remplacer par une salutation correcte en Bambara
-            result = result_lower.replace(hallucination, "I ni ce", 1)
-            result = result[0].upper() + result[1:] if result else result
-            break
-
+def fix_nllb_errors(text: str) -> str:
+    """Corrige les erreurs connues de NLLB dans la traduction FR→BAM."""
+    if not text:
+        return text
+    result = text
+    for wrong, correct in _NLLB_FR_TO_BAM_FIXES.items():
+        if wrong in result:
+            result = result.replace(wrong, correct)
     return result
 
 
 def clean_bambara_text(text: str) -> str:
     """
     Post-traitement avancé du texte Bambara.
-    Nettoie les répétitions et améliore la fluidité.
+    Corrige les erreurs NLLB, nettoie les répétitions et améliore la fluidité.
     """
     if not text:
         return text
+
+    # Étape 0: Corriger les erreurs NLLB connues
+    text = fix_nllb_errors(text)
 
     # Étape 1: Supprimer les répétitions de mots consécutifs
     words = text.split()
@@ -342,27 +290,57 @@ def clean_bambara_text(text: str) -> str:
     return text
 
 
+# Salutations bambara à injecter quand le contexte le demande
+_BAMBARA_GREETINGS = {
+    "bonjour": "Nba, i ni ce!",
+    "bonsoir": "Nba, i ni su!",
+    "salut": "Nba, i ni ce!",
+    "merci": "Nba, i ni ce!",
+}
+
+
+def _detect_and_strip_greeting(text: str) -> tuple[str, str]:
+    """Détecte une salutation française au début du texte.
+    Retourne (salutation_bambara, texte_sans_salutation).
+    Si pas de salutation, retourne ("", texte_original).
+    """
+    text_stripped = text.strip()
+    text_lower = text_stripped.lower()
+    for fr_greet, bam_greet in _BAMBARA_GREETINGS.items():
+        if text_lower.startswith(fr_greet):
+            # Enlever la salutation du texte pour ne pas la traduire par NLLB
+            rest = text_stripped[len(fr_greet):].lstrip(" ,!.;:")
+            if rest:
+                return bam_greet, rest
+            else:
+                return bam_greet, ""
+    return "", text_stripped
+
+
 def translate_to_bambara(french_text: str) -> str:
     """
-    Traduit du français vers le Bambara avec un système amélioré.
-
-    Processus:
-    1. Protection des noms de villes (ne pas traduire)
-    2. Prétraitement du texte français
-    3. Division en phrases courtes
-    4. Traduction phrase par phrase
-    5. Post-traitement et nettoyage
-    6. Restauration des noms de villes
+    Traduit du français vers le Bambara.
+    Stratégie :
+      0. Détecter et extraire les salutations (dictionnaire pur, pas NLLB)
+      1. Protéger les noms de villes
+      2. Prétraiter le texte
+      3. Découper en phrases courtes (NLLB fonctionne mieux phrase par phrase)
+      4. Pour chaque phrase : essayer phrase exacte du dictionnaire, sinon NLLB
+      5. Post-traitement anti-répétition
+      6. Restaurer les noms de villes
+      7. Préfixer avec la salutation bambara
     """
-    if not TORCH_AVAILABLE:
+    if not french_text or not french_text.strip():
         return french_text
 
-    model, tokenizer = get_translator()
-    if model is None:
-        return french_text
+    # 0. Détecter et extraire la salutation (sera ajoutée en bambara pur)
+    greeting_bam, remaining_text = _detect_and_strip_greeting(french_text)
+    if not remaining_text:
+        # Si le texte n'est qu'une salutation
+        return greeting_bam if greeting_bam else french_text
 
-    # ÉTAPE 1: Protéger les noms de villes avant toute transformation
-    protected_text, city_map = protect_city_names(french_text)
+    # Protéger les noms de villes
+    protected_text, city_map = protect_city_names(remaining_text)
     if city_map:
         print(f"[Traduction] Villes protégées: {list(city_map.values())}")
 
@@ -371,84 +349,142 @@ def translate_to_bambara(french_text: str) -> str:
     if not preprocessed:
         return french_text
 
-    tokenizer.src_lang = "fra_Latn"
-    forced_bos_token_id = tokenizer.convert_tokens_to_ids("bam_Latn")
-
-    # Diviser en phrases
+    # Découper en phrases courtes pour une meilleure traduction
     sentences = split_into_sentences(preprocessed)
-
     if not sentences:
-        # Fallback: traduire le texte complet
         sentences = [preprocessed]
 
-    # Traduire chaque phrase
+    from app.services.translation import get_translation_service
+    from app.services.translation.interfaces import Direction
+    service = get_translation_service()
+
     translated_parts = []
     for sentence in sentences:
-        if len(sentence.strip()) < 3:
+        sentence = sentence.strip()
+        if not sentence:
             continue
 
-        translation = translate_single_sentence(
-            sentence, model, tokenizer, forced_bos_token_id
-        )
+        # Traduire chaque phrase individuellement
+        result = service.translate(sentence, Direction.FR_TO_BAM)
 
-        if translation:
-            # Nettoyer chaque partie traduite
-            cleaned = clean_bambara_text(translation)
-            if cleaned and len(cleaned) > 2:
-                translated_parts.append(cleaned)
+        if result and result.confidence > 0:
+            translated_parts.append(result.text)
+        else:
+            # Si aucune stratégie ne marche, garder le texte original
+            translated_parts.append(sentence)
 
-    # Assembler le résultat
-    if not translated_parts:
-        return french_text
+    result = " ".join(translated_parts)
 
-    result = ' '.join(translated_parts)
-
-    # Nettoyage final
+    # Post-traitement anti-répétition
     result = clean_bambara_text(result)
 
-    # ÉTAPE FINALE: Restaurer les noms de villes
+    # Restaurer les noms de villes
     if city_map:
         result = restore_city_names(result, city_map)
-        print(f"[Traduction] Villes restaurées dans le résultat")
 
-    # Log pour debug (encodage sécurisé)
+    # Préfixer avec la salutation bambara (dictionnaire pur, jamais NLLB)
+    if greeting_bam:
+        result = f"{greeting_bam} {result}"
+
     try:
         print(f"[Bambara] Traduit: {len(french_text)} chars -> {len(result)} chars")
     except UnicodeEncodeError:
-        print(f"[Bambara] Traduction effectuee")
+        print("[Bambara] Traduction effectuee")
 
     return result
 
 
-def translate_to_french(bambara_text: str) -> str:
-    """Traduit du Bambara vers le Français"""
-    if not TORCH_AVAILABLE:
-        return bambara_text  # Retourne le texte original si pas de torch
+# Préfixes de salutations bambara collées par l'ASR (sans espaces)
+# L'ASR MMS-1B-ALL transcrit souvent "i ni sɔgɔma" comme "inisɔgɔma" ou "inisɔgɔ ma"
+_BAM_GREETING_PREFIXES = [
+    # Avec diacritiques - collées
+    "inisɔgɔma", "inisɔgɔ ma",  # i ni sɔgɔma (bonjour matin)
+    "anisɔgɔma", "anisɔgɔ ma",  # a ni sɔgɔma
+    "inice", "anice",            # i ni ce / a ni ce (bonjour)
+    "iniwula", "ini wula",       # i ni wula (bonsoir)
+    "inisu", "ini su",           # i ni su (bonne nuit)
+    "inibaara", "ini baara",     # i ni baara (merci pour ton travail)
+    # Sans diacritiques - collées (ASR peut omettre les ɔ)
+    "inisogoma", "inisogo ma",   # i ni sogoma
+    "anisogoma", "anisogo ma",   # a ni sogoma
+    # Avec espaces (salutation pas collée mais en variante ASR)
+    "i ni sɔgɔma", "a ni sɔgɔma",
+    "i ni sogoma", "a ni sogoma",
+    "ani sɔgɔma", "ani sogoma",  # "ani" = variante ASR de "a ni" / "i ni"
+    "i ni ce", "a ni ce", "ani ce",
+    "i ni wula", "a ni wula",
+    "i ni su", "a ni su",
+]
 
-    model, tokenizer = get_translator()
-    if model is None:
+# Mapping préfixe collé -> salutation française propre
+_BAM_GREETING_TO_FR = {
+    # Collées
+    "inisɔgɔma": "Bonjour, ", "inisɔgɔ ma": "Bonjour, ",
+    "anisɔgɔma": "Bonjour, ", "anisɔgɔ ma": "Bonjour, ",
+    "inisogoma": "Bonjour, ", "inisogo ma": "Bonjour, ",
+    "anisogoma": "Bonjour, ", "anisogo ma": "Bonjour, ",
+    "inice": "Bonjour, ", "anice": "Bonjour, ",
+    "iniwula": "Bonsoir, ", "ini wula": "Bonsoir, ",
+    "inisu": "Bonne nuit, ", "ini su": "Bonne nuit, ",
+    "inibaara": "Merci, ", "ini baara": "Merci, ",
+    # Avec espaces
+    "i ni sɔgɔma": "Bonjour, ", "a ni sɔgɔma": "Bonjour, ",
+    "i ni sogoma": "Bonjour, ", "a ni sogoma": "Bonjour, ",
+    "ani sɔgɔma": "Bonjour, ", "ani sogoma": "Bonjour, ",
+    "i ni ce": "Bonjour, ", "a ni ce": "Bonjour, ", "ani ce": "Bonjour, ",
+    "i ni wula": "Bonsoir, ", "a ni wula": "Bonsoir, ",
+    "i ni su": "Bonne nuit, ", "a ni su": "Bonne nuit, ",
+}
+
+
+def _split_bam_greeting(text: str) -> tuple[str, str]:
+    """Détecte et sépare une salutation bambara collée au début du texte ASR.
+    Retourne (salutation_fr, reste_du_texte).
+    Ex: 'inisɔgɔ ma ne bɛ fɛ ka malo sɛnɛ' -> ('Bonjour, ', 'ne bɛ fɛ ka malo sɛnɛ')
+    """
+    text_lower = text.lower().strip()
+    # Trier par longueur décroissante pour matcher le préfixe le plus long d'abord
+    for prefix in sorted(_BAM_GREETING_PREFIXES, key=len, reverse=True):
+        if text_lower.startswith(prefix):
+            rest = text_lower[len(prefix):].lstrip(" ,!.;:")
+            if rest:
+                fr_greeting = _BAM_GREETING_TO_FR.get(prefix, "Bonjour, ")
+                return fr_greeting, rest
+            else:
+                fr_greeting = _BAM_GREETING_TO_FR.get(prefix, "Bonjour")
+                return fr_greeting.rstrip(", "), ""
+    return "", text
+
+
+def translate_to_french(bambara_text: str) -> str:
+    """
+    Traduit du Bambara vers le Français.
+    1. Détecte les salutations collées par l'ASR (inisɔgɔma -> Bonjour)
+    2. Délègue au TranslationService (dictionnaire 11k+ mots + NLLB fallback)
+    """
+    if not bambara_text or not bambara_text.strip():
         return bambara_text
 
-    tokenizer.src_lang = "bam_Latn"
+    # Détecter et séparer une salutation collée par l'ASR
+    greeting_fr, remaining = _split_bam_greeting(bambara_text)
 
-    inputs = tokenizer(
-        bambara_text,
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        max_length=512
-    )
+    from app.services.translation import get_translation_service
+    service = get_translation_service()
 
-    forced_bos_token_id = tokenizer.convert_tokens_to_ids("fra_Latn")
+    if remaining:
+        result = service.translate_to_french(remaining)
+    else:
+        # Texte = juste une salutation
+        return greeting_fr if greeting_fr else bambara_text
 
-    with torch.no_grad():
-        generated_tokens = model.generate(
-            **inputs,
-            forced_bos_token_id=forced_bos_token_id,
-            max_length=512
-        )
+    # Capitaliser la première lettre
+    if result and result[0].islower():
+        result = result[0].upper() + result[1:]
 
-    result = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
+    # Préfixer avec la salutation française
+    if greeting_fr:
+        result = f"{greeting_fr}{result}"
+
     return result
 
 
@@ -588,10 +624,19 @@ async def synthesize_bambara(french_text: str) -> tuple[str | None, str | None]:
 
 def check_models_status() -> dict:
     """Vérifie le statut des modèles Hugging Face"""
+    translator_loaded = False
+    try:
+        from app.services.translation import get_translation_service
+        service = get_translation_service()
+        stats = service.get_stats()
+        translator_loaded = stats["dictionnaire"]["total_mots"] > 0
+    except Exception:
+        pass
+
     return {
         "torch_available": TORCH_AVAILABLE,
         "tts_loaded": _tts_model is not None,
-        "translator_loaded": _translator_model is not None,
+        "translator_loaded": translator_loaded,
         "tts_model": settings.hf_tts_model,
         "translator_model": settings.hf_translator_model
     }

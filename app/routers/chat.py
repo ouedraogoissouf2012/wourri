@@ -30,12 +30,14 @@ async def chat(request: ChatRequest):
         # Récupérer la météo pour le contexte (peut échouer si pas de connexion)
         weather_data = await get_weather(request.city)
 
-        # Obtenir la réponse de DeepSeek (toujours en français d'abord)
+        # Obtenir la réponse de DeepSeek
+        # En mode DIOULA/BOTH: prompt simplifié pour que NLLB traduise mieux
+        deepseek_lang = request.language if request.language in (Language.DIOULA, Language.BOTH) else Language.FRENCH
         response_text = await chat_with_deepseek(
             message=request.message,
             weather_data=weather_data,
-            language=Language.FRENCH,  # Réponse de base toujours en français
-            user_id=request.user_id  # Pour l'historique de conversation
+            language=deepseek_lang,
+            user_id=request.user_id
         )
 
         audio_url = None

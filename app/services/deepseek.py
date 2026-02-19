@@ -34,16 +34,24 @@ Données météo actuelles pour {weather_data['city']}:
 """
 
     # Instructions selon la langue
-    if language == Language.DIOULA:
+    if language in (Language.DIOULA, Language.BOTH):
         language_instruction = """
-LANGUE: Réponds en FRANÇAIS TRÈS SIMPLE car le texte sera traduit en Bambara.
-RÈGLES IMPORTANTES:
-1. Phrases COURTES (max 10 mots par phrase)
-2. Vocabulaire SIMPLE (pas de mots compliqués)
-3. Pas de métaphores ou expressions idiomatiques
-4. Structure simple: Sujet + Verbe + Complément
-5. Pas de markdown (pas de **, *, #, etc.)
-6. Parle comme à un enfant de 10 ans
+LANGUE: Réponds en FRANÇAIS EXTRÊMEMENT SIMPLE car le texte sera traduit en Bambara par une machine.
+La machine de traduction est LIMITÉE. Si tu utilises des mots compliqués, la traduction sera MAUVAISE.
+
+RÈGLES OBLIGATOIRES (très important!):
+1. Maximum 2-3 phrases courtes dans ta réponse ENTIÈRE
+2. Chaque phrase: maximum 6-8 mots
+3. UNIQUEMENT ces mots simples: cultiver, planter, semer, arroser, récolter, champ, terre, sol, eau, pluie, soleil, riz, maïs, mil, arachide, manioc, bon, mauvais, chaud, froid, sec, il faut, tu peux, il y a
+4. PAS de: assurez-vous, régulièrement, surveillez, humidité, préparez, espacer, fertile, labouré
+5. Structure: Sujet + Verbe + Complément. Rien d'autre.
+6. Pas de markdown, pas de listes, pas de numéros
+
+EXEMPLE BON: "Bonjour ! Il fait chaud. Arrose ton champ le matin. Le maïs va bien pousser."
+EXEMPLE MAUVAIS: "Assurez-vous que le sol est bien labouré et fertile. Semez les graines en espaçant les lignes."
+
+7. Si l'utilisateur te salue, commence TOUJOURS par "Bonjour !" puis donne ton conseil.
+8. PAS de "Excellent choix", "Bien sûr", "C'est une bonne idée" — va DROIT au conseil.
 """
     else:
         language_instruction = """
@@ -65,9 +73,9 @@ CONTEXTE:
 {weather_context}
 
 IMPORTANT:
-- Sois concis (max 3-4 phrases)
+- Sois TRÈS concis (max 2-3 phrases courtes)
 - Donne des conseils pratiques et actionnables
-- Mentionne toujours la ville quand tu parles de météo
+- Mentionne la ville quand tu parles de météo
 """
 
     url = f"{settings.deepseek_base_url}/chat/completions"
@@ -89,12 +97,20 @@ IMPORTANT:
     # Ajouter le message actuel
     messages.append({"role": "user", "content": message})
 
+    # En mode dioula/both, réponses plus courtes et plus prévisibles
+    if language in (Language.DIOULA, Language.BOTH):
+        max_tok = 80   # 2-3 phrases simples max
+        temp = 0.3     # Plus prévisible
+    else:
+        max_tok = 200
+        temp = 0.5
+
     payload = {
         "model": settings.deepseek_model,
         "messages": messages,
-        "temperature": 0.5,  # Réduit pour réponses plus précises
-        "max_tokens": 200,   # Réduit de 500 à 200 (réponses courtes suffisent)
-        "top_p": 0.9         # Meilleur débit
+        "temperature": temp,
+        "max_tokens": max_tok,
+        "top_p": 0.9
     }
 
     try:
