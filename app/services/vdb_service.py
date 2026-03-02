@@ -127,7 +127,7 @@ def chercher_reponse_ivr(intent: str, cultures: list[str], conditions: list[str]
     # Construire les filtres de culture possibles
     culture_filters = cultures + ["*"]
 
-    # Essai 1 : intent exact + culture exacte
+    # Essai 1 : intent exact + culture exacte ($eq, compatible chromadb 1.5+)
     for culture in cultures:
         try:
             results = collection.query(
@@ -135,7 +135,7 @@ def chercher_reponse_ivr(intent: str, cultures: list[str], conditions: list[str]
                 n_results=3,
                 where={"$and": [
                     {"intent": {"$eq": intent}},
-                    {"cultures": {"$contains": culture}}
+                    {"cultures": {"$eq": culture}}
                 ]}
             )
             entry = _best_result(results, conditions)
@@ -152,7 +152,7 @@ def chercher_reponse_ivr(intent: str, cultures: list[str], conditions: list[str]
             n_results=3,
             where={"$and": [
                 {"intent": {"$eq": intent}},
-                {"cultures": {"$contains": "*"}}
+                {"cultures": {"$eq": "*"}}
             ]}
         )
         entry = _best_result(results, conditions)
