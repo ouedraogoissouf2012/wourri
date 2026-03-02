@@ -1,15 +1,178 @@
 """
 WOURI - Router Chat
 Support Bambara/Dioula uniquement (seule langue avec traduction complète)
+NLU: si le message contient du bambara (transcription ASR), le NLU reconstruit
+     une phrase française claire avant d'envoyer à DeepSeek.
 """
 from fastapi import APIRouter
 from app.services.deepseek import chat_with_deepseek
 from app.services.weather import get_weather
 from app.services.tts_french import synthesize_french
-from app.services.tts_bambara import synthesize_bambara, translate_to_bambara, TORCH_AVAILABLE
+from app.services.tts_bambara import translate_to_bambara, TORCH_AVAILABLE
+from app.services.tts_dioula import synthesize_dioula
 from app.models.schemas import ChatRequest, ChatResponse, Language
+from app.data.cities import IVORIAN_CITIES
+from app.config import get_settings
+
+settings = get_settings()
 
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
+
+
+def _apply_nlu_preprocessing(message: str, bambara_text: str | None = None) -> tuple[str, str | None, dict]:
+    """Applique le NLU si le message semble être du bambara ou si bambara_text est fourni.
+
+    Retourne (message_final_pour_deepseek, intent_nlu_ou_None, concepts_dict).
+    - Si bambara_text fourni → NLU sur bambara_text, french_sentence remplace le message
+    - Si message contient des caractères bambara → NLU sur le message lui-même
+    - Sinon → message inchangé
+    """
+    bambara_text_to_analyze = bambara_text or ""
+
+    # Détecter si le message lui-même est en bambara (présence de ɛ, ɔ, ŋ, ɲ)
+    bambara_chars = set("ɛɔŋɲɛ̀ɛ́ɔ̀ɔ́")
+    if not bambara_text_to_analyze and any(c in message for c in bambara_chars):
+        bambara_text_to_analyze = message
+
+    if not bambara_text_to_analyze:
+        return message, None, {}
+
+    try:
+        from app.services.nlu import get_nlu_service
+        nlu = get_nlu_service()
+        if nlu is None:
+            return message, None, {}
+
+        result = nlu.process(bambara_text_to_analyze)
+
+        # Hors sujet agricole → retourner le message hors-sujet directement
+        if result.is_out_of_scope:
+            print(f"[Chat NLU] Hors sujet détecté pour: '{bambara_text_to_analyze[:50]}'")
+            return result.out_of_scope_message_fr or message, "HORS_SUJET", {}
+
+        concepts = result.concepts or {}
+
+        # Phrase reconstruite disponible → enrichir avec contexte culture/animal
+        if result.french_sentence:
+            enriched = _enrich_message_for_deepseek(result.french_sentence, concepts)
+            print(f"[Chat NLU] Phrase reconstruite: '{result.french_sentence}'")
+            return enriched, result.intent, concepts
+
+        return message, result.intent if result.intent else None, concepts
+
+    except Exception as e:
+        print(f"[Chat NLU] Erreur: {e}")
+        return message, None, {}
+
+
+# Labels lisibles pour les cultures et animaux (pour le contexte DeepSeek)
+_CULTURE_LABELS = {
+    "CULTURE_RIZ": "riz", "CULTURE_MAIS": "maïs", "CULTURE_MIL": "mil",
+    "CULTURE_ARACHIDE": "arachide", "CULTURE_IGNAME": "igname", "CULTURE_MANIOC": "manioc",
+    "CULTURE_HARICOT": "haricot", "CULTURE_COTON": "coton", "CULTURE_SESAME": "sésame",
+    "CULTURE_BANANE": "banane", "CULTURE_TOMATE": "tomate", "CULTURE_OIGNON": "oignon",
+    "CULTURE_PATATE": "patate douce", "CULTURE_GOMBO": "gombo", "CULTURE_CACAO": "cacao",
+    "CULTURE_CAFE": "café", "CULTURE_ANANAS": "ananas",
+}
+_ANIMAL_LABELS = {
+    "ANIMAL_POULET": "poulets", "ANIMAL_BOVIN": "bovins", "ANIMAL_OVIN": "moutons",
+    "ANIMAL_CAPRIN": "chèvres", "ANIMAL_PORC": "porcs", "ANIMAL_POISSON": "poissons",
+}
+
+
+def _enrich_message_for_deepseek(french_sentence: str, concepts: dict) -> str:
+    """Ajoute un préfixe de contexte paysan pour guider DeepSeek vers une réponse complète.
+
+    Exemple: "[Paysan cultive: riz] Bonjour, je cherche des conseils..."
+    → DeepSeek comprend qu'il faut couvrir timing + sol + action immédiate.
+    """
+    culture = next((_CULTURE_LABELS[k] for k in concepts if k in _CULTURE_LABELS), None)
+    animal = next((_ANIMAL_LABELS[k] for k in concepts if k in _ANIMAL_LABELS), None)
+
+    sujet = culture or animal
+    if sujet:
+        prefix = f"[Paysan cultive: {sujet}] "
+        print(f"[Chat NLU] Contexte ajouté: {prefix.strip()}")
+        return prefix + french_sentence
+
+    return french_sentence
+
+
+def _chercher_ivr(intent: str, concepts: dict) -> str | None:
+    """
+    Cherche une réponse bambara pré-validée dans la BD vectorielle IVR.
+    Retourne la réponse bambara si trouvée, None sinon (fallback traduction).
+    """
+    try:
+        from app.services.vdb_service import chercher_reponse_ivr
+
+        cultures = [k for k in concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
+        conditions = [k for k in concepts if k.startswith("PROBLEME_") or k.startswith("TEMPS_")]
+
+        if not intent:
+            return None
+
+        result = chercher_reponse_ivr(
+            intent=intent,
+            cultures=cultures if cultures else ["*"],
+            conditions=conditions,
+        )
+
+        if result:
+            score = result.get("score_validation", 0.0)
+            print(f"[VDB] Réponse trouvée: {result['id']} (score={score:.2f})")
+            return result["reponse_bambara"]
+
+    except Exception as e:
+        print(f"[VDB] Erreur recherche IVR: {e}")
+
+    return None
+
+
+async def _translate_to_bambara_enhanced(french_text: str) -> str:
+    """Traduit FR→Bambara en essayant DeepSeek+ancres, puis NLLB en fallback."""
+    try:
+        from app.services.translation.deepseek_translator import translate_fr_to_bambara_with_validation
+        from app.services.translation import get_translation_service
+
+        svc = get_translation_service()
+        fr_bam_index = svc.get_repository().get_all_words(
+            __import__('app.services.translation.interfaces', fromlist=['Direction']).Direction.FR_TO_BAM
+        )
+
+        bambara, confidence, method = await translate_fr_to_bambara_with_validation(
+            french_text=french_text,
+            deepseek_api_key=settings.deepseek_api_key,
+            deepseek_base_url=settings.deepseek_base_url,
+            deepseek_model=settings.deepseek_model,
+            fr_to_bam_index=fr_bam_index,
+        )
+
+        if confidence > 0.6:
+            print(f"[Chat Trad] Méthode: {method}, conf={confidence:.2f}")
+            return bambara
+        else:
+            print(f"[Chat Trad] Confiance insuffisante ({confidence:.2f} < 0.6) → fallback NLLB")
+
+    except Exception as e:
+        print(f"[Chat Trad] DeepSeek translation erreur: {e}")
+
+    # Fallback NLLB (chemin existant)
+    return translate_to_bambara(french_text)
+
+
+def detect_city_in_message(message: str) -> str | None:
+    """Détecte si le message mentionne une ville ivoirienne.
+    Retourne le nom exact de la ville ou None.
+    La ville configurée est le défaut, mais si l'utilisateur
+    mentionne une autre ville, on utilise celle-là.
+    """
+    msg_lower = message.lower()
+    # Trier par longueur décroissante pour matcher "San-Pedro" avant "Man"
+    for city_name in sorted(IVORIAN_CITIES.keys(), key=len, reverse=True):
+        if city_name.lower() in msg_lower:
+            return city_name
+    return None
 
 
 @router.post("/", response_model=ChatResponse)
@@ -27,46 +190,99 @@ async def chat(request: ChatRequest):
     - Bambara/Dioula: Texte + Audio (traduction via NLLB-200)
     """
     try:
-        # Récupérer la météo pour le contexte (peut échouer si pas de connexion)
-        weather_data = await get_weather(request.city)
+        # Détecter si le message mentionne une ville différente de celle configurée
+        mentioned_city = detect_city_in_message(request.message)
+        city = mentioned_city if mentioned_city else request.city
+        if mentioned_city and mentioned_city.lower() != request.city.lower():
+            print(f"[Chat] Ville détectée dans le message: {mentioned_city} (défaut: {request.city})")
 
-        # Obtenir la réponse de DeepSeek
-        # En mode DIOULA/BOTH: prompt simplifié pour que NLLB traduise mieux
-        deepseek_lang = request.language if request.language in (Language.DIOULA, Language.BOTH) else Language.FRENCH
-        response_text = await chat_with_deepseek(
-            message=request.message,
-            weather_data=weather_data,
-            language=deepseek_lang,
-            user_id=request.user_id
-        )
+        # NLU: si bambara_text fourni (depuis ASR), reconstruire une phrase claire
+        # Le NLU peut aussi détecter les messages hors-sujet et répondre directement
+        message_for_deepseek = request.message
+        nlu_intent = None
+        nlu_concepts = {}
+
+        if request.language in (Language.DIOULA, Language.BOTH):
+            message_for_deepseek, nlu_intent, nlu_concepts = _apply_nlu_preprocessing(
+                message=request.message,
+                bambara_text=request.bambara_text
+            )
+            # Si hors sujet, répondre directement sans appeler DeepSeek
+            if nlu_intent == "HORS_SUJET":
+                from app.services.vdb_service import get_reponse_fallback
+                bambara_hors_sujet = get_reponse_fallback()
+                return ChatResponse(
+                    response=message_for_deepseek,
+                    response_dioula=bambara_hors_sujet,
+                    response_local=None,
+                    audio_url=None,
+                    city=city,
+                    language=request.language.value,
+                    audio_language=None
+                )
 
         audio_url = None
         response_dioula = None
         audio_language_name = None
 
+        # CHEMIN PRINCIPAL IVR : chercher réponse bambara pré-validée dans la VDB
+        # (évite DeepSeek + traduction pour les cas couverts par le corpus)
+        if request.language in (Language.DIOULA, Language.BOTH) and nlu_intent:
+            ivr_bambara = _chercher_ivr(intent=nlu_intent, concepts=nlu_concepts)
+            if ivr_bambara:
+                print(f"[Chat IVR] Réponse corpus trouvée — chemin direct bambara (intent={nlu_intent})")
+                if request.include_audio:
+                    from app.services.tts_dioula import synthesize_dioula_text
+                    audio_url = synthesize_dioula_text(ivr_bambara)
+                    audio_language_name = "Dioula"
+                return ChatResponse(
+                    response=ivr_bambara,
+                    response_dioula=ivr_bambara,
+                    response_local=None,
+                    audio_url=audio_url,
+                    city=city,
+                    language=request.language.value,
+                    audio_language=audio_language_name
+                )
+
+        # CHEMIN FALLBACK : VDB n'a pas trouvé → DeepSeek + traduction
+        print(f"[Chat IVR] Hors corpus (intent={nlu_intent}) → fallback DeepSeek+traduction")
+
+        # Récupérer la météo pour le contexte (peut échouer si pas de connexion)
+        weather_data = await get_weather(city)
+
+        # Obtenir la réponse de DeepSeek
+        deepseek_lang = request.language if request.language in (Language.DIOULA, Language.BOTH) else Language.FRENCH
+        response_text = await chat_with_deepseek(
+            message=message_for_deepseek,
+            weather_data=weather_data,
+            language=deepseek_lang,
+            user_id=request.user_id
+        )
+
         # Mode BOTH: Français + Dioula
         if request.language == Language.BOTH:
-            # Traduire vers Bambara/Dioula ET générer l'audio en une seule passe
-            # (synthesize_bambara fait déjà la traduction)
             if request.include_audio:
-                audio_url, bambara_text = await synthesize_bambara(response_text)
-                if bambara_text:
-                    response_dioula = bambara_text
-                audio_language_name = "Bambara/Dioula"
+                enhanced_bambara = await _translate_to_bambara_enhanced(response_text)
+                from app.services.tts_dioula import synthesize_dioula_text
+                audio_url = synthesize_dioula_text(enhanced_bambara)
+                if enhanced_bambara:
+                    response_dioula = enhanced_bambara
+                audio_language_name = "Dioula"
             elif TORCH_AVAILABLE:
-                # Si pas d'audio, juste traduire
                 response_dioula = translate_to_bambara(response_text)
 
         # Mode DIOULA uniquement
         elif request.language == Language.DIOULA:
             if request.include_audio:
-                audio_url, bambara_text = await synthesize_bambara(response_text)
-                if bambara_text:
-                    response_dioula = bambara_text
-                    response_text = bambara_text  # Remplacer le texte principal
-                audio_language_name = "Bambara/Dioula"
+                enhanced_bambara = await _translate_to_bambara_enhanced(response_text)
+                from app.services.tts_dioula import synthesize_dioula_text
+                audio_url = synthesize_dioula_text(enhanced_bambara)
+                if enhanced_bambara:
+                    response_dioula = enhanced_bambara
+                    response_text = enhanced_bambara
+                audio_language_name = "Dioula"
             else:
-                # Juste traduire sans audio
                 if TORCH_AVAILABLE:
                     bambara_text = translate_to_bambara(response_text)
                     if bambara_text:
@@ -84,7 +300,7 @@ async def chat(request: ChatRequest):
             response_dioula=response_dioula,
             response_local=None,
             audio_url=audio_url,
-            city=request.city,
+            city=city,
             language=request.language.value,
             audio_language=audio_language_name
         )

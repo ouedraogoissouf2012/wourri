@@ -31,38 +31,76 @@ async def lifespan(app: FastAPI):
     print(f"Villes disponibles: {len(get_all_cities())}")
     print("=" * 50)
 
-    # Précharger les modèles pour des réponses plus rapides
-    print("\n[PRELOAD] Chargement des modèles en arrière-plan...")
-
-    # 1. Précharger Faster-Whisper (STT)
+    # 0. Précharger le service NLU (JSON seulement, très rapide ~10ms)
     try:
-        from app.services.stt_whisper import get_whisper_model
-        print("[PRELOAD] Chargement de Faster-Whisper (large-v3-turbo)...")
-        get_whisper_model()
-        print("[PRELOAD] Faster-Whisper: OK")
+        from app.services.nlu import get_nlu_service
+        print("[PRELOAD] Chargement NLU (lexique concepts bambara)...")
+        nlu = get_nlu_service()
+        if nlu:
+            stats = nlu.get_stats()
+            print(f"[PRELOAD] NLU: OK ({stats['total_concepts']} concepts, {stats['total_keywords']} mots-clés)")
+        else:
+            print("[PRELOAD] NLU: désactivé (fichier nlu_concepts.json non trouvé)")
     except Exception as e:
-        print(f"[PRELOAD] Whisper: ERREUR - {e}")
+        print(f"[PRELOAD] NLU: ERREUR - {e}")
+
+    # 1. Précharger ASR NeMo Soloni (decodeur TDT complet, bambara)
+    try:
+        from app.services.asr_soloni_nemo import get_nemo_model
+        print("[PRELOAD] Chargement ASR NeMo Soloni (TDT, bambara)...")
+        get_nemo_model()
+        print("[PRELOAD] ASR NeMo Soloni: OK")
+    except Exception as e:
+        print(f"[PRELOAD] ASR NeMo Soloni: ERREUR - {e}")
 
     # 2. Précharger le TranslationService (dictionnaire + NLLB)
     try:
         from app.services.translation import get_translation_service
-        print("[PRELOAD] Chargement du TranslationService (dictionnaire + NLLB)...")
+        print("[PRELOAD] Chargement du TranslationService (dictionnaire)...")
         service = get_translation_service()
         stats = service.get_stats()
-        print(f"[PRELOAD] TranslationService: OK ({stats['dictionnaire']['total_mots']} mots)")
+        print(f"[PRELOAD] Dictionnaire: OK ({stats['dictionnaire']['total_mots']} mots)")
+        print("[PRELOAD] Chargement de NLLB-200 (traduction FR<->BAM)...")
+        service.preload_nllb()
     except Exception as e:
         print(f"[PRELOAD] TranslationService: ERREUR - {e}")
 
     # 3. Précharger TTS Bambara
     try:
         from app.services.tts_bambara import get_tts_model
-        print("[PRELOAD] Chargement de TTS Bambara...")
+        print("[PRELOAD] Chargement du TTS Bambara (mms-tts-bam)...")
         get_tts_model()
         print("[PRELOAD] TTS Bambara: OK")
     except Exception as e:
         print(f"[PRELOAD] TTS Bambara: ERREUR - {e}")
 
-    print("\n[PRELOAD] Tous les modèles sont chargés!")
+    # 3b. Précharger TTS Dioula (voix ivoirienne pour utilisateurs en mode dioula)
+    try:
+        from app.services.tts_dioula import get_tts_model_dioula
+        print("[PRELOAD] Chargement du TTS Dioula (mms-tts-dyu)...")
+        get_tts_model_dioula()
+        print("[PRELOAD] TTS Dioula: OK")
+    except Exception as e:
+        print(f"[PRELOAD] TTS Dioula: ERREUR - {e}")
+
+    # 4. Précharger Whisper (STT français)
+    try:
+        from app.services.stt_whisper import get_whisper_model
+        print("[PRELOAD] Chargement de Faster-Whisper (large-v3-turbo)...")
+        get_whisper_model()
+        print("[PRELOAD] Whisper: OK")
+    except Exception as e:
+        print(f"[PRELOAD] Whisper: ERREUR - {e}")
+
+    # 5. Pré-initialiser la BD vectorielle IVR (Chroma + corpus bambara)
+    try:
+        from app.services.vdb_service import initialiser_vdb
+        print("[PRELOAD] Initialisation BD vectorielle IVR (corpus bambara pré-validé)...")
+        initialiser_vdb()
+    except Exception as e:
+        print(f"[PRELOAD] BD vectorielle IVR: ERREUR - {e}")
+
+    print("\n[PRELOAD] Tous les modeles charges!")
     print("=" * 50)
 
     yield

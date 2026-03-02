@@ -1,0 +1,545 @@
+{
+  "version": "1.0",
+  "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
+  "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
+
+  "concepts": {
+
+    "SALUTATION": {
+      "label_fr": "salutation",
+      "keywords": [
+        "i ni ce", "i ni sɔgɔma", "i ni sogoma", "an ni sɔgɔma", "an ni sogoma",
+        "i ni wula", "i ni tile", "i ni su", "a ni ce", "a ni sogoma", "a ni sɔgɔma",
+        "ni ce", "ni sogoma", "ni wula", "bisimila", "bismila",
+        "bonjour", "bonsoir", "salut", "hello",
+        "anisogma", "anisogoma", "ansogma", "anisɔgɔma",
+        "inisogma", "inisogoma", "insogma", "inisɔgɔma",
+        "annisogma", "annisogoma",
+        "inice", "inicɛ", "anice", "anicɛ",
+        "iniwula", "inwula", "initile", "inisu"
+      ],
+      "note": "Variantes fusionnées NeMo TDT ajoutées — filet de sécurité si normalizer manque un cas"
+    },
+
+    "CULTURE_RIZ": {
+      "label_fr": "riz",
+      "keywords": [
+        "malo", "maloforo", "malon", "mallo", "maloba", "riz", "riziere", "rizière",
+        "ma lo", "rice"
+      ],
+      "partial": ["malo"]
+    },
+
+    "CULTURE_MAIS": {
+      "label_fr": "maïs",
+      "keywords": [
+        "kaba", "kabaforo", "kabajiri", "kaban", "kabe", "kabaforo-la",
+        "maïs", "mais", "corn", "maize"
+      ],
+      "partial": ["kaba"]
+    },
+
+    "CULTURE_MIL": {
+      "label_fr": "mil",
+      "keywords": [
+        "woso", "sunu", "sunn", "jɔni", "joni", "fonio", "gros mil", "petit mil",
+        "sorgho", "mil"
+      ]
+    },
+
+    "CULTURE_ARACHIDE": {
+      "label_fr": "arachide",
+      "keywords": [
+        "tiga", "tigaforo", "tigajiri", "tigafini", "tigan",
+        "arachide", "cacahuete", "cacahuète", "groundnut", "peanut"
+      ],
+      "partial": ["tiga"]
+    },
+
+    "CULTURE_IGNAME": {
+      "label_fr": "igname",
+      "keywords": [
+        "jaba", "jabaforo", "jabajiri", "yam",
+        "igname", "ignames"
+      ],
+      "partial": ["jaba"]
+    },
+
+    "CULTURE_MANIOC": {
+      "label_fr": "manioc",
+      "keywords": [
+        "barikama", "maniyoki", "maniyoke", "kasava",
+        "manioc", "cassava"
+      ]
+    },
+
+    "CULTURE_HARICOT": {
+      "label_fr": "haricot",
+      "keywords": [
+        "kɔrɔ", "koro", "niebe", "niébé", "senegale", "mugu",
+        "haricot", "haricots", "niebe", "cowpea"
+      ]
+    },
+
+    "CULTURE_COTON": {
+      "label_fr": "coton",
+      "keywords": [
+        "fini", "finiforo", "finin",
+        "coton", "cotton"
+      ]
+    },
+
+    "CULTURE_SESAME": {
+      "label_fr": "sésame",
+      "keywords": [
+        "bene", "bɛnɛ", "beni",
+        "sesame", "sésame"
+      ]
+    },
+
+    "CULTURE_BANANE": {
+      "label_fr": "banane",
+      "keywords": [
+        "banan", "banana", "namasa",
+        "banane", "bananes", "plantain"
+      ]
+    },
+
+    "CULTURE_TOMATE": {
+      "label_fr": "tomate",
+      "keywords": [
+        "tamati", "tòmàtì", "tomati", "tomato",
+        "tomate", "tomates"
+      ]
+    },
+
+    "CULTURE_OIGNON": {
+      "label_fr": "oignon",
+      "keywords": [
+        "albasa", "alba", "albasso",
+        "oignon", "oignons", "gnimajiri"
+      ]
+    },
+
+    "CULTURE_PATATE": {
+      "label_fr": "patate douce",
+      "keywords": [
+        "jège", "jege", "jɛgɛ", "jeege",
+        "patate", "patate douce", "sweet potato"
+      ]
+    },
+
+    "CULTURE_GOMBO": {
+      "label_fr": "gombo",
+      "keywords": [
+        "ñimajiri", "nakono", "nkono", "nkombo",
+        "gombo", "okra"
+      ]
+    },
+
+    "CULTURE_CACAO": {
+      "label_fr": "cacao",
+      "keywords": [
+        "kakao", "kaka", "cacaoforo",
+        "cacao", "cacaoyer", "chocolat"
+      ]
+    },
+
+    "CULTURE_CAFE": {
+      "label_fr": "café",
+      "keywords": [
+        "kafe", "kafeforo",
+        "café", "cafe", "caféier"
+      ]
+    },
+
+    "CULTURE_ANANAS": {
+      "label_fr": "ananas",
+      "keywords": [
+        "anana", "pinapi",
+        "ananas", "pineapple"
+      ]
+    },
+
+    "ANIMAL_POULET": {
+      "label_fr": "poulets",
+      "keywords": [
+        "dɔnkili", "donkili", "sinkolo", "kolokolo", "wolo",
+        "poulet", "poule", "volaille", "poulets", "poules", "poussin"
+      ]
+    },
+
+    "ANIMAL_BOVIN": {
+      "label_fr": "bovins",
+      "keywords": [
+        "nɔmɔ", "nomo", "fali", "wari",
+        "boeuf", "vache", "bovin", "bovins", "taurin", "zebu", "zébu"
+      ]
+    },
+
+    "ANIMAL_OVIN": {
+      "label_fr": "moutons",
+      "keywords": [
+        "saga",
+        "mouton", "moutons", "ovin", "brebis"
+      ]
+    },
+
+    "ANIMAL_CAPRIN": {
+      "label_fr": "chèvres",
+      "keywords": [
+        "bɛɛn", "been", "dyèrè",
+        "chèvre", "chèvres", "chevre", "cabri"
+      ]
+    },
+
+    "ANIMAL_PORC": {
+      "label_fr": "porcs",
+      "keywords": [
+        "farinfin", "ngulu", "woro", "bolofin",
+        "porc", "cochon", "porcin", "truie"
+      ],
+      "note": "farin retiré car homographe (= courageux/fort en bambara) → trop de faux positifs"
+    },
+
+    "ANIMAL_POISSON": {
+      "label_fr": "poissons",
+      "keywords": [
+        "jɛgɛ ji", "jege ji", "pisciculture",
+        "poisson", "tilapia", "silure", "catfish", "aquaculture"
+      ],
+      "note": "jɛgɛ seul évité car homonymie avec patate douce en certains dialectes"
+    },
+
+    "ACTION_PLANTER": {
+      "label_fr": "planter",
+      "keywords": [
+        "sɛnɛ", "sene", "sɛnɛli", "seneli", "jɔ", "jo", "sɔ", "so",
+        "planter", "semer", "semis", "plantation", "plante", "cultiver"
+      ],
+      "partial": ["sɛnɛ", "sene"]
+    },
+
+    "ACTION_RECOLTER": {
+      "label_fr": "récolter",
+      "keywords": [
+        "lajɛ", "laje", "cɛli", "bɔli", "boli",
+        "récolter", "recolter", "récolte", "recolte", "cueillir", "moisson", "moissonner"
+      ]
+    },
+
+    "ACTION_ARROSER": {
+      "label_fr": "arroser",
+      "keywords": [
+        "ji boli", "ji bo", "ji don", "jidon", "ji mɛn", "ji taa",
+        "arroser", "irrigation", "irriguer", "arrosage"
+      ]
+    },
+
+    "ACTION_LABOURER": {
+      "label_fr": "labourer",
+      "keywords": [
+        "duguma cɛ", "foro cɛ", "foro labɛn", "foro laben", "daba",
+        "labourer", "labour", "bêcher", "préparer le champ", "preparer champ"
+      ]
+    },
+
+    "ACTION_TRAITER": {
+      "label_fr": "traiter",
+      "keywords": [
+        "furakɛ", "furake", "furaw", "dɔgɔtɔrɔya",
+        "traiter", "traitement", "soigner", "pulvériser", "pesticide", "fongicide", "herbicide"
+      ]
+    },
+
+    "ACTION_VENDRE": {
+      "label_fr": "vendre",
+      "keywords": [
+        "faran", "farali", "sɔrɔ wari",
+        "vendre", "vente", "marché", "prix", "commercialiser"
+      ]
+    },
+
+    "ACTION_CHERCHER_CONSEIL": {
+      "label_fr": "chercher conseil",
+      "keywords": [
+        "ladili", "dɛmɛ", "deme", "kalan", "ɲinini", "ninini",
+        "conseil", "conseils", "aide", "aider", "apprendre", "savoir",
+        "b'a fɛ conseil", "ba fe conseil", "conseil sɔrɔ", "conseil soro",
+        "information", "informer", "recommandation",
+        "mun sɛnɛ", "mun sene", "mun bɛ se ka sɛnɛ", "mun be se ka sene",
+        "mun kaba", "mun malo", "mun foro", "ko mun",
+        "quoi planter", "quelle culture", "quel crop"
+      ]
+    },
+
+    "ACTION_STOCKER": {
+      "label_fr": "stocker",
+      "keywords": [
+        "bɔ don", "kɛnɛ labɛn",
+        "stocker", "stockage", "conserver", "conservation", "grenier", "silo"
+      ]
+    },
+
+    "PROBLEME_MALADIE": {
+      "label_fr": "maladie",
+      "keywords": [
+        "bana", "baan", "dimi", "dimi-dimi", "bana ye",
+        "maladie", "malade", "infection", "symptôme", "symptome", "feuilles jaunes",
+        "pourriture", "flétrissement", "fletrissement", "fusariose"
+      ],
+      "partial": ["bana"]
+    },
+
+    "PROBLEME_INSECTE": {
+      "label_fr": "ravageurs",
+      "keywords": [
+        "kulun", "kɔlɔn-jɛ", "kolon je", "sasagwan", "gwan", "wusulan",
+        "insecte", "ravageur", "chenille", "ver", "sauterelle", "puceron",
+        "charançon", "criquet", "termite", "cochenille"
+      ]
+    },
+
+    "PROBLEME_SECHERESSE": {
+      "label_fr": "sécheresse",
+      "keywords": [
+        "ji tɛ", "ji te", "jiɲɛ", "jine", "kɔfɛ dɔɔni",
+        "sécheresse", "secheresse", "manque eau", "manque d'eau", "sol sec"
+      ]
+    },
+
+    "PROBLEME_INONDATION": {
+      "label_fr": "inondation",
+      "keywords": [
+        "ji caman", "sanji caman", "dɔn ji",
+        "inondation", "inondé", "trop d'eau", "excès eau", "noyé"
+      ]
+    },
+
+    "PROBLEME_MAUVAISE_HERBE": {
+      "label_fr": "mauvaises herbes",
+      "keywords": [
+        "kɔlɔn", "kolon", "kɔlɔnkɔlɔn", "wusulan",
+        "mauvaise herbe", "adventice", "désherbage", "desherbage", "sarclage"
+      ]
+    },
+
+    "PROBLEME_SOL": {
+      "label_fr": "problème de sol",
+      "keywords": [
+        "duguma ɲɔgɔn tɛ", "duguma nɔgɔ",
+        "sol pauvre", "terre mauvaise", "fertilité", "appauvrissement", "érosion"
+      ]
+    },
+
+    "TEMPS_SAISON_PLUIE": {
+      "label_fr": "saison des pluies",
+      "keywords": [
+        "sanji", "sanjitɛ", "sanjite", "sanjitɛmana", "sanji waati", "sanji tuma",
+        "saison des pluies", "saison pluies", "hivernage", "pluie", "pluies"
+      ],
+      "partial": ["sanji"]
+    },
+
+    "TEMPS_SAISON_SECHE": {
+      "label_fr": "saison sèche",
+      "keywords": [
+        "tilema", "kɔfɛ", "kofe", "tilefɛ", "tilefe", "tile waati",
+        "saison sèche", "saison seche", "harmattan"
+      ]
+    },
+
+    "TEMPS_SAISON_GENERAL": {
+      "label_fr": "saison/période",
+      "keywords": [
+        "waati", "tuma", "waati di", "tuma di",
+        "saison", "période", "periode", "quand", "moment", "époque", "mois"
+      ]
+    },
+
+    "TEMPS_METEO": {
+      "label_fr": "météo",
+      "keywords": [
+        "tile", "foroko", "ɲɛgɛn", "nygegen", "tiɲɛ",
+        "météo", "meteo", "température", "temperature", "vent", "chaleur", "froid",
+        "nuage", "humidité", "humidite"
+      ]
+    },
+
+    "ROLE_PROPRIETAIRE": {
+      "label_fr": "propriétaire de champ",
+      "keywords": [
+        "tigi", "foro tigi", "kabaforo tigi", "maloforo tigi",
+        "kabaforo-la tigi", "maloforo-la tigi",
+        "propriétaire", "proprietaire", "j'ai un champ", "j'ai un champs", "mon champ"
+      ]
+    },
+
+    "ROLE_AGRICULTEUR": {
+      "label_fr": "agriculteur",
+      "keywords": [
+        "sɛnɛkɛla", "senekela", "cɛkɛla", "cekela", "forola",
+        "agriculteur", "cultivateur", "paysan", "fermier", "planteur"
+      ]
+    },
+
+    "ROLE_ELEVEUR": {
+      "label_fr": "éleveur",
+      "keywords": [
+        "wulofɛrɛ", "wuloferela",
+        "éleveur", "eleveur", "berger", "gardien de troupeau"
+      ]
+    },
+
+    "INTENSITE_FORT": {
+      "label_fr": "grande production / améliorer",
+      "keywords": [
+        "bɛɛ bɛ", "bee be", "caman", "caman-caman", "k'a kɛ ni bɛɛ bɛ", "ka ke ni bee be",
+        "grande production", "gros rendement", "améliorer", "ameliorer",
+        "augmenter", "maximiser", "beaucoup", "plus"
+      ]
+    },
+
+    "ENGRAIS_FERTILISANT": {
+      "label_fr": "engrais",
+      "keywords": [
+        "saraka", "furakɛ duguma", "dɔgɔw", "natiri",
+        "engrais", "fertilisant", "compost", "fumure", "NPK", "urée", "uree"
+      ]
+    }
+  },
+
+  "intents": [
+    {
+      "name": "CONSEIL_PRODUCTION",
+      "label_fr": "Demande de conseils pour améliorer la production",
+      "required_any": ["CULTURE_*"],
+      "optional": [
+        "ROLE_PROPRIETAIRE", "ROLE_AGRICULTEUR", "ACTION_CHERCHER_CONSEIL",
+        "INTENSITE_FORT", "SALUTATION"
+      ],
+      "priority": 3,
+      "description": "Déclenché quand une culture est mentionnée avec demande de conseils ou rôle de propriétaire"
+    },
+    {
+      "name": "QUESTION_SAISON_PLANTATION",
+      "label_fr": "Question sur la saison de plantation",
+      "required_any": ["CULTURE_*"],
+      "required_at_least_one_of": ["ACTION_PLANTER", "TEMPS_SAISON_PLUIE", "TEMPS_SAISON_SECHE", "TEMPS_SAISON_GENERAL"],
+      "optional": ["SALUTATION"],
+      "priority_boost_if": ["ACTION_PLANTER", "TEMPS_SAISON_GENERAL", "TEMPS_SAISON_PLUIE"],
+      "priority": 4,
+      "description": "Culture + signal explicite de plantation ou de saison (évite de déclencher sur simple mention d'une culture)"
+    },
+    {
+      "name": "DIAGNOSTIC_PROBLEME",
+      "label_fr": "Problème sur une culture ou un animal",
+      "required_any": ["CULTURE_*", "ANIMAL_*"],
+      "required_at_least_one_of": ["PROBLEME_MALADIE", "PROBLEME_INSECTE", "PROBLEME_SECHERESSE", "PROBLEME_INONDATION", "PROBLEME_MAUVAISE_HERBE", "PROBLEME_SOL"],
+      "optional": ["SALUTATION", "ACTION_TRAITER"],
+      "priority": 5,
+      "description": "Culture/animal + problème détecté → diagnostic"
+    },
+    {
+      "name": "QUESTION_RECOLTE",
+      "label_fr": "Question sur la récolte",
+      "required_any": ["CULTURE_*"],
+      "required_at_least_one_of": ["ACTION_RECOLTER"],
+      "optional": ["SALUTATION"],
+      "priority_boost_if": ["ACTION_RECOLTER"],
+      "priority": 4,
+      "description": "Culture + signal explicite de récolte (évite de déclencher sur simple mention d'une culture)"
+    },
+    {
+      "name": "QUESTION_IRRIGATION",
+      "label_fr": "Question sur l'irrigation",
+      "required_any": ["CULTURE_*"],
+      "required_at_least_one_of": ["ACTION_ARROSER", "PROBLEME_SECHERESSE"],
+      "optional": ["SALUTATION"],
+      "priority_boost_if": ["ACTION_ARROSER", "PROBLEME_SECHERESSE"],
+      "priority": 4,
+      "description": "Culture + signal explicite d'arrosage ou sécheresse (évite de déclencher sur simple mention d'une culture)"
+    },
+    {
+      "name": "QUESTION_ENGRAIS",
+      "label_fr": "Question sur les engrais / fertilisants",
+      "required_any": ["CULTURE_*"],
+      "required_at_least_one_of": ["ENGRAIS_FERTILISANT"],
+      "optional": ["SALUTATION"],
+      "priority_boost_if": ["ENGRAIS_FERTILISANT"],
+      "priority": 4,
+      "description": "Culture + signal explicite d'engrais/fertilisant (évite de déclencher sur simple mention d'une culture)"
+    },
+    {
+      "name": "QUESTION_STOCKAGE",
+      "label_fr": "Question sur le stockage / conservation",
+      "required_any": ["CULTURE_*"],
+      "required_at_least_one_of": ["ACTION_STOCKER"],
+      "optional": ["SALUTATION"],
+      "priority_boost_if": ["ACTION_STOCKER"],
+      "priority": 3,
+      "description": "Culture + signal explicite de stockage/conservation (évite de déclencher sur simple mention d'une culture)"
+    },
+    {
+      "name": "QUESTION_VENTE",
+      "label_fr": "Question sur la vente / commercialisation",
+      "required_any": ["CULTURE_*", "ANIMAL_*"],
+      "required_at_least_one_of": ["ACTION_VENDRE"],
+      "optional": ["SALUTATION"],
+      "priority_boost_if": ["ACTION_VENDRE"],
+      "priority": 3,
+      "description": "Culture/animal + signal de vente explicite (faran/farali/marché/prix)"
+    },
+    {
+      "name": "QUESTION_ELEVAGE",
+      "label_fr": "Question sur l'élevage",
+      "required_any": ["ANIMAL_*"],
+      "optional": [
+        "PROBLEME_MALADIE", "PROBLEME_INSECTE", "ACTION_CHERCHER_CONSEIL",
+        "ROLE_ELEVEUR", "SALUTATION"
+      ],
+      "priority": 3,
+      "description": "Animal mentionné → question d'élevage"
+    },
+    {
+      "name": "QUESTION_METEO_AGRICOLE",
+      "label_fr": "Question sur la météo agricole",
+      "required_any": ["TEMPS_SAISON_PLUIE", "TEMPS_SAISON_SECHE", "TEMPS_METEO"],
+      "optional": ["CULTURE_*", "ANIMAL_*", "SALUTATION"],
+      "priority": 2,
+      "description": "Météo/saison sans culture précise"
+    },
+    {
+      "name": "SALUTATION_SEULE",
+      "label_fr": "Salutation seule",
+      "required_any": ["SALUTATION"],
+      "priority": 1,
+      "description": "Uniquement une salutation, pas de question agricole"
+    },
+    {
+      "name": "QUESTION_GENERALE",
+      "label_fr": "Question générale sur une culture",
+      "required_any": ["CULTURE_*", "ANIMAL_*", "ACTION_PLANTER", "ACTION_CHERCHER_CONSEIL"],
+      "priority": 1,
+      "description": "Fallback: culture/action agricole mentionnée mais pas d'intent précis (ex: mun sɛnɛ = quoi cultiver)"
+    },
+    {
+      "name": "HORS_SUJET",
+      "label_fr": "Hors sujet agricole",
+      "required_any": [],
+      "priority": 0,
+      "description": "Aucun concept agricole détecté → hors sujet"
+    }
+  ],
+
+  "out_of_scope_response": {
+    "fr": "Je suis Wourri, assistant agricole pour les cultivateurs de Côte d'Ivoire. Je réponds uniquement aux questions sur l'agriculture, les cultures et l'élevage. Pose-moi une question sur tes cultures !",
+    "bambara": "Ne ye Wourri ye, sɛnɛkɛlaw dɛmɛbaga. N bɛ se ka dɛmɛ i ma sɛnɛ ko la dɔrɔn.",
+    "dioula": "Ne ye Wourri ye, senekela dɛmɛbaga. N b'a se ka dɛmɛ i ma sɛnɛ ko la."
+  },
+
+  "hors_sujet_examples": [
+    "musique", "football", "politique", "santé humaine (non agricole)",
+    "téléphone", "voiture", "école", "argent (hors vente agricole)"
+  ]
+}

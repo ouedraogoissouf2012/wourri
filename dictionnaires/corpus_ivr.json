@@ -1,0 +1,338 @@
+{
+  "version": "1.0",
+  "description": "Corpus IVR agricole Wourri — réponses pré-écrites en bambara/dioula par intent × culture",
+  "note": "Inspiré approche CGIAR/Viamo. Phrases à valider par locuteur natif bambara/dioula agricole. Score_validation = estimation initiale.",
+  "sources_reference": ["Bamanankan.org", "FLORES-200", "AfricaRice", "IITA", "ANADER CI", "ICRISAT"],
+  "structure": {
+    "id": "identifiant unique",
+    "intent": "nom de l'intent NLU",
+    "cultures": ["liste des cultures concernées, ['*'] = toutes cultures"],
+    "conditions": ["modificateurs optionnels : saison_pluie, saison_seche, sol_argileux, sol_sableux"],
+    "reponse_bambara": "réponse en bambara/dioula ivoirien — 3 phrases max",
+    "reponse_fr": "équivalent français — pour référence et débogage",
+    "score_validation": "0.0 à 1.0 — confiance estimée (à affiner avec validation native)",
+    "tags": ["mots-clés de recherche complémentaires"]
+  },
+
+  "entries": [
+
+    {
+      "id": "riz_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": [],
+      "reponse_bambara": "I ka màlo sɛnɛ mɛ kalo la sanji tuma na. I ka dugukolo lèmùna ɲini, jì ka se ka don a la. I ka sɛnɛ santimɛtiri mugan mugan.",
+      "reponse_fr": "Plante ton riz en mai pendant la saison des pluies. Cherche une terre humide où l'eau peut rester. Plante avec 20 centimètres d'écart.",
+      "score_validation": 0.70,
+      "tags": ["riz", "malo", "plantation", "saison", "sol", "espacement"]
+    },
+
+    {
+      "id": "riz_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": [],
+      "reponse_bambara": "Màlo sɛnɛli waati ɲuman ye mɛ kalo ye. Sanji bɛ na o waati la ka foro ɲɛ. I ka foro labɛn sisan ka kɛ ɲɔgɔn na.",
+      "reponse_fr": "Le meilleur moment pour planter le riz c'est en mai. Les pluies arrivent à ce moment pour bien arroser. Prépare ton champ maintenant pour être prêt.",
+      "score_validation": 0.72,
+      "tags": ["riz", "saison", "pluies", "mai", "plantation"]
+    },
+
+    {
+      "id": "riz_saison_002",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": ["saison_seche"],
+      "reponse_bambara": "Tilema la, màlo sɛnɛli ka ɲi ni jì bɛ yɔrɔ. I ka màlo sɛnɛ bas-fond la jì bɛ yɔrɔ. Sanji tuma kɔ, foro caman bɛ se.",
+      "reponse_fr": "En saison sèche, le riz se plante là où il y a de l'eau. Plante le riz dans les bas-fonds où l'eau reste. Après la saison des pluies, beaucoup de champs sont possibles.",
+      "score_validation": 0.65,
+      "tags": ["riz", "saison sèche", "bas-fond", "irrigation", "tilema"]
+    },
+
+    {
+      "id": "riz_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": [],
+      "reponse_bambara": "Màlo lajɛli waati ye kalo saba ye sɛnɛli kɔfɛ. I ka màlo lajɛ ni màlo cɛɛn gɛlɛn ye ka wuli. I ka joona kɛ sanji sanni na.",
+      "reponse_fr": "Le riz se récolte 3 mois après la plantation. Récolte quand les épis de riz sont bien secs et courbés. Fais-le vite avant les pluies.",
+      "score_validation": 0.73,
+      "tags": ["riz", "récolte", "lajɛ", "mois", "épis"]
+    },
+
+    {
+      "id": "riz_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": [],
+      "reponse_bambara": "Màlo b'a fɛ jì caman kosɛbɛ. I ka jì don foro la tile o tile. Ni jì ma sɔrɔ kalo fɔlɔ na, màlo bɛ tɛmɛ.",
+      "reponse_fr": "Le riz a besoin de beaucoup d'eau. Arrose ton champ tous les jours. Sans eau dans le premier mois, le riz mourra.",
+      "score_validation": 0.74,
+      "tags": ["riz", "eau", "arrosage", "irrigation", "ji"]
+    },
+
+    {
+      "id": "riz_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": [],
+      "reponse_bambara": "I ka saraka NPK don dugukolo la sɛnɛ waati la. Tile bi wɔɔrɔ kɔ, i ka urée fara a kan dɔɔni. Saraka bɛ màlo ka ca kosɛbɛ.",
+      "reponse_fr": "Mets de l'engrais NPK dans la terre au moment de planter. Après 6 semaines, rajoute un peu d'urée. L'engrais fait beaucoup grossir le riz.",
+      "score_validation": 0.71,
+      "tags": ["riz", "engrais", "NPK", "urée", "saraka", "fertilisant"]
+    },
+
+    {
+      "id": "riz_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": [],
+      "reponse_bambara": "Màlo lajɛlen kɔ, i ka a jɛn tile o tile ka ɲɛ. I ka a don grenier la jì tɛ yɔrɔ. Grenier ka kan ka kɛ duguma kan.",
+      "reponse_fr": "Après la récolte, sèche bien ton riz au soleil chaque jour. Mets-le dans un grenier sans humidité. Le grenier doit être surélevé du sol.",
+      "score_validation": 0.72,
+      "tags": ["riz", "stockage", "grenier", "séchage", "conservation"]
+    },
+
+    {
+      "id": "riz_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": [],
+      "reponse_bambara": "Màlo sɔngɔ ka ca tilema kɔ. I ka càyi caya fara sugu ma. Ni i màlo mara, i bɛ wari caman sɔrɔ.",
+      "reponse_fr": "Le prix du riz monte après la saison sèche. Amène ton surplus au marché. Si tu gardes ton riz, tu obtiendras plus d'argent.",
+      "score_validation": 0.68,
+      "tags": ["riz", "vente", "prix", "marché", "sɔngɔ", "wari"]
+    },
+
+    {
+      "id": "riz_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": ["PROBLEME_MALADIE"],
+      "reponse_bambara": "Ni màlo fura bɛ gɛlɛn ka wɛrɛ, bana bɛ a la. I ka furakɛ fara màlo fura la joona. I ka mɔgɔ dɔ wele ka na i dɛmɛ.",
+      "reponse_fr": "Si les feuilles de riz sèchent et jaunissent, c'est une maladie. Traite les feuilles rapidement avec un produit. Appelle quelqu'un pour t'aider.",
+      "score_validation": 0.67,
+      "tags": ["riz", "maladie", "feuilles", "traitement", "bana", "diagnostic"]
+    },
+
+    {
+      "id": "riz_diagnostic_002",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": ["PROBLEME_INSECTE"],
+      "reponse_bambara": "Ni kulun bɛ i màlo dumu, furakɛ sow ka kan. I ka furakɛ bɔ màlo kan tile fila o tile fila. Kulun bɛ màlo halaki ni a ma daminɛ.",
+      "reponse_fr": "Si des insectes mangent ton riz, il faut traiter. Pulvérise un produit sur le riz tous les 2 jours. Les insectes peuvent détruire le riz si on ne commence pas.",
+      "score_validation": 0.67,
+      "tags": ["riz", "insectes", "ravageurs", "kulun", "traitement", "pulvérisation"]
+    },
+
+    {
+      "id": "mais_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": ["CULTURE_MAIS"],
+      "conditions": [],
+      "reponse_bambara": "I ka kaba sɛnɛ avrili kalo la sanji dɔɔni kɔ. I ka foro cɛ ka ɲɛ duguma la. Sɛnɛ ka kɛ santimɛtiri bi wɔɔrɔ wɔɔrɔ.",
+      "reponse_fr": "Plante ton maïs en avril après les premières pluies. Laboure bien la terre en profondeur. Plante à 80 centimètres d'écart entre rangées.",
+      "score_validation": 0.70,
+      "tags": ["maïs", "kaba", "plantation", "avril", "espacement", "labour"]
+    },
+
+    {
+      "id": "mais_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_MAIS"],
+      "conditions": [],
+      "reponse_bambara": "Kaba sɛnɛli waati ɲuman ye avrili-mɛ ye. Sanji dɔɔni ka kan sɛnɛ daminɛ ye. I ka foro labɛn sisan.",
+      "reponse_fr": "Le meilleur moment pour planter le maïs c'est avril-mai. Il faut un peu de pluie pour commencer. Prépare ton champ maintenant.",
+      "score_validation": 0.72,
+      "tags": ["maïs", "saison", "avril", "mai", "pluie", "plantation"]
+    },
+
+    {
+      "id": "mais_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": ["CULTURE_MAIS"],
+      "conditions": [],
+      "reponse_bambara": "Kaba lajɛli waati ye tile bi kɛmɛ ye sɛnɛli kɔfɛ. Kaba ka gɛlɛn caya ni kaba gɛlɛnw bɛ sɛgɛla. I ka sogi ka kaba bɔ ka jɛn.",
+      "reponse_fr": "Le maïs se récolte 90-100 jours après la plantation. Le maïs est mûr quand les grains durcissent et jaunissent. Cueille les épis et fais-les sécher.",
+      "score_validation": 0.71,
+      "tags": ["maïs", "récolte", "jours", "grains", "maturité", "séchage"]
+    },
+
+    {
+      "id": "mais_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": ["CULTURE_MAIS"],
+      "conditions": [],
+      "reponse_bambara": "Kaba b'a fɛ jì dɔɔni tile o tile. Ni sanji te na, i ka jì faro la kɔni. Kaba bɛ sa ni jì ma sɔrɔ sɛnɛli kɔ tile bi saba kɔnɔ.",
+      "reponse_fr": "Le maïs a besoin d'un peu d'eau chaque jour. Si la pluie ne vient pas, arrose le champ tôt le matin. Le maïs peut mourir sans eau dans les 30 premiers jours.",
+      "score_validation": 0.70,
+      "tags": ["maïs", "eau", "arrosage", "pluie", "irrigation"]
+    },
+
+    {
+      "id": "mais_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": ["CULTURE_MAIS"],
+      "conditions": [],
+      "reponse_bambara": "I ka saraka NPK don dugukolo la sɛnɛ waati la. Tile bi saba kɔ, i ka urée fara a kan dɔɔni. Saraka bɛ kaba ka ca ka di.",
+      "reponse_fr": "Mets du NPK dans la terre au moment de planter. Après 30 jours, rajoute un peu d'urée. L'engrais fait grossir le maïs et il est bon.",
+      "score_validation": 0.71,
+      "tags": ["maïs", "engrais", "NPK", "urée", "saraka", "rendement"]
+    },
+
+    {
+      "id": "mais_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": ["CULTURE_MAIS"],
+      "conditions": [],
+      "reponse_bambara": "Kaba lajɛlen kɔ, i ka a jɛn tile o tile tile la. I ka a don saku la bɔlɔ tɛ yɔrɔ. I ka fura don saku kɔnɔ kulun ma.",
+      "reponse_fr": "Après la récolte, fais sécher le maïs au soleil chaque jour. Mets-le dans des sacs à l'abri de l'humidité. Mets un produit anti-insectes dans le sac.",
+      "score_validation": 0.70,
+      "tags": ["maïs", "stockage", "séchage", "sac", "insectes", "conservation"]
+    },
+
+    {
+      "id": "mais_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": ["CULTURE_MAIS"],
+      "conditions": [],
+      "reponse_bambara": "Kaba sɔngɔ ka ca ni kalo wɔɔrɔ na. Dugukolo mɔgɔw bɛ kaba san foro la. I ka kaba mara dɔɔni sani i ka a fara sugu ma.",
+      "reponse_fr": "Le prix du maïs monte en juin. Les acheteurs viennent directement dans les champs. Garde ton maïs un peu avant de le vendre au marché.",
+      "score_validation": 0.68,
+      "tags": ["maïs", "vente", "prix", "juin", "marché", "acheteurs"]
+    },
+
+    {
+      "id": "mais_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_MAIS"],
+      "conditions": ["PROBLEME_MALADIE"],
+      "reponse_bambara": "Ni kaba fura ye sɛgɛ ka gɛlɛn, bana bɛ a la. I ka furakɛ bɔ a kan joona ka na. Ni kaba bɛɛ ta, i ka a cɛ ka bɔ.",
+      "reponse_fr": "Si les feuilles de maïs jaunissent et sèchent, c'est une maladie. Traite rapidement avec un produit. Si tout le maïs est touché, arrache et brûle.",
+      "score_validation": 0.67,
+      "tags": ["maïs", "maladie", "feuilles jaunes", "traitement", "bana"]
+    },
+
+    {
+      "id": "arachide_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": ["CULTURE_ARACHIDE"],
+      "conditions": [],
+      "reponse_bambara": "I ka tiga sɛnɛ mɛ kalo la sanji tuma na. I ka dugukolo sannin ɲini, jì tɛ to a la. Sɛnɛ ka kɛ santimɛtiri bi naani naani.",
+      "reponse_fr": "Plante tes arachides en mai pendant la saison des pluies. Cherche une terre sableuse où l'eau ne reste pas. Plante à 40 centimètres d'écart.",
+      "score_validation": 0.71,
+      "tags": ["arachide", "tiga", "plantation", "mai", "sol sableux", "espacement"]
+    },
+
+    {
+      "id": "arachide_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_ARACHIDE"],
+      "conditions": [],
+      "reponse_bambara": "Tiga sɛnɛli waati ɲuman ye mɛ-zuwɛ ye. Dugukolo ka kan ka mɛn joona sanji kɔ. I ka foro cɛ ka ɲɛ sini sanni.",
+      "reponse_fr": "Le meilleur moment pour les arachides c'est mai-juin. La terre doit sécher rapidement après la pluie. Prépare et laboure bien ton champ dès demain.",
+      "score_validation": 0.71,
+      "tags": ["arachide", "saison", "mai", "juin", "sol", "plantation"]
+    },
+
+    {
+      "id": "arachide_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": ["CULTURE_ARACHIDE"],
+      "conditions": [],
+      "reponse_bambara": "Tiga lajɛli waati ye kalo saba ye sɛnɛli kɔfɛ. I ka tiga bɔ dugukolo la ni fɔrɔ ye joona. I ka tiga jɛn tile o tile ka ɲɛ.",
+      "reponse_fr": "L'arachide se récolte 3 mois après la plantation. Arrache les plants délicatement et rapidement. Fais sécher les arachides chaque jour au soleil.",
+      "score_validation": 0.72,
+      "tags": ["arachide", "récolte", "arrachage", "séchage", "3 mois"]
+    },
+
+    {
+      "id": "arachide_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": ["CULTURE_ARACHIDE"],
+      "conditions": [],
+      "reponse_bambara": "Tiga ma b'a fɛ jì caman. Sanji dɔɔni tile saba o tile saba ka kɛnɛ. Ni jì caman don dugukolo la, tiga bɛ bɔlɔ.",
+      "reponse_fr": "L'arachide ne veut pas trop d'eau. Un peu de pluie tous les 3 jours suffit. Si trop d'eau entre dans la terre, l'arachide pourrit.",
+      "score_validation": 0.73,
+      "tags": ["arachide", "eau", "pluie", "pourriture", "drainage"]
+    },
+
+    {
+      "id": "arachide_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": ["CULTURE_ARACHIDE"],
+      "conditions": [],
+      "reponse_bambara": "Tiga b'a fɛ saraka dɔɔni dɔrɔn. I ka phosphore don dugukolo la sɛnɛ waati la. Tiga bɛ nitrojɛn kɛ i yɛrɛ, saraka caman ma ɲɛ.",
+      "reponse_fr": "L'arachide n'a besoin que de peu d'engrais. Mets du phosphore dans la terre au moment de planter. L'arachide fabrique son propre azote, trop d'engrais c'est mauvais.",
+      "score_validation": 0.72,
+      "tags": ["arachide", "engrais", "phosphore", "azote", "saraka", "peu"]
+    },
+
+    {
+      "id": "arachide_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": ["CULTURE_ARACHIDE"],
+      "conditions": [],
+      "reponse_bambara": "I ka tiga jɛn ka ɲɛ sani i ka a don grenier la. Jì bɛ tiga halaki joona. I ka tiga mara bɔlɔ tɛ yɔrɔ ni saniya la.",
+      "reponse_fr": "Sèche bien les arachides avant de les mettre au grenier. L'humidité abîme rapidement les arachides. Garde-les dans un endroit sec et propre.",
+      "score_validation": 0.73,
+      "tags": ["arachide", "stockage", "séchage", "grenier", "humidité", "conservation"]
+    },
+
+    {
+      "id": "arachide_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": ["CULTURE_ARACHIDE"],
+      "conditions": [],
+      "reponse_bambara": "Tiga sɔngɔ ka ca sanji kɔ tilema daminɛ la. I ka tiga caya fara sugu ma o waati la. Dɔlɔ mɔgɔw bɛ tiga san sɔngɔ ɲuman na.",
+      "reponse_fr": "Le prix des arachides monte après la saison des pluies au début de la saison sèche. Amène ton surplus au marché à ce moment. Les huileries achètent les arachides à bon prix.",
+      "score_validation": 0.69,
+      "tags": ["arachide", "vente", "prix", "marché", "huileries", "saison sèche"]
+    },
+
+    {
+      "id": "arachide_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_ARACHIDE"],
+      "conditions": ["PROBLEME_MALADIE"],
+      "reponse_bambara": "Ni tiga fura ye gɛlɛn ka sɛgɛ, jì gɛlɛn bɛ a kɔnɔ. I ka jì don faro la joona tile o tile. Ni tiga bɛ bɔlɔ, jì caman don — i ka drenaj labɛn.",
+      "reponse_fr": "Si les feuilles d'arachide sèchent et jaunissent, c'est le manque d'eau. Arrose rapidement chaque jour. Si les arachides pourrissent, il y a trop d'eau — améliore le drainage.",
+      "score_validation": 0.67,
+      "tags": ["arachide", "maladie", "sécheresse", "pourriture", "drainage", "eau"]
+    },
+
+    {
+      "id": "generic_salutation_001",
+      "intent": "SALUTATION_SEULE",
+      "cultures": ["*"],
+      "conditions": [],
+      "reponse_bambara": "À ni cè! Ne ye Wourri ye, senekela dɛmɛbaga. I b'a fɛ mun koo la — malo, kaba, wala tiga?",
+      "reponse_fr": "Bonjour ! Je suis Wourri, assistant agricole. Tu veux quoi comme aide — riz, maïs, ou arachide ?",
+      "score_validation": 0.85,
+      "tags": ["salutation", "bienvenue", "Wourri", "introduction"]
+    },
+
+    {
+      "id": "generic_hors_sujet_001",
+      "intent": "HORS_SUJET",
+      "cultures": ["*"],
+      "conditions": [],
+      "reponse_bambara": "Ne ye Wourri ye, senekela dɛmɛbaga dɔrɔn. N tɛ se ka dɛmɛ i ma o ko la. I ka i ka sɛnɛ ko ɲini.",
+      "reponse_fr": "Je suis Wourri, seulement assistant agricole. Je ne peux pas t'aider pour ça. Pose-moi une question sur ton champ.",
+      "score_validation": 0.85,
+      "tags": ["hors sujet", "refus", "agricole seulement"]
+    },
+
+    {
+      "id": "generic_fallback_001",
+      "intent": "_FALLBACK",
+      "cultures": ["*"],
+      "conditions": [],
+      "reponse_bambara": "N bɛ i dɛmɛ i ka sɛnɛ ko la. I ka i ka ɲinini wele fɔ cogo wɛrɛ. Malo, kaba, wala tiga — mun b'i ɲɛ?",
+      "reponse_fr": "Je peux t'aider pour ton champ. Explique-moi ta question autrement. Riz, maïs, ou arachide — qu'est-ce qui te préoccupe ?",
+      "score_validation": 0.85,
+      "tags": ["fallback", "incompréhension", "relance"]
+    }
+  ]
+}

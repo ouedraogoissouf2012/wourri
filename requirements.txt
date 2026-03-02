@@ -31,3 +31,6 @@ pydub>=0.25.1
 
 # Utilities
 python-dotenv==1.0.0
+
+# BD Vectorielle IVR
+chromadb>=0.4.0
