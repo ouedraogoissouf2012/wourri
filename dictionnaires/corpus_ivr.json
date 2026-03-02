@@ -303,6 +303,303 @@
     },
 
     {
+      "id": "igname_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": ["CULTURE_IGNAME"],
+      "conditions": [],
+      "reponse_bambara": "Danburu sɛnɛ la ka ɲi, i ka foro sannin labɛn ka ɲɛ. Danburu bɛ se ka kɛ ɲɛ ni jɛn ka ɲɛ ye. I ka dunbu kɛ foro la k'i ka danburu dɛmɛ.",
+      "reponse_fr": "Pour un bon rendement en igname, prépare bien ton sol. L'igname pousse mieux dans un sol meuble. Fais des buttes pour aider la croissance des tubercules.",
+      "score_validation": 0.70,
+      "tags": ["igname", "danburu", "conseils", "buttes", "sol", "rendement"]
+    },
+
+    {
+      "id": "igname_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_IGNAME"],
+      "conditions": [],
+      "reponse_bambara": "Danburu sɛnɛ waati ɲuman ye sanviyekalo ni marisi kalo tɛmɛnen. Sanji bɛ wuli o waati la ka foro ɲɛ. I ka dunbu labɛn sisan ka kɛ ɲɔgɔn na.",
+      "reponse_fr": "Le meilleur moment pour planter l'igname c'est entre janvier et mars. Les pluies arrivent à ce moment. Prépare tes buttes maintenant pour être prêt.",
+      "score_validation": 0.72,
+      "tags": ["igname", "danburu", "plantation", "janvier", "mars", "saison", "buttes"]
+    },
+
+    {
+      "id": "igname_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": ["CULTURE_IGNAME"],
+      "conditions": [],
+      "reponse_bambara": "Danburu tilalen waati ye kalo 7 ni kalo 9 sɛnɛ kɔfɛ. Ni sira bɛ la, danburu bɛ ɲɛ ka bɔ. I ka danburu bɔ ni hɛrɛ ye k'a kɛ ɲɔgɔn na.",
+      "reponse_fr": "L'igname est prête à récolter 7 à 9 mois après la plantation. Quand les feuilles sèchent, c'est le bon moment. Déterrez avec soin pour ne pas abîmer les tubercules.",
+      "score_validation": 0.72,
+      "tags": ["igname", "danburu", "récolte", "mois", "feuilles", "tubercules"]
+    },
+
+    {
+      "id": "igname_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": ["CULTURE_IGNAME"],
+      "conditions": [],
+      "reponse_bambara": "Danburu bɛ jɛ jì ye sɛnɛ fɔlɔ tuma na. Ni sanji ma na, i ka ji don tile kelen kelen na. Jì caman bɛ danburu bɔrɔ, o kana kɛ.",
+      "reponse_fr": "L'igname a besoin d'eau surtout au début de sa croissance. Si la pluie manque, arrosez une fois par jour. Évitez l'excès d'eau qui fait pourrir les tubercules.",
+      "score_validation": 0.70,
+      "tags": ["igname", "danburu", "eau", "arrosage", "irrigation", "pourriture"]
+    },
+
+    {
+      "id": "igname_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": ["CULTURE_IGNAME"],
+      "conditions": [],
+      "reponse_bambara": "Danburu sɛnɛ la, saraka organic kɛ dunbu labɛn ɲɛ. Kalo fila kɔfɛ, NPK dɔɔni fara a kan. Saraka caman bɛ sira bɔ ka danburu yɔrɔ ta.",
+      "reponse_fr": "Pour l'igname, mettez de la fumure organique avant de former les buttes. Ajoutez un peu d'engrais NPK après 2 mois. Trop d'azote favorise les feuilles au détriment des tubercules.",
+      "score_validation": 0.70,
+      "tags": ["igname", "danburu", "engrais", "NPK", "fumure", "organique", "buttes"]
+    },
+
+    {
+      "id": "igname_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": ["CULTURE_IGNAME"],
+      "conditions": [],
+      "reponse_bambara": "Danburu minɛnen bɛ se ka sɔrɔ kalo 3 ni kalo 6. I ka u bila yɔrɔ kɔnɔnin la, jì tɛ kɔnɔ. Danburu ma fini ka ji don a la sɔrɔ ɲɛ.",
+      "reponse_fr": "L'igname peut se conserver 3 à 6 mois dans un endroit ventilé. Gardez-les à l'ombre dans un lieu sec. Ne les lavez pas avant de stocker.",
+      "score_validation": 0.70,
+      "tags": ["igname", "danburu", "stockage", "conservation", "grenier", "sec"]
+    },
+
+    {
+      "id": "igname_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": ["CULTURE_IGNAME"],
+      "conditions": [],
+      "reponse_bambara": "Danburu farali tuma ɲuman ye tilalen kɔfɛ joona. I ka sugu ta ka joona tile wulanna. I ka danburu ɲuman bɔ farali la ka fara ɲɔgɔn kan.",
+      "reponse_fr": "L'igname se vend bien juste après la récolte. Allez au marché tôt le matin. Sélectionnez les plus beaux tubercules pour la vente.",
+      "score_validation": 0.70,
+      "tags": ["igname", "danburu", "vente", "marché", "prix", "sélection"]
+    },
+
+    {
+      "id": "igname_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_IGNAME"],
+      "conditions": [],
+      "reponse_bambara": "Danburu bana nunu bɛ kɛ: sɔrɔda bɔrɔ ani sira dimi. Ni danburu nɔgɔ bɛ ye, bɔ joona. ANADER sɛnɛkɛla kɔnɔ ka sɔrɔ i dɛmɛ ka kɛ.",
+      "reponse_fr": "L'igname peut souffrir de pourriture des tubercules ou de taches sur les feuilles. Si vous voyez des tubercules mous, retirez-les vite. Contactez un agent ANADER pour vous aider.",
+      "score_validation": 0.70,
+      "tags": ["igname", "danburu", "maladie", "pourriture", "diagnostic", "ANADER"]
+    },
+
+    {
+      "id": "manioc_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": ["CULTURE_MANIOC"],
+      "conditions": [],
+      "reponse_bambara": "Barakama sɛnɛ bɛ se ka kɛ foro sɔgɔ bɛɛ la. I ka bouture kɛ mɛtiri kelen sɔngɔ na. Barakama bɛ se ka bɔ kalo 8 ni kalo 18 cɛ.",
+      "reponse_fr": "Le manioc pousse dans tous types de sols. Plantez les boutures à 1 mètre de distance. Le manioc peut se récolter après 8 à 18 mois selon la variété.",
+      "score_validation": 0.72,
+      "tags": ["manioc", "barakama", "conseils", "boutures", "variété", "rendement"]
+    },
+
+    {
+      "id": "manioc_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_MANIOC"],
+      "conditions": [],
+      "reponse_bambara": "Barakama bɛ se ka sɛnɛ sanji waati bɛɛ. Nka sanji wulanna la ka ɲi kosɛbɛ. I ka bouture don duguma kɔrɔ. Tilema jan na kana sɛnɛ.",
+      "reponse_fr": "Le manioc peut être planté toute l'année mais le meilleur moment c'est au début de la saison des pluies. Plantez les boutures en biais dans le sol. Évitez de planter en saison très sèche.",
+      "score_validation": 0.72,
+      "tags": ["manioc", "barakama", "plantation", "saison pluies", "boutures"]
+    },
+
+    {
+      "id": "manioc_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": ["CULTURE_MANIOC"],
+      "conditions": [],
+      "reponse_bambara": "Barakama tilalen waati ye sira bɛ la tuma. I ka duguma cɛ ka barakama bɔ. Tile wulanna la ka bɔ ka tile bana jɔ.",
+      "reponse_fr": "Le manioc est prêt à récolter quand les feuilles commencent à tomber. Creusez autour de la tige pour dégager les racines. Récoltez le matin pour éviter la chaleur.",
+      "score_validation": 0.70,
+      "tags": ["manioc", "barakama", "récolte", "feuilles", "racines", "matin"]
+    },
+
+    {
+      "id": "manioc_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": ["CULTURE_MANIOC"],
+      "conditions": [],
+      "reponse_bambara": "Barakama bɛ se ka to jiɲɛ la kalo 3 banna. O ye a ka sɔn ye kosɛbɛ. Ni tilema bɛ jan caman, ji dɔɔni bɛ a dɛmɛ.",
+      "reponse_fr": "Le manioc résiste très bien à la sécheresse, c'est sa grande force. Il peut tenir sans pluie pendant 3 mois. Si la sécheresse est longue, un arrosage léger aide quand même.",
+      "score_validation": 0.75,
+      "tags": ["manioc", "barakama", "sécheresse", "résistance", "eau", "arrosage"]
+    },
+
+    {
+      "id": "manioc_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": ["CULTURE_MANIOC"],
+      "conditions": [],
+      "reponse_bambara": "Barakama ma saraka caman fɛ. NPK dɔɔni sɛnɛ waati la ka ɲi. Duguma ɲuman na, barakama bɛ se saraka kelen ma.",
+      "reponse_fr": "Le manioc n'a pas besoin de beaucoup d'engrais. Une petite dose de NPK au moment de la plantation suffit. Dans un bon sol, il pousse même sans engrais.",
+      "score_validation": 0.72,
+      "tags": ["manioc", "barakama", "engrais", "NPK", "sol", "fertilisation"]
+    },
+
+    {
+      "id": "manioc_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": ["CULTURE_MANIOC"],
+      "conditions": [],
+      "reponse_bambara": "Barakama kura bɛ bɔrɔ joona, tile fila ni tile saba. I ka a jɛ ka fu, wala gari kɛ a la. Barakama jɛlen bɛ se ka sɔrɔ kalo caman.",
+      "reponse_fr": "Le manioc frais ne se conserve pas longtemps, 2 à 3 jours maximum. Pour conserver, faites-le sécher ou transformez-le en gari. Le manioc séché peut durer plusieurs mois.",
+      "score_validation": 0.75,
+      "tags": ["manioc", "barakama", "stockage", "gari", "séchage", "conservation"]
+    },
+
+    {
+      "id": "manioc_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": ["CULTURE_MANIOC"],
+      "conditions": [],
+      "reponse_bambara": "Barakama farali bɛ ɲɛ gari ye wala farine ye. I ka a farali kura wala i ka a kɛ gari ye. Sugu la barakama ɲuman farali bɛ ɲɛ.",
+      "reponse_fr": "Le manioc se vend bien sous forme de gari ou de farine. Vendez frais ou transformez pour plus de valeur. Le marché aime le manioc propre et bien sélectionné.",
+      "score_validation": 0.70,
+      "tags": ["manioc", "barakama", "vente", "gari", "farine", "marché", "transformation"]
+    },
+
+    {
+      "id": "manioc_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_MANIOC"],
+      "conditions": [],
+      "reponse_bambara": "Barakama bana kɔrɔ bɛ sira kɛ jaune ye ani kɔ. Ni sira bɛ kɔ ani jaune ye, bɔ joona. TMS wala IITA jira sɛnɛ bɛ se ka bana jɔ.",
+      "reponse_fr": "La mosaïque du manioc est la maladie la plus grave — elle fait jaunir et tordre les feuilles. Si vous voyez des feuilles tordues et jaunes, arrachez les plants malades vite. Plantez des variétés résistantes comme TMS ou IITA.",
+      "score_validation": 0.72,
+      "tags": ["manioc", "barakama", "mosaïque", "maladie", "feuilles jaunes", "TMS", "IITA"]
+    },
+
+    {
+      "id": "cacao_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": ["CULTURE_CACAO"],
+      "conditions": [],
+      "reponse_bambara": "Kaka ye sɔrɔ cɔyɔrɔ Kote d'Ivoire la. I ka kaka sɛnɛ jiri kɔrɔfɛ ka juruni lakisi. San 3 ni san 5 cɛ, kaka tilalen bɛ sɔrɔ.",
+      "reponse_fr": "Le cacao est la principale culture de rente en Côte d'Ivoire. Plantez à l'ombre d'autres arbres pour protéger les jeunes plants. Le premier cacao arrive après 3 à 5 ans.",
+      "score_validation": 0.72,
+      "tags": ["cacao", "kaka", "conseils", "ombre", "plantation", "pépinière"]
+    },
+
+    {
+      "id": "cacao_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_CACAO"],
+      "conditions": [],
+      "reponse_bambara": "Kaka sɛnɛ waati ɲuman ye avrili ni mɛ kalo, sanji waati fɔlɔ. Kaka juruni bɛ jɛ jì waati bɛɛ. I ka pépinière labɛn fɔlɔ sɛnɛ ɲɛ.",
+      "reponse_fr": "Le meilleur moment pour planter le cacao c'est en avril ou mai, au début de la grande saison des pluies. Les jeunes plants ont besoin d'humidité constante. Préparez une pépinière d'abord.",
+      "score_validation": 0.72,
+      "tags": ["cacao", "kaka", "plantation", "avril", "mai", "saison pluies", "pépinière"]
+    },
+
+    {
+      "id": "cacao_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": ["CULTURE_CACAO"],
+      "conditions": [],
+      "reponse_bambara": "Kaka tilalen tuma ye sɔrɔda bɛ jaune wala rouge ye tuma. I ka a bɔ ni fɛn tɔɔrɔ ye ka jiri ma bɛ. Tilalen bɛ kɛ siɲɛ fila san kelen na: ɔkitoburu ani marisi.",
+      "reponse_fr": "Le cacao se récolte quand les cabosses deviennent jaunes ou rouges. Coupez avec un outil tranchant sans abîmer la tige. Récoltez deux fois par an : octobre-décembre et mars-juin.",
+      "score_validation": 0.72,
+      "tags": ["cacao", "kaka", "récolte", "cabosses", "octobre", "mars", "deux fois"]
+    },
+
+    {
+      "id": "cacao_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": ["CULTURE_CACAO"],
+      "conditions": [],
+      "reponse_bambara": "Kaka bɛ jɛ sanji ye kosɛbɛ, a bɛ se. Tilema dɔɔni bɛ se. Ni tilema bɛ jan kalo 3 san, i ka ji bila.",
+      "reponse_fr": "Le cacao a besoin de beaucoup de pluie, mais résiste à une courte saison sèche. Si la sécheresse dure plus de 3 mois, des arrosages sont nécessaires.",
+      "score_validation": 0.70,
+      "tags": ["cacao", "kaka", "eau", "pluie", "sécheresse", "arrosage"]
+    },
+
+    {
+      "id": "cacao_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": ["CULTURE_CACAO"],
+      "conditions": [],
+      "reponse_bambara": "Kaka bɛ saraka fɛ san bɛɛ. NPK wala potasse kɛ sanji waati fɔlɔ ani laban. Foro ɲuman na kaka bɛ sɔrɔ caman.",
+      "reponse_fr": "Le cacao a besoin d'engrais chaque année. Mettez NPK ou potasse deux fois par an, au début et à la fin de la saison des pluies. Un sol bien fertilisé donne plus de cabosses.",
+      "score_validation": 0.70,
+      "tags": ["cacao", "kaka", "engrais", "NPK", "potasse", "fertilisation", "rendement"]
+    },
+
+    {
+      "id": "cacao_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": ["CULTURE_CACAO"],
+      "conditions": [],
+      "reponse_bambara": "Kaka jɛlen ka fu bɛ se ka sɔrɔ kalo caman saka ɲuman kɔnɔ. Jì bɛ a kɛ nɔgɔ, kana a bila jì yɔrɔ la. Kaka jɛlen ɲuman bɛ farali ka ɲɛ.",
+      "reponse_fr": "Après séchage, le cacao peut se garder plusieurs mois dans des sacs propres. L'humidité fait moisir, ne stockez pas dans un endroit humide. Un cacao bien séché se vend mieux.",
+      "score_validation": 0.72,
+      "tags": ["cacao", "kaka", "stockage", "séchage", "sacs", "humidité", "qualité"]
+    },
+
+    {
+      "id": "cacao_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": ["CULTURE_CACAO"],
+      "conditions": [],
+      "reponse_bambara": "I ka i ka kaka farali coopérative la ka sɔrɔ farali ɲuman. Gouvernement bɛ sɔngɔ sɛbɛn san bɛɛ. I ka to ka tɛmɛ campagne official tuma la farali.",
+      "reponse_fr": "Vendez votre cacao à une coopérative pour avoir le meilleur prix. Le gouvernement fixe le prix officiel chaque année. Attendez la campagne officielle pour vendre.",
+      "score_validation": 0.72,
+      "tags": ["cacao", "kaka", "vente", "coopérative", "prix officiel", "campagne"]
+    },
+
+    {
+      "id": "cacao_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_CACAO"],
+      "conditions": [],
+      "reponse_bambara": "Kaka bana kɔrɔ bɛ sɔrɔda kɛ ɲɔgɔn na. Ni sɔrɔda bana ye, bɔ joona ka a jɛ. Cuivre furakɛ kɛ ani jiri kɛ yɔrɔ caman kɔnɔ.",
+      "reponse_fr": "La pourriture brune est la maladie la plus grave du cacao — les cabosses noircissent. Si vous voyez des cabosses malades, retirez et brûlez-les vite. Traitez au cuivre et espacez bien les arbres.",
+      "score_validation": 0.70,
+      "tags": ["cacao", "kaka", "pourriture brune", "maladie", "cabosses", "cuivre", "traitement"]
+    },
+
+    {
+      "id": "riz_saison_seche_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_RIZ"],
+      "conditions": ["TEMPS_SAISON_SECHE"],
+      "reponse_bambara": "Tilema waati la, malo sɛnɛ tɛ se ka kɛ jì ma. I ka to ka tɛmɛ sanji waati tuma, mɛ wala sɛtanburu kalo. Ni ji bɛ ɲɛ foro la, i bɛ se ka sɛnɛ tilema la fana.",
+      "reponse_fr": "En saison sèche, le riz ne peut pas pousser sans eau. Attendez la saison des pluies en mai ou septembre. Si vous avez de l'eau disponible pour irriguer, vous pouvez planter en saison sèche aussi.",
+      "score_validation": 0.73,
+      "tags": ["riz", "malo", "saison sèche", "tilema", "attendre", "irrigation"]
+    },
+
+    {
+      "id": "mais_saison_seche_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_MAIS"],
+      "conditions": ["TEMPS_SAISON_SECHE"],
+      "reponse_bambara": "Tilema waati la, kaba sɛnɛ tɛ ɲɛ ji ma. I ka to ka tɛmɛ sanji waati. Marisi wala ɔgɔsi kalo sanji bɛ wuli ka foro ɲɛ.",
+      "reponse_fr": "En saison sèche, le maïs ne pousse pas bien sans eau. Attendez la saison des pluies. En mars ou août les pluies arrivent pour bien arroser le champ.",
+      "score_validation": 0.72,
+      "tags": ["maïs", "kaba", "saison sèche", "tilema", "attendre", "pluies"]
+    },
+
+    {
+      "id": "arachide_saison_seche_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_ARACHIDE"],
+      "conditions": ["TEMPS_SAISON_SECHE"],
+      "reponse_bambara": "Tilema waati la, tiga sɛnɛ tɛ ɲɛ. I ka to ka tɛmɛ sanji waati, mɛ wala sɛtanburu kalo. Tiga bɛ jɛ sanji ye ka sɛnɛ.",
+      "reponse_fr": "En saison sèche, l'arachide ne pousse pas. Attendez la saison des pluies, en mai ou septembre. L'arachide a besoin de pluie pour bien démarrer.",
+      "score_validation": 0.72,
+      "tags": ["arachide", "tiga", "saison sèche", "tilema", "attendre", "pluies"]
+    },
+
+    {
       "id": "generic_salutation_001",
       "intent": "SALUTATION_SEULE",
       "cultures": ["*"],

@@ -223,8 +223,11 @@
     "ACTION_RECOLTER": {
       "label_fr": "récolter",
       "keywords": [
-        "lajɛ", "laje", "cɛli", "bɔli", "boli",
-        "récolter", "recolter", "récolte", "recolte", "cueillir", "moisson", "moissonner"
+        "lajɛ", "laje", "cɛli", "bɔli", "boli", "bɔ", "bɔlen", "tilalen",
+        "lajɛli", "lajeli", "sɔrɔ bɔ", "soro bo",
+        "récolter", "recolter", "récolte", "recolte", "cueillir", "moisson", "moissonner",
+        "ramasser", "couper", "enlever", "quand récolter", "prêt à récolter",
+        "tilalen", "a tilalen", "a bɛ tilalen"
       ]
     },
 
@@ -232,7 +235,10 @@
       "label_fr": "arroser",
       "keywords": [
         "ji boli", "ji bo", "ji don", "jidon", "ji mɛn", "ji taa",
-        "arroser", "irrigation", "irriguer", "arrosage"
+        "ji bɛ fɛ", "ji ɲini", "ji wulenna",
+        "arroser", "irrigation", "irriguer", "arrosage",
+        "manque eau", "eau culture", "besoin eau", "ji tɛ", "ji te",
+        "ji dɔɔni", "ji caman"
       ]
     },
 
@@ -403,8 +409,11 @@
     "ENGRAIS_FERTILISANT": {
       "label_fr": "engrais",
       "keywords": [
-        "saraka", "furakɛ duguma", "dɔgɔw", "natiri",
-        "engrais", "fertilisant", "compost", "fumure", "NPK", "urée", "uree"
+        "saraka", "sarakan", "saraka kɛ", "saraka bila", "saraka fara",
+        "furakɛ duguma", "duguma furakɛ", "dɔgɔw", "natiri",
+        "engrais", "fertilisant", "compost", "fumure", "fumure organique",
+        "NPK", "urée", "uree", "potasse", "phosphate", "azote",
+        "saraka organic", "saraka chimik", "dolo", "fumier"
       ]
     }
   },
@@ -433,12 +442,12 @@
     },
     {
       "name": "DIAGNOSTIC_PROBLEME",
-      "label_fr": "Problème sur une culture ou un animal",
-      "required_any": ["CULTURE_*", "ANIMAL_*"],
+      "label_fr": "Problème sur une culture",
+      "required_any": ["CULTURE_*"],
       "required_at_least_one_of": ["PROBLEME_MALADIE", "PROBLEME_INSECTE", "PROBLEME_SECHERESSE", "PROBLEME_INONDATION", "PROBLEME_MAUVAISE_HERBE", "PROBLEME_SOL"],
       "optional": ["SALUTATION", "ACTION_TRAITER"],
       "priority": 5,
-      "description": "Culture/animal + problème détecté → diagnostic"
+      "description": "Culture + problème détecté → diagnostic (élevage hors scope)"
     },
     {
       "name": "QUESTION_RECOLTE",
@@ -483,23 +492,12 @@
     {
       "name": "QUESTION_VENTE",
       "label_fr": "Question sur la vente / commercialisation",
-      "required_any": ["CULTURE_*", "ANIMAL_*"],
+      "required_any": ["CULTURE_*"],
       "required_at_least_one_of": ["ACTION_VENDRE"],
       "optional": ["SALUTATION"],
       "priority_boost_if": ["ACTION_VENDRE"],
       "priority": 3,
-      "description": "Culture/animal + signal de vente explicite (faran/farali/marché/prix)"
-    },
-    {
-      "name": "QUESTION_ELEVAGE",
-      "label_fr": "Question sur l'élevage",
-      "required_any": ["ANIMAL_*"],
-      "optional": [
-        "PROBLEME_MALADIE", "PROBLEME_INSECTE", "ACTION_CHERCHER_CONSEIL",
-        "ROLE_ELEVEUR", "SALUTATION"
-      ],
-      "priority": 3,
-      "description": "Animal mentionné → question d'élevage"
+      "description": "Culture + signal de vente explicite (faran/farali/marché/prix) — élevage hors scope"
     },
     {
       "name": "QUESTION_METEO_AGRICOLE",
@@ -519,7 +517,7 @@
     {
       "name": "QUESTION_GENERALE",
       "label_fr": "Question générale sur une culture",
-      "required_any": ["CULTURE_*", "ANIMAL_*", "ACTION_PLANTER", "ACTION_CHERCHER_CONSEIL"],
+      "required_any": ["CULTURE_*", "ACTION_PLANTER", "ACTION_CHERCHER_CONSEIL"],
       "priority": 1,
       "description": "Fallback: culture/action agricole mentionnée mais pas d'intent précis (ex: mun sɛnɛ = quoi cultiver)"
     },
@@ -533,13 +531,14 @@
   ],
 
   "out_of_scope_response": {
-    "fr": "Je suis Wourri, assistant agricole pour les cultivateurs de Côte d'Ivoire. Je réponds uniquement aux questions sur l'agriculture, les cultures et l'élevage. Pose-moi une question sur tes cultures !",
-    "bambara": "Ne ye Wourri ye, sɛnɛkɛlaw dɛmɛbaga. N bɛ se ka dɛmɛ i ma sɛnɛ ko la dɔrɔn.",
-    "dioula": "Ne ye Wourri ye, senekela dɛmɛbaga. N b'a se ka dɛmɛ i ma sɛnɛ ko la."
+    "fr": "Je suis Wourri, assistant agricole pour les cultivateurs de Côte d'Ivoire. Je réponds uniquement aux questions sur l'agriculture et les cultures. Pose-moi une question sur tes cultures !",
+    "bambara": "Ne ye Wourri ye, sɛnɛkɛlaw dɛmɛbaga. N bɛ se ka dɛmɛ i ma sɛnɛ ko la dɔrɔn. I ka ɲinini kɛ i ka foro ko la.",
+    "dioula": "Ne ye Wourri ye, senekela dɛmɛbaga. N b'a se ka dɛmɛ i ma sɛnɛ ko la. I ka ɲinini kɛ i ka foro ko la."
   },
 
   "hors_sujet_examples": [
     "musique", "football", "politique", "santé humaine (non agricole)",
-    "téléphone", "voiture", "école", "argent (hors vente agricole)"
+    "téléphone", "voiture", "école", "argent (hors vente agricole)",
+    "élevage", "animaux", "poulet", "boeuf", "mouton", "chèvre", "porc"
   ]
 }
