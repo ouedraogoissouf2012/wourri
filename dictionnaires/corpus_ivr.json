@@ -483,10 +483,10 @@
       "intent": "CONSEIL_PRODUCTION",
       "cultures": ["CULTURE_CACAO"],
       "conditions": [],
-      "reponse_bambara": "Kaka ye sɔrɔ cɔyɔrɔ Kote d'Ivoire la. I ka kaka sɛnɛ jiri kɔrɔfɛ ka juruni lakisi. San 3 ni san 5 cɛ, kaka tilalen bɛ sɔrɔ.",
+      "reponse_bambara": "Kakawo ye sɔrɔ cɔyɔrɔ Kote d'Ivoire la. I ka kakawo sɛnɛ jiri kɔrɔfɛ ka juruni lakisi. San 3 ni san 5 cɛ, kakawo tilalen bɛ sɔrɔ.",
       "reponse_fr": "Le cacao est la principale culture de rente en Côte d'Ivoire. Plantez à l'ombre d'autres arbres pour protéger les jeunes plants. Le premier cacao arrive après 3 à 5 ans.",
       "score_validation": 0.72,
-      "tags": ["cacao", "kaka", "conseils", "ombre", "plantation", "pépinière"]
+      "tags": ["cacao", "kakawo", "conseils", "ombre", "plantation", "pépinière"]
     },
 
     {
@@ -494,10 +494,10 @@
       "intent": "QUESTION_SAISON_PLANTATION",
       "cultures": ["CULTURE_CACAO"],
       "conditions": [],
-      "reponse_bambara": "Kaka sɛnɛ waati ɲuman ye avrili ni mɛ kalo, sanji waati fɔlɔ. Kaka juruni bɛ jɛ jì waati bɛɛ. I ka pépinière labɛn fɔlɔ sɛnɛ ɲɛ.",
+      "reponse_bambara": "Kakawo sɛnɛ waati ɲuman ye avrili ni mɛ kalo, sanji waati fɔlɔ. Kakawo juruni bɛ jɛ jì waati bɛɛ. I ka pépinière labɛn fɔlɔ sɛnɛ ɲɛ.",
       "reponse_fr": "Le meilleur moment pour planter le cacao c'est en avril ou mai, au début de la grande saison des pluies. Les jeunes plants ont besoin d'humidité constante. Préparez une pépinière d'abord.",
       "score_validation": 0.72,
-      "tags": ["cacao", "kaka", "plantation", "avril", "mai", "saison pluies", "pépinière"]
+      "tags": ["cacao", "kakawo", "plantation", "avril", "mai", "saison pluies", "pépinière"]
     },
 
     {
@@ -505,10 +505,10 @@
       "intent": "QUESTION_RECOLTE",
       "cultures": ["CULTURE_CACAO"],
       "conditions": [],
-      "reponse_bambara": "Kaka tilalen tuma ye sɔrɔda bɛ jaune wala rouge ye tuma. I ka a bɔ ni fɛn tɔɔrɔ ye ka jiri ma bɛ. Tilalen bɛ kɛ siɲɛ fila san kelen na: ɔkitoburu ani marisi.",
+      "reponse_bambara": "Kakawo tilalen tuma ye sɔrɔda bɛ jaune wala rouge ye tuma. I ka a bɔ ni fɛn tɔɔrɔ ye ka jiri ma bɛ. Tilalen bɛ kɛ siɲɛ fila san kelen na: ɔkitoburu ani marisi.",
       "reponse_fr": "Le cacao se récolte quand les cabosses deviennent jaunes ou rouges. Coupez avec un outil tranchant sans abîmer la tige. Récoltez deux fois par an : octobre-décembre et mars-juin.",
       "score_validation": 0.72,
-      "tags": ["cacao", "kaka", "récolte", "cabosses", "octobre", "mars", "deux fois"]
+      "tags": ["cacao", "kakawo", "récolte", "cabosses", "octobre", "mars", "deux fois"]
     },
 
     {
@@ -516,10 +516,10 @@
       "intent": "QUESTION_IRRIGATION",
       "cultures": ["CULTURE_CACAO"],
       "conditions": [],
-      "reponse_bambara": "Kaka bɛ jɛ sanji ye kosɛbɛ, a bɛ se. Tilema dɔɔni bɛ se. Ni tilema bɛ jan kalo 3 san, i ka ji bila.",
+      "reponse_bambara": "Kakawo bɛ jɛ sanji ye kosɛbɛ, a bɛ se. Tilema dɔɔni bɛ se. Ni tilema bɛ jan kalo 3 san, i ka ji bila.",
       "reponse_fr": "Le cacao a besoin de beaucoup de pluie, mais résiste à une courte saison sèche. Si la sécheresse dure plus de 3 mois, des arrosages sont nécessaires.",
       "score_validation": 0.70,
-      "tags": ["cacao", "kaka", "eau", "pluie", "sécheresse", "arrosage"]
+      "tags": ["cacao", "kakawo", "eau", "pluie", "sécheresse", "arrosage"]
     },
 
     {
@@ -527,10 +527,10 @@
       "intent": "QUESTION_ENGRAIS",
       "cultures": ["CULTURE_CACAO"],
       "conditions": [],
-      "reponse_bambara": "Kaka bɛ saraka fɛ san bɛɛ. NPK wala potasse kɛ sanji waati fɔlɔ ani laban. Foro ɲuman na kaka bɛ sɔrɔ caman.",
+      "reponse_bambara": "Kakawo bɛ saraka fɛ san bɛɛ. NPK wala potasse kɛ sanji waati fɔlɔ ani laban. Foro ɲuman na kakawo bɛ sɔrɔ caman.",
       "reponse_fr": "Le cacao a besoin d'engrais chaque année. Mettez NPK ou potasse deux fois par an, au début et à la fin de la saison des pluies. Un sol bien fertilisé donne plus de cabosses.",
       "score_validation": 0.70,
-      "tags": ["cacao", "kaka", "engrais", "NPK", "potasse", "fertilisation", "rendement"]
+      "tags": ["cacao", "kakawo", "engrais", "NPK", "potasse", "fertilisation", "rendement"]
     },
 
     {
@@ -538,10 +538,10 @@
       "intent": "QUESTION_STOCKAGE",
       "cultures": ["CULTURE_CACAO"],
       "conditions": [],
-      "reponse_bambara": "Kaka jɛlen ka fu bɛ se ka sɔrɔ kalo caman saka ɲuman kɔnɔ. Jì bɛ a kɛ nɔgɔ, kana a bila jì yɔrɔ la. Kaka jɛlen ɲuman bɛ farali ka ɲɛ.",
+      "reponse_bambara": "Kakawo jɛlen ka fu bɛ se ka sɔrɔ kalo caman saka ɲuman kɔnɔ. Jì bɛ a kɛ nɔgɔ, kana a bila jì yɔrɔ la. Kakawo jɛlen ɲuman bɛ farali ka ɲɛ.",
       "reponse_fr": "Après séchage, le cacao peut se garder plusieurs mois dans des sacs propres. L'humidité fait moisir, ne stockez pas dans un endroit humide. Un cacao bien séché se vend mieux.",
       "score_validation": 0.72,
-      "tags": ["cacao", "kaka", "stockage", "séchage", "sacs", "humidité", "qualité"]
+      "tags": ["cacao", "kakawo", "stockage", "séchage", "sacs", "humidité", "qualité"]
     },
 
     {
@@ -549,10 +549,10 @@
       "intent": "QUESTION_VENTE",
       "cultures": ["CULTURE_CACAO"],
       "conditions": [],
-      "reponse_bambara": "I ka i ka kaka farali coopérative la ka sɔrɔ farali ɲuman. Gouvernement bɛ sɔngɔ sɛbɛn san bɛɛ. I ka to ka tɛmɛ campagne official tuma la farali.",
+      "reponse_bambara": "I ka i ka kakawo farali coopérative la ka sɔrɔ farali ɲuman. Gouvernement bɛ sɔngɔ sɛbɛn san bɛɛ. I ka to ka tɛmɛ campagne official tuma la farali.",
       "reponse_fr": "Vendez votre cacao à une coopérative pour avoir le meilleur prix. Le gouvernement fixe le prix officiel chaque année. Attendez la campagne officielle pour vendre.",
       "score_validation": 0.72,
-      "tags": ["cacao", "kaka", "vente", "coopérative", "prix officiel", "campagne"]
+      "tags": ["cacao", "kakawo", "vente", "coopérative", "prix officiel", "campagne"]
     },
 
     {
@@ -560,10 +560,10 @@
       "intent": "DIAGNOSTIC_PROBLEME",
       "cultures": ["CULTURE_CACAO"],
       "conditions": [],
-      "reponse_bambara": "Kaka bana kɔrɔ bɛ sɔrɔda kɛ ɲɔgɔn na. Ni sɔrɔda bana ye, bɔ joona ka a jɛ. Cuivre furakɛ kɛ ani jiri kɛ yɔrɔ caman kɔnɔ.",
+      "reponse_bambara": "Kakawo bana kɔrɔ bɛ sɔrɔda kɛ ɲɔgɔn na. Ni sɔrɔda bana ye, bɔ joona ka a jɛ. Cuivre furakɛ kɛ ani jiri kɛ yɔrɔ caman kɔnɔ.",
       "reponse_fr": "La pourriture brune est la maladie la plus grave du cacao — les cabosses noircissent. Si vous voyez des cabosses malades, retirez et brûlez-les vite. Traitez au cuivre et espacez bien les arbres.",
       "score_validation": 0.70,
-      "tags": ["cacao", "kaka", "pourriture brune", "maladie", "cabosses", "cuivre", "traitement"]
+      "tags": ["cacao", "kakawo", "pourriture brune", "maladie", "cabosses", "cuivre", "traitement"]
     },
 
     {
