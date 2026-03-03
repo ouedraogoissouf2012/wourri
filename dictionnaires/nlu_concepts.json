@@ -1,7 +1,8 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
   "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
+  "correction_v1.1": "2026-03-03 — termes bambara corrigés via agri_dict.json multi-sources: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ (woso=haricot!), coton fini→kɔrɔni (fini=fonio!), haricot +woso",
 
   "concepts": {
 
@@ -40,11 +41,16 @@
     },
 
     "CULTURE_MIL": {
-      "label_fr": "mil",
+      "label_fr": "mil / sorgho / fonio",
       "keywords": [
-        "woso", "sunu", "sunn", "jɔni", "joni", "fonio", "gros mil", "petit mil",
-        "sorgho", "mil"
-      ]
+        "nyɔ", "ɲɔ", "nyo", "nyɔforo", "ɲɔforo",
+        "keninge", "kɛnde", "kende", "keninge foro",
+        "fini", "finiforo", "fonio",
+        "sunu", "jɔni", "joni",
+        "mil", "sorgho", "gros mil", "petit mil", "fonio", "millet"
+      ],
+      "partial": ["nyɔ", "keninge"],
+      "note": "nyɔ=mil validé (An ka Taa+coastsystems), keninge=sorgho validé (An ka Taa), fini=fonio validé (Bayelemabaga). woso RETIRÉ — woso=haricot/beans, pas mil."
     },
 
     "CULTURE_ARACHIDE": {
@@ -59,34 +65,43 @@
     "CULTURE_IGNAME": {
       "label_fr": "igname",
       "keywords": [
-        "jaba", "jabaforo", "jabajiri", "yam",
-        "igname", "ignames"
+        "ku", "ku foro", "ku sɛnɛ", "ku bɔ", "ku lajɛ", "ku minɛ",
+        "dunbu", "ku dunbu",
+        "yam", "igname", "ignames"
       ],
-      "partial": ["jaba"]
+      "note": "ku=igname validé 4 sources (An ka Taa, mandenkan, coastsystems, Travélé 1913). jaba RETIRÉ — absent de toutes les sources validées. Pas de partial: ku=2 chars trop court."
     },
 
     "CULTURE_MANIOC": {
       "label_fr": "manioc",
       "keywords": [
-        "barikama", "maniyoki", "maniyoke", "kasava",
-        "manioc", "cassava"
-      ]
+        "bananku", "bananku foro", "bananku sɛnɛ", "bananku bɔ", "bananku lajɛ",
+        "bananku kura", "bananku jɛlen",
+        "kasava", "cassava", "manioc", "gari"
+      ],
+      "partial": ["bananku"],
+      "note": "bananku=manioc validé 3 sources (An ka Taa, mandenkan, coastsystems). barikama/maniyoki/maniyoke RETIRÉS — absents de toutes les sources validées."
     },
 
     "CULTURE_HARICOT": {
-      "label_fr": "haricot",
+      "label_fr": "haricot / niébé",
       "keywords": [
-        "kɔrɔ", "koro", "niebe", "niébé", "senegale", "mugu",
-        "haricot", "haricots", "niebe", "cowpea"
-      ]
+        "woso", "wosoforo", "woso sɛnɛ", "woso bɔ",
+        "kɔrɔ", "koro", "niebe", "niébé", "mugu",
+        "haricot", "haricots", "cowpea", "niébé"
+      ],
+      "partial": ["woso"],
+      "note": "woso=haricot/beans ajouté — terme principal bambara. Était incorrectement dans CULTURE_MIL."
     },
 
     "CULTURE_COTON": {
       "label_fr": "coton",
       "keywords": [
-        "fini", "finiforo", "finin",
-        "coton", "cotton"
-      ]
+        "kɔrɔni", "koroni", "kɔrɔni foro", "kɔrɔni jiri", "kɔrɔni sɛnɛ",
+        "coton", "cotton", "fibre"
+      ],
+      "partial": ["kɔrɔni", "koroni"],
+      "note": "kɔrɔni=coton validé 3 sources (An ka Taa, mandenkan, coastsystems). fini/finiforo/finin RETIRÉS — fini=fonio (agri_dict), pas coton."
     },
 
     "CULTURE_SESAME": {
