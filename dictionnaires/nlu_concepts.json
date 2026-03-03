@@ -86,12 +86,14 @@
     "CULTURE_HARICOT": {
       "label_fr": "haricot / niébé",
       "keywords": [
-        "woso", "wosoforo", "woso sɛnɛ", "woso bɔ",
+        "soso", "soso foro", "soso sɛnɛ", "soso bɔ",
+        "shɔ", "shɔ foro",
+        "woso", "wosoforo",
         "kɔrɔ", "koro", "niebe", "niébé", "mugu",
-        "haricot", "haricots", "cowpea", "niébé"
+        "haricot", "haricots", "cowpea"
       ],
-      "partial": ["woso"],
-      "note": "woso=haricot/beans ajouté — terme principal bambara. Était incorrectement dans CULTURE_MIL."
+      "partial": ["soso"],
+      "note": "soso=haricot dioula CI, shɔ̀=bambara Mali (sô-sô). Validé utilisateur 2026-03-03. woso conservé comme variante."
     },
 
     "CULTURE_COTON": {
@@ -113,27 +115,36 @@
     },
 
     "CULTURE_BANANE": {
-      "label_fr": "banane",
+      "label_fr": "banane / plantain",
       "keywords": [
-        "banan", "banana", "namasa",
-        "banane", "bananes", "plantain"
-      ]
+        "bàrànda", "baranda", "baránda", "bàrànda foro", "bàrànda sɛnɛ",
+        "namasa", "namasa foro",
+        "banane", "bananes", "plantain", "banana"
+      ],
+      "partial": ["baranda", "namasa"],
+      "note": "bàrànda=dioula CI (validé utilisateur 2026-03-03), namasa=bambara Mali"
     },
 
     "CULTURE_TOMATE": {
       "label_fr": "tomate",
       "keywords": [
-        "tamati", "tòmàtì", "tomati", "tomato",
-        "tomate", "tomates"
-      ]
+        "tamati", "tòmàtì", "tomati", "tamati foro", "tomati foro",
+        "tamati sɛnɛ", "tamati bɔ",
+        "tomate", "tomates", "tomato"
+      ],
+      "partial": ["tamati", "tomati"],
+      "note": "tamati=dioula CI (validé utilisateur 2026-03-03), tomati=variante (mandenkan)"
     },
 
     "CULTURE_OIGNON": {
       "label_fr": "oignon",
       "keywords": [
-        "albasa", "alba", "albasso",
-        "oignon", "oignons", "gnimajiri"
-      ]
+        "jaba", "jaba foro", "jaba sɛnɛ", "jaba bɔ", "jaba lajɛ",
+        "albasa", "albasso",
+        "oignon", "oignons"
+      ],
+      "partial": ["jaba"],
+      "note": "jaba=oignon (validé utilisateur 2026-03-03). IMPORTANT: jaba=oignon PAS igname — l'ancienne NLU avait jaba dans CULTURE_IGNAME par erreur. albasa conservé comme variante."
     },
 
     "CULTURE_PATATE": {
@@ -147,9 +158,12 @@
     "CULTURE_GOMBO": {
       "label_fr": "gombo",
       "keywords": [
-        "ñimajiri", "nakono", "nkono", "nkombo",
+        "gan", "gan foro", "gan sɛnɛ", "gan bɔ", "gan lajɛ",
+        "ñimajiri", "nakono",
         "gombo", "okra"
-      ]
+      ],
+      "partial": ["gan"],
+      "note": "gan=gombo validé utilisateur 2026-03-03. ñimajiri/nakono conservés comme variantes."
     },
 
     "CULTURE_CACAO": {

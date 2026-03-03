@@ -11,17 +11,21 @@
     "derniere_mise_a_jour": "2026-03-03"
   },
   "cultures": {
-    "riz":       {"bambara": "malo",    "variante": "kini",    "confiance": 5, "notes": "malo=grain, kini=cuit"},
-    "maïs":      {"bambara": "kaba",    "variante": null,      "confiance": 5, "notes": "Travélé 1913 + An ka Taa"},
-    "arachide":  {"bambara": "tiga",    "variante": null,      "confiance": 5, "notes": ""},
-    "manioc":    {"bambara": "bananku", "variante": null,      "confiance": 5, "notes": "An ka Taa + mandenkan + coastsystems"},
-    "igname":    {"bambara": "ku",      "variante": null,      "confiance": 5, "notes": "2 chars — exception tokenizer. Validé utilisateur 2026-03-03"},
-    "mil":       {"bambara": "nyɔ",     "variante": "ɲɔ",     "confiance": 5, "notes": "An ka Taa + coastsystems"},
-    "sorgho":    {"bambara": "keninge", "variante": "kɛnde",   "confiance": 4, "notes": "An ka Taa=keninge, coastsystems=kɛnde"},
-    "cacao":     {"bambara": "kakawo",  "variante": null,      "confiance": 5, "notes": "Webonary Dioula BF + validé utilisateur 2026-03-03"},
-    "coton":     {"bambara": "kɔrɔni",  "variante": null,      "confiance": 5, "notes": "An ka Taa + mandenkan + coastsystems"},
-    "tomate":    {"bambara": "tomati",  "variante": null,      "confiance": 5, "notes": "mandenkan + validé utilisateur 2026-03-03"},
-    "fonio":     {"bambara": "fini",    "variante": null,      "confiance": 3, "notes": "Bayelemabaga"}
+    "riz":       {"bambara": "malo",      "variante": "kini",    "confiance": 5, "notes": "malo=grain, kini=cuit"},
+    "maïs":      {"bambara": "kaba",      "variante": null,      "confiance": 5, "notes": "Travélé 1913 + An ka Taa"},
+    "arachide":  {"bambara": "tiga",      "variante": null,      "confiance": 5, "notes": ""},
+    "manioc":    {"bambara": "bananku",   "variante": null,      "confiance": 5, "notes": "An ka Taa + mandenkan + coastsystems"},
+    "igname":    {"bambara": "ku",        "variante": null,      "confiance": 5, "notes": "2 chars — exception tokenizer. Validé utilisateur 2026-03-03"},
+    "mil":       {"bambara": "nyɔ",       "variante": "ɲɔ",     "confiance": 5, "notes": "An ka Taa + coastsystems"},
+    "sorgho":    {"bambara": "keninge",   "variante": "kɛnde",   "confiance": 4, "notes": "An ka Taa=keninge, coastsystems=kɛnde"},
+    "cacao":     {"bambara": "kakawo",    "variante": null,      "confiance": 5, "notes": "Webonary Dioula BF + validé utilisateur 2026-03-03"},
+    "coton":     {"bambara": "kɔrɔni",   "variante": null,      "confiance": 5, "notes": "An ka Taa + mandenkan + coastsystems"},
+    "tomate":    {"bambara": "tamati",    "variante": "tomati",  "confiance": 5, "notes": "validé utilisateur 2026-03-03. tamati=dioula CI, tomati=variante"},
+    "fonio":     {"bambara": "fini",      "variante": null,      "confiance": 3, "notes": "Bayelemabaga"},
+    "banane":    {"bambara": "bàrànda",   "variante": "namasa",  "confiance": 4, "notes": "validé utilisateur 2026-03-03. bàrànda=dioula CI, namasa=bambara Mali"},
+    "haricot":   {"bambara": "soso",      "variante": "shɔ̀",    "confiance": 4, "notes": "validé utilisateur 2026-03-03. soso=dioula CI, shɔ̀=bambara Mali (prononcé sô-sô)"},
+    "gombo":     {"bambara": "gan",       "variante": null,      "confiance": 4, "notes": "validé utilisateur 2026-03-03"},
+    "oignon":    {"bambara": "jaba",      "variante": null,      "confiance": 4, "notes": "validé utilisateur 2026-03-03. ATTENTION: jaba=oignon (PAS igname — erreur fréquente)"}
   },
-  "commentaire": "confiance: 5=très fiable (3+ sources), 4=fiable (2 sources), 3=à confirmer (1 source)"
+  "commentaire": "confiance: 5=très fiable (3+ sources), 4=fiable (validé utilisateur natif), 3=à confirmer (1 source)"
 }
