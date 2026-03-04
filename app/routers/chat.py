@@ -129,6 +129,63 @@ def _chercher_ivr(intent: str, concepts: dict) -> str | None:
     return None
 
 
+def _chercher_ivr_par_concept(concepts: dict) -> str | None:
+    """
+    Fallback IVR niveau 2 : cherche une réponse approchée depuis les concepts seuls.
+
+    Quand l'intent exact n'est pas trouvé (QUESTION_GENERALE, confiance faible...),
+    on tente de répondre via la culture détectée + l'action la plus proche.
+
+    Stratégie :
+    1. Mappe l'ACTION détectée vers un intent candidat
+    2. Cherche : culture + intent candidat
+    3. Sinon   : culture + CONSEIL_PRODUCTION (défaut)
+    4. Retourne None si aucune culture détectée (→ message non-compris)
+    """
+    if not concepts:
+        return None
+
+    cultures = [k for k in concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
+    if not cultures:
+        return None
+
+    ACTION_TO_INTENT = {
+        "ACTION_PLANTER":          "QUESTION_SAISON_PLANTATION",
+        "ACTION_RECOLTER":         "QUESTION_RECOLTE",
+        "ACTION_ARROSER":          "QUESTION_IRRIGATION",
+        "ACTION_TRAITER":          "DIAGNOSTIC_PROBLEME",
+        "ACTION_STOCKER":          "QUESTION_STOCKAGE",
+        "ACTION_VENDRE":           "QUESTION_VENTE",
+        "ACTION_CHERCHER_CONSEIL": "CONSEIL_PRODUCTION",
+        "ACTION_LABOURER":         "CONSEIL_PRODUCTION",
+    }
+
+    intent_candidat = next(
+        (intent for action, intent in ACTION_TO_INTENT.items() if action in concepts),
+        None
+    )
+
+    try:
+        from app.services.vdb_service import chercher_reponse_ivr
+
+        if intent_candidat:
+            result = chercher_reponse_ivr(intent=intent_candidat, cultures=cultures, conditions=[])
+            if result:
+                print(f"[Chat IVR] Approché par concept: {result['id']} (intent={intent_candidat})")
+                return result["reponse_bambara"]
+
+        # Défaut : conseil de production pour la culture détectée
+        result = chercher_reponse_ivr(intent="CONSEIL_PRODUCTION", cultures=cultures, conditions=[])
+        if result:
+            print(f"[Chat IVR] Approché par concept: {result['id']} (CONSEIL_PRODUCTION défaut)")
+            return result["reponse_bambara"]
+
+    except Exception as e:
+        print(f"[Chat IVR] Erreur recherche par concept: {e}")
+
+    return None
+
+
 async def _translate_to_bambara_enhanced(french_text: str) -> str:
     """Traduit FR→Bambara en essayant DeepSeek+ancres, puis NLLB en fallback."""
     try:
@@ -245,59 +302,48 @@ async def chat(request: ChatRequest):
                     audio_language=audio_language_name
                 )
 
-        # CHEMIN FALLBACK : VDB n'a pas trouvé → DeepSeek + traduction
-        print(f"[Chat IVR] Hors corpus (intent={nlu_intent}) → fallback DeepSeek+traduction")
+        # CHEMIN FALLBACK : intent exact non trouvé dans l'IVR
+        print(f"[Chat IVR] Hors corpus (intent={nlu_intent}) → recherche par concept")
 
-        # Récupérer la météo pour le contexte (peut échouer si pas de connexion)
+        # DIOULA / BOTH : recherche par concept → jamais NLLB ni DeepSeek
+        if request.language in (Language.DIOULA, Language.BOTH):
+            bambara_fallback = _chercher_ivr_par_concept(nlu_concepts)
+
+            if not bambara_fallback:
+                from app.services.vdb_service import get_reponse_fallback
+                bambara_fallback = get_reponse_fallback()
+                print(f"[Chat IVR] Aucun concept agricole → message non-compris")
+
+            if request.include_audio:
+                from app.services.tts_dioula import synthesize_dioula_text
+                audio_url = synthesize_dioula_text(bambara_fallback)
+                audio_language_name = "Dioula"
+
+            return ChatResponse(
+                response=bambara_fallback,
+                response_dioula=bambara_fallback,
+                response_local=None,
+                audio_url=audio_url,
+                city=city,
+                language=request.language.value,
+                audio_language=audio_language_name
+            )
+
+        # FRENCH uniquement : DeepSeek reste actif
         weather_data = await get_weather(city)
-
-        # Obtenir la réponse de DeepSeek
-        deepseek_lang = request.language if request.language in (Language.DIOULA, Language.BOTH) else Language.FRENCH
         response_text = await chat_with_deepseek(
             message=message_for_deepseek,
             weather_data=weather_data,
-            language=deepseek_lang,
+            language=Language.FRENCH,
             user_id=request.user_id
         )
-
-        # Mode BOTH: Français + Dioula
-        if request.language == Language.BOTH:
-            if request.include_audio:
-                enhanced_bambara = await _translate_to_bambara_enhanced(response_text)
-                from app.services.tts_dioula import synthesize_dioula_text
-                audio_url = synthesize_dioula_text(enhanced_bambara)
-                if enhanced_bambara:
-                    response_dioula = enhanced_bambara
-                audio_language_name = "Dioula"
-            elif TORCH_AVAILABLE:
-                response_dioula = translate_to_bambara(response_text)
-
-        # Mode DIOULA uniquement
-        elif request.language == Language.DIOULA:
-            if request.include_audio:
-                enhanced_bambara = await _translate_to_bambara_enhanced(response_text)
-                from app.services.tts_dioula import synthesize_dioula_text
-                audio_url = synthesize_dioula_text(enhanced_bambara)
-                if enhanced_bambara:
-                    response_dioula = enhanced_bambara
-                    response_text = enhanced_bambara
-                audio_language_name = "Dioula"
-            else:
-                if TORCH_AVAILABLE:
-                    bambara_text = translate_to_bambara(response_text)
-                    if bambara_text:
-                        response_dioula = bambara_text
-                        response_text = bambara_text
-
-        # Mode FRENCH uniquement
-        elif request.language == Language.FRENCH:
-            if request.include_audio:
-                audio_url = await synthesize_french(response_text)
-                audio_language_name = "Français"
+        if request.include_audio:
+            audio_url = await synthesize_french(response_text)
+            audio_language_name = "Français"
 
         return ChatResponse(
             response=response_text,
-            response_dioula=response_dioula,
+            response_dioula=None,
             response_local=None,
             audio_url=audio_url,
             city=city,
