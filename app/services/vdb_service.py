@@ -60,11 +60,25 @@ def _get_collection():
             metadata={"description": "Wourri corpus IVR agricole bambara/dioula"}
         )
 
-        # Peupler si vide
-        if _chroma_collection.count() == 0:
-            _populate_collection(_chroma_collection)
+        # Synchroniser si vide ou si le corpus JSON a changé (nouvelles entrées / corrections)
+        corpus_entries = _load_corpus()
+        vdb_count = _chroma_collection.count()
 
-        logger.info(f"[VDB] Collection chargée : {_chroma_collection.count()} entrées")
+        if vdb_count == 0:
+            logger.info(f"[VDB] Collection vide — peuplement initial ({len(corpus_entries)} entrées)")
+            _populate_collection(_chroma_collection, corpus_entries)
+        elif vdb_count != len(corpus_entries):
+            logger.info(f"[VDB] Corpus mis à jour ({vdb_count} → {len(corpus_entries)} entrées) — rechargement")
+            client.delete_collection("corpus_ivr")
+            _chroma_collection = client.get_or_create_collection(
+                name="corpus_ivr",
+                embedding_function=ef,
+                metadata={"description": "Wourri corpus IVR agricole bambara/dioula"}
+            )
+            _populate_collection(_chroma_collection, corpus_entries)
+        else:
+            logger.info(f"[VDB] Corpus à jour — {vdb_count} entrées")
+
         return _chroma_collection
 
     except ImportError:
@@ -75,9 +89,10 @@ def _get_collection():
         return None
 
 
-def _populate_collection(collection):
-    """Peuple la collection Chroma depuis le corpus JSON."""
-    entries = _load_corpus()
+def _populate_collection(collection, entries=None):
+    """Peuple la collection Chroma depuis le corpus JSON (ou depuis entries si fourni)."""
+    if entries is None:
+        entries = _load_corpus()
     if not entries:
         logger.warning("[VDB] Corpus IVR vide — rien à indexer")
         return
