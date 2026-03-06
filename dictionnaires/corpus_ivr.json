@@ -1,9 +1,10 @@
 {
-  "version": "1.2",
+  "version": "1.3",
   "description": "Corpus IVR agricole Wourri — réponses pré-écrites en bambara/dioula par intent × culture",
   "note": "Inspiré approche CGIAR/Viamo. Phrases à valider par locuteur natif bambara/dioula agricole. Score_validation = estimation initiale.",
-  "correction_v1.1": "2026-03-03 — termes igname (danburu→ku) et manioc (barakama→bananku) corrigés via agri_dict.json multi-sources (An ka Taa, mandenkan, coastsystems, Travélé 1913). danburu=0 occurrences corpus, barakama=0 occurrences corpus.",
-  "ajout_v1.2": "2026-03-03 — 56 nouvelles entrées ajoutées : mil(nyɔ), coton(kɔrɔni), banane(bàrànda), tomate(tamati), haricot(soso), gombo(gan), oignon(jaba) — 8 intents chacun. Couverture IVR : 35% → 76% (13/17 cultures).",
+  "correction_v1.1": "2026-03-03 — termes igname (danburu→ku) et manioc (barakama→bananku) corrigés.",
+  "ajout_v1.2": "2026-03-03 — 56 nouvelles entrées : mil(nyɔ), coton(kɔrɔni), banane(bàrànda), tomate(tamati), haricot(soso), gombo(gan), oignon(jaba). Couverture : 76% (13/17).",
+  "ajout_v1.3": "2026-03-04 — 32 nouvelles entrées : patate(woso), sésame(bɛnɛ), café(kafe), ananas(ananas). Couverture IVR : 100% (17/17 cultures). Total : 144 entrées.",
   "sources_reference": ["Bamanankan.org", "FLORES-200", "AfricaRice", "IITA", "ANADER CI", "ICRISAT"],
   "structure": {
     "id": "identifiant unique",
@@ -1248,6 +1249,358 @@
       "reponse_fr": "L'oignon peut se conserver jusqu'à 6 mois. Stocke-le dans un endroit sec ou sur des claies. Fais-le bien sécher avant de stocker.",
       "score_validation": 0.70,
       "tags": ["oignon", "jaba", "stockage", "conservation", "séchage", "6 mois"]
+    },
+
+    {
+      "id": "patate_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": ["CULTURE_PATATE"],
+      "conditions": [],
+      "reponse_bambara": "Woso sɛnɛ la ka ɲi, i ka foro labɛn ka ɲɛ. I ka woso sɛnɛ santimɛtiri bi ni bi na. Sanji tuma ye woso sɛnɛli waati ɲuman.",
+      "reponse_fr": "Pour bien cultiver la patate douce, prépare bien ton sol. Plante les boutures à 30 cm d'écart. La saison des pluies est le meilleur moment.",
+      "score_validation": 0.70,
+      "tags": ["patate douce", "woso", "conseils", "sol", "espacement", "saison"]
+    },
+
+    {
+      "id": "patate_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_PATATE"],
+      "conditions": [],
+      "reponse_bambara": "Woso sɛnɛ waati ɲuman ye sanji tuma na. Mɛ wala sɛtanburu kalo bɛ ɲɛ. I ka foro labɛn sisan ka kɛ ɲɔgɔn na.",
+      "reponse_fr": "Le meilleur moment pour planter la patate douce c'est la saison des pluies. Mai ou septembre c'est bon. Prépare ton champ maintenant pour être prêt.",
+      "score_validation": 0.70,
+      "tags": ["patate douce", "woso", "saison", "pluies", "plantation"]
+    },
+
+    {
+      "id": "patate_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": ["CULTURE_PATATE"],
+      "conditions": [],
+      "reponse_bambara": "Woso tilalen waati ye kalo saba ni kalo naani sɛnɛ kɔfɛ. Ni sira bɛ la ka gɛlɛn, o ye tilalen jɛ ye. I ka duguma cɛ ka woso bɔ.",
+      "reponse_fr": "La patate douce est prête à récolter 3 à 4 mois après la plantation. Quand les feuilles commencent à jaunir, c'est le signe. Creusez pour sortir les tubercules.",
+      "score_validation": 0.70,
+      "tags": ["patate douce", "woso", "récolte", "mois", "feuilles", "tubercules"]
+    },
+
+    {
+      "id": "patate_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": ["CULTURE_PATATE"],
+      "conditions": [],
+      "reponse_bambara": "Woso bɛ jɛ jì ye nka tɛ se ka jì caman sɔn. Ni sanji tɛ, i ka ji dɔɔni don foro la. Woso bɛ se ka kɛ jiɲɛ la kalo kelen.",
+      "reponse_fr": "La patate douce a besoin d'eau mais ne supporte pas l'excès. Sans pluie, arrosez légèrement. La patate peut tenir un mois sans eau.",
+      "score_validation": 0.70,
+      "tags": ["patate douce", "woso", "eau", "arrosage", "sécheresse", "résistance"]
+    },
+
+    {
+      "id": "patate_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": ["CULTURE_PATATE"],
+      "conditions": [],
+      "reponse_bambara": "Woso bɛ fumure kɛ jɛ sɛnɛ ɲɛ. I ka NPK dɔɔni farali kɛ joona sɛnɛ kɔfɛ. Saraka caman bɛ woso halaki.",
+      "reponse_fr": "La patate douce aime la fumure organique avant la plantation. Un peu de NPK juste après la plantation suffit. Trop d'engrais abîme la patate.",
+      "score_validation": 0.70,
+      "tags": ["patate douce", "woso", "engrais", "fumure", "NPK", "organique"]
+    },
+
+    {
+      "id": "patate_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_PATATE"],
+      "conditions": [],
+      "reponse_bambara": "Ni woso jiri bɛ gɛlɛn wala bɛ la joona, charançon bɛ a la. I ka furakɛ insecticide la joona. I ka jira halakilen bɛɛ bɔ foro la.",
+      "reponse_fr": "Si les tiges de la patate douce se flétrisent ou tombent trop tôt, c'est le charançon. Traitez avec un insecticide rapidement. Arrachez les plants très atteints.",
+      "score_validation": 0.70,
+      "tags": ["patate douce", "woso", "charançon", "maladie", "insecticide", "traitement"]
+    },
+
+    {
+      "id": "patate_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": ["CULTURE_PATATE"],
+      "conditions": [],
+      "reponse_bambara": "Woso farali kɛ marɔshɛ la wala kɔlɔ la. I ka woso farali kura tile saba kɔfɛ tilalen. Sɔngɔ ka ɲi tilema waati na.",
+      "reponse_fr": "Vendez la patate douce au marché ou à un commerçant. Vendez frais dans les 3 jours après récolte. Le prix est meilleur en saison sèche.",
+      "score_validation": 0.70,
+      "tags": ["patate douce", "woso", "vente", "marché", "prix", "saison sèche"]
+    },
+
+    {
+      "id": "patate_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": ["CULTURE_PATATE"],
+      "conditions": [],
+      "reponse_bambara": "Woso kura bɛ bɔrɔ kalo kelen. I ka bolisi yɔrɔ sugurun wala kurun na. I ka woso mɛ ka jɛ ka bolisi.",
+      "reponse_fr": "La patate douce fraîche ne se conserve qu'un mois environ. Stockez dans un endroit frais et ventilé. Faites sécher pour une meilleure conservation.",
+      "score_validation": 0.70,
+      "tags": ["patate douce", "woso", "stockage", "conservation", "séchage", "frais"]
+    },
+
+    {
+      "id": "sesame_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": ["CULTURE_SESAME"],
+      "conditions": [],
+      "reponse_bambara": "Bɛnɛ sɛnɛ la ka ɲi duguma sɔnna yɔrɔ. I ka bɛnɛ sɛnɛ sanji waati fɔlɔ na. Bɛnɛ bɛ se ka sɔrɔ caman sɔrɔ ni foro ɲi.",
+      "reponse_fr": "Le sésame se cultive bien dans un sol léger et bien drainé. Plantez le sésame au début de la saison des pluies. Un bon champ donne un bon rendement.",
+      "score_validation": 0.65,
+      "tags": ["sésame", "bɛnɛ", "conseils", "sol", "drainage", "rendement"]
+    },
+
+    {
+      "id": "sesame_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_SESAME"],
+      "conditions": [],
+      "reponse_bambara": "Bɛnɛ sɛnɛ waati ɲuman ye sɛtanburu wala ɔkutɔburu kalo. Sanji bɛ kɛ dɔɔni o waati. I ka foro labɛn joona ka sɛnɛ kɛ.",
+      "reponse_fr": "Le meilleur moment pour planter le sésame c'est septembre ou octobre. Les pluies sont légères à ce moment. Prépare vite ton champ pour planter.",
+      "score_validation": 0.65,
+      "tags": ["sésame", "bɛnɛ", "saison", "plantation", "septembre", "octobre"]
+    },
+
+    {
+      "id": "sesame_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": ["CULTURE_SESAME"],
+      "conditions": [],
+      "reponse_bambara": "Bɛnɛ tilalen waati ye kalo saba sɛnɛ kɔfɛ. Ni fura bɛ bɔ ka koro, tilalen ye. I ka tilalen kɛ tile na sannin ka fura fali.",
+      "reponse_fr": "Le sésame est prêt à récolter 3 mois après la plantation. Quand les capsules commencent à brunir, c'est le bon moment. Récoltez tôt le matin avant que les capsules s'ouvrent.",
+      "score_validation": 0.65,
+      "tags": ["sésame", "bɛnɛ", "récolte", "mois", "capsules", "matin"]
+    },
+
+    {
+      "id": "sesame_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": ["CULTURE_SESAME"],
+      "conditions": [],
+      "reponse_bambara": "Bɛnɛ ma jɛ jì caman ye. Jiɲɛ la bɛnɛ bɛ se ka dugu la ka ɲɛ. Jì dan caman bɛ a halaki.",
+      "reponse_fr": "Le sésame n'a pas besoin de beaucoup d'eau. Il résiste très bien à la sécheresse. Trop d'eau peut le faire pourrir.",
+      "score_validation": 0.65,
+      "tags": ["sésame", "bɛnɛ", "eau", "sécheresse", "résistance", "drainage"]
+    },
+
+    {
+      "id": "sesame_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": ["CULTURE_SESAME"],
+      "conditions": [],
+      "reponse_bambara": "Bɛnɛ ma saraka caman fɛ. Fumure kɛ foro la sɛnɛ ɲɛ ka ɲi. Phosphate dɔɔni bɛ a dɛmɛ.",
+      "reponse_fr": "Le sésame n'a pas besoin de beaucoup d'engrais. Mets de la fumure organique avant la plantation. Un peu de phosphate l'aide à se développer.",
+      "score_validation": 0.65,
+      "tags": ["sésame", "bɛnɛ", "engrais", "fumure", "phosphate", "organique"]
+    },
+
+    {
+      "id": "sesame_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_SESAME"],
+      "conditions": [],
+      "reponse_bambara": "Ni bɛnɛ jira bɛ jɛ ka fara wala bana ye a la, fongicide bɛ se ka dɛmɛ. I ka furakɛ joona bana wulanna ɲɛ. I ka jira halakilen bɛɛ bɔ.",
+      "reponse_fr": "Si les feuilles du sésame tombent ou brunissent, un fongicide peut aider. Traitez rapidement dès les premiers signes de maladie. Arrachez les plants très malades.",
+      "score_validation": 0.65,
+      "tags": ["sésame", "bɛnɛ", "maladie", "fongicide", "traitement", "feuilles"]
+    },
+
+    {
+      "id": "sesame_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": ["CULTURE_SESAME"],
+      "conditions": [],
+      "reponse_bambara": "Bɛnɛ farali kɛ marɔshɛ la wala kɔlɔ la. Bɛnɛ sɔngɔ ka ɲi ni a mɛ ka ɲɛ. I ka bolisi ka ɲɛ sannin ka farali kɛ.",
+      "reponse_fr": "Vendez le sésame au marché ou à un commerçant. Le prix est bon quand le sésame est bien sec. Stockez bien avant de vendre.",
+      "score_validation": 0.65,
+      "tags": ["sésame", "bɛnɛ", "vente", "marché", "prix", "séchage"]
+    },
+
+    {
+      "id": "sesame_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": ["CULTURE_SESAME"],
+      "conditions": [],
+      "reponse_bambara": "Bɛnɛ bolisili waati la, i ka a mɛ ka ɲɛ sannin. I ka bɛnɛ bolisi sak sugurun na. Bɛnɛ mɛnen bɛ se ka sɔrɔ kalo caman.",
+      "reponse_fr": "Pour stocker le sésame, faites-le bien sécher d'abord. Mettez le sésame dans un sac bien sec. Le sésame bien séché peut se conserver plusieurs mois.",
+      "score_validation": 0.65,
+      "tags": ["sésame", "bɛnɛ", "stockage", "séchage", "conservation", "sac"]
+    },
+
+    {
+      "id": "cafe_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": ["CULTURE_CAFE"],
+      "conditions": [],
+      "reponse_bambara": "Kafe ye sɔrɔ cɔyɔrɔ Kote d'Ivoire la. I ka kafe sɛnɛ jiri kɔrɔfɛ ka juruni lakisi. San 3 kɔfɛ kafe tilalen bɛ sɔrɔ.",
+      "reponse_fr": "Le café est une culture importante en Côte d'Ivoire. Plantez le café à l'ombre d'autres arbres pour protéger les jeunes plants. La première récolte arrive après 3 ans.",
+      "score_validation": 0.65,
+      "tags": ["café", "kafe", "conseils", "ombre", "plantation", "pépinière"]
+    },
+
+    {
+      "id": "cafe_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_CAFE"],
+      "conditions": [],
+      "reponse_bambara": "Kafe sɛnɛ waati ɲuman ye sanji tuma na. Mɛ wala juin kalo bɛ ɲɛ. I ka pépinière labɛn fɔlɔ sɛnɛ ɲɛ.",
+      "reponse_fr": "Le meilleur moment pour planter le café c'est la saison des pluies. Mai ou juin c'est bien. Prépare une pépinière avant de planter.",
+      "score_validation": 0.65,
+      "tags": ["café", "kafe", "saison", "pluies", "pépinière", "plantation"]
+    },
+
+    {
+      "id": "cafe_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": ["CULTURE_CAFE"],
+      "conditions": [],
+      "reponse_bambara": "Kafe tilalen waati ye ɔkutɔburu ni feburiye cɛ. Ni kafe bɛ la ka surun, tilalen waati ye. I ka tilalen kɛ tile siran na.",
+      "reponse_fr": "Le café se récolte entre octobre et février. Quand les cerises sont bien rouges, c'est le bon moment. Récoltez tôt le matin.",
+      "score_validation": 0.65,
+      "tags": ["café", "kafe", "récolte", "octobre", "février", "cerises", "matin"]
+    },
+
+    {
+      "id": "cafe_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": ["CULTURE_CAFE"],
+      "conditions": [],
+      "reponse_bambara": "Kafe bɛ jɛ ji ye caman. Ni sanji ma na joona, i ka ji don kafe la. Jiɲɛ jan bɛ kafe dɛmɛ kɛ.",
+      "reponse_fr": "Le café a besoin de beaucoup d'eau. Si les pluies tardent, arrosez vos caféiers. La sécheresse prolongée abîme le café.",
+      "score_validation": 0.65,
+      "tags": ["café", "kafe", "eau", "irrigation", "sécheresse", "arrosage"]
+    },
+
+    {
+      "id": "cafe_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": ["CULTURE_CAFE"],
+      "conditions": [],
+      "reponse_bambara": "Kafe bɛ NPK 12-15-18 jɛ ka ɲi. I ka furakɛ kalo kelen kelen na. Magnézium fana bɛ kafe dɛmɛ.",
+      "reponse_fr": "Le café préfère le NPK 12-15-18. Faites le traitement chaque mois. Le magnésium aide aussi le caféier à bien produire.",
+      "score_validation": 0.65,
+      "tags": ["café", "kafe", "engrais", "NPK", "magnésium", "traitement"]
+    },
+
+    {
+      "id": "cafe_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_CAFE"],
+      "conditions": [],
+      "reponse_bambara": "Ni kafe jira bɛ jɛ ka gɛlɛn wala bɛ la joona, bana bɛ a la. CBD bana bɛ kafe halaki kosɛbɛ. I ka furakɛ fongicide la joona.",
+      "reponse_fr": "Si les feuilles du caféier tombent ou brunissent trop tôt, il y a une maladie. La CBD est la plus grave maladie du café. Traitez avec un fongicide rapidement.",
+      "score_validation": 0.65,
+      "tags": ["café", "kafe", "maladie", "CBD", "fongicide", "traitement", "feuilles"]
+    },
+
+    {
+      "id": "cafe_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": ["CULTURE_CAFE"],
+      "conditions": [],
+      "reponse_bambara": "Kafe farali kɛ coopérative la. Coopérative bɛ sɔngɔ ɲuman sɔrɔ i ye. I ka kafe mɛ ka ɲɛ sannin ka farali kɛ.",
+      "reponse_fr": "Vendez le café à travers une coopérative. La coopérative vous obtient un meilleur prix. Faites bien sécher votre café avant de vendre.",
+      "score_validation": 0.65,
+      "tags": ["café", "kafe", "vente", "coopérative", "prix", "séchage"]
+    },
+
+    {
+      "id": "cafe_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": ["CULTURE_CAFE"],
+      "conditions": [],
+      "reponse_bambara": "Kafe bolisili waati la, i ka a mɛ ka ɲɛ kosɛbɛ. I ka bolisi yɔrɔ sugurun na ka jì kɛ. Kafe mɛnen bɛ se ka sɔrɔ kalo caman.",
+      "reponse_fr": "Pour stocker le café, faites-le bien sécher. Stockez dans un endroit frais et sec. Le café bien séché peut se conserver plusieurs mois.",
+      "score_validation": 0.65,
+      "tags": ["café", "kafe", "stockage", "séchage", "conservation", "humidité"]
+    },
+
+    {
+      "id": "ananas_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": ["CULTURE_ANANAS"],
+      "conditions": [],
+      "reponse_bambara": "Ananas sɛnɛ la ka ɲi Kote d'Ivoire la kosɛbɛ. I ka ananas sɛnɛ santimɛtiri bi ni bi na. Couronne wala rejet bɛ sɛnɛ la.",
+      "reponse_fr": "L'ananas se cultive très bien en Côte d'Ivoire. Plantez à 30 cm d'écart. On plante avec les couronnes ou les rejets.",
+      "score_validation": 0.65,
+      "tags": ["ananas", "conseils", "plantation", "espacement", "couronne", "rejet"]
+    },
+
+    {
+      "id": "ananas_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": ["CULTURE_ANANAS"],
+      "conditions": [],
+      "reponse_bambara": "Ananas bɛ se ka sɛnɛ kalo bɛɛ la ni jì bɛ ɲɛ. Sanji tuma na sɛnɛ bɛ ɲɛ kosɛbɛ. I ka couronne labɛn sannin ka sɛnɛ.",
+      "reponse_fr": "L'ananas peut se planter toute l'année avec de l'eau. La saison des pluies est la meilleure. Préparez bien vos couronnes avant de planter.",
+      "score_validation": 0.65,
+      "tags": ["ananas", "saison", "plantation", "pluies", "couronne", "toute l'année"]
+    },
+
+    {
+      "id": "ananas_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": ["CULTURE_ANANAS"],
+      "conditions": [],
+      "reponse_bambara": "Ananas tilalen waati ye kalo bi ni naani sɛnɛ kɔfɛ. Ni ananas bɛ la ka gɛlɛn duguma fɛ, tilalen ye. I ka ananas bɔ ka farali kɛ joona.",
+      "reponse_fr": "L'ananas est prêt à récolter 14 à 18 mois après la plantation. Quand il commence à jaunir à la base, c'est prêt. Récoltez et vendez rapidement.",
+      "score_validation": 0.65,
+      "tags": ["ananas", "récolte", "mois", "maturité", "couleur", "vente rapide"]
+    },
+
+    {
+      "id": "ananas_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": ["CULTURE_ANANAS"],
+      "conditions": [],
+      "reponse_bambara": "Ananas bɛ jiɲɛ la sɔn dɔɔni. Nka jì dɔɔni ka ɲi joona sɛnɛ kɔfɛ. Ni sanji ma na, i ka ji don foro la kalo kelen.",
+      "reponse_fr": "L'ananas tolère assez bien la sécheresse. Mais un peu d'eau aide juste après la plantation. Sans pluie, arrosez une fois par mois.",
+      "score_validation": 0.65,
+      "tags": ["ananas", "eau", "sécheresse", "arrosage", "résistance", "mensuel"]
+    },
+
+    {
+      "id": "ananas_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": ["CULTURE_ANANAS"],
+      "conditions": [],
+      "reponse_bambara": "Ananas bɛ potassium jɛ ka ɲi kosɛbɛ. I ka NPK don joona sɛnɛ kɔfɛ. Sulphate de potasse bɛ ananas dɛmɛ.",
+      "reponse_fr": "L'ananas aime surtout le potassium. Apportez du NPK juste après la plantation. Le sulfate de potasse aide beaucoup l'ananas à grossir.",
+      "score_validation": 0.65,
+      "tags": ["ananas", "engrais", "potassium", "NPK", "sulfate", "croissance"]
+    },
+
+    {
+      "id": "ananas_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": ["CULTURE_ANANAS"],
+      "conditions": [],
+      "reponse_bambara": "Ni ananas jira bɛ jɛ ka jɔ wala bɛ la joona, cochenille bɛ a la. I ka furakɛ insecticide la joona. I ka ananas halakilen bɔ foro la.",
+      "reponse_fr": "Si les feuilles de l'ananas jaunissent ou tombent, ce sont les cochenilles. Traitez avec un insecticide rapidement. Retirez les plants très atteints du champ.",
+      "score_validation": 0.65,
+      "tags": ["ananas", "cochenilles", "maladie", "insecticide", "traitement", "feuilles"]
+    },
+
+    {
+      "id": "ananas_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": ["CULTURE_ANANAS"],
+      "conditions": [],
+      "reponse_bambara": "Ananas farali kɛ marɔshɛ la wala kɔlɔ la. I ka ananas farali joona tilalen kɔfɛ tile saba. Export bɛ se ka sɔngɔ ɲuman sɔrɔ.",
+      "reponse_fr": "Vendez l'ananas au marché ou à un commerçant. Vendez dans les 3 jours après récolte. L'exportation peut donner un meilleur prix.",
+      "score_validation": 0.65,
+      "tags": ["ananas", "vente", "marché", "export", "prix", "fraîcheur"]
+    },
+
+    {
+      "id": "ananas_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": ["CULTURE_ANANAS"],
+      "conditions": [],
+      "reponse_bambara": "Ananas kura bɛ bɔrɔ tile tan wala bi ni naani. I ka bolisi yɔrɔ sugurun na. I ka tilalen kɛ joona ka farali.",
+      "reponse_fr": "L'ananas frais ne se conserve que 10 à 14 jours. Stockez dans un endroit frais. Récoltez au bon moment et vendez vite.",
+      "score_validation": 0.65,
+      "tags": ["ananas", "stockage", "conservation", "jours", "fraîcheur", "vente rapide"]
     }
   ]
 }

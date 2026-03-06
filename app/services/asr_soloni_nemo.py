@@ -1,0 +1,177 @@
+"""
+WOURI - ASR Bambara via NeMo (decodeur TDT complet)
+Utilise model.transcribe() directement - beaucoup plus precis que la tete CTC seule.
+Les fichiers temp sont dans C:/soloni/temp/ pour eviter les problemes de chemin.
+"""
+import os
+import uuid
+import subprocess
+from typing import Optional
+
+NEMO_PATH = r"C:\Users\USER PC\.cache\huggingface\hub\models--RobotsMali--soloni-114m-tdt-ctc-v0\snapshots\c0078bb2285e6157960710c5751bbdf83b1a758d\soloni-114m-tdt-ctc-v0.nemo"
+TEMP_DIR = r"C:\soloni\temp"
+
+NEMO_AVAILABLE = False
+nemo_asr = None
+torch = None
+
+try:
+    import nemo.collections.asr as _nemo_asr
+    import torch as _torch
+    nemo_asr = _nemo_asr
+    torch = _torch
+    NEMO_AVAILABLE = True
+    print("[ASR-NEMO] NeMo disponible")
+except ImportError as e:
+    print(f"[ASR-NEMO] NeMo non installe: {e}")
+
+# Singleton modele
+_model = None
+
+
+def get_nemo_model():
+    """Charge le modele NeMo Soloni (lazy loading, singleton)"""
+    global _model
+
+    if not NEMO_AVAILABLE:
+        return None
+
+    if _model is not None:
+        return _model
+
+    if not os.path.exists(NEMO_PATH):
+        print(f"[ASR-NEMO] Modele non trouve: {NEMO_PATH}")
+        return None
+
+    try:
+        print("[ASR-NEMO] Chargement modele NeMo Soloni...")
+        _model = nemo_asr.models.ASRModel.restore_from(
+            NEMO_PATH, map_location=torch.device('cpu')
+        )
+        _model.eval()
+
+        # Activer malsd_batch — stratégie recommandée par NeMo pour les modèles TDT
+        # (beam/default est expérimental et moins précis sur les syllabes courtes)
+        try:
+            from omegaconf import open_dict
+            with open_dict(_model.cfg):
+                _model.cfg.decoding.strategy = "beam"
+                _model.cfg.decoding.beam.beam_size = 4
+                _model.cfg.decoding.beam.search_type = "malsd_batch"
+            _model.change_decoding_strategy(_model.cfg.decoding)
+            print("[ASR-NEMO] Décodeur malsd_batch activé (beam_size=4, TDT optimisé)")
+        except Exception as beam_err:
+            print(f"[ASR-NEMO] malsd_batch non disponible, mode greedy: {beam_err}")
+
+        print("[ASR-NEMO] Modele charge!")
+        return _model
+    except Exception as e:
+        print(f"[ASR-NEMO] Erreur chargement: {e}")
+        return None
+
+
+def transcribe_wav(wav_path: str) -> Optional[str]:
+    """Transcrit un fichier WAV avec le decodeur TDT complet de NeMo"""
+    model = get_nemo_model()
+    if model is None:
+        return None
+
+    try:
+        with torch.no_grad():
+            results = model.transcribe([wav_path])
+
+        if not results:
+            return ""
+
+        result = results[0]
+        # Avec beam search (beam_size > 1), results[0] est une LISTE d'hypothèses
+        # La meilleure hypothèse est toujours en position [0]
+        if isinstance(result, list):
+            if not result:
+                return ""
+            result = result[0]
+        # EncDecHybridRNNTCTCBPEModel retourne des objets Hypothesis
+        if hasattr(result, 'text'):
+            return result.text.strip()
+        return str(result).strip()
+
+    except Exception as e:
+        print(f"[ASR-NEMO] Erreur inference: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+
+def _convert_to_wav_16k(input_path: str, output_path: str) -> bool:
+    """Convertit en WAV 16kHz mono via ffmpeg"""
+    ffmpeg_paths = [
+        'ffmpeg',
+        r'C:\Users\USER PC\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe',
+    ]
+
+    ffmpeg_path = None
+    for path in ffmpeg_paths:
+        try:
+            result = subprocess.run([path, '-version'], capture_output=True, timeout=5)
+            if result.returncode == 0:
+                ffmpeg_path = path
+                break
+        except:
+            continue
+
+    if not ffmpeg_path:
+        print("[ASR-NEMO] FFmpeg non trouve")
+        return False
+
+    try:
+        cmd = [
+            ffmpeg_path, '-y', '-i', input_path,
+            '-ar', '16000', '-ac', '1', '-c:a', 'pcm_s16le',
+            output_path
+        ]
+        result = subprocess.run(cmd, capture_output=True, timeout=30)
+        return result.returncode == 0 and os.path.exists(output_path)
+    except Exception as e:
+        print(f"[ASR-NEMO] Erreur ffmpeg: {e}")
+        return False
+
+
+async def transcribe_bambara_nemo(audio_bytes: bytes, file_extension: str = "ogg") -> Optional[str]:
+    """Point d'entree: bytes audio -> texte bambara via NeMo TDT"""
+    os.makedirs(TEMP_DIR, exist_ok=True)
+
+    temp_id = uuid.uuid4()
+    temp_path = os.path.join(TEMP_DIR, f"nemo_{temp_id}.{file_extension}")
+    wav_path  = os.path.join(TEMP_DIR, f"nemo_{temp_id}.wav")
+
+    try:
+        with open(temp_path, "wb") as f:
+            f.write(audio_bytes)
+
+        if not _convert_to_wav_16k(temp_path, wav_path):
+            print("[ASR-NEMO] Echec conversion WAV")
+            return None
+
+        result = transcribe_wav(wav_path)
+        # Corriger les fusions syllabiques typiques de NeMo (ex: "anisogma" → "a ni sɔgɔma")
+        if result:
+            from app.services.asr_bambara_normalizer import normalize_bambara_asr
+            result = normalize_bambara_asr(result)
+        print(f"[ASR-NEMO] Transcription: '{result}'")
+        return result
+
+    finally:
+        for path in [temp_path, wav_path]:
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                except:
+                    pass
+
+
+def check_nemo_asr_status() -> dict:
+    return {
+        "nemo_available": NEMO_AVAILABLE,
+        "model_path_exists": os.path.exists(NEMO_PATH),
+        "model_loaded": _model is not None,
+    }

@@ -119,6 +119,13 @@ class IntentClassifier:
                 best_intent = intent_name
                 best_data = matched_data
 
+        # ---- Désambiguïsation post-scoring ----
+        # ACTION_RECOLTER présent + gagnant = QUESTION_SAISON_PLANTATION
+        # → "bɛnɛ bɔ tuma" (quand récolter ?) mal classé à cause du boost TEMPS_SAISON_GENERAL
+        if (best_intent == "QUESTION_SAISON_PLANTATION" and
+                "ACTION_RECOLTER" in concept_keys):
+            best_intent = "QUESTION_RECOLTE"
+
         # ---- Compléter matched_data avec les métadonnées utiles ----
         best_data["has_greeting"] = "SALUTATION" in concept_keys
         best_data["has_role"] = (

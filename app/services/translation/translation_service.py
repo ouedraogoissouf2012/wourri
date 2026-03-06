@@ -112,6 +112,15 @@ class TranslationService:
         result = self.translate(french_text, Direction.FR_TO_BAM)
         return result.text
 
+    def preload_nllb(self):
+        """Pré-charge NLLB au démarrage pour éviter OOM pendant les requêtes"""
+        if self._nllb:
+            success = self._nllb._ensure_loaded()
+            if success:
+                print("[PRELOAD] NLLB: OK")
+            else:
+                print("[PRELOAD] NLLB: ECHEC (dictionnaire seul sera utilisé)")
+
     def get_nllb_model_and_tokenizer(self):
         """Accès NLLB pour compatibilité avec tts_bambara"""
         if self._nllb:

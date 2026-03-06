@@ -32,6 +32,7 @@ class ChatRequest(BaseModel):
     language: Language = Language.BOTH  # Par défaut: les deux langues
     include_audio: bool = True
     user_id: Optional[str] = None  # ID utilisateur pour l'historique de conversation
+    bambara_text: Optional[str] = None  # Transcription bambara brute (ASR) pour NLU
 
 
 class ChatResponse(BaseModel):

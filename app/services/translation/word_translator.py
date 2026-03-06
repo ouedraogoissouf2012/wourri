@@ -15,6 +15,10 @@ _GRAMMAR_TAGS = {
     "ipfv", "ipfv.aff", "ipfv aff", "pfv", "pfv.aff", "pfv aff",
     "sbjv", "qual", "qual.aff", "qual aff", "cop", "refl",
     "poss", "fut", "neg", "emph", "inf", "tr", "intr",
+    # Tags Bamadaba supplémentaires (vus dans les logs démo investisseurs)
+    "nom", "verbe", "adverbe", "adjectif", "conjonction", "interjection",
+    "particule", "déterminant", "pronom", "préposition",
+    "mâle", "femelle",  # tags biologiques Bamadaba, pas des traductions utiles
 }
 
 # Patterns de texte technique Bamadaba à penaliser fortement
@@ -25,12 +29,21 @@ _GRAMMAR_PATTERNS_CASESENSITIVE = [
 _GRAMMAR_PATTERNS = [
     r'pfs:',                              # pfs: sens de futur
     r'auxiliaire',                         # auxiliaire du présent
-    r'marqueur',                          # marqueur predicatif
+    r'marqueur',                          # marqueur predicatif, marqueur de relation
     r'reliant',                           # reliant le verbe
     r'postposition',                       # postposition
     r'sens de futur',                     # sens de futur
     r'pronom.*personne',                  # pronom de la première personne
     r'^marque\b',                         # marque d'agent, marque du possesseur
+    r'copule',                            # copule
+    r'connectif',                         # connectif
+    r'suffixe',                           # suffixe verbal
+    r'préfixe',                           # préfixe verbal
+    r'particule\s+(verbale|de|du)',       # particule verbale, particule de...
+    r'aspect\s+(accompli|inaccompli)',    # aspect accompli/inaccompli
+    r'(^|\s)v\.\s',                       # v. (abréviation pour verbe)
+    r'(^|\s)n\.\s',                       # n. (abréviation pour nom)
+    r'(^|\s)adj\.\s',                     # adj. (abréviation pour adjectif)
 ]
 
 # Mots agricoles à privilégier (WOURI est un assistant agricole)
@@ -230,8 +243,9 @@ class WordTranslator(ITranslator):
         patterns_matched = sum(1 for x in translated_by_pattern if x)
         coverage = patterns_matched / max(total, 1)
 
-        # Si aucun pattern ne matche, retourner None
-        if patterns_matched == 0:
+        # Exiger une couverture élevée (>= 70%) pour FR->BAM par patterns
+        # Sinon laisser NLLB gérer (il comprend la syntaxe)
+        if coverage < 0.7:
             return None
 
         # Construire le résultat (mots non matchés restent en français)
@@ -275,6 +289,7 @@ class WordTranslator(ITranslator):
         # 3. Traduire les mots restants (non couverts par patterns)
         final_parts = []
         dict_matched = 0
+        grammar_filtered = 0  # Compteur de mots dont la traduction était un tag grammatical
         patterns_matched = sum(1 for x in translated_by_pattern if x)
 
         i = 0
@@ -300,8 +315,13 @@ class WordTranslator(ITranslator):
                     entry = self._repo.lookup_word(phrase, direction)
                     if entry and entry.translations:
                         best = pick_best_translation(entry.translations)
-                        final_parts.append(best)
-                        dict_matched += n
+                        if best:
+                            final_parts.append(best)
+                            dict_matched += n
+                        else:
+                            # pick_best_translation a retourné "" = toutes les traductions
+                            # étaient des tags grammaticaux. Ne pas insérer le mot bambara brut.
+                            grammar_filtered += n
                         i += n
                         found = True
                         break
@@ -316,10 +336,17 @@ class WordTranslator(ITranslator):
         if final_text:
             final_text = final_text[0].upper() + final_text[1:]
 
+        # Les mots filtrés par grammar ne comptent PAS comme traduits
         total_matched = dict_matched + patterns_matched
         confidence = total_matched / max(total, 1)
 
-        if confidence < 0.3:
+        # Si trop de mots étaient des tags grammaticaux, le dictionnaire
+        # ne comprend pas vraiment cette phrase -> déléguer à NLLB
+        if grammar_filtered >= 2 and grammar_filtered >= total * 0.3:
+            print(f"[dictionnaire] BAM->FR: {grammar_filtered}/{total} mots = tags grammaticaux, delegation NLLB")
+            return None
+
+        if confidence < 0.4:
             return None
 
         return TranslationResult(

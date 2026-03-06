@@ -34,11 +34,9 @@ try:
 except ImportError:
     print("INFO: torch non installé - TTS Dioula désactivé")
 
-# Cache des modèles Dioula
+# Cache du modèle TTS Dioula uniquement (NLLB partagé via TranslationService)
 _tts_model_dioula = None
 _tts_tokenizer_dioula = None
-_translator_model = None
-_translator_tokenizer = None
 
 
 def get_tts_model_dioula():
@@ -59,44 +57,58 @@ def get_tts_model_dioula():
     return _tts_model_dioula, _tts_tokenizer_dioula
 
 
-def get_translator():
-    """Charge le modèle de traduction NLLB (lazy loading) - partagé"""
-    global _translator_model, _translator_tokenizer
-
-    if not TORCH_AVAILABLE:
-        return None, None
-
-    if _translator_model is None:
-        print("Chargement du modèle de traduction (NLLB-200)...")
-        from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-
-        _translator_tokenizer = AutoTokenizer.from_pretrained(settings.hf_translator_model)
-        _translator_model = AutoModelForSeq2SeqLM.from_pretrained(settings.hf_translator_model)
-        print("Modèle de traduction chargé!")
-
-    return _translator_model, _translator_tokenizer
+def _get_nllb():
+    """Retourne le modèle NLLB partagé via TranslationService (pas de doublon mémoire)."""
+    from app.services.translation import get_translation_service
+    return get_translation_service().get_nllb_model_and_tokenizer()
 
 
-def translate_to_dioula(french_text: str) -> str:
-    """Traduit du français vers le Dioula (dyu_Latn)"""
-    if not TORCH_AVAILABLE:
-        return french_text
+# Salutations françaises → Dioula (dictionnaire pur, jamais NLLB)
+# NLLB traduit "Bonjour" par "Barokun nin na" au lieu de "i ni ce"
+_FR_TO_DIOULA_GREETINGS = {
+    "bonjour": "i ni ce,",
+    "bonsoir": "i ni wula,",
+    "bonne nuit": "i ni su,",
+    "salut": "i ni ce,",
+    "merci": "i ni ce,",
+}
 
-    model, tokenizer = get_translator()
+
+def _extract_french_greeting(text: str) -> tuple[str, str]:
+    """Détecte une salutation française au début du texte.
+    Retourne (salutation_dioula, texte_sans_salutation).
+    Ex: 'Bonjour ! Il y a...' -> ('i ni ce,', 'Il y a...')
+    """
+    text_stripped = text.strip()
+    text_lower = text_stripped.lower()
+    # Trier par longueur décroissante pour matcher "bonne nuit" avant "bonjour"
+    for fr_greet in sorted(_FR_TO_DIOULA_GREETINGS, key=len, reverse=True):
+        if text_lower.startswith(fr_greet):
+            dyu_greet = _FR_TO_DIOULA_GREETINGS[fr_greet]
+            rest = text_stripped[len(fr_greet):].lstrip(" ,!.;:")
+            if rest:
+                return dyu_greet, rest
+            else:
+                return dyu_greet.rstrip(","), ""
+    return "", text_stripped
+
+
+def _nllb_translate(text: str) -> str:
+    """Traduit un texte FR→Dioula via NLLB (sans gestion salutation)."""
+    model, tokenizer = _get_nllb()
     if model is None:
-        return french_text
+        return text
 
     tokenizer.src_lang = "fra_Latn"
 
     inputs = tokenizer(
-        french_text,
+        text,
         return_tensors="pt",
         padding=True,
         truncation=True,
         max_length=512
     )
 
-    # Utiliser le code Dioula
     forced_bos_token_id = tokenizer.convert_tokens_to_ids("dyu_Latn")
 
     with torch.no_grad():
@@ -104,16 +116,40 @@ def translate_to_dioula(french_text: str) -> str:
             **inputs,
             forced_bos_token_id=forced_bos_token_id,
             max_length=512,
-            num_beams=5,              # Beam search pour meilleure qualité
-            no_repeat_ngram_size=3,   # Éviter répétition de 3-grams
-            repetition_penalty=1.2,   # Pénaliser les répétitions
+            num_beams=5,
+            no_repeat_ngram_size=3,
+            repetition_penalty=1.2,
             early_stopping=True
         )
 
-    result = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
+    return tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
 
-    # Nettoyer les répétitions éventuelles
+
+def translate_to_dioula(french_text: str) -> str:
+    """Traduit du français vers le Dioula (dyu_Latn).
+    1. Détecte et extrait la salutation française (dictionnaire pur)
+    2. Traduit le reste via NLLB
+    3. Préfixe avec la salutation dioula correcte
+    """
+    if not TORCH_AVAILABLE:
+        return french_text
+
+    # 1. Extraire la salutation avant NLLB
+    greeting_dyu, remaining = _extract_french_greeting(french_text)
+
+    if not remaining:
+        # Texte = juste une salutation
+        return greeting_dyu if greeting_dyu else french_text
+
+    # 2. Traduire le reste via NLLB
+    result = _nllb_translate(remaining)
+
+    # 3. Nettoyer les répétitions
     result = clean_repetitions(result)
+
+    # 4. Préfixer avec la salutation dioula
+    if greeting_dyu:
+        result = f"{greeting_dyu} {result}"
 
     return result
 
@@ -147,11 +183,11 @@ def clean_repetitions(text: str) -> str:
 
 
 def translate_dioula_to_french(dioula_text: str) -> str:
-    """Traduit du Dioula vers le Français"""
+    """Traduit du Dioula vers le Français via NLLB partagé"""
     if not TORCH_AVAILABLE:
         return dioula_text
 
-    model, tokenizer = get_translator()
+    model, tokenizer = _get_nllb()
     if model is None:
         return dioula_text
 
@@ -295,10 +331,13 @@ async def synthesize_dioula(french_text: str) -> tuple[str | None, str | None]:
 
 def check_dioula_status() -> dict:
     """Vérifie le statut des modèles Dioula"""
+    from app.services.translation import get_translation_service
+    nllb_model, _ = get_translation_service().get_nllb_model_and_tokenizer()
     return {
         "torch_available": TORCH_AVAILABLE,
         "tts_loaded": _tts_model_dioula is not None,
-        "translator_loaded": _translator_model is not None,
+        "translator_loaded": nllb_model is not None,
         "tts_model": "facebook/mms-tts-dyu",
-        "translation_code": "dyu_Latn"
+        "translation_code": "dyu_Latn",
+        "nllb_shared": True
     }

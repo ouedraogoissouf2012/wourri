@@ -1,8 +1,9 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
   "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
-  "correction_v1.1": "2026-03-03 — termes bambara corrigés via agri_dict.json multi-sources: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ (woso=haricot!), coton fini→kɔrɔni (fini=fonio!), haricot +woso",
+  "correction_v1.1": "2026-03-03 — termes bambara corrigés: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ, coton fini→kɔrɔni",
+  "correction_v1.2": "2026-03-04 — woso RETIRÉ de CULTURE_HARICOT (woso=patate douce, validé utilisateur). CULTURE_PATATE: jɛgɛ→woso (jɛgɛ=poisson!). Couverture NLU: 17/17 cultures.",
 
   "concepts": {
 
@@ -88,12 +89,11 @@
       "keywords": [
         "soso", "soso foro", "soso sɛnɛ", "soso bɔ",
         "shɔ", "shɔ foro",
-        "woso", "wosoforo",
         "kɔrɔ", "koro", "niebe", "niébé", "mugu",
         "haricot", "haricots", "cowpea"
       ],
       "partial": ["soso"],
-      "note": "soso=haricot dioula CI, shɔ̀=bambara Mali (sô-sô). Validé utilisateur 2026-03-03. woso conservé comme variante."
+      "note": "soso=haricot dioula CI (validé utilisateur 2026-03-03), shɔ̀=bambara Mali. woso RETIRÉ — woso=patate douce (validé utilisateur 2026-03-04)."
     },
 
     "CULTURE_COTON": {
@@ -150,9 +150,12 @@
     "CULTURE_PATATE": {
       "label_fr": "patate douce",
       "keywords": [
-        "jège", "jege", "jɛgɛ", "jeege",
+        "woso", "wosoforo", "woso foro", "woso sɛnɛ", "woso bɔ",
+        "masaku",
         "patate", "patate douce", "sweet potato"
-      ]
+      ],
+      "partial": ["woso"],
+      "note": "woso=patate douce validé utilisateur 2026-03-04 + An Ka Taa + Bamadaba. masaku=variante Bamadaba. jɛgɛ RETIRÉ (=poisson/fish en bambara)."
     },
 
     "CULTURE_GOMBO": {

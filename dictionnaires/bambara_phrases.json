@@ -150,6 +150,29 @@
     {"bam": "i ka foro labɛn sisan", "fr": "Prépare ton champ maintenant", "source": "manuel"},
     {"bam": "i ka malo sɛnɛ", "fr": "Plante ton riz", "source": "manuel"},
     {"bam": "i ka kaba sɛnɛ", "fr": "Plante ton maïs", "source": "manuel"},
-    {"bam": "kɛnɛ bɛ", "fr": "Il fait sec", "source": "manuel"}
+    {"bam": "kɛnɛ bɛ", "fr": "Il fait sec", "source": "manuel"},
+
+    {"bam": "an ni sɔgɔma n b'a fɛ ka malo sɛnɛ", "fr": "Bonjour, je veux cultiver du riz", "source": "nemo-variante"},
+    {"bam": "an ni sɔgɔma n b'a fɛ ka malo", "fr": "Bonjour, je veux du riz", "source": "nemo-variante"},
+    {"bam": "an ni sogoma n b'a fe ka malo sene", "fr": "Bonjour, je veux cultiver du riz", "source": "nemo-variante"},
+    {"bam": "an ni sogoma n b'a fe ka malo", "fr": "Bonjour, je veux du riz", "source": "nemo-variante"},
+
+    {"bam": "n b'a fɛ ka malo sɛnɛ", "fr": "Je veux cultiver du riz", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka malo", "fr": "Je veux du riz", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka kaba sɛnɛ", "fr": "Je veux cultiver du maïs", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka kaba", "fr": "Je veux du maïs", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka tiga sɛnɛ", "fr": "Je veux cultiver des arachides", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka ɲɔ sɛnɛ", "fr": "Je veux cultiver du mil", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka sɛnɛ", "fr": "Je veux cultiver", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka sɛnɛ kɛ", "fr": "Je veux faire de l'agriculture", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka jii di", "fr": "Je veux arroser", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka dɛmɛ sɔrɔ", "fr": "Je veux de l'aide", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka fura sɔrɔ", "fr": "Je veux un traitement", "source": "nemo-variante"},
+    {"bam": "n b'a fɛ ka dɔn", "fr": "Je veux savoir", "source": "nemo-variante"},
+
+    {"bam": "n b'a fe ka malo sene", "fr": "Je veux cultiver du riz", "source": "nemo-variante"},
+    {"bam": "n b'a fe ka malo", "fr": "Je veux du riz", "source": "nemo-variante"},
+    {"bam": "n b'a fe ka kaba sene", "fr": "Je veux cultiver du maïs", "source": "nemo-variante"},
+    {"bam": "n b'a fe ka sene", "fr": "Je veux cultiver", "source": "nemo-variante"}
   ]
 }

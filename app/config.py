@@ -19,6 +19,12 @@ class Settings(BaseSettings):
     deepseek_base_url: str = "https://api.deepseek.com/v1"
     deepseek_model: str = "deepseek-chat"
 
+    # ========== CLOUD APIs (GRATUIT) ==========
+    # Groq API (Whisper ASR)
+    groq_api_key: str = ""
+    
+    # Note: Lingva Translate est utilise pour la traduction (pas de cle requise)
+
     # Open-Meteo (gratuit, pas de clé)
     openmeteo_base_url: str = "https://api.open-meteo.com/v1"
 

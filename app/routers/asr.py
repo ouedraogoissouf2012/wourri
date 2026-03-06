@@ -1,7 +1,6 @@
 """
 WOURI - Router ASR (Automatic Speech Recognition)
-Reconnaissance vocale pour langues ivoiriennes
-Traduction disponible uniquement pour Bambara/Dioula via NLLB-200
+Reconnaissance vocale pour langues ivoiriennes via MMS-1B-ALL + NLLB-200
 """
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 import re
@@ -11,35 +10,67 @@ from app.services.asr_ivorian import (
     check_asr_status,
     IVORIAN_ASR_LANGUAGES
 )
+from app.services.asr_soloni_nemo import (
+    transcribe_bambara_nemo,
+    check_nemo_asr_status,
+)
 from app.services.tts_bambara import translate_to_french
 
 router = APIRouter(prefix="/api/asr", tags=["ASR"])
 
 
+def _run_nlu(bambara_text: str) -> dict:
+    """Lance le NLU sur le texte bambara et retourne les infos NLU."""
+    try:
+        from app.services.nlu import get_nlu_service
+        nlu = get_nlu_service()
+        if nlu is None:
+            return {}
+        result = nlu.process(bambara_text)
+        return {
+            "nlu_intent": result.intent,
+            "nlu_confidence": round(result.confidence, 2),
+            "nlu_message": result.french_sentence,
+            "nlu_concepts": list(result.concepts.keys()),
+            "nlu_is_out_of_scope": result.is_out_of_scope,
+            "nlu_has_greeting": result.has_greeting,
+        }
+    except Exception as e:
+        print(f"[ASR] NLU erreur: {e}")
+        return {}
+
+
 # Nettoyage post-ASR : l'ASR MMS-1B-ALL fait des erreurs phonétiques récurrentes
 # Ces corrections sont appliquées AVANT la traduction BAM→FR
 _ASR_FIXES = {
-    # Salutations déformées par l'ASR (toutes les variantes observées)
-    "sɔrɔma": "sɔgɔma",       # r/g confusion
-    "sorɔma": "sɔgɔma",
-    "soroma": "sogoma",
-    "sɔrɔ ma": "sɔgɔma",
-    "sagɔma": "sɔgɔma",       # a/ɔ confusion (vu dans les logs)
-    "sagoma": "sogoma",         # a/o confusion
-    "sɔgɔ ma": "sɔgɔma",     # espace parasite
-    "sogo ma": "sogoma",
-    # Mots avec 'n' parasite ajouté par l'ASR
-    "malon": "malo",            # "riz" avec n parasite
-    "kaban": "kaba",            # "maïs" avec n parasite
-    "tigan": "tiga",            # "arachide" avec n parasite
-    "foron": "foro",            # "champ" avec n parasite
-    "senɛ": "sɛnɛ",           # voyelle e au lieu de ɛ
-    # ka/kan confusion (très fréquent avec MMS-1B-ALL)
-    " kan ": " ka ",            # "kan" → "ka" (marqueur verbal)
-    # Salutations collées fréquentes
-    "ani sɔgɔma": "i ni sɔgɔma",
-    "ani sogoma": "i ni sogoma",
-    "ani ce": "i ni ce",
+    # ========== SALUTATIONS ==========
+    "sɔrɔma": "sɔgɔma", "sorɔma": "sɔgɔma", "soroma": "sogoma",
+    "sɔrɔ ma": "sɔgɔma", "sagɔma": "sɔgɔma", "sagoma": "sogoma",
+    "sɔgɔ ma": "sɔgɔma", "sogo ma": "sogoma",
+    "ani sɔgɔma": "i ni sɔgɔma", "ani sogoma": "i ni sogoma",
+    "ani ce": "i ni ce", "anise": "i ni ce", "anice": "i ni ce",
+
+    # ========== MOTS AGRICOLES ==========
+    "malon": "malo",        # riz
+    "kaban": "kaba",        # maïs
+    "tigan": "tiga",        # arachide
+    "foron": "foro",        # champ
+    "jinan": "jina",        # légume
+    "banan": "bana",        # maladie (des plantes)
+    "sunan": "sunu",        # mil
+
+    # Voyelles confondues (e/ɛ, o/ɔ)
+    "senɛ": "sɛnɛ", "sene": "sɛnɛ",
+    "kolo": "kɔlɔ", "kolɔ": "kɔlɔ",
+
+    # ========== VERBES/MARQUEURS ==========
+    " kan ": " ka ",
+    " be ": " bɛ ",
+
+    # ========== QUESTIONS AGRICOLES COURANTES ==========
+    "malo sene": "malo sɛnɛ",
+    "foro labɛn": "foro labɛn",
+    "jii don": "ji don",
 }
 
 
@@ -47,7 +78,7 @@ def clean_asr_transcription(text: str) -> str:
     """Corrige les erreurs ASR courantes de MMS-1B-ALL pour le bambara."""
     if not text:
         return text
-    result = f" {text} "  # Ajouter espaces pour matcher les limites de mots
+    result = f" {text} "
     for wrong, correct in _ASR_FIXES.items():
         result = result.replace(wrong, correct)
     return result.strip()
@@ -59,22 +90,11 @@ async def transcribe_audio(
     language: str = Form(default="bam")
 ):
     """
-    Transcrit un fichier audio en texte
+    Transcrit un fichier audio en texte (sans traduction)
 
     - **audio**: Fichier audio (WAV, OGG, MP3, WEBM)
     - **language**: Code de la langue (bam, ati, dyi, myk, gud, adj, dnj, wob)
-
-    Langues disponibles pour ASR:
-    - bam: Bambara/Dioula
-    - ati: Attie
-    - dyi: Senoufo Djimini
-    - myk: Senoufo Mamara
-    - gud: Dida Yocoboue
-    - adj: Adioukrou
-    - dnj: Dan/Yacouba
-    - wob: Wobe
     """
-    # Verifier la langue
     if language not in IVORIAN_ASR_LANGUAGES:
         supported = list(IVORIAN_ASR_LANGUAGES.keys())
         raise HTTPException(
@@ -82,7 +102,6 @@ async def transcribe_audio(
             detail=f"Langue '{language}' non supportee. Langues disponibles: {supported}"
         )
 
-    # Lire le fichier audio
     try:
         audio_bytes = await audio.read()
     except Exception as e:
@@ -91,13 +110,11 @@ async def transcribe_audio(
     if len(audio_bytes) == 0:
         raise HTTPException(status_code=400, detail="Fichier audio vide")
 
-    # Determiner l'extension
     filename = audio.filename or "audio.ogg"
     extension = filename.split(".")[-1].lower()
     if extension not in ["wav", "ogg", "mp3", "webm", "m4a"]:
-        extension = "ogg"  # Default
+        extension = "ogg"
 
-    # Transcrire
     transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
 
     if transcription is None:
@@ -107,7 +124,6 @@ async def transcribe_audio(
         )
 
     lang_name = IVORIAN_ASR_LANGUAGES[language][0]
-
     return {
         "transcription": transcription,
         "language": language,
@@ -121,19 +137,13 @@ async def transcribe_and_translate(
     language: str = Form(default="bam")
 ):
     """
-    Transcrit un fichier audio ET traduit en francais
+    Transcrit un fichier audio ET traduit en français via MMS-1B-ALL + NLLB-200
 
     - **audio**: Fichier audio
-    - **language**: Code de la langue source
+    - **language**: Code de la langue source (bam par défaut)
 
-    IMPORTANT: Traduction disponible UNIQUEMENT pour:
-    - bam: Bambara/Dioula (via NLLB-200)
-
-    Pour les autres langues (ati, dyi, myk, gud, adj, dnj, wob):
-    - La transcription fonctionne (ASR)
-    - Mais PAS de traduction vers le français disponible
+    Traduction disponible uniquement pour bam (Bambara/Dioula)
     """
-    # Verifier la langue
     if language not in IVORIAN_ASR_LANGUAGES:
         supported = list(IVORIAN_ASR_LANGUAGES.keys())
         raise HTTPException(
@@ -141,7 +151,6 @@ async def transcribe_and_translate(
             detail=f"Langue '{language}' non supportee. Langues disponibles: {supported}"
         )
 
-    # Lire le fichier audio
     try:
         audio_bytes = await audio.read()
     except Exception as e:
@@ -150,48 +159,58 @@ async def transcribe_and_translate(
     if len(audio_bytes) == 0:
         raise HTTPException(status_code=400, detail="Fichier audio vide")
 
-    # Determiner l'extension
     filename = audio.filename or "audio.ogg"
     extension = filename.split(".")[-1].lower()
     if extension not in ["wav", "ogg", "mp3", "webm", "m4a"]:
         extension = "ogg"
 
-    # Transcrire
-    print(f"[ASR] Debut transcription en {language}...")
-    transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
+    lang_name = IVORIAN_ASR_LANGUAGES[language][0]
+
+    # Transcription ASR
+    print(f"[ASR] Transcription en {language}...")
+
+    # Bambara : utiliser NeMo TDT (decodeur complet, meilleure qualite)
+    if language == "bam":
+        transcription = await transcribe_bambara_nemo(audio_bytes, extension)
+        if transcription is None:
+            print("[ASR] NeMo echoue, fallback MMS-1B-ALL...")
+            transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
+    else:
+        transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
 
     if transcription is None:
-        print(f"[ASR] Transcription echouee - None retourne")
-        raise HTTPException(
-            status_code=500,
-            detail="Echec de la transcription"
-        )
+        raise HTTPException(status_code=500, detail="Echec de la transcription")
 
-    print(f"[ASR] Transcription Bambara brute: '{transcription}'")
+    print(f"[ASR] Transcription brute: '{transcription}'")
 
-    # Nettoyage post-ASR : corriger les erreurs phonétiques courantes
-    if language == "bam" and transcription:
+    # Nettoyage post-ASR
+    if language == "bam":
         cleaned = clean_asr_transcription(transcription)
         if cleaned != transcription:
             print(f"[ASR] Après nettoyage: '{cleaned}'")
             transcription = cleaned
 
-    lang_name = IVORIAN_ASR_LANGUAGES[language][0]
-
-    # Traduire en francais - UNIQUEMENT pour Bambara
+    # Traduction BAM → FR (uniquement pour Bambara)
     french_translation = None
-    translation_model = None
     translation_available = False
 
-    if transcription and language == "bam":
+    if language == "bam":
         try:
             print(f"[ASR] Traduction Bambara -> Francais...")
             french_translation = translate_to_french(transcription)
-            print(f"[ASR] Traduction Francais: '{french_translation}'")
-            translation_model = "NLLB-200"
+            print(f"[ASR] Traduction: '{french_translation}'")
             translation_available = True
         except Exception as e:
             print(f"[ASR] Erreur traduction: {e}")
+
+    # NLU: extraction de concepts + reconstruction de phrase française
+    # nlu_message est la phrase française reconstruite (plus précise que french_translation)
+    # Le serveur WhatsApp doit utiliser nlu_message en priorité s'il est non-null
+    nlu_data = {}
+    if language == "bam":
+        nlu_data = _run_nlu(transcription)
+        if nlu_data.get("nlu_message"):
+            print(f"[ASR] NLU → phrase reconstruite: '{nlu_data['nlu_message']}'")
 
     return {
         "transcription": transcription,
@@ -199,48 +218,44 @@ async def transcribe_and_translate(
         "language": language,
         "language_name": lang_name,
         "translation_available": translation_available,
-        "translation_model": translation_model
+        "translation_model": "NeMo TDT + Dictionnaire + NLLB-200",
+        # NLU: intent, message reconstruit, concepts
+        "nlu_intent": nlu_data.get("nlu_intent"),
+        "nlu_confidence": nlu_data.get("nlu_confidence", 0.0),
+        "nlu_message": nlu_data.get("nlu_message"),          # ← UTILISER EN PRIORITÉ
+        "nlu_concepts": nlu_data.get("nlu_concepts", []),
+        "nlu_is_out_of_scope": nlu_data.get("nlu_is_out_of_scope", False),
+        "nlu_has_greeting": nlu_data.get("nlu_has_greeting", False),
     }
 
 
 @router.get("/languages")
 async def list_asr_languages():
-    """
-    Liste les langues disponibles pour la reconnaissance vocale
-
-    Retourne les codes ISO et noms des langues supportees
-    """
+    """Liste les langues disponibles pour la reconnaissance vocale"""
     languages = get_supported_asr_languages()
-
     return {
         "languages": languages,
         "total": len(languages),
         "with_translation": {
             "languages": ["bam"],
-            "model": "NLLB-200",
-            "description": "ASR + Traduction Français complète"
+            "model": "MMS-1B-ALL + NLLB-200",
+            "description": "ASR + Traduction Bambara → Français"
         },
         "asr_only": {
             "languages": ["ati", "dyi", "myk", "gud", "adj", "dnj", "wob"],
             "description": "ASR uniquement (pas de traduction disponible)"
-        },
-        "note": "Seul le Bambara/Dioula dispose d'une traduction automatique vers le français"
+        }
     }
 
 
 @router.get("/status")
 async def asr_status():
-    """
-    Verifie le statut du service ASR
-
-    Retourne si le modele est charge et les langues supportees
-    """
+    """Vérifie le statut du service ASR"""
     asr_info = check_asr_status()
-
     return {
-        "asr": asr_info,
+        "local_asr": asr_info,
         "translation": {
-            "model": "NLLB-200",
+            "model": "MMS-1B-ALL + NLLB-200",
             "supported_languages": ["bam"],
             "description": "Traduction Bambara <-> Français"
         },

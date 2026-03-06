@@ -2,6 +2,7 @@
 WOURI - Traduction NLLB (fallback IA)
 Stratégie 3 : la plus lente mais couvre tout le vocabulaire.
 Utilisée quand le dictionnaire ne suffit pas.
+Pré-chargée au démarrage pour éviter les OOM pendant les requêtes.
 """
 from typing import Optional
 from .interfaces import ITranslator, TranslationResult, Direction
@@ -49,14 +50,11 @@ class NLLBTranslator(ITranslator):
             return False
 
     def can_handle(self, text: str, direction: Direction) -> bool:
-        # NLLB complètement désactivé : OOM crash avec ASR+TTS déjà en mémoire
-        # Le dictionnaire 11k+ mots gère BAM→FR, les patterns gèrent FR→BAM
-        return False
+        return True  # NLLB peut toujours essayer
 
     def translate(self, text: str, direction: Direction) -> Optional[TranslationResult]:
-        # NLLB désactivé : le chargement du modèle cause OOM (3 modèles en RAM)
-        # Sécurité : ne jamais tenter de charger NLLB pendant une requête
-        return None
+        if not self._ensure_loaded():
+            return None
 
         try:
             if direction == Direction.BAM_TO_FR:
@@ -109,5 +107,5 @@ class NLLBTranslator(ITranslator):
 
     def get_model_and_tokenizer(self):
         """Accès direct au modèle (pour compatibilité avec tts_bambara)"""
-        # NLLB désactivé - ne pas charger le modèle
-        return None, None
+        self._ensure_loaded()
+        return self._model, self._tokenizer

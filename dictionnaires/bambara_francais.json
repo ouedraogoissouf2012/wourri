@@ -148073,7 +148073,19 @@
     "ka fura sɔrɔ": "obtenir un traitement",
     "ka fura soro": "obtenir un traitement",
     "ka dɔn": "savoir",
-    "ka don": "savoir"
+    "ka don": "savoir",
+    "n b'a fɛ ka": "Je veux",
+    "n b'a fɛ": "Je veux",
+    "ne b'a fɛ ka": "Je veux",
+    "ne b'a fɛ": "Je veux",
+    "b'a fɛ ka": "veut",
+    "b'a fɛ": "veut",
+    "n b'a fe ka": "Je veux",
+    "n b'a fe": "Je veux",
+    "ne b'a fe ka": "Je veux",
+    "ne b'a fe": "Je veux",
+    "b'a fe ka": "veut",
+    "b'a fe": "veut"
   },
   "patterns_fr_bam": {
     "je veux": "ne bɛ fɛ ka",

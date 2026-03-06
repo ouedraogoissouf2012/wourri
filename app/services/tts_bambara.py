@@ -411,6 +411,7 @@ _BAM_GREETING_PREFIXES = [
     "i ni sɔgɔma", "a ni sɔgɔma",
     "i ni sogoma", "a ni sogoma",
     "ani sɔgɔma", "ani sogoma",  # "ani" = variante ASR de "a ni" / "i ni"
+    "an ni sɔgɔma", "an ni sogoma",  # "an ni" = variante NeMo TDT (bonjour matin)
     "i ni ce", "a ni ce", "ani ce",
     "i ni wula", "a ni wula",
     "i ni su", "a ni su",
@@ -431,6 +432,7 @@ _BAM_GREETING_TO_FR = {
     "i ni sɔgɔma": "Bonjour, ", "a ni sɔgɔma": "Bonjour, ",
     "i ni sogoma": "Bonjour, ", "a ni sogoma": "Bonjour, ",
     "ani sɔgɔma": "Bonjour, ", "ani sogoma": "Bonjour, ",
+    "an ni sɔgɔma": "Bonjour, ", "an ni sogoma": "Bonjour, ",
     "i ni ce": "Bonjour, ", "a ni ce": "Bonjour, ", "ani ce": "Bonjour, ",
     "i ni wula": "Bonsoir, ", "a ni wula": "Bonsoir, ",
     "i ni su": "Bonne nuit, ", "a ni su": "Bonne nuit, ",
