@@ -4,9 +4,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Sessions WhatsApp (sensibles)
+# ============================================
+# 🔴 SESSIONS WHATSAPP - NE JAMAIS COMMIT !
+# ============================================
+auth_baileys/
 .wwebjs_auth/
 .wwebjs_cache/
+
+# Préférences utilisateurs (contient des données sensibles)
+user_preferences.json
 
 # Logs et fichiers temporaires
 *.log
