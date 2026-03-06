@@ -4,7 +4,7 @@
  * Demande ville et langue preferee avant de repondre
  */
 
-const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, downloadMediaMessage } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, downloadMediaMessage, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const axios = require('axios');
 const fs = require('fs');
@@ -267,12 +267,16 @@ async function transcribeAudioBambara(audioBuffer, filename = 'audio.ogg') {
         if (response.data) {
             const transcription = response.data.transcription || '';
             const frenchTranslation = response.data.french_translation || '';
+            const nluMessage = response.data.nlu_message || '';
 
             console.log(`[ASR-BAMBARA] Transcription Bambara: "${transcription}"`);
             console.log(`[ASR-BAMBARA] Traduction Francais: "${frenchTranslation}"`);
+            if (nluMessage) {
+                console.log(`[ASR-BAMBARA] Message NLU (prioritaire): "${nluMessage}"`);
+            }
 
             return {
-                text: frenchTranslation || transcription,  // Utiliser la traduction FR si disponible
+                text: nluMessage || frenchTranslation || transcription,  // NLU en priorité
                 bambara_text: transcription,
                 is_bambara: true
             };
@@ -305,9 +309,13 @@ async function connectWhatsApp() {
 
     const { state, saveCreds } = await useMultiFileAuthState(AUTH_FOLDER);
 
+    // Récupérer la dernière version WhatsApp Web compatible
+    const { version, isLatest } = await fetchLatestBaileysVersion();
+    console.log(`[BAILEYS] Version WhatsApp Web: ${version.join('.')} (latest: ${isLatest})`);
+
     sock = makeWASocket({
+        version,
         auth: state,
-        printQRInTerminal: true,
         logger: pino({ level: 'silent' }),
         browser: ['WOURI Assistant', 'Chrome', '120.0.0'],
     });
@@ -381,6 +389,7 @@ async function connectWhatsApp() {
             const audioMsg = msg.message?.audioMessage;
             const isAudioMessage = audioMsg !== undefined && audioMsg !== null && !messageText;
             let isVoiceInput = false; // Pour savoir si l'utilisateur a envoye un vocal
+            let bambaraText = null;   // Transcription bambara brute (pour NLU preprocessing)
 
             if (isAudioMessage) {
                 console.log(`\n[AUDIO] Message vocal recu de: ${userNumber}`);
@@ -416,13 +425,14 @@ async function connectWhatsApp() {
                     console.log(`[AUDIO] Telecharge: ${audioBuffer.length} bytes`);
 
                     // Choisir le moteur de transcription selon la langue de l'utilisateur
-                    // - Si langue = dioula -> utiliser ASR Bambara (MMS)
-                    // - Sinon -> utiliser Whisper (francais)
+                    // - Si langue = dioula ou both -> utiliser ASR Bambara (MMS)
+                    //   (les utilisateurs "both" parlent souvent en Dioula, Whisper hallucine sur du Dioula)
+                    // - Si langue = french -> utiliser Whisper (francais)
                     let transcriptionResult;
                     const userLanguage = prefs.language || 'french';
 
-                    if (userLanguage === 'dioula') {
-                        console.log(`[AUDIO] Utilisateur en mode Dioula -> ASR Bambara`);
+                    if (userLanguage === 'dioula' || userLanguage === 'both') {
+                        console.log(`[AUDIO] Utilisateur en mode ${userLanguage} -> ASR Bambara`);
                         transcriptionResult = await transcribeAudioBambara(audioBuffer, 'voice_message.ogg');
                     } else {
                         console.log(`[AUDIO] Utilisateur en mode ${userLanguage} -> Whisper francais`);
@@ -453,6 +463,10 @@ async function connectWhatsApp() {
 
                     messageText = transcribedText;
                     isVoiceInput = true; // Marquer comme message vocal
+                    // Conserver le bambara brut pour le NLU preprocessing dans chat.py
+                    if (transcriptionResult.bambara_text) {
+                        bambaraText = transcriptionResult.bambara_text;
+                    }
 
                 } catch (audioError) {
                     console.error('[AUDIO] Erreur:', audioError.message);
@@ -622,7 +636,8 @@ async function connectWhatsApp() {
                             city: prefs.city,
                             language: prefs.language,
                             include_audio: true,
-                            user_id: userNumber  // Pour l'historique de conversation
+                            user_id: userNumber,           // Pour l'historique de conversation
+                            bambara_text: bambaraText      // Pour le NLU preprocessing (si message vocal bambara)
                         }, { timeout: 180000 });
                         data = response.data;
                     } finally {
