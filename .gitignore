@@ -50,3 +50,20 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+
+# ============================================
+# 🔴 MODELES IA - TROP GROS POUR GITHUB
+# ============================================
+models/
+data/chroma_ivr/
+data/validation_sources/
+
+# Archives
+*.tar.gz
+*.zip
+
+# Fichiers de test
+sherpa_page.png
+test_*.py
+soloni_*.py
+export_*.py
