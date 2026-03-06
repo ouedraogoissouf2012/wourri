@@ -3,7 +3,7 @@
     "langue": "bambara",
     "code_iso": "bam",
     "version": "1.0.0",
-    "total_mots": 11327,
+    "total_mots": 11331,
     "date_generation": "2026-02-18 17:11",
     "categories": {
       "general": 8031,
@@ -148018,6 +148018,48 @@
       "categorie": "general",
       "pos": "nom",
       "source": "bamadaba",
+      "variantes": [],
+      "exemples": []
+    },
+    "bɛnɛ": {
+      "fr": [
+        "sésame"
+      ],
+      "categorie": "agriculture",
+      "pos": "nom",
+      "source": "manuel",
+      "variantes": [],
+      "exemples": []
+    },
+    "kafe": {
+      "fr": [
+        "café"
+      ],
+      "categorie": "agriculture",
+      "pos": "nom",
+      "source": "manuel",
+      "variantes": [
+        "kafɛ"
+      ],
+      "exemples": []
+    },
+    "ananas": {
+      "fr": [
+        "ananas"
+      ],
+      "categorie": "agriculture.fruits",
+      "pos": "nom",
+      "source": "manuel",
+      "variantes": [],
+      "exemples": []
+    },
+    "woso": {
+      "fr": [
+        "patate douce"
+      ],
+      "categorie": "agriculture.legumes",
+      "pos": "nom",
+      "source": "manuel",
       "variantes": [],
       "exemples": []
     }
