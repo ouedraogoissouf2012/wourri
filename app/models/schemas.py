@@ -44,6 +44,7 @@ class ChatResponse(BaseModel):
     city: str
     language: str
     audio_language: Optional[str] = None   # Langue de l'audio généré
+    meta: Optional[dict] = None            # Métadonnées NLU pour C4 feedback: {intent, cultures, source}
 
 
 class WeatherRequest(BaseModel):

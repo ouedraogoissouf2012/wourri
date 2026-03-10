@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 import os
 
 from app.config import get_settings
-from app.routers import weather, chat, tts, stt, rag, asr
+from app.routers import weather, chat, tts, stt, rag, asr, feedback
 from app.services.deepseek import check_deepseek_status
 from app.services.tts_bambara import check_models_status
 from app.services.stt_whisper import check_whisper_status
@@ -146,6 +146,7 @@ app.include_router(tts.router)
 app.include_router(stt.router)
 app.include_router(rag.router)
 app.include_router(asr.router)
+app.include_router(feedback.router)
 
 
 @app.get("/", response_class=HTMLResponse)

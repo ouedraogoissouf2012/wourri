@@ -1,10 +1,12 @@
 {
-  "version": "1.3",
+  "version": "1.5",
   "description": "Corpus IVR agricole Wourri — réponses pré-écrites en bambara/dioula par intent × culture",
   "note": "Inspiré approche CGIAR/Viamo. Phrases à valider par locuteur natif bambara/dioula agricole. Score_validation = estimation initiale.",
   "correction_v1.1": "2026-03-03 — termes igname (danburu→ku) et manioc (barakama→bananku) corrigés.",
   "ajout_v1.2": "2026-03-03 — 56 nouvelles entrées : mil(nyɔ), coton(kɔrɔni), banane(bàrànda), tomate(tamati), haricot(soso), gombo(gan), oignon(jaba). Couverture : 76% (13/17).",
   "ajout_v1.3": "2026-03-04 — 32 nouvelles entrées : patate(woso), sésame(bɛnɛ), café(kafe), ananas(ananas). Couverture IVR : 100% (17/17 cultures). Total : 144 entrées.",
+  "correction_v1.4": "2026-03-09 — saraka→nɔgɔ dans toutes les entrées engrais (8 cultures). Validation 3-étapes : saraka=aumône/offrande (An Ka Taa + Bayelemabaga 174 occurrences contexte religieux), nɔgɔ=engrais/fumure (An Ka Taa validé).",
+  "correction_v1.5": "2026-03-09 — jɛn→jǎ (sécher) dans 5 entrées stockage/récolte (riz, maïs×2, arachide×2). tile bi wɔɔrɔ→Lɔgɔkun wɔɔrɔ (6 semaines) dans riz_engrais_001. Validé An Ka Taa + utilisateur natif. NOTE: tile bi saba (mais_irrigation_001) flaggé D1. nitrojɛn conservé (emprunt scientifique).",
   "sources_reference": ["Bamanankan.org", "FLORES-200", "AfricaRice", "IITA", "ANADER CI", "ICRISAT"],
   "structure": {
     "id": "identifiant unique",
@@ -79,10 +81,10 @@
       "intent": "QUESTION_ENGRAIS",
       "cultures": ["CULTURE_RIZ"],
       "conditions": [],
-      "reponse_bambara": "I ka saraka NPK don dugukolo la sɛnɛ waati la. Tile bi wɔɔrɔ kɔ, i ka urée fara a kan dɔɔni. Saraka bɛ màlo ka ca kosɛbɛ.",
+      "reponse_bambara": "I ka nɔgɔ NPK don dugukolo la sɛnɛ waati la. Lɔgɔkun wɔɔrɔ kɔ, i ka urée fara a kan dɔɔni. Nɔgɔ bɛ màlo ka ca kosɛbɛ.",
       "reponse_fr": "Mets de l'engrais NPK dans la terre au moment de planter. Après 6 semaines, rajoute un peu d'urée. L'engrais fait beaucoup grossir le riz.",
-      "score_validation": 0.71,
-      "tags": ["riz", "engrais", "NPK", "urée", "saraka", "fertilisant"]
+      "score_validation": 0.80,
+      "tags": ["riz", "engrais", "NPK", "urée", "nɔgɔ", "fertilisant"]
     },
 
     {
@@ -90,7 +92,7 @@
       "intent": "QUESTION_STOCKAGE",
       "cultures": ["CULTURE_RIZ"],
       "conditions": [],
-      "reponse_bambara": "Màlo lajɛlen kɔ, i ka a jɛn tile o tile ka ɲɛ. I ka a don grenier la jì tɛ yɔrɔ. Grenier ka kan ka kɛ duguma kan.",
+      "reponse_bambara": "Màlo lajɛlen kɔ, i ka a jǎ tile o tile ka ɲɛ. I ka a don grenier la jì tɛ yɔrɔ. Grenier ka kan ka kɛ duguma kan.",
       "reponse_fr": "Après la récolte, sèche bien ton riz au soleil chaque jour. Mets-le dans un grenier sans humidité. Le grenier doit être surélevé du sol.",
       "score_validation": 0.72,
       "tags": ["riz", "stockage", "grenier", "séchage", "conservation"]
@@ -156,7 +158,7 @@
       "intent": "QUESTION_RECOLTE",
       "cultures": ["CULTURE_MAIS"],
       "conditions": [],
-      "reponse_bambara": "Kaba lajɛli waati ye tile bi kɛmɛ ye sɛnɛli kɔfɛ. Kaba ka gɛlɛn caya ni kaba gɛlɛnw bɛ sɛgɛla. I ka sogi ka kaba bɔ ka jɛn.",
+      "reponse_bambara": "Kaba lajɛli waati ye tile bi kɛmɛ ye sɛnɛli kɔfɛ. Kaba ka gɛlɛn caya ni kaba gɛlɛnw bɛ sɛgɛla. I ka sogi ka kaba bɔ ka jǎ.",
       "reponse_fr": "Le maïs se récolte 90-100 jours après la plantation. Le maïs est mûr quand les grains durcissent et jaunissent. Cueille les épis et fais-les sécher.",
       "score_validation": 0.71,
       "tags": ["maïs", "récolte", "jours", "grains", "maturité", "séchage"]
@@ -178,10 +180,10 @@
       "intent": "QUESTION_ENGRAIS",
       "cultures": ["CULTURE_MAIS"],
       "conditions": [],
-      "reponse_bambara": "I ka saraka NPK don dugukolo la sɛnɛ waati la. Tile bi saba kɔ, i ka urée fara a kan dɔɔni. Saraka bɛ kaba ka ca ka di.",
+      "reponse_bambara": "I ka nɔgɔ NPK don dugukolo la sɛnɛ waati la. Tile bi saba kɔ, i ka urée fara a kan dɔɔni. Nɔgɔ bɛ kaba ka ca ka di.",
       "reponse_fr": "Mets du NPK dans la terre au moment de planter. Après 30 jours, rajoute un peu d'urée. L'engrais fait grossir le maïs et il est bon.",
-      "score_validation": 0.71,
-      "tags": ["maïs", "engrais", "NPK", "urée", "saraka", "rendement"]
+      "score_validation": 0.80,
+      "tags": ["maïs", "engrais", "NPK", "urée", "nɔgɔ", "rendement"]
     },
 
     {
@@ -189,7 +191,7 @@
       "intent": "QUESTION_STOCKAGE",
       "cultures": ["CULTURE_MAIS"],
       "conditions": [],
-      "reponse_bambara": "Kaba lajɛlen kɔ, i ka a jɛn tile o tile tile la. I ka a don saku la bɔlɔ tɛ yɔrɔ. I ka fura don saku kɔnɔ kulun ma.",
+      "reponse_bambara": "Kaba lajɛlen kɔ, i ka a jǎ tile o tile tile la. I ka a don saku la bɔlɔ tɛ yɔrɔ. I ka fura don saku kɔnɔ kulun ma.",
       "reponse_fr": "Après la récolte, fais sécher le maïs au soleil chaque jour. Mets-le dans des sacs à l'abri de l'humidité. Mets un produit anti-insectes dans le sac.",
       "score_validation": 0.70,
       "tags": ["maïs", "stockage", "séchage", "sac", "insectes", "conservation"]
@@ -244,7 +246,7 @@
       "intent": "QUESTION_RECOLTE",
       "cultures": ["CULTURE_ARACHIDE"],
       "conditions": [],
-      "reponse_bambara": "Tiga lajɛli waati ye kalo saba ye sɛnɛli kɔfɛ. I ka tiga bɔ dugukolo la ni fɔrɔ ye joona. I ka tiga jɛn tile o tile ka ɲɛ.",
+      "reponse_bambara": "Tiga lajɛli waati ye kalo saba ye sɛnɛli kɔfɛ. I ka tiga bɔ dugukolo la ni fɔrɔ ye joona. I ka tiga jǎ tile o tile ka ɲɛ.",
       "reponse_fr": "L'arachide se récolte 3 mois après la plantation. Arrache les plants délicatement et rapidement. Fais sécher les arachides chaque jour au soleil.",
       "score_validation": 0.72,
       "tags": ["arachide", "récolte", "arrachage", "séchage", "3 mois"]
@@ -266,10 +268,10 @@
       "intent": "QUESTION_ENGRAIS",
       "cultures": ["CULTURE_ARACHIDE"],
       "conditions": [],
-      "reponse_bambara": "Tiga b'a fɛ saraka dɔɔni dɔrɔn. I ka phosphore don dugukolo la sɛnɛ waati la. Tiga bɛ nitrojɛn kɛ i yɛrɛ, saraka caman ma ɲɛ.",
+      "reponse_bambara": "Tiga b'a fɛ nɔgɔ dɔɔni dɔrɔn. I ka phosphore don dugukolo la sɛnɛ waati la. Tiga bɛ nitrojɛn kɛ i yɛrɛ, nɔgɔ caman ma ɲɛ.",
       "reponse_fr": "L'arachide n'a besoin que de peu d'engrais. Mets du phosphore dans la terre au moment de planter. L'arachide fabrique son propre azote, trop d'engrais c'est mauvais.",
-      "score_validation": 0.72,
-      "tags": ["arachide", "engrais", "phosphore", "azote", "saraka", "peu"]
+      "score_validation": 0.80,
+      "tags": ["arachide", "engrais", "phosphore", "azote", "nɔgɔ", "peu"]
     },
 
     {
@@ -277,7 +279,7 @@
       "intent": "QUESTION_STOCKAGE",
       "cultures": ["CULTURE_ARACHIDE"],
       "conditions": [],
-      "reponse_bambara": "I ka tiga jɛn ka ɲɛ sani i ka a don grenier la. Jì bɛ tiga halaki joona. I ka tiga mara bɔlɔ tɛ yɔrɔ ni saniya la.",
+      "reponse_bambara": "I ka tiga jǎ ka ɲɛ sani i ka a don grenier la. Jì bɛ tiga halaki joona. I ka tiga mara bɔlɔ tɛ yɔrɔ ni saniya la.",
       "reponse_fr": "Sèche bien les arachides avant de les mettre au grenier. L'humidité abîme rapidement les arachides. Garde-les dans un endroit sec et propre.",
       "score_validation": 0.73,
       "tags": ["arachide", "stockage", "séchage", "grenier", "humidité", "conservation"]
@@ -354,7 +356,7 @@
       "intent": "QUESTION_ENGRAIS",
       "cultures": ["CULTURE_IGNAME"],
       "conditions": [],
-      "reponse_bambara": "Ku sɛnɛ la, saraka organic kɛ dunbu labɛn ɲɛ. Kalo fila kɔfɛ, NPK dɔɔni fara a kan. Saraka caman bɛ sira bɔ ka ku yɔrɔ ta.",
+      "reponse_bambara": "Ku sɛnɛ la, nɔgɔ organic kɛ dunbu labɛn ɲɛ. Kalo fila kɔfɛ, NPK dɔɔni fara a kan. Nɔgɔ caman bɛ sira bɔ ka ku yɔrɔ ta.",
       "reponse_fr": "Pour l'igname, mettez de la fumure organique avant de former les buttes. Ajoutez un peu d'engrais NPK après 2 mois. Trop d'azote favorise les feuilles au détriment des tubercules.",
       "score_validation": 0.80,
       "tags": ["igname", "ku", "engrais", "NPK", "fumure", "organique", "buttes"]
@@ -442,7 +444,7 @@
       "intent": "QUESTION_ENGRAIS",
       "cultures": ["CULTURE_MANIOC"],
       "conditions": [],
-      "reponse_bambara": "Bananku ma saraka caman fɛ. NPK dɔɔni sɛnɛ waati la ka ɲi. Duguma ɲuman na, bananku bɛ se saraka kelen ma.",
+      "reponse_bambara": "Bananku ma nɔgɔ caman fɛ. NPK dɔɔni sɛnɛ waati la ka ɲi. Duguma ɲuman na, bananku bɛ se nɔgɔ kelen ma.",
       "reponse_fr": "Le manioc n'a pas besoin de beaucoup d'engrais. Une petite dose de NPK au moment de la plantation suffit. Dans un bon sol, il pousse même sans engrais.",
       "score_validation": 0.80,
       "tags": ["manioc", "bananku", "engrais", "NPK", "sol", "fertilisation"]
@@ -530,7 +532,7 @@
       "intent": "QUESTION_ENGRAIS",
       "cultures": ["CULTURE_CACAO"],
       "conditions": [],
-      "reponse_bambara": "Kakawo bɛ saraka fɛ san bɛɛ. NPK wala potasse kɛ sanji waati fɔlɔ ani laban. Foro ɲuman na kakawo bɛ sɔrɔ caman.",
+      "reponse_bambara": "Kakawo bɛ nɔgɔ fɛ san bɛɛ. NPK wala potasse kɛ sanji waati fɔlɔ ani laban. Foro ɲuman na kakawo bɛ sɔrɔ caman.",
       "reponse_fr": "Le cacao a besoin d'engrais chaque année. Mettez NPK ou potasse deux fois par an, au début et à la fin de la saison des pluies. Un sol bien fertilisé donne plus de cabosses.",
       "score_validation": 0.70,
       "tags": ["cacao", "kakawo", "engrais", "NPK", "potasse", "fertilisation", "rendement"]
@@ -1300,7 +1302,7 @@
       "intent": "QUESTION_ENGRAIS",
       "cultures": ["CULTURE_PATATE"],
       "conditions": [],
-      "reponse_bambara": "Woso bɛ fumure kɛ jɛ sɛnɛ ɲɛ. I ka NPK dɔɔni farali kɛ joona sɛnɛ kɔfɛ. Saraka caman bɛ woso halaki.",
+      "reponse_bambara": "Woso bɛ fumure kɛ jɛ sɛnɛ ɲɛ. I ka NPK dɔɔni farali kɛ joona sɛnɛ kɔfɛ. Nɔgɔ caman bɛ woso halaki.",
       "reponse_fr": "La patate douce aime la fumure organique avant la plantation. Un peu de NPK juste après la plantation suffit. Trop d'engrais abîme la patate.",
       "score_validation": 0.70,
       "tags": ["patate douce", "woso", "engrais", "fumure", "NPK", "organique"]
@@ -1388,7 +1390,7 @@
       "intent": "QUESTION_ENGRAIS",
       "cultures": ["CULTURE_SESAME"],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ ma saraka caman fɛ. Fumure kɛ foro la sɛnɛ ɲɛ ka ɲi. Phosphate dɔɔni bɛ a dɛmɛ.",
+      "reponse_bambara": "Bɛnɛ ma nɔgɔ caman fɛ. Fumure kɛ foro la sɛnɛ ɲɛ ka ɲi. Phosphate dɔɔni bɛ a dɛmɛ.",
       "reponse_fr": "Le sésame n'a pas besoin de beaucoup d'engrais. Mets de la fumure organique avant la plantation. Un peu de phosphate l'aide à se développer.",
       "score_validation": 0.65,
       "tags": ["sésame", "bɛnɛ", "engrais", "fumure", "phosphate", "organique"]

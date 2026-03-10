@@ -292,6 +292,7 @@ async def chat(request: ChatRequest):
                     from app.services.tts_dioula import synthesize_dioula_text
                     audio_url = synthesize_dioula_text(ivr_bambara)
                     audio_language_name = "Dioula"
+                cultures = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
                 return ChatResponse(
                     response=ivr_bambara,
                     response_dioula=ivr_bambara,
@@ -299,7 +300,8 @@ async def chat(request: ChatRequest):
                     audio_url=audio_url,
                     city=city,
                     language=request.language.value,
-                    audio_language=audio_language_name
+                    audio_language=audio_language_name,
+                    meta={"intent": nlu_intent, "cultures": cultures, "source": "ivr_exact"}
                 )
 
         # CHEMIN FALLBACK : intent exact non trouvé dans l'IVR
@@ -308,6 +310,7 @@ async def chat(request: ChatRequest):
         # DIOULA / BOTH : recherche par concept → jamais NLLB ni DeepSeek
         if request.language in (Language.DIOULA, Language.BOTH):
             bambara_fallback = _chercher_ivr_par_concept(nlu_concepts)
+            fallback_source = "ivr_fallback" if bambara_fallback else "fallback_generic"
 
             if not bambara_fallback:
                 from app.services.vdb_service import get_reponse_fallback
@@ -319,6 +322,7 @@ async def chat(request: ChatRequest):
                 audio_url = synthesize_dioula_text(bambara_fallback)
                 audio_language_name = "Dioula"
 
+            cultures = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
             return ChatResponse(
                 response=bambara_fallback,
                 response_dioula=bambara_fallback,
@@ -326,7 +330,8 @@ async def chat(request: ChatRequest):
                 audio_url=audio_url,
                 city=city,
                 language=request.language.value,
-                audio_language=audio_language_name
+                audio_language=audio_language_name,
+                meta={"intent": nlu_intent, "cultures": cultures, "source": fallback_source}
             )
 
         # FRENCH uniquement : DeepSeek reste actif

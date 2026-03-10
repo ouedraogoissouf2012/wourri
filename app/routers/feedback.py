@@ -1,0 +1,98 @@
+"""
+WOURI - Router Feedback C4
+Reçoit les retours 👍/👎 depuis WhatsApp et déclenche C3 auto-apprentissage.
+
+POST /api/feedback/positif  → ajouter_reponse_validee() si source = ivr_fallback
+POST /api/feedback/negatif  → log pour C5 reporting
+"""
+import json
+import logging
+import os
+from datetime import datetime
+from fastapi import APIRouter
+from pydantic import BaseModel
+from typing import Optional, List
+
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/api/feedback", tags=["Feedback"])
+
+# Fichier de log pour les feedbacks négatifs (C5)
+FEEDBACK_LOG = os.path.join(os.path.dirname(__file__), "..", "..", "logs", "feedback.jsonl")
+
+
+class FeedbackRequest(BaseModel):
+    user_id: str
+    reponse_bambara: str
+    reponse_fr: Optional[str] = ""
+    intent: Optional[str] = ""
+    cultures: Optional[List[str]] = []
+    source: Optional[str] = "unknown"  # ivr_exact | ivr_fallback | fallback_generic
+
+
+def _log_feedback(entry: dict):
+    """Écrit une ligne JSONL dans le fichier de log feedback."""
+    try:
+        os.makedirs(os.path.dirname(FEEDBACK_LOG), exist_ok=True)
+        with open(FEEDBACK_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception as e:
+        logger.error(f"[Feedback] Erreur log: {e}")
+
+
+@router.post("/positif")
+async def feedback_positif(req: FeedbackRequest):
+    """
+    Feedback 👍 — l'utilisateur a apprécié la réponse.
+    Si source = ivr_fallback : ajouter la réponse au corpus VDB (C3).
+    Si source = ivr_exact    : déjà dans le corpus, rien à faire.
+    """
+    entry = {
+        "ts": datetime.utcnow().isoformat(),
+        "user": req.user_id[:8] + "***",
+        "vote": "positif",
+        "intent": req.intent,
+        "cultures": req.cultures,
+        "source": req.source,
+        "reponse_bambara": req.reponse_bambara[:120],
+    }
+    _log_feedback(entry)
+
+    # C3 : auto-apprentissage uniquement pour les réponses de fallback
+    if req.source in ("ivr_fallback", "fallback_generic") and req.reponse_bambara:
+        try:
+            from app.services.vdb_service import ajouter_reponse_validee
+            ok = ajouter_reponse_validee(
+                intent=req.intent or "CONSEIL_PRODUCTION",
+                cultures=req.cultures or ["*"],
+                reponse_bambara=req.reponse_bambara,
+                reponse_fr=req.reponse_fr or "",
+                score_validation=0.80,
+                tags=["feedback_positif", "auto_appris"],
+            )
+            if ok:
+                logger.info(f"[C3] Nouvelle entrée validée depuis feedback 👍 (intent={req.intent})")
+                return {"status": "ok", "action": "apprentissage", "message": "Réponse ajoutée au corpus"}
+        except Exception as e:
+            logger.error(f"[C3] Erreur auto-apprentissage: {e}")
+
+    return {"status": "ok", "action": "logged", "message": "Merci pour votre retour"}
+
+
+@router.post("/negatif")
+async def feedback_negatif(req: FeedbackRequest):
+    """
+    Feedback 👎 — l'utilisateur n'a pas apprécié la réponse.
+    Log pour C5 reporting (analyse des intents sans bonne réponse).
+    """
+    entry = {
+        "ts": datetime.utcnow().isoformat(),
+        "user": req.user_id[:8] + "***",
+        "vote": "negatif",
+        "intent": req.intent,
+        "cultures": req.cultures,
+        "source": req.source,
+        "reponse_bambara": req.reponse_bambara[:120],
+    }
+    _log_feedback(entry)
+    logger.warning(f"[C5] Réponse rejetée: intent={req.intent} cultures={req.cultures} source={req.source}")
+    return {"status": "ok", "action": "logged", "message": "Feedback enregistré pour amélioration"}
