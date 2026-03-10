@@ -48,7 +48,8 @@ const STEPS = {
     NEW: 'new',           // Nouvel utilisateur
     WAITING_CITY: 'waiting_city',     // En attente de la ville
     WAITING_LANGUAGE: 'waiting_language', // En attente de la langue
-    COMPLETE: 'complete'  // Onboarding termine
+    COMPLETE: 'complete',          // Onboarding termine
+    WAITING_FEEDBACK: 'waiting_feedback' // En attente du feedback 👍/👎
 };
 
 // Charger les preferences depuis le fichier
@@ -82,7 +83,8 @@ function getUserPrefs(userNumber) {
             city: null,
             language: null,
             step: STEPS.NEW,
-            pendingQuestion: null
+            pendingQuestion: null,
+            pendingFeedback: null
         };
     }
     return userPreferences[userNumber];
@@ -608,6 +610,50 @@ async function connectWhatsApp() {
                 }
 
                 // ========================================
+                // FEEDBACK 👍/👎 (C4)
+                // ========================================
+                if (prefs.step === STEPS.WAITING_FEEDBACK) {
+                    const fb = prefs.pendingFeedback || {};
+                    const msgLower = messageText.trim().toLowerCase();
+
+                    // Detecter thumbsup / thumbsdown
+                    const isThumbsUp   = ['👍','oui','yes','bien','ok','super','bon','ɲuman','numan'].some(k => msgLower.includes(k));
+                    const isThumbsDown = ['👎','non','no','mauvais','mal','pas bon','te ɲuman'].some(k => msgLower.includes(k));
+
+                    if (isThumbsUp || isThumbsDown) {
+                        const endpoint = isThumbsUp ? 'positif' : 'negatif';
+                        try {
+                            await axios.post(`${WOURI_API_URL}/api/feedback/${endpoint}`, {
+                                user_id: userNumber,
+                                reponse_bambara: fb.reponse_bambara || '',
+                                reponse_fr: fb.reponse_fr || '',
+                                intent: fb.intent || '',
+                                cultures: fb.cultures || [],
+                                source: fb.source || 'unknown'
+                            }, { timeout: 10000 });
+                            console.log(`[FEEDBACK] ${endpoint} enregistre pour intent=${fb.intent}`);
+                        } catch (fbErr) {
+                            console.log('[FEEDBACK] Erreur appel API:', fbErr.message);
+                        }
+
+                        // Confirmer et reprendre le mode normal
+                        const confirm = isThumbsUp
+                            ? 'Aw ni ce! 🙏 I ka ladili nɔgɔya n ma.'
+                            : 'N bɛ a faamu. N bɛ jɛ ka ɲɛ. 🙏';
+                        await sock.sendMessage(userNumber, { text: confirm });
+                    } else {
+                        // Message invalide → re-demander
+                        await sock.sendMessage(userNumber, { text: 'I ka jaabi 👍 wala 👎 di.' });
+                    }
+
+                    // Reprendre le mode normal
+                    prefs.step = STEPS.COMPLETE;
+                    prefs.pendingFeedback = null;
+                    saveUserPreferences();
+                    return;
+                }
+
+                // ========================================
                 // TRAITEMENT DES QUESTIONS (ONBOARDING COMPLETE)
                 // ========================================
                 if (prefs.step === STEPS.COMPLETE) {
@@ -828,6 +874,25 @@ async function connectWhatsApp() {
                                 }
                             }
                         }
+                    }
+
+                    // ========================================
+                    // PROMPT FEEDBACK C4 (dioula/both uniquement)
+                    // ========================================
+                    if ((prefs.language === 'dioula' || prefs.language === 'both') && data.meta) {
+                        await randomDelay(500, 1000);
+                        await sock.sendMessage(userNumber, {
+                            text: 'I ka jaabi ɲuman ye wa? 👍 / 👎'
+                        });
+                        prefs.pendingFeedback = {
+                            reponse_bambara: data.response_dioula || data.response || '',
+                            reponse_fr: '',
+                            intent: data.meta.intent || '',
+                            cultures: data.meta.cultures || [],
+                            source: data.meta.source || 'unknown'
+                        };
+                        prefs.step = STEPS.WAITING_FEEDBACK;
+                        saveUserPreferences();
                     }
                 }
 
