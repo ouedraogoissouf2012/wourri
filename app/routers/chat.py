@@ -12,6 +12,7 @@ from app.services.tts_bambara import translate_to_bambara, TORCH_AVAILABLE
 from app.services.tts_dioula import synthesize_dioula
 from app.models.schemas import ChatRequest, ChatResponse, Language
 from app.data.cities import IVORIAN_CITIES
+from app.data.calendrier_agricole import get_conseil_saisonnier
 from app.config import get_settings
 
 settings = get_settings()
@@ -121,6 +122,8 @@ def _chercher_ivr(intent: str, concepts: dict) -> str | None:
         if result:
             score = result.get("score_validation", 0.0)
             print(f"[VDB] Réponse trouvée: {result['id']} (score={score:.2f})")
+            print(f"[REPONSE BAM] {result['reponse_bambara']}")
+            print(f"[REPONSE FR]  {result.get('reponse_fr', '(non disponible)')}")
             return result["reponse_bambara"]
 
     except Exception as e:
@@ -288,6 +291,13 @@ async def chat(request: ChatRequest):
             ivr_bambara = _chercher_ivr(intent=nlu_intent, concepts=nlu_concepts)
             if ivr_bambara:
                 print(f"[Chat IVR] Réponse corpus trouvée — chemin direct bambara (intent={nlu_intent})")
+
+                # Injecter conseil saisonnier selon le mois actuel
+                cultures_detectees = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
+                conseil = get_conseil_saisonnier(cultures_detectees, intent=nlu_intent)
+                if conseil:
+                    ivr_bambara = ivr_bambara + " " + conseil["bambara"]
+
                 if request.include_audio:
                     from app.services.tts_dioula import synthesize_dioula_text
                     audio_url = synthesize_dioula_text(ivr_bambara)
