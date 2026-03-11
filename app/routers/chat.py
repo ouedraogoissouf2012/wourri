@@ -20,6 +20,46 @@ settings = get_settings()
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
 
 
+def _build_meteo_bambara(weather_data: dict | None, city: str) -> tuple[str, str]:
+    """Construit un message météo en bambara selon les données Open-Meteo réelles."""
+    if not weather_data:
+        return ("I ka foro kɔlɔsi ka waati ɲuman sɔrɔ.", "Surveille ton champ et profite du bon moment.")
+
+    code = weather_data.get("weather_code", 0)
+    temp = weather_data.get("temperature", 28)
+    precip = weather_data.get("precipitation", 0)
+    city_name = weather_data.get("city", city)
+
+    # Orage (95-99)
+    if code >= 95:
+        bam = f"{city_name} kɔnɔ sanfɛla bɛ na. I ka i ka dòn ni i ka fɛnw bɛɛ lakana joona!"
+        fr  = f"Un orage arrive sur {city_name}. Mets à l'abri tes grains et affaires immédiatement !"
+    # Pluie forte (61-82)
+    elif code >= 61 or precip > 5:
+        bam = f"{city_name} kɔnɔ sanji bɛ na. I ka i ka dòn ni i ka fɛnw lakana, sanji bɛ se ka u bɔsi. Foro labɛnni waati ye sisan ye!"
+        fr  = f"La pluie arrive sur {city_name}. Protège tes grains et affaires, la pluie peut tout abîmer. C'est le moment de préparer le champ !"
+    # Bruine / pluie légère (51-55)
+    elif code >= 51 or precip > 0:
+        bam = f"{city_name} kɔnɔ sanji fɛrɛn bɛ na. Sɛnɛ daminɛ waati ɲuman ye sisan ye."
+        fr  = f"Légère pluie sur {city_name}. C'est un bon moment pour commencer les semis."
+    # Ciel couvert (3)
+    elif code == 3:
+        bam = f"{city_name} kɔnɔ sankolo bɛ fara. Sanji bɛ se ka na. I ka foro labɛn sisan."
+        fr  = f"Ciel couvert sur {city_name}. La pluie peut venir. Prépare ton champ maintenant."
+    # Ciel dégagé / chaud (0-2)
+    else:
+        if temp > 33:
+            bam = f"{city_name} kɔnɔ tile ka jugu, sanji tɛ. I ka i ka sɛnɛ kalan dɔn kosɛbɛ ani i ka i yɛrɛ lakana tile la."
+            fr  = f"Chaleur intense sur {city_name}, pas de pluie. Irrigue bien tes cultures et protège-toi du soleil."
+        else:
+            bam = f"{city_name} kɔnɔ tile bɛ ɲɛ, sanji tɛ sisan. I ka i ka sɛnɛ kalan dɔn ni ji."
+            fr  = f"Ciel dégagé sur {city_name}, pas de pluie. Pense à arroser tes cultures."
+
+    print(f"[METEO BAM] {bam}")
+    print(f"[METEO FR]  {fr}")
+    return (bam, fr)
+
+
 def _apply_nlu_preprocessing(message: str, bambara_text: str | None = None) -> tuple[str, str | None, dict]:
     """Applique le NLU si le message semble être du bambara ou si bambara_text est fourni.
 
@@ -285,12 +325,22 @@ async def chat(request: ChatRequest):
         response_dioula = None
         audio_language_name = None
 
+        # Récupérer météo tôt (utilisée pour salutations + chemin DeepSeek)
+        weather_data = await get_weather(city)
+
         # CHEMIN PRINCIPAL IVR : chercher réponse bambara pré-validée dans la VDB
         # (évite DeepSeek + traduction pour les cas couverts par le corpus)
         if request.language in (Language.DIOULA, Language.BOTH) and nlu_intent:
             ivr_bambara = _chercher_ivr(intent=nlu_intent, concepts=nlu_concepts)
             if ivr_bambara:
                 print(f"[Chat IVR] Réponse corpus trouvée — chemin direct bambara (intent={nlu_intent})")
+
+                # Remplacer {{METEO_CONTEXTUEL}} si présent (entrées salutation)
+                if "{{METEO_CONTEXTUEL}}" in ivr_bambara:
+                    meteo_bam, meteo_fr = _build_meteo_bambara(weather_data, city)
+                    ivr_bambara = ivr_bambara.replace("{{METEO_CONTEXTUEL}}", meteo_bam)
+                    print(f"[METEO BAM] {meteo_bam}")
+                    print(f"[METEO FR]  {meteo_fr}")
 
                 # Injecter conseil saisonnier selon le mois actuel
                 cultures_detectees = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]

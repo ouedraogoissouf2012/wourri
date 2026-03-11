@@ -49,6 +49,15 @@ _ASR_FIXES = {
     "sɔgɔ ma": "sɔgɔma", "sogo ma": "sogoma",
     "ani sɔgɔma": "i ni sɔgɔma", "ani sogoma": "i ni sogoma",
     "ani ce": "i ni ce", "anise": "i ni ce", "anice": "i ni ce",
+    # Soir (wulafɛ) — NeMo fragmente ou déforme
+    "wulari": "wulafɛ", "wulafe": "wulafɛ", "wula fe": "wulafɛ",
+    "ani wula": "a ni wulafɛ", "ani wulafe": "a ni wulafɛ",
+    # Nuit (sufɛ) — NeMo fragmente "sufɛ" en morceaux absurdes
+    "su ani so": "a ni sufɛ", "an ni sa kɔnɔ": "a ni sufɛ",
+    "an ni su": "a ni sufɛ", "a ni su": "a ni sufɛ",
+    "sufe": "sufɛ", "su fe": "sufɛ",
+    # Midi (tilefɛ)
+    "tile fe": "tilefɛ", "tilefe": "tilefɛ", "tile fɛ": "tilefɛ",
 
     # ========== MOTS AGRICOLES ==========
     "malon": "malo",        # riz

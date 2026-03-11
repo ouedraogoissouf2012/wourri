@@ -605,6 +605,50 @@
     },
 
     {
+      "id": "salutation_matin_001",
+      "intent": "SALUTATION_MATIN",
+      "cultures": ["*"],
+      "conditions": [],
+      "reponse_bambara": "I ni sɔgɔma tɔ! Ne ye Wourri ye, i ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} I b'a fɛ ka ɲinini mun na?",
+      "reponse_fr": "Bonjour à toi ! Je suis Wourri, ton assistant agricole. {{METEO_FR}} Tu veux de l'aide sur quoi ?",
+      "score_validation": 0.9,
+      "tags": ["salutation", "matin", "sɔgɔma", "météo"]
+    },
+
+    {
+      "id": "salutation_midi_001",
+      "intent": "SALUTATION_MIDI",
+      "cultures": ["*"],
+      "conditions": [],
+      "reponse_bambara": "I ni tilefɛ tɔ! Ne ye Wourri ye, i ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} I b'a fɛ ka ɲinini mun na?",
+      "reponse_fr": "Bonne mi-journée ! Je suis Wourri, ton assistant agricole. {{METEO_FR}} Tu veux de l'aide sur quoi ?",
+      "score_validation": 0.9,
+      "tags": ["salutation", "midi", "tilefɛ", "météo"]
+    },
+
+    {
+      "id": "salutation_soir_001",
+      "intent": "SALUTATION_SOIR",
+      "cultures": ["*"],
+      "conditions": [],
+      "reponse_bambara": "I ni wulafɛ tɔ! Ne ye Wourri ye, i ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} I b'a fɛ ka ɲinini mun na?",
+      "reponse_fr": "Bonsoir ! Je suis Wourri, ton assistant agricole. {{METEO_FR}} Tu veux de l'aide sur quoi ?",
+      "score_validation": 0.9,
+      "tags": ["salutation", "soir", "wulafɛ", "météo"]
+    },
+
+    {
+      "id": "salutation_nuit_001",
+      "intent": "SALUTATION_NUIT",
+      "cultures": ["*"],
+      "conditions": [],
+      "reponse_bambara": "I ni sufɛ tɔ! Ne ye Wourri ye, i ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} I b'a fɛ ka ɲinini mun na?",
+      "reponse_fr": "Bonne nuit ! Je suis Wourri, ton assistant agricole. {{METEO_FR}} Tu veux de l'aide sur quoi ?",
+      "score_validation": 0.9,
+      "tags": ["salutation", "nuit", "sufɛ", "météo"]
+    },
+
+    {
       "id": "generic_salutation_001",
       "intent": "SALUTATION_SEULE",
       "cultures": ["*"],
