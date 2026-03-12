@@ -59,8 +59,11 @@ class IntentClassifier:
             return "HORS_SUJET", 1.0, {}
 
         # Salutation seule (pas de concept agricole)
+        # Exception : les intents temps-de-journée (MATIN/MIDI/SOIR/NUIT) passent
+        # au scoring même sans concept agricole — ils ont leur propre corpus
+        _TIME_SALUTATIONS = {"SALUTATION_MATIN", "SALUTATION_MIDI", "SALUTATION_SOIR", "SALUTATION_NUIT"}
         has_agri = self._has_agricultural(concept_keys)
-        if not has_agri:
+        if not has_agri and not (concept_keys & _TIME_SALUTATIONS):
             if "SALUTATION" in concept_keys:
                 return "SALUTATION_SEULE", 1.0, {"has_greeting": True}
             return "HORS_SUJET", 1.0, {}

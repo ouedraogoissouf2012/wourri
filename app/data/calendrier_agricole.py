@@ -257,3 +257,53 @@ def get_conseil_saisonnier(cultures: list[str], intent: str = "") -> dict | None
         }
 
     return None
+
+
+def get_cultures_du_mois(city: str = "Abidjan", month: int = None, max_cultures: int = 3) -> list:
+    """
+    Retourne les cultures actives (plantation ou entretien) pour une ville et un mois.
+    Filtrées selon la zone agricole de la ville (zones_agricoles.py).
+
+    Args:
+        city: nom de la ville CI (ex: "Bouaké")
+        month: mois 1-12, None = mois actuel
+        max_cultures: nombre max de cultures à retourner
+
+    Returns:
+        liste de dicts {culture_key, fr, bambara, phase}
+    """
+    from app.data.zones_agricoles import get_cultures_zone
+
+    if month is None:
+        month = datetime.now().month
+
+    cultures_zone = get_cultures_zone(city)
+    cultures_actives = []
+
+    for culture_key in cultures_zone:
+        cal = CALENDRIER.get(culture_key)
+        if not cal:
+            continue
+
+        plantation = cal.get("plantation", [])
+        entretien = cal.get("entretien", [])
+
+        if month in plantation:
+            phase = "plantation"
+        elif month in entretien:
+            phase = "entretien"
+        else:
+            continue  # Repos ou récolte — on n'annonce pas ça en salutation
+
+        cultures_actives.append({
+            "culture_key": culture_key,
+            "fr": NOMS_CULTURES_FR.get(culture_key, culture_key),
+            "bambara": NOMS_CULTURES_BAMBARA.get(culture_key, culture_key),
+            "phase": phase,
+        })
+
+        if len(cultures_actives) >= max_cultures:
+            break
+
+    print(f"[ZONE CULTURES] {city} / mois {month} → {[c['fr'] for c in cultures_actives]}")
+    return cultures_actives

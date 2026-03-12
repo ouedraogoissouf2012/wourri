@@ -20,40 +20,61 @@ settings = get_settings()
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
 
 
-def _build_meteo_bambara(weather_data: dict | None, city: str) -> tuple[str, str]:
-    """Construit un message météo en bambara selon les données Open-Meteo réelles."""
+def _build_meteo_bambara(weather_data: dict | None, city: str, cultures: list = None) -> tuple[str, str]:
+    """
+    Construit un message météo + cultures de saison en bambara.
+
+    Args:
+        weather_data: données Open-Meteo (code WMO, température, précipitations)
+        city: nom de la ville
+        cultures: liste de dicts {bambara, fr, phase} depuis get_cultures_du_mois()
+    """
     if not weather_data:
-        return ("I ka foro kɔlɔsi ka waati ɲuman sɔrɔ.", "Surveille ton champ et profite du bon moment.")
+        bam = "Aw ka aw ka foro kɔlɔsi ka waati ɲuman sɔrɔ."
+        fr  = "Surveillez votre champ et profitez du bon moment."
+        return (bam, fr)
 
     code = weather_data.get("weather_code", 0)
     temp = weather_data.get("temperature", 28)
     precip = weather_data.get("precipitation", 0)
     city_name = weather_data.get("city", city)
 
-    # Orage (95-99)
+    # --- Météo + action urgente ---
     if code >= 95:
-        bam = f"{city_name} kɔnɔ sanfɛla bɛ na. I ka i ka dòn ni i ka fɛnw bɛɛ lakana joona!"
-        fr  = f"Un orage arrive sur {city_name}. Mets à l'abri tes grains et affaires immédiatement !"
-    # Pluie forte (61-82)
+        bam = f"{city_name} kɔnɔ sanfɛla bɛ na. Aw ka aw ka dòn ni aw ka fɛnw bɛɛ lakana joona!"
+        fr  = f"Un orage arrive sur {city_name}. Mettez à l'abri vos grains et affaires immédiatement !"
     elif code >= 61 or precip > 5:
-        bam = f"{city_name} kɔnɔ sanji bɛ na. I ka i ka dòn ni i ka fɛnw lakana, sanji bɛ se ka u bɔsi. Foro labɛnni waati ye sisan ye!"
-        fr  = f"La pluie arrive sur {city_name}. Protège tes grains et affaires, la pluie peut tout abîmer. C'est le moment de préparer le champ !"
-    # Bruine / pluie légère (51-55)
+        bam = f"{city_name} kɔnɔ sanji bɛ na. Aw ka aw ka dòn ni aw ka fɛnw lakana, sanji bɛ se ka u bɔsi. Foro labɛnni waati ye sisan ye!"
+        fr  = f"La pluie arrive sur {city_name}. Protégez vos grains et affaires, la pluie peut tout abîmer. C'est le moment de préparer le champ !"
     elif code >= 51 or precip > 0:
         bam = f"{city_name} kɔnɔ sanji fɛrɛn bɛ na. Sɛnɛ daminɛ waati ɲuman ye sisan ye."
         fr  = f"Légère pluie sur {city_name}. C'est un bon moment pour commencer les semis."
-    # Ciel couvert (3)
     elif code == 3:
-        bam = f"{city_name} kɔnɔ sankolo bɛ fara. Sanji bɛ se ka na. I ka foro labɛn sisan."
-        fr  = f"Ciel couvert sur {city_name}. La pluie peut venir. Prépare ton champ maintenant."
-    # Ciel dégagé / chaud (0-2)
+        bam = f"{city_name} kɔnɔ sankolo bɛ fara. Sanji bɛ se ka na. Aw ka foro labɛn sisan."
+        fr  = f"Ciel couvert sur {city_name}. La pluie peut venir. Préparez votre champ maintenant."
     else:
         if temp > 33:
-            bam = f"{city_name} kɔnɔ tile ka jugu, sanji tɛ. I ka i ka sɛnɛ kalan dɔn kosɛbɛ ani i ka i yɛrɛ lakana tile la."
-            fr  = f"Chaleur intense sur {city_name}, pas de pluie. Irrigue bien tes cultures et protège-toi du soleil."
+            bam = f"{city_name} kɔnɔ tile ka jugu, sanji tɛ. Aw ka aw ka sɛnɛ kalan dɔn kosɛbɛ ani aw yɛrɛw lakana tile la."
+            fr  = f"Chaleur intense sur {city_name}, pas de pluie. Irriguez bien vos cultures et protégez-vous du soleil."
         else:
-            bam = f"{city_name} kɔnɔ tile bɛ ɲɛ, sanji tɛ sisan. I ka i ka sɛnɛ kalan dɔn ni ji."
-            fr  = f"Ciel dégagé sur {city_name}, pas de pluie. Pense à arroser tes cultures."
+            bam = f"{city_name} kɔnɔ tile bɛ ɲɛ, sanji tɛ sisan. Aw ka aw ka sɛnɛ kalan dɔn ni ji."
+            fr  = f"Ciel dégagé sur {city_name}, pas de pluie. Pensez à arroser vos cultures."
+
+    # --- Cultures de saison (tissées naturellement dans le message) ---
+    if cultures:
+        noms_bam = [c["bambara"] for c in cultures]
+        noms_fr  = [c["fr"] for c in cultures]
+        if len(noms_bam) == 1:
+            liste_bam = noms_bam[0]
+            liste_fr  = noms_fr[0]
+        elif len(noms_bam) == 2:
+            liste_bam = f"{noms_bam[0]} ani {noms_bam[1]}"
+            liste_fr  = f"{noms_fr[0]} et {noms_fr[1]}"
+        else:
+            liste_bam = f"{', '.join(noms_bam[:-1])} ani {noms_bam[-1]}"
+            liste_fr  = f"{', '.join(noms_fr[:-1])} et {noms_fr[-1]}"
+        bam += f" Sisan ye {liste_bam} sɛnɛ waati ye aw ka zone kɔnɔ."
+        fr  += f" En ce moment, les cultures de saison dans votre zone sont : {liste_fr}."
 
     print(f"[METEO BAM] {bam}")
     print(f"[METEO FR]  {fr}")
@@ -336,11 +357,12 @@ async def chat(request: ChatRequest):
                 print(f"[Chat IVR] Réponse corpus trouvée — chemin direct bambara (intent={nlu_intent})")
 
                 # Remplacer {{METEO_CONTEXTUEL}} si présent (entrées salutation)
+                # → inclut météo réelle + cultures de saison selon la zone de la ville
                 if "{{METEO_CONTEXTUEL}}" in ivr_bambara:
-                    meteo_bam, meteo_fr = _build_meteo_bambara(weather_data, city)
+                    from app.data.calendrier_agricole import get_cultures_du_mois
+                    cultures_saison = get_cultures_du_mois(city)
+                    meteo_bam, meteo_fr = _build_meteo_bambara(weather_data, city, cultures_saison)
                     ivr_bambara = ivr_bambara.replace("{{METEO_CONTEXTUEL}}", meteo_bam)
-                    print(f"[METEO BAM] {meteo_bam}")
-                    print(f"[METEO FR]  {meteo_fr}")
 
                 # Injecter conseil saisonnier selon le mois actuel
                 cultures_detectees = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
