@@ -1,5 +1,5 @@
 {
-  "version": "1.6",
+  "version": "1.7",
   "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
   "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
   "correction_v1.1": "2026-03-03 — termes bambara corrigés: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ, coton fini→kɔrɔni",
@@ -906,10 +906,6 @@
         "nɔgɔ bila",
         "nɔgɔ fara",
         "nɔgɔ don",
-        "furakɛ duguma",
-        "duguma furakɛ",
-        "dɔgɔw",
-        "natiri",
         "engrais",
         "fertilisant",
         "compost",
@@ -921,12 +917,14 @@
         "potasse",
         "phosphate",
         "azote",
-        "nɔgɔ organic",
-        "nɔgɔ chimik",
-        "dolo",
-        "fumier"
+        "fumier",
+        "nɔgɔfin",
+        "nafanma fɛnw",
+        "kɔmpɔsi",
+        "lombrikompost",
+        "biofɛrtilisani"
       ],
-      "note": "2026-03-09 — saraka remplacé par nɔgɔ (An Ka Taa: saraka=aumône/offrande, nɔgɔ=engrais/fumure. Bayelemabaga: saraka 174 occurrences contexte religieux uniquement)."
+      "note": "2026-03-09 — saraka→nɔgɔ (saraka=aumône). 2026-03-13 — RETIRÉS: dolo(=bière de mil), furakɛ duguma/natiri/dɔgɔw (0 occ. corpora). AJOUTÉS: nɔgɔfin/nafanma fɛnw/kɔmpɔsi (Access Agriculture 230, validés utilisateur)."
     }
   },
   "intents": [
@@ -1187,5 +1185,6 @@
     "porc"
   ],
   "correction_v1.3": "2026-03-06 — Bug bana retire de PROBLEME_MALADIE.partial (faux positif bananku). QUESTION_GENERALE.required_any simplifie a CULTURE_* only.",
-  "correction_v1.6": "2026-03-13 — PROBLEME_INSECTE: kosheni/kosheniyi (valides, 20+ occ. transcription). dunmu RETIRE (0 occ. Bayelemabaga/Jeli/UD). PROBLEME_MALADIE: filaburu. kabolo/kabana RETIRES CULTURE_MANIOC. yereke=repandre PAS traiter (confirme Bayelemabaga)."
+  "correction_v1.6": "2026-03-13 — PROBLEME_INSECTE: kosheni/kosheniyi (valides, 20+ occ. transcription). dunmu RETIRE (0 occ. Bayelemabaga/Jeli/UD). PROBLEME_MALADIE: filaburu. kabolo/kabana RETIRES CULTURE_MANIOC. yereke=repandre PAS traiter (confirme Bayelemabaga).",
+  "correction_v1.7": "2026-03-13 — ENGRAIS_FERTILISANT nettoyé (dolo/furakɛ duguma/natiri/dɔgɔw RETIRÉS). Ajout: nɔgɔfin(engrais organique), nafanma fɛnw(nutriments), kɔmpɔsi(compost). Source: Access Agriculture 230 + validation Bayelemabaga."
 }
