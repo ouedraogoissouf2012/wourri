@@ -1,5 +1,5 @@
 {
-  "version": "1.5",
+  "version": "1.6",
   "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
   "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
   "correction_v1.1": "2026-03-03 — termes bambara corrigés: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ, coton fini→kɔrɔni",
@@ -53,32 +53,67 @@
     "SALUTATION_MATIN": {
       "label_fr": "salutation matin",
       "keywords": [
-        "sɔgɔma", "sogoma", "i ni sɔgɔma", "a ni sɔgɔma",
-        "i ni sogoma", "a ni sogoma", "an ni sɔgɔma", "an ni sogoma",
-        "sɔgɔ ma", "sogo ma", "anisogoma", "anisɔgɔma"
+        "sɔgɔma",
+        "sogoma",
+        "i ni sɔgɔma",
+        "a ni sɔgɔma",
+        "i ni sogoma",
+        "a ni sogoma",
+        "an ni sɔgɔma",
+        "an ni sogoma",
+        "sɔgɔ ma",
+        "sogo ma",
+        "anisogoma",
+        "anisɔgɔma"
       ]
     },
     "SALUTATION_MIDI": {
       "label_fr": "salutation mi-journée",
       "keywords": [
-        "tilefɛ", "tilefe", "tile fɛ", "tile fe",
-        "i ni tilefɛ", "a ni tilefɛ", "i ni tilefe", "a ni tilefe"
+        "tilefɛ",
+        "tilefe",
+        "tile fɛ",
+        "tile fe",
+        "i ni tilefɛ",
+        "a ni tilefɛ",
+        "i ni tilefe",
+        "a ni tilefe"
       ]
     },
     "SALUTATION_SOIR": {
       "label_fr": "salutation soir",
       "keywords": [
-        "wulafɛ", "wulafe", "wula fɛ", "wula fe",
-        "i ni wulafɛ", "a ni wulafɛ", "i ni wulafe", "a ni wulafe",
-        "ani wula", "ani wulafɛ", "wulari", "iniwula", "inwula"
+        "wulafɛ",
+        "wulafe",
+        "wula fɛ",
+        "wula fe",
+        "i ni wulafɛ",
+        "a ni wulafɛ",
+        "i ni wulafe",
+        "a ni wulafe",
+        "ani wula",
+        "ani wulafɛ",
+        "wulari",
+        "iniwula",
+        "inwula"
       ]
     },
     "SALUTATION_NUIT": {
       "label_fr": "salutation nuit",
       "keywords": [
-        "sufɛ", "sufe", "su fɛ", "su fe",
-        "i ni sufɛ", "a ni sufɛ", "i ni sufe", "a ni sufe",
-        "an ni su", "a ni su", "su ani so", "an ni sa kɔnɔ", "inisu"
+        "sufɛ",
+        "sufe",
+        "su fɛ",
+        "su fe",
+        "i ni sufɛ",
+        "a ni sufɛ",
+        "i ni sufe",
+        "a ni sufe",
+        "an ni su",
+        "a ni su",
+        "su ani so",
+        "an ni sa kɔnɔ",
+        "inisu"
       ]
     },
     "CULTURE_RIZ": {
@@ -196,12 +231,16 @@
         "kasava",
         "cassava",
         "manioc",
-        "gari"
+        "gari",
+        "kabolo",
+        "kabana"
       ],
       "partial": [
-        "bananku"
+        "bananku",
+        "kabolo",
+        "kabana"
       ],
-      "note": "bananku=manioc validé 3 sources (An ka Taa, mandenkan, coastsystems). barikama/maniyoki/maniyoke RETIRÉS — absents de toutes les sources validées."
+      "note": "bananku=manioc validé 3 sources (An ka Taa, mandenkan, coastsystems). barikama/maniyoki/maniyoke RETIRÉS — absents de toutes les sources validées. | kabolo/kabana ajoutés (Access Agriculture 077, Dioula CI)."
     },
     "CULTURE_HARICOT": {
       "label_fr": "haricot / niébé",
@@ -650,7 +689,8 @@
         "pourriture",
         "flétrissement",
         "fletrissement",
-        "fusariose"
+        "fusariose",
+        "filaburu"
       ],
       "partial": []
     },
@@ -672,7 +712,10 @@
         "charançon",
         "criquet",
         "termite",
-        "cochenille"
+        "cochenille",
+        "kosheni",
+        "kosheniyi",
+        "dunmu"
       ]
     },
     "PROBLEME_SECHERESSE": {
@@ -1063,28 +1106,36 @@
     {
       "name": "SALUTATION_MATIN",
       "label_fr": "Salutation matin",
-      "required_any": ["SALUTATION_MATIN"],
+      "required_any": [
+        "SALUTATION_MATIN"
+      ],
       "priority": 5,
       "description": "Salutation du matin (sɔgɔma)"
     },
     {
       "name": "SALUTATION_MIDI",
       "label_fr": "Salutation mi-journée",
-      "required_any": ["SALUTATION_MIDI"],
+      "required_any": [
+        "SALUTATION_MIDI"
+      ],
       "priority": 5,
       "description": "Salutation de mi-journée (tilefɛ)"
     },
     {
       "name": "SALUTATION_SOIR",
       "label_fr": "Salutation soir",
-      "required_any": ["SALUTATION_SOIR"],
+      "required_any": [
+        "SALUTATION_SOIR"
+      ],
       "priority": 5,
       "description": "Salutation du soir (wulafɛ)"
     },
     {
       "name": "SALUTATION_NUIT",
       "label_fr": "Salutation nuit",
-      "required_any": ["SALUTATION_NUIT"],
+      "required_any": [
+        "SALUTATION_NUIT"
+      ],
       "priority": 5,
       "description": "Salutation de nuit (sufɛ)"
     },
@@ -1140,5 +1191,6 @@
     "chèvre",
     "porc"
   ],
-  "correction_v1.3": "2026-03-06 — Bug bana retire de PROBLEME_MALADIE.partial (faux positif bananku). QUESTION_GENERALE.required_any simplifie a CULTURE_* only."
+  "correction_v1.3": "2026-03-06 — Bug bana retire de PROBLEME_MALADIE.partial (faux positif bananku). QUESTION_GENERALE.required_any simplifie a CULTURE_* only.",
+  "correction_v1.6": "2026-03-13 — CULTURE_MANIOC: kabolo/kabana (Dioula CI, Access Agriculture 077). PROBLEME_INSECTE: kosheni/kosheniyi/dunmu (cochenille, Dioula validé). PROBLEME_MALADIE: filaburu (feuille blanche, symptôme cochenille)."
 }
