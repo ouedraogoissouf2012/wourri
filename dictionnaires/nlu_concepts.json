@@ -1,5 +1,5 @@
 {
-  "version": "1.7",
+  "version": "1.8",
   "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
   "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
   "correction_v1.1": "2026-03-03 — termes bambara corrigés: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ, coton fini→kɔrɔni",
@@ -710,7 +710,10 @@
         "termite",
         "cochenille",
         "kosheni",
-        "kosheniyi"
+        "kosheniyi",
+        "limɔgɔ",
+        "limogo",
+        "yiridɛn limɔgɔ"
       ]
     },
     "PROBLEME_SECHERESSE": {
@@ -925,6 +928,24 @@
         "biofɛrtilisani"
       ],
       "note": "2026-03-09 — saraka→nɔgɔ (saraka=aumône). 2026-03-13 — RETIRÉS: dolo(=bière de mil), furakɛ duguma/natiri/dɔgɔw (0 occ. corpora). AJOUTÉS: nɔgɔfin/nafanma fɛnw/kɔmpɔsi (Access Agriculture 230, validés utilisateur)."
+    },
+    "CULTURE_MANGUE": {
+      "label_fr": "mangue",
+      "keywords": [
+        "maŋoro",
+        "mangoro",
+        "mango",
+        "mangue",
+        "maŋoro foro",
+        "maŋoro lajɛ",
+        "maŋoro sɛnɛ",
+        "yiridɛn maŋoro"
+      ],
+      "partial": [
+        "maŋoro",
+        "mangoro"
+      ],
+      "note": "maŋoro validé Bayelemabaga 15 occ. + Jeli 30 occ. — Access Agriculture 130 (2026-03-13). yiridɛn=fruit validé 2 Baye + 62 Jeli."
     }
   },
   "intents": [
@@ -1186,5 +1207,6 @@
   ],
   "correction_v1.3": "2026-03-06 — Bug bana retire de PROBLEME_MALADIE.partial (faux positif bananku). QUESTION_GENERALE.required_any simplifie a CULTURE_* only.",
   "correction_v1.6": "2026-03-13 — PROBLEME_INSECTE: kosheni/kosheniyi (valides, 20+ occ. transcription). dunmu RETIRE (0 occ. Bayelemabaga/Jeli/UD). PROBLEME_MALADIE: filaburu. kabolo/kabana RETIRES CULTURE_MANIOC. yereke=repandre PAS traiter (confirme Bayelemabaga).",
-  "correction_v1.7": "2026-03-13 — ENGRAIS_FERTILISANT nettoyé (dolo/furakɛ duguma/natiri/dɔgɔw RETIRÉS). Ajout: nɔgɔfin(engrais organique), nafanma fɛnw(nutriments), kɔmpɔsi(compost). Source: Access Agriculture 230 + validation Bayelemabaga."
+  "correction_v1.7": "2026-03-13 — ENGRAIS_FERTILISANT nettoyé (dolo/furakɛ duguma/natiri/dɔgɔw RETIRÉS). Ajout: nɔgɔfin(engrais organique), nafanma fɛnw(nutriments), kɔmpɔsi(compost). Source: Access Agriculture 230 + validation Bayelemabaga.",
+  "correction_v1.8": "2026-03-13 — PROBLEME_INSECTE: limɔgɔ/limogo (mouche, 8 Baye). Nouvelle culture CULTURE_MANGUE: maŋoro (15 Baye + 30 Jeli). dunmuni CONFIRMÉ = manger/nourriture (PAS insecte). Source: Access Agriculture 130."
 }
