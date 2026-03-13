@@ -241,7 +241,7 @@ async def transcribe_audio_bytes(audio_bytes: bytes, language_code: str = "bam",
 
     temp_id = uuid.uuid4()
     temp_path = os.path.join(temp_dir, f"asr_{temp_id}.{file_extension}")
-    wav_path = os.path.join(temp_dir, f"asr_{temp_id}.wav")
+    wav_path = os.path.join(temp_dir, f"asr_{temp_id}_16k.wav")
 
     try:
         # Sauvegarder le fichier audio
