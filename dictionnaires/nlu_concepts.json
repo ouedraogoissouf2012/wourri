@@ -231,16 +231,12 @@
         "kasava",
         "cassava",
         "manioc",
-        "gari",
-        "kabolo",
-        "kabana"
+        "gari"
       ],
       "partial": [
-        "bananku",
-        "kabolo",
-        "kabana"
+        "bananku"
       ],
-      "note": "bananku=manioc validé 3 sources (An ka Taa, mandenkan, coastsystems). barikama/maniyoki/maniyoke RETIRÉS — absents de toutes les sources validées. | kabolo/kabana ajoutés (Access Agriculture 077, Dioula CI)."
+      "note": "bananku=manioc valide 3 sources. barikama/maniyoki RETIRES. kabolo/kabana RETIRES v1.6 — confusion kaba=mais."
     },
     "CULTURE_HARICOT": {
       "label_fr": "haricot / niébé",
@@ -1192,5 +1188,5 @@
     "porc"
   ],
   "correction_v1.3": "2026-03-06 — Bug bana retire de PROBLEME_MALADIE.partial (faux positif bananku). QUESTION_GENERALE.required_any simplifie a CULTURE_* only.",
-  "correction_v1.6": "2026-03-13 — CULTURE_MANIOC: kabolo/kabana (Dioula CI, Access Agriculture 077). PROBLEME_INSECTE: kosheni/kosheniyi/dunmu (cochenille, Dioula validé). PROBLEME_MALADIE: filaburu (feuille blanche, symptôme cochenille)."
+  "correction_v1.6": "2026-03-13 — PROBLEME_INSECTE: kosheni/kosheniyi/dunmu. PROBLEME_MALADIE: filaburu. kabolo/kabana RETIRES CULTURE_MANIOC."
 }
