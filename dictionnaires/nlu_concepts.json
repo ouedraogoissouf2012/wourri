@@ -710,8 +710,7 @@
         "termite",
         "cochenille",
         "kosheni",
-        "kosheniyi",
-        "dunmu"
+        "kosheniyi"
       ]
     },
     "PROBLEME_SECHERESSE": {
@@ -1188,5 +1187,5 @@
     "porc"
   ],
   "correction_v1.3": "2026-03-06 — Bug bana retire de PROBLEME_MALADIE.partial (faux positif bananku). QUESTION_GENERALE.required_any simplifie a CULTURE_* only.",
-  "correction_v1.6": "2026-03-13 — PROBLEME_INSECTE: kosheni/kosheniyi/dunmu. PROBLEME_MALADIE: filaburu. kabolo/kabana RETIRES CULTURE_MANIOC."
+  "correction_v1.6": "2026-03-13 — PROBLEME_INSECTE: kosheni/kosheniyi (valides, 20+ occ. transcription). dunmu RETIRE (0 occ. Bayelemabaga/Jeli/UD). PROBLEME_MALADIE: filaburu. kabolo/kabana RETIRES CULTURE_MANIOC. yereke=repandre PAS traiter (confirme Bayelemabaga)."
 }
