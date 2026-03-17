@@ -488,8 +488,9 @@ async def chat(http_request: Request, request: ChatRequest):
         )
 
 
-@router.post("/simple")
-async def chat_simple(message: str, city: str = "Abidjan"):
+@router.post("/simple", dependencies=[Depends(require_api_key)])
+@limiter.limit("10/minute")
+async def chat_simple(request: Request, message: str, city: str = "Abidjan"):
     """
     Version simple du chat (paramètres en query)
 

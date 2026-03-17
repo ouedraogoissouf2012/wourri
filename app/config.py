@@ -4,6 +4,7 @@ WOURI - Configuration
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 import os
+import sys
 
 
 class Settings(BaseSettings):
@@ -12,6 +13,9 @@ class Settings(BaseSettings):
     # Application
     app_name: str = "WOURI"
     app_version: str = "1.0.0"
+    # ENV : "development" (défaut) ou "production"
+    env: str = "development"
+    # debug automatiquement False en production
     debug: bool = True
 
     # DeepSeek API
@@ -22,7 +26,7 @@ class Settings(BaseSettings):
     # ========== CLOUD APIs (GRATUIT) ==========
     # Groq API (Whisper ASR)
     groq_api_key: str = ""
-    
+
     # Note: Lingva Translate est utilise pour la traduction (pas de cle requise)
 
     # Open-Meteo (gratuit, pas de clé)
@@ -43,6 +47,10 @@ class Settings(BaseSettings):
     # Langue TTS ivoirienne par défaut
     default_ivorian_language: str = "bam"
 
+    @property
+    def is_production(self) -> bool:
+        return self.env.lower() == "production"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
@@ -51,7 +59,19 @@ class Settings(BaseSettings):
 @lru_cache()
 def get_settings() -> Settings:
     """Retourne les settings (cached)"""
-    return Settings()
+    s = Settings()
+    # En production : forcer debug=False et exiger API_SECRET_KEY
+    if s.is_production:
+        if not s.api_secret_key:
+            print(
+                "[SECURITY] ERREUR : ENV=production mais API_SECRET_KEY est vide.\n"
+                "Configurez API_SECRET_KEY dans .env avant de démarrer en production.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        # Forcer debug=False même si le .env dit debug=True
+        object.__setattr__(s, "debug", False)
+    return s
 
 
 # Créer le dossier audio si nécessaire

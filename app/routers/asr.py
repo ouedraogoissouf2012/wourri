@@ -2,7 +2,7 @@
 WOURI - Router ASR (Automatic Speech Recognition)
 Reconnaissance vocale pour langues ivoiriennes via MMS-1B-ALL + NLLB-200
 """
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 import re
 from app.services.asr_ivorian import (
     transcribe_audio_bytes,
@@ -15,6 +15,7 @@ from app.services.asr_soloni_nemo import (
     check_nemo_asr_status,
 )
 from app.services.tts_bambara import translate_to_french
+from app.security import require_api_key, limiter
 
 router = APIRouter(prefix="/api/asr", tags=["ASR"])
 
@@ -93,8 +94,10 @@ def clean_asr_transcription(text: str) -> str:
     return result.strip()
 
 
-@router.post("/transcribe")
+@router.post("/transcribe", dependencies=[Depends(require_api_key)])
+@limiter.limit("10/minute")
 async def transcribe_audio(
+    request: Request,
     audio: UploadFile = File(...),
     language: str = Form(default="bam")
 ):
@@ -140,8 +143,10 @@ async def transcribe_audio(
     }
 
 
-@router.post("/transcribe-and-translate")
+@router.post("/transcribe-and-translate", dependencies=[Depends(require_api_key)])
+@limiter.limit("10/minute")
 async def transcribe_and_translate(
+    request: Request,
     audio: UploadFile = File(...),
     language: str = Form(default="bam")
 ):
