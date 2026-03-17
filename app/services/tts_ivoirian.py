@@ -131,23 +131,7 @@ def get_tts_model(language_code: str):
         return None, None
 
 
-def find_ffmpeg():
-    """Trouve le chemin de ffmpeg sur le système"""
-    possible_paths = [
-        'ffmpeg',
-        r'C:\Users\USER PC\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe',
-    ]
-
-    for ffmpeg_path in possible_paths:
-        try:
-            result = subprocess.run([ffmpeg_path, '-version'],
-                                  capture_output=True, timeout=5)
-            if result.returncode == 0:
-                return ffmpeg_path
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            continue
-
-    return None
+from app.services._ffmpeg import get_ffmpeg as find_ffmpeg
 
 
 def convert_wav_to_ogg(wav_path: str, ogg_path: str) -> bool:

@@ -8,16 +8,22 @@ import os
 import re
 import subprocess
 from app.config import get_settings
+from app.services._ffmpeg import get_ffmpeg
 
 settings = get_settings()
 
-# Chemins Piper TTS
-PIPER_PATH = r"C:\piper-tts\piper.exe"
-# Voix masculine Tom (homme français)
-PIPER_MODEL = r"C:\piper-tts\fr_FR-tom-medium.onnx"
+# Chemins Piper TTS (configurables via .env)
+PIPER_PATH = os.getenv("PIPER_PATH", r"C:\piper-tts\piper.exe")
+PIPER_MODEL = os.getenv("PIPER_MODEL", r"C:\piper-tts\fr_FR-tom-medium.onnx")
 
-# Chemin vers ffmpeg
-FFMPEG_PATH = r"C:\Users\USER PC\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe"
+# Chemin vers ffmpeg — résolu dynamiquement via _ffmpeg.py
+def _get_ffmpeg_path() -> str:
+    try:
+        return get_ffmpeg()
+    except RuntimeError:
+        return "ffmpeg"
+
+FFMPEG_PATH = _get_ffmpeg_path()
 
 
 def clean_text(text: str) -> str:

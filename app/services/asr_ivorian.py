@@ -10,6 +10,7 @@ import subprocess
 from typing import Optional
 
 from app.config import get_settings
+from app.services._ffmpeg import get_ffmpeg
 
 settings = get_settings()
 
@@ -91,23 +92,10 @@ def get_asr_model(language_code: str = "bam"):
 
 def convert_to_wav_16k(input_path: str, output_path: str) -> bool:
     """Convertit un fichier audio en WAV 16kHz mono avec ffmpeg"""
-    ffmpeg_paths = [
-        'ffmpeg',
-        r'C:\Users\USER PC\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe',
-    ]
-
-    ffmpeg_path = None
-    for path in ffmpeg_paths:
-        try:
-            result = subprocess.run([path, '-version'], capture_output=True, timeout=5)
-            if result.returncode == 0:
-                ffmpeg_path = path
-                break
-        except:
-            continue
-
-    if not ffmpeg_path:
-        print("[ASR] FFmpeg non trouve")
+    try:
+        ffmpeg_path = get_ffmpeg()
+    except RuntimeError as e:
+        print(f"[ASR] {e}")
         return False
 
     try:

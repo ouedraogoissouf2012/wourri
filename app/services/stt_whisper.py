@@ -15,43 +15,20 @@ import uuid
 import tempfile
 import subprocess
 from app.config import get_settings
+from app.services._ffmpeg import get_ffmpeg
 
 settings = get_settings()
 
-# Chemin ffmpeg global
-_ffmpeg_executable = None
-
-# Configurer ffmpeg pour Windows
+# Chemin ffmpeg — résolu au premier appel via get_ffmpeg()
 def find_ffmpeg():
-    """Trouve et configure ffmpeg"""
-    global _ffmpeg_executable
+    try:
+        return get_ffmpeg()
+    except RuntimeError:
+        return None
 
-    possible_paths = [
-        'ffmpeg',  # Dans le PATH
-        r'C:\Users\USER PC\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe',
-    ]
-
-    for ffmpeg_path in possible_paths:
-        try:
-            result = subprocess.run([ffmpeg_path, '-version'],
-                                  capture_output=True, timeout=5)
-            if result.returncode == 0:
-                # Ajouter le dossier bin au PATH
-                if ffmpeg_path != 'ffmpeg':
-                    bin_dir = os.path.dirname(ffmpeg_path)
-                    if bin_dir not in os.environ.get('PATH', ''):
-                        os.environ['PATH'] = bin_dir + os.pathsep + os.environ.get('PATH', '')
-                        print(f"FFmpeg ajoute au PATH: {bin_dir}")
-                _ffmpeg_executable = ffmpeg_path
-                return ffmpeg_path
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            continue
-    return None
-
-# Configurer ffmpeg au demarrage
-ffmpeg_path = find_ffmpeg()
-if ffmpeg_path:
-    print(f"FFmpeg trouve: {ffmpeg_path}")
+_ffmpeg_executable = find_ffmpeg()
+if _ffmpeg_executable:
+    print(f"FFmpeg trouve: {_ffmpeg_executable}")
 else:
     print("ATTENTION: FFmpeg non trouve - STT peut ne pas fonctionner")
 
@@ -867,7 +844,7 @@ async def transcribe_audio_bytes(audio_bytes: bytes, filename: str = "audio.wav"
     temp_path = os.path.join(tempfile.gettempdir(), f"whisper_{uuid.uuid4()}{ext}")
 
     # DEBUG: Sauvegarder une copie pour analyse
-    debug_dir = r"c:\Users\USER PC\Documents\propre à moi\wourri\debug_audio"
+    debug_dir = os.getenv("WOURRI_DEBUG_AUDIO_DIR", os.path.join(tempfile.gettempdir(), "wourri_debug_audio"))
     if not os.path.exists(debug_dir):
         os.makedirs(debug_dir)
     debug_path = os.path.join(debug_dir, f"audio_{uuid.uuid4()}{ext}")

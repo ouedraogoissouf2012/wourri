@@ -9,8 +9,18 @@ import uuid
 import subprocess
 from typing import Optional
 
-NEMO_PATH = r"C:\Users\USER PC\.cache\huggingface\hub\models--RobotsMali--soloni-114m-tdt-ctc-v0\snapshots\c0078bb2285e6157960710c5751bbdf83b1a758d\soloni-114m-tdt-ctc-v0.nemo"
-TEMP_DIR = r"C:\soloni\temp"
+import tempfile
+# Chemin du modèle NeMo — configurable via NEMO_MODEL_PATH dans .env
+# Par défaut : cherche dans le cache HuggingFace standard (cross-platform)
+NEMO_PATH = os.getenv(
+    "NEMO_MODEL_PATH",
+    os.path.join(
+        os.path.expanduser("~"), ".cache", "huggingface", "hub",
+        "models--RobotsMali--soloni-114m-tdt-ctc-v0", "snapshots",
+        "c0078bb2285e6157960710c5751bbdf83b1a758d", "soloni-114m-tdt-ctc-v0.nemo"
+    )
+)
+TEMP_DIR = os.getenv("NEMO_TEMP_DIR", os.path.join(tempfile.gettempdir(), "soloni_temp"))
 
 NEMO_AVAILABLE = False
 nemo_asr = None
@@ -105,22 +115,10 @@ def transcribe_wav(wav_path: str) -> Optional[str]:
 
 def _convert_to_wav_16k(input_path: str, output_path: str) -> bool:
     """Convertit en WAV 16kHz mono via ffmpeg"""
-    ffmpeg_paths = [
-        'ffmpeg',
-        r'C:\Users\USER PC\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe',
-    ]
-
-    ffmpeg_path = None
-    for path in ffmpeg_paths:
-        try:
-            result = subprocess.run([path, '-version'], capture_output=True, timeout=5)
-            if result.returncode == 0:
-                ffmpeg_path = path
-                break
-        except:
-            continue
-
-    if not ffmpeg_path:
+    from app.services._ffmpeg import get_ffmpeg
+    try:
+        ffmpeg_path = get_ffmpeg()
+    except RuntimeError:
         print("[ASR-NEMO] FFmpeg non trouve")
         return False
 
