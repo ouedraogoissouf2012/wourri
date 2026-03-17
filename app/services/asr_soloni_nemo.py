@@ -3,6 +3,7 @@ WOURI - ASR Bambara via NeMo (decodeur TDT complet)
 Utilise model.transcribe() directement - beaucoup plus precis que la tete CTC seule.
 Les fichiers temp sont dans C:/soloni/temp/ pour eviter les problemes de chemin.
 """
+import asyncio
 import os
 import uuid
 import subprocess
@@ -152,7 +153,8 @@ async def transcribe_bambara_nemo(audio_bytes: bytes, file_extension: str = "ogg
             print("[ASR-NEMO] Echec conversion WAV")
             return None
 
-        result = transcribe_wav(wav_path)
+        # Inférence ML dans un thread séparé pour ne pas bloquer asyncio
+        result = await asyncio.to_thread(transcribe_wav, wav_path)
         # Corriger les fusions syllabiques typiques de NeMo (ex: "anisogma" → "a ni sɔgɔma")
         if result:
             from app.services.asr_bambara_normalizer import normalize_bambara_asr

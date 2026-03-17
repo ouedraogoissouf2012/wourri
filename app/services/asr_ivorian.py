@@ -3,6 +3,7 @@ WOURI - ASR (Automatic Speech Recognition) pour langues ivoiriennes
 Utilise Facebook MMS-1B-ALL pour la reconnaissance vocale
 VERSION: Utilise torchaudio.load() directement
 """
+import asyncio
 import os
 import uuid
 import subprocess
@@ -254,8 +255,8 @@ async def transcribe_audio_bytes(audio_bytes: bytes, language_code: str = "bam",
             print("[ASR] Echec conversion WAV")
             return None
 
-        # Transcrire le WAV
-        result = transcribe_audio(wav_path, language_code)
+        # Inférence ML dans un thread séparé pour ne pas bloquer asyncio
+        result = await asyncio.to_thread(transcribe_audio, wav_path, language_code)
         return result
 
     finally:

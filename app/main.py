@@ -100,10 +100,22 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"[PRELOAD] BD vectorielle IVR: ERREUR - {e}")
 
+    # 6. Démarrer le nettoyage automatique des fichiers audio
+    try:
+        from app.services.audio_cleanup import start_cleanup_scheduler
+        start_cleanup_scheduler()
+        print("[PRELOAD] Nettoyage audio: OK (fichiers > 7j supprimés automatiquement)")
+    except Exception as e:
+        print(f"[PRELOAD] Nettoyage audio: ERREUR - {e}")
+
     print("\n[PRELOAD] Tous les modeles charges!")
     print("=" * 50)
 
     yield
+
+    # Arrêt propre
+    from app.services.audio_cleanup import stop_cleanup_scheduler
+    stop_cleanup_scheduler()
     print("WOURI - Arrêt")
 
 

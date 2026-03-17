@@ -2,6 +2,7 @@
 WOURI - Router TTS (Text-to-Speech)
 Support multi-langues ivoiriennes
 """
+import asyncio
 from fastapi import APIRouter, HTTPException
 from app.services.tts_french import synthesize_french, get_available_voices
 from app.services.tts_bambara import synthesize_bambara, synthesize_bambara_text, translate_to_bambara
@@ -74,7 +75,7 @@ async def tts_bambara(text: str, is_french: bool = True):
         audio_url, bambara_text = await synthesize_bambara(text)
         output_text = bambara_text or text
     else:
-        audio_url = synthesize_bambara_text(text)
+        audio_url = await asyncio.to_thread(synthesize_bambara_text, text)
         output_text = text
 
     if not audio_url:

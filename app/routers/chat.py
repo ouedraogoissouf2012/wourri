@@ -4,6 +4,7 @@ Support Bambara/Dioula uniquement (seule langue avec traduction complète)
 NLU: si le message contient du bambara (transcription ASR), le NLU reconstruit
      une phrase française claire avant d'envoyer à DeepSeek.
 """
+import asyncio
 from fastapi import APIRouter
 from app.services.deepseek import chat_with_deepseek
 from app.services.weather import get_weather
@@ -372,7 +373,7 @@ async def chat(request: ChatRequest):
 
                 if request.include_audio:
                     from app.services.tts_dioula import synthesize_dioula_text
-                    audio_url = synthesize_dioula_text(ivr_bambara)
+                    audio_url = await asyncio.to_thread(synthesize_dioula_text, ivr_bambara)
                     audio_language_name = "Dioula"
                 cultures = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
 
@@ -411,7 +412,7 @@ async def chat(request: ChatRequest):
 
             if request.include_audio:
                 from app.services.tts_dioula import synthesize_dioula_text
-                audio_url = synthesize_dioula_text(bambara_fallback)
+                audio_url = await asyncio.to_thread(synthesize_dioula_text, bambara_fallback)
                 audio_language_name = "Dioula"
 
             cultures = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
