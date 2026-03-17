@@ -616,6 +616,16 @@ async function connectWhatsApp() {
                     const fb = prefs.pendingFeedback || {};
                     const msgLower = messageText.trim().toLowerCase();
 
+                    // Si l'utilisateur envoie un nouveau vocal pendant le feedback
+                    // → ignorer le feedback en cours, traiter directement la nouvelle question
+                    if (isAudioMessage || isVoiceInput) {
+                        console.log('[FEEDBACK] Nouveau vocal recu → feedback annulé, traitement direct');
+                        prefs.step = STEPS.COMPLETE;
+                        prefs.pendingFeedback = null;
+                        saveUserPreferences();
+                        // Ne pas return → le code STEPS.COMPLETE ci-dessous traite le message
+                    } else {
+
                     // Detecter thumbsup / thumbsdown
                     const isThumbsUp   = ['👍','oui','yes','bien','ok','super','bon','ɲuman','numan'].some(k => msgLower.includes(k));
                     const isThumbsDown = ['👎','non','no','mauvais','mal','pas bon','te ɲuman'].some(k => msgLower.includes(k));
@@ -650,7 +660,8 @@ async function connectWhatsApp() {
                     prefs.step = STEPS.COMPLETE;
                     prefs.pendingFeedback = null;
                     saveUserPreferences();
-                    return;
+                    continue; // [fix H] return sortait du handler entier — les msgs suivants du batch étaient perdus
+                    } // fin else (feedback texte)
                 }
 
                 // ========================================
@@ -1037,6 +1048,27 @@ app.post('/logout', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// ========================================
+// GRACEFUL SHUTDOWN — sauvegarder prefs avant SIGTERM/SIGINT
+// ========================================
+
+async function gracefulShutdown(signal) {
+    console.log(`\n[SHUTDOWN] Signal ${signal} recu — sauvegarde des préférences...`);
+    try {
+        saveUserPreferences();
+        console.log(`[SHUTDOWN] Préférences sauvegardées (${Object.keys(userPreferences).length} utilisateurs)`);
+    } catch (err) {
+        console.error('[SHUTDOWN] Erreur sauvegarde:', err.message);
+    }
+    try {
+        if (sock) await sock.end();
+    } catch (_) {}
+    process.exit(0);
+}
+
+process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 // ========================================
 // DEMARRAGE DU SERVEUR
