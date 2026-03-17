@@ -1,5 +1,5 @@
 {
-  "version": "1.9",
+  "version": "2.0",
   "description": "Corpus IVR agricole Wourri — réponses pré-écrites en bambara/dioula par intent × culture",
   "note": "Inspiré approche CGIAR/Viamo. Phrases à valider par locuteur natif bambara/dioula agricole. Score_validation = estimation initiale.",
   "correction_v1.1": "2026-03-03 — termes igname (danburu→ku) et manioc (barakama→bananku) corrigés.",
@@ -3336,10 +3336,182 @@
           "score": 1
         }
       ]
+    },
+    {
+      "id": "nere_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_NERE"
+      ],
+      "conditions": [],
+      "reponse_bambara": "Nɛrɛ jiri ka nafama caman. Aw ye a sɛnɛ aw ta foro da la — a bɛna ca tuma jan. Aw bɛna sumbala kɛ a ka jiridenw na kà wari sɔrɔ lɔgɔ la.",
+      "reponse_fr": "Le néré est un arbre très utile. Plante-le en bordure de ton champ, il pousse longtemps. Tu pourras faire du sumbala avec ses graines pour vendre au marché.",
+      "score_validation": 0.8,
+      "tags": [
+        "nere",
+        "sumbala",
+        "plantation",
+        "arbre",
+        "jiri"
+      ]
+    },
+    {
+      "id": "nere_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_NERE"
+      ],
+      "conditions": [],
+      "reponse_bambara": "Ni aw ta nɛrɛ jiri bɛ dimi, aw ye a ka folonw ni farikolon filɛ. Ni folonw bɛ yellenma, aw ye jì caman don a la. Ni farikolon bɛ sɛgɛsɛgɛ, a bɛ dɔnnin ka kɛ ko nin ye.",
+      "reponse_fr": "Si ton néré a un problème, observe les feuilles et l'écorce. Si les feuilles jaunissent, arrose davantage. Si l'écorce se fend, c'est normal avec l'âge.",
+      "score_validation": 0.75,
+      "tags": [
+        "nere",
+        "diagnostic",
+        "maladie",
+        "feuilles",
+        "folon"
+      ]
+    },
+    {
+      "id": "nere_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": [
+        "CULTURE_NERE"
+      ],
+      "conditions": [
+        "saison_pluie"
+      ],
+      "reponse_bambara": "Nɛrɛ jiridenw bɛna lokpe juni kalo ni juluyekalo la. Aw ye olu minɛ ni olu bɛ dan. Aw ye olu jukoro kà ban sumbala kɛ ɲɛ fɛ.",
+      "reponse_fr": "Les graines de néré mûrissent en juin-juillet. Ramasse-les quand elles tombent. Sèche-les bien avant de faire le sumbala.",
+      "score_validation": 0.8,
+      "tags": [
+        "nere",
+        "recolte",
+        "jiridenw",
+        "sumbala",
+        "juni",
+        "julikalo"
+      ]
+    },
+    {
+      "id": "nere_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_NERE"
+      ],
+      "conditions": [],
+      "reponse_bambara": "Aw ye nɛrɛ jiridenw jukoro ka ɲɛ sɔrɔ kà mara. Aw ye olu don sɛkɛ kɔnɔ, jì kana sɔrɔ olu ma. Sumbala min kɛra, a bɛna ɲɛ tile caaman na.",
+      "reponse_fr": "Sèche bien les graines de néré avant de les stocker. Mets-les dans un sac fermé, à l'abri de l'humidité. Le sumbala préparé se conserve plusieurs jours.",
+      "score_validation": 0.8,
+      "tags": [
+        "nere",
+        "stockage",
+        "mara",
+        "sumbala",
+        "jukoro"
+      ]
+    },
+    {
+      "id": "nere_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_NERE"
+      ],
+      "conditions": [],
+      "reponse_bambara": "Nɛrɛ sumbala bɛ sɔrɔ wari caman lɔgɔ la. Aw ye a kɛ ɲuman kà nafolo sɔrɔ. Musow bɛ a san caman k'a kɛ nasi la.",
+      "reponse_fr": "Le sumbala de néré se vend bien au marché. Prépare-le soigneusement pour obtenir un bon prix. Les femmes en achètent beaucoup pour la sauce.",
+      "score_validation": 0.8,
+      "tags": [
+        "nere",
+        "sumbala",
+        "vente",
+        "lɔgɔ",
+        "nafolo"
+      ]
+    },
+    {
+      "id": "agrumes_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_AGRUMES"
+      ],
+      "conditions": [
+        "saison_pluie"
+      ],
+      "reponse_bambara": "Lemuru sɛnɛ ɲɛ fɛ, aw ye dunbu ba kɛ kà nɔgɔ don a kɔnɔ. Aw ye sɛnɛ sanji tuma daminɛ la. Aw ye jì don a la kalo wɔɔrɔ kɔnɔ don ô don.",
+      "reponse_fr": "Pour planter des agrumes, creuse un grand trou et mets du compost dedans. Plante en début de saison des pluies. Arrose chaque jour pendant les six premiers mois.",
+      "score_validation": 0.75,
+      "tags": [
+        "lemuru",
+        "agrumes",
+        "plantation",
+        "compost",
+        "irrigation"
+      ]
+    },
+    {
+      "id": "agrumes_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_AGRUMES"
+      ],
+      "conditions": [],
+      "reponse_bambara": "Ni aw ta lemuru ka folonw bɛ yellenma, a ka kama nɔgɔ dɔgɔ. Aw ye nɔgɔ kɛnɛ don k'a yɛlɛma. Ni tɔɔ dibi bɛ folonw kan, aw ye neem jiri ji bɔ kà a la.",
+      "reponse_fr": "Si les feuilles de tes agrumes jaunissent, c'est souvent un manque d'engrais. Applique de l'engrais pour corriger ça. Si des taches noires apparaissent, traite avec du jus de feuilles de neem.",
+      "score_validation": 0.75,
+      "tags": [
+        "lemuru",
+        "agrumes",
+        "diagnostic",
+        "neem",
+        "feuilles",
+        "folon"
+      ]
+    },
+    {
+      "id": "agrumes_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_AGRUMES"
+      ],
+      "conditions": [],
+      "reponse_bambara": "Lemuru bɛ nɔgɔ fɛ san kɔnɔ siɲɛ fila. Aw ye NPK don sanji tuma daminɛ la, kà conposi don sanji ban kɔ. A bɛna jiridenw ɲuman bɔ.",
+      "reponse_fr": "Les agrumes ont besoin d'engrais deux fois par an. Mets de l'NPK en début de saison des pluies, et du compost en saison sèche. Tu obtiendras de beaux fruits.",
+      "score_validation": 0.75,
+      "tags": [
+        "lemuru",
+        "agrumes",
+        "engrais",
+        "NPK",
+        "compost",
+        "nɔgɔ"
+      ]
+    },
+    {
+      "id": "agrumes_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_AGRUMES"
+      ],
+      "conditions": [
+        "saison_seche"
+      ],
+      "reponse_bambara": "Lemuru bɛ jì fɛ caman. Nɛgɛ tuma na, aw ye jì don a la siɲɛ fila kelen kelen. Jì ɲuman bɛna jiridenw ɲuman bɔ.",
+      "reponse_fr": "Les agrumes ont besoin de beaucoup d'eau. En saison sèche, arrose deux fois par semaine. Un bon arrosage donne de beaux fruits.",
+      "score_validation": 0.75,
+      "tags": [
+        "lemuru",
+        "agrumes",
+        "irrigation",
+        "jì",
+        "saison_seche"
+      ]
     }
   ],
   "correction_v1.6": "2026-03-13 — 3 entrées cochenille du manioc (kosheni) ajoutées. Source: transcription Access Agriculture 077 (Dioula, MMS-1B-ALL). Vocabulaire validé: kosheni, bananku, kabolo, dunmu, filaburu.",
   "ajout_v1.7": "2026-03-13 — 2 nouvelles entrées CULTURE_MANGUE (diagnostic mouche des fruits + conseil production). Source: access_agriculture_128. yiridɛn limɔgɔ = mouche des fruits confirmé. jan ≠ piège (= long/loin en bambara). Total: 153 entrées.",
   "ajout_v1.8": "2026-03-15 — Ajout champ 'phrases_attestees' sur 20 entrees. 58 phrases CI Dioula reelles issues de 54 phrases extraites de 30 transcriptions Access Agriculture. Aucune modification de reponse_bambara.",
-  "correction_v1.9": "2026-03-17 — Révision syntaxe CI dioula: kosɛbɛ→caman, lajɛ→filɛ (verbe CI), I ka (impératif)→Aw ye (respectueux pluriel CI), I ni X tɔ→Alu ni X (salutation CI initiation), i ka (possessif)→aw ta (possessif CI)."
+  "correction_v1.9": "2026-03-17 — Révision syntaxe CI dioula: kosɛbɛ→caman, lajɛ→filɛ (verbe CI), I ka (impératif)→Aw ye (respectueux pluriel CI), I ni X tɔ→Alu ni X (salutation CI initiation), i ka (possessif)→aw ta (possessif CI).",
+  "ajout_v2.0": "Ajout CULTURE_NERE (5 entrées: conseil, diagnostic, récolte, stockage, vente) et CULTURE_AGRUMES (4 entrées: conseil, diagnostic, engrais, irrigation). Syntaxe CI v1.9 respectée."
 }
