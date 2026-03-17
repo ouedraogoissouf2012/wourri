@@ -289,13 +289,15 @@ async def _translate_to_bambara_enhanced(french_text: str) -> str:
 def detect_city_in_message(message: str) -> str | None:
     """Détecte si le message mentionne une ville ivoirienne.
     Retourne le nom exact de la ville ou None.
-    La ville configurée est le défaut, mais si l'utilisateur
-    mentionne une autre ville, on utilise celle-là.
+    Utilise des word boundaries pour éviter les faux positifs
+    ex: "Man" dans "manioc", "Kong" dans "kongobi".
     """
     msg_lower = message.lower()
     # Trier par longueur décroissante pour matcher "San-Pedro" avant "Man"
     for city_name in sorted(IVORIAN_CITIES.keys(), key=len, reverse=True):
-        if city_name.lower() in msg_lower:
+        # Word boundary: la ville doit être un mot entier, pas une sous-chaîne
+        pattern = r'\b' + re.escape(city_name.lower()) + r'\b'
+        if re.search(pattern, msg_lower):
             return city_name
     return None
 

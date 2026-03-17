@@ -12,12 +12,28 @@ import json
 import os
 import logging
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 # Chemin du corpus IVR
 _CORPUS_PATH = Path(__file__).parent.parent.parent / "dictionnaires" / "corpus_ivr.json"
+
+# Cache du corpus en mémoire (chargé une seule fois au démarrage)
+_corpus_cache: dict | None = None
+
+def _load_corpus() -> dict:
+    """Charge le corpus IVR en mémoire (singleton)."""
+    global _corpus_cache
+    if _corpus_cache is None:
+        try:
+            with open(_CORPUS_PATH, encoding="utf-8") as f:
+                _corpus_cache = json.load(f)
+        except Exception as e:
+            logger.error(f"[VDB] Impossible de charger le corpus IVR: {e}")
+            _corpus_cache = {"entries": []}
+    return _corpus_cache
 # Chemin de persistance Chroma
 _CHROMA_DIR = Path(__file__).parent.parent.parent / "data" / "chroma_ivr"
 
@@ -345,10 +361,10 @@ def get_phrases_for_intent(intent: str, cultures: list[str]) -> list[dict]:
     """
     Retourne les phrases_attestees de la première entrée IVR correspondant à intent + culture.
     Utilisé pour enrichir le meta de la réponse avec des exemples bambara CI réels.
+    Utilise le cache mémoire — pas de lecture disque à chaque appel.
     """
     try:
-        with open(_CORPUS_PATH, encoding="utf-8") as f:
-            data = json.load(f)
+        data = _load_corpus()
         for entry in data.get("entries", []):
             if entry["intent"] != intent:
                 continue
