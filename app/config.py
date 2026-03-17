@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     hf_tts_model: str = "facebook/mms-tts-bam"
     hf_translator_model: str = "facebook/nllb-200-distilled-600M"
 
+    # Sécurité API (optionnel en dev, obligatoire en prod)
+    # Mettre une valeur dans .env pour activer : API_SECRET_KEY=votre_cle_secrete
+    api_secret_key: str = ""
+
     # Langue TTS ivoirienne par défaut
     default_ivorian_language: str = "bam"
 

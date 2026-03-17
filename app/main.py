@@ -7,6 +7,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from contextlib import asynccontextmanager
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
 import os
 
 from app.config import get_settings
@@ -120,6 +122,8 @@ async def lifespan(app: FastAPI):
 
 
 # Créer l'application FastAPI
+from app.security import limiter
+
 app = FastAPI(
     title="WOURI API",
     description="""
@@ -144,6 +148,10 @@ app = FastAPI(
     version=settings.app_version,
     lifespan=lifespan
 )
+
+# Rate limiting — 10 req/min par IP
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Monter les fichiers statiques
 app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -15,7 +15,9 @@ from app.services.tts_dioula import synthesize_dioula
 from app.models.schemas import ChatRequest, ChatResponse, Language
 from app.data.cities import IVORIAN_CITIES
 from app.data.calendrier_agricole import get_conseil_saisonnier
+from fastapi import Depends
 from app.config import get_settings
+from app.security import require_api_key, limiter
 
 settings = get_settings()
 
@@ -298,8 +300,9 @@ def detect_city_in_message(message: str) -> str | None:
     return None
 
 
-@router.post("/", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+@router.post("/", response_model=ChatResponse, dependencies=[Depends(require_api_key)])
+@limiter.limit("10/minute")
+async def chat(http_request: Request, request: ChatRequest):
     """
     Envoie un message à l'assistant WOURI
 
