@@ -16,8 +16,9 @@ from typing import Optional, List
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/feedback", tags=["Feedback"])
 
-# Fichier de log pour les feedbacks négatifs (C5)
-FEEDBACK_LOG = os.path.join(os.path.dirname(__file__), "..", "..", "logs", "feedback.jsonl")
+# Logs feedback
+FEEDBACK_LOG         = os.path.join(os.path.dirname(__file__), "..", "..", "logs", "feedback.jsonl")
+FEEDBACK_NEGATIF_LOG = os.path.join(os.path.dirname(__file__), "..", "..", "data", "feedback_negatif.jsonl")
 
 
 class FeedbackRequest(BaseModel):
@@ -82,10 +83,15 @@ async def feedback_positif(req: FeedbackRequest):
 async def feedback_negatif(req: FeedbackRequest):
     """
     Feedback 👎 — l'utilisateur n'a pas apprécié la réponse.
-    Log pour C5 reporting (analyse des intents sans bonne réponse).
+    Logue dans feedback.jsonl (général) + feedback_negatif.jsonl (dédié corpus).
+    feedback_negatif.jsonl est lu par tools/analyze_feedback.py pour identifier
+    les entrées corpus à réécrire en priorité.
     """
+    ts = datetime.utcnow().isoformat()
+
+    # Log général
     entry = {
-        "ts": datetime.utcnow().isoformat(),
+        "ts": ts,
         "user": req.user_id[:8] + "***",
         "vote": "negatif",
         "intent": req.intent,
@@ -94,5 +100,39 @@ async def feedback_negatif(req: FeedbackRequest):
         "reponse_bambara": req.reponse_bambara[:120],
     }
     _log_feedback(entry)
-    logger.warning(f"[C5] Réponse rejetée: intent={req.intent} cultures={req.cultures} source={req.source}")
+
+    # Log dédié corpus — inclut l'id de l'entrée VDB pour traçabilité
+    corpus_entry_id = None
+    if req.intent and req.source == "ivr_exact":
+        try:
+            from app.services.vdb_service import chercher_reponse_ivr
+            result = chercher_reponse_ivr(
+                intent=req.intent,
+                cultures=req.cultures or ["*"],
+            )
+            if result:
+                corpus_entry_id = result.get("id")
+        except Exception:
+            pass
+
+    negatif_entry = {
+        "ts": ts,
+        "user": req.user_id[:8] + "***",
+        "intent": req.intent,
+        "cultures": req.cultures,
+        "source": req.source,
+        "id_entree_corpus": corpus_entry_id,
+        "reponse_bambara": req.reponse_bambara[:200],
+    }
+    try:
+        os.makedirs(os.path.dirname(FEEDBACK_NEGATIF_LOG), exist_ok=True)
+        with open(FEEDBACK_NEGATIF_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps(negatif_entry, ensure_ascii=False) + "\n")
+    except Exception as e:
+        logger.error(f"[C5] Erreur log feedback_negatif: {e}")
+
+    logger.warning(
+        f"[C5] Réponse rejetée: id={corpus_entry_id} intent={req.intent} "
+        f"cultures={req.cultures} source={req.source}"
+    )
     return {"status": "ok", "action": "logged", "message": "Feedback enregistré pour amélioration"}

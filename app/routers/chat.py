@@ -333,19 +333,10 @@ async def chat(http_request: Request, request: ChatRequest):
                 message=request.message,
                 bambara_text=request.bambara_text
             )
-            # Si hors sujet, répondre directement sans appeler DeepSeek
+            # Si hors sujet → tenter DeepSeek avec prompt agricole strict
+            # (évite la frustration face à un message vide pour une vraie question)
             if nlu_intent == "HORS_SUJET":
-                from app.services.vdb_service import get_reponse_fallback
-                bambara_hors_sujet = get_reponse_fallback()
-                return ChatResponse(
-                    response=message_for_deepseek,
-                    response_dioula=bambara_hors_sujet,
-                    response_local=None,
-                    audio_url=None,
-                    city=city,
-                    language=request.language.value,
-                    audio_language=None
-                )
+                pass  # continue vers le chemin DeepSeek normal ci-dessous
 
         audio_url = None
         response_dioula = None
@@ -409,31 +400,56 @@ async def chat(http_request: Request, request: ChatRequest):
         # CHEMIN FALLBACK : intent exact non trouvé dans l'IVR
         print(f"[Chat IVR] Hors corpus (intent={nlu_intent}) → recherche par concept")
 
-        # DIOULA / BOTH : recherche par concept → jamais NLLB ni DeepSeek
+        # DIOULA / BOTH : recherche par concept d'abord
         if request.language in (Language.DIOULA, Language.BOTH):
             bambara_fallback = _chercher_ivr_par_concept(nlu_concepts)
-            fallback_source = "ivr_fallback" if bambara_fallback else "fallback_generic"
+            fallback_source = "ivr_fallback" if bambara_fallback else None
 
-            if not bambara_fallback:
-                from app.services.vdb_service import get_reponse_fallback
-                bambara_fallback = get_reponse_fallback()
-                print(f"[Chat IVR] Aucun concept agricole → message non-compris")
+            if bambara_fallback:
+                # Concept agricole trouvé dans le corpus → répondre directement
+                if request.include_audio:
+                    from app.services.tts_dioula import synthesize_dioula_text
+                    audio_url = await asyncio.to_thread(synthesize_dioula_text, bambara_fallback)
+                    audio_language_name = "Dioula"
+                cultures = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
+                return ChatResponse(
+                    response=bambara_fallback,
+                    response_dioula=bambara_fallback,
+                    response_local=None,
+                    audio_url=audio_url,
+                    city=city,
+                    language=request.language.value,
+                    audio_language=audio_language_name,
+                    meta={"intent": nlu_intent, "cultures": cultures, "source": fallback_source}
+                )
 
+            # Aucun concept agricole identifié → DeepSeek avec prompt agricole strict
+            # (question ouverte: "comment traiter la rouille du maïs ?", question hors-corpus, etc.)
+            print(f"[Chat IVR] Aucun concept → DeepSeek fallback agricole (intent={nlu_intent})")
+            deepseek_response = await chat_with_deepseek(
+                message=message_for_deepseek,
+                weather_data=weather_data,
+                language=Language.DIOULA,
+                user_id=getattr(request, 'user_id', None)
+            )
+            # Traduire la réponse DeepSeek (FR) en bambara pour l'audio
+            from app.services.tts_dioula import synthesize_dioula
+            audio_url_dioula, bambara_translated = await asyncio.to_thread(
+                lambda: (None, deepseek_response)  # texte français → TTS direct si traduction indispo
+            )
             if request.include_audio:
-                from app.services.tts_dioula import synthesize_dioula_text
-                audio_url = await asyncio.to_thread(synthesize_dioula_text, bambara_fallback)
+                audio_url, bambara_translated = await synthesize_dioula(deepseek_response)
                 audio_language_name = "Dioula"
-
             cultures = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
             return ChatResponse(
-                response=bambara_fallback,
-                response_dioula=bambara_fallback,
+                response=deepseek_response,
+                response_dioula=bambara_translated or deepseek_response,
                 response_local=None,
                 audio_url=audio_url,
                 city=city,
                 language=request.language.value,
                 audio_language=audio_language_name,
-                meta={"intent": nlu_intent, "cultures": cultures, "source": fallback_source}
+                meta={"intent": nlu_intent, "cultures": cultures, "source": "deepseek_open"}
             )
 
         # FRENCH uniquement : DeepSeek reste actif
