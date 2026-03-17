@@ -225,6 +225,42 @@ function extractCity(text) {
     return lastWord.charAt(0).toUpperCase() + lastWord.slice(1).toLowerCase();
 }
 
+// ========================================
+// MESSAGES BILINGUES — Dioula CI + Français
+// Syntaxe CI v1.9 : Aw ye / aw ta / caman / filɛ
+// ========================================
+const MSG = {
+    WELCOME:
+        `🌾 *Aw ni tile ! N tɔgɔ ye WOURI ye.*\nSɛnnɛkɛlaw ka dɛmɛbaga — Côte d'Ivoire ni Mali.\n\n📍 Aw bɛ min dugu la ?\n(Aw ka dugu tɔgɔ ci : Abidjan, Bouaké, Divo, Bonoua...)\n\n---\n🌾 *Bienvenue sur WOURI !*\nVotre assistant agricole.\n📍 Dans quelle ville êtes-vous ?`,
+
+    ASK_CITY:
+        `📍 Aw bɛ min dugu la sisan ?\n(Aw ka dugu tɔgɔ ci)\n\n---\nDans quelle ville êtes-vous maintenant ?`,
+
+    CITY_OK: (city) =>
+        `✅ Dugu tɔgɔ : *${city}*\n\n🗣️ Aw bɛ kuma jaki la ?\n\n1️⃣ Faransi\n2️⃣ Dioula\n3️⃣ Fila fila (Faransi + Dioula audio)\n\n(1, 2 wala 3 ci)\n\n---\nVille : *${city}*\n🗣️ Langue préférée ?\n1️⃣ Français  2️⃣ Dioula  3️⃣ Les deux`,
+
+    LANGUAGE_UNKNOWN:
+        `❓ N ma faamu. 1, 2 wala 3 ci.\n\n1️⃣ Faransi\n2️⃣ Dioula\n3️⃣ Fila fila\n\n---\nJe n'ai pas compris. Répondez 1, 2 ou 3.`,
+
+    PREFS_SAVED: (city, lang) =>
+        `✅ *Dɔ sɔrɔla !*\n📍 Dugu : ${city}\n🗣️ Kuma : ${lang}\n\n💡 Aw b'a fɛ ka yɛlɛma : "changer ville" wala "changer langue"\n\nAw ka ɲinini ci sɛnnɛ koo la ! 🌱\n\n---\n✅ *Préférences enregistrées !*\n💡 Pour changer : dites "changer ville" ou "changer langue"`,
+
+    CHANGE_CITY:
+        `📍 Dugu wɛrɛ tɔgɔ ci.\n\n---\nDans quelle ville êtes-vous maintenant ?`,
+
+    CHANGE_LANGUAGE:
+        `🗣️ Kuma jaki la ?\n\n1️⃣ Faransi\n2️⃣ Dioula\n3️⃣ Fila fila\n\n---\nQuelle langue préférée ? (1, 2 ou 3)`,
+
+    RESET:
+        `🔄 Dɔ bɛɛ kɛra kura. Kumakan dɔ ci.\n\n---\nPréférences réinitialisées. Envoyez un message pour recommencer.`,
+
+    AUDIO_FAILED:
+        `🎤 N ma i ka kumakan faamu. I ka a lasɔgɔ tugu.\n\n---\nJe n'ai pas compris votre message vocal. Pouvez-vous répéter ?`,
+
+    AUDIO_ERROR:
+        `⚠️ Kumakan in ma se ka bɔ. I ka sɛbɛn fɛ ɲinini ci.\n\n---\nImpossible de traiter ce message vocal. Écrivez votre question.`,
+};
+
 // Detecter commande de changement
 function detectChangeCommand(text) {
     const lower = text.toLowerCase();
@@ -452,9 +488,7 @@ async function connectWhatsApp() {
 
                     if (!audioBuffer) {
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, {
-                            text: "Desole, je n'ai pas pu recevoir votre message vocal. Reessayez."
-                        });
+                        await sock.sendMessage(userNumber, { text: MSG.AUDIO_ERROR });
                         continue;
                     }
 
@@ -477,9 +511,7 @@ async function connectWhatsApp() {
 
                     if (!transcriptionResult || !transcriptionResult.text || transcriptionResult.text.trim() === '') {
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, {
-                            text: "Desole, je n'ai pas compris votre message vocal. Pouvez-vous repeter?"
-                        });
+                        await sock.sendMessage(userNumber, { text: MSG.AUDIO_FAILED });
                         continue;
                     }
 
@@ -507,9 +539,7 @@ async function connectWhatsApp() {
                 } catch (audioError) {
                     console.error('[AUDIO] Erreur:', audioError.message);
                     await sock.sendPresenceUpdate('paused', userNumber);
-                    await sock.sendMessage(userNumber, {
-                        text: "Desole, je n'ai pas pu traiter votre message vocal."
-                    });
+                    await sock.sendMessage(userNumber, { text: MSG.AUDIO_ERROR });
                     continue;
                 }
             }
@@ -534,18 +564,14 @@ async function connectWhatsApp() {
                         prefs.step = STEPS.WAITING_CITY;
                         saveUserPreferences();
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, {
-                            text: "📍 D'accord ! Dans quelle ville etes-vous maintenant ?\n\n(Repondez avec le nom de votre ville)"
-                        });
+                        await sock.sendMessage(userNumber, { text: MSG.CHANGE_CITY });
                         continue;
                     }
                     if (changeCommand === 'language') {
                         prefs.step = STEPS.WAITING_LANGUAGE;
                         saveUserPreferences();
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, {
-                            text: "🗣️ Dans quelle langue souhaitez-vous les reponses ?\n\n1️⃣ Francais\n2️⃣ Dioula\n3️⃣ Les deux\n\n(Repondez avec 1, 2 ou 3)"
-                        });
+                        await sock.sendMessage(userNumber, { text: MSG.CHANGE_LANGUAGE });
                         continue;
                     }
                     if (changeCommand === 'reset') {
@@ -555,9 +581,7 @@ async function connectWhatsApp() {
                         prefs.pendingQuestion = null;
                         saveUserPreferences();
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, {
-                            text: "🔄 Preferences reinitialises ! Envoyez un message pour recommencer."
-                        });
+                        await sock.sendMessage(userNumber, { text: MSG.RESET });
                         continue;
                     }
                 }
@@ -572,9 +596,7 @@ async function connectWhatsApp() {
                     saveUserPreferences();
 
                     await sock.sendPresenceUpdate('paused', userNumber);
-                    await sock.sendMessage(userNumber, {
-                        text: "🌾 *Bienvenue sur WOURI !*\nVotre assistant agricole intelligent.\n\n📍 Dans quelle ville etes-vous ?\n\n(Repondez avec le nom de votre ville : Abidjan, Bouake, Divo, Bonoua, etc.)"
-                    });
+                    await sock.sendMessage(userNumber, { text: MSG.WELCOME });
                     continue;
                 }
 
@@ -588,9 +610,7 @@ async function connectWhatsApp() {
                     saveUserPreferences();
 
                     await sock.sendPresenceUpdate('paused', userNumber);
-                    await sock.sendMessage(userNumber, {
-                        text: `✅ Ville enregistree : *${cityName}*\n\n🗣️ Dans quelle langue souhaitez-vous les reponses ?\n\n1️⃣ Francais\n2️⃣ Dioula\n3️⃣ Les deux (Francais ecrit + Dioula audio)\n\n(Repondez avec 1, 2 ou 3)`
-                    });
+                    await sock.sendMessage(userNumber, { text: MSG.CITY_OK(cityName) });
                     continue;
                 }
 
@@ -611,22 +631,18 @@ async function connectWhatsApp() {
 
                     if (!language) {
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, {
-                            text: "❓ Je n'ai pas compris. Repondez avec :\n\n1️⃣ pour Francais\n2️⃣ pour Dioula\n3️⃣ pour Les deux"
-                        });
+                        await sock.sendMessage(userNumber, { text: MSG.LANGUAGE_UNKNOWN });
                         continue;
                     }
 
                     prefs.language = language;
                     prefs.step = STEPS.COMPLETE;
 
-                    const langText = language === 'french' ? 'Francais' :
-                                    language === 'dioula' ? 'Dioula' : 'Francais + Dioula';
+                    const langText = language === 'french' ? 'Faransi' :
+                                    language === 'dioula' ? 'Dioula' : 'Faransi + Dioula';
 
                     await sock.sendPresenceUpdate('paused', userNumber);
-                    await sock.sendMessage(userNumber, {
-                        text: `✅ *Preferences enregistrees !*\n\n📍 Ville : ${prefs.city}\n🗣️ Langue : ${langText}\n\n💡 Pour changer : dites "changer ville" ou "changer langue"\n\nPosez-moi vos questions sur l'agriculture ! 🌱`
-                    });
+                    await sock.sendMessage(userNumber, { text: MSG.PREFS_SAVED(prefs.city, langText) });
 
                     // Traiter la question en attente s'il y en a une
                     if (prefs.pendingQuestion) {
@@ -946,7 +962,7 @@ async function connectWhatsApp() {
                 await sock.sendPresenceUpdate('paused', userNumber);
                 await randomDelay(500, 1000);
                 await sock.sendMessage(userNumber, {
-                    text: "Desole, je rencontre un probleme technique. Reessayez dans quelques instants."
+                    text: "⚠️ Fɛɛrɛ dɔ kɛra. I ka a lasɔgɔ tugu.\n\n---\nProblème technique. Réessayez dans quelques instants."
                 });
             }
         }
