@@ -66,14 +66,28 @@ function loadUserPreferences() {
     }
 }
 
-// Sauvegarder les preferences dans le fichier
+// Verrou d'ecriture pour eviter les race conditions
+let _saveInProgress = false;
+let _savePending = false;
+
+// Sauvegarder les preferences dans le fichier (debounced, sans race condition)
 function saveUserPreferences() {
-    try {
-        fs.writeFileSync(USER_PREFS_FILE, JSON.stringify(userPreferences, null, 2));
-        console.log('[PREFS] Preferences sauvegardees');
-    } catch (error) {
-        console.error('[PREFS] Erreur sauvegarde:', error.message);
+    if (_saveInProgress) {
+        _savePending = true;  // une autre sauvegarde est en cours, on rejoue apres
+        return;
     }
+    _saveInProgress = true;
+    const snapshot = JSON.stringify(userPreferences, null, 2);
+    fs.writeFile(USER_PREFS_FILE, snapshot, 'utf8', (err) => {
+        _saveInProgress = false;
+        if (err) {
+            console.error('[PREFS] Erreur sauvegarde:', err.message);
+        }
+        if (_savePending) {
+            _savePending = false;
+            saveUserPreferences();  // rejouer la sauvegarde en attente
+        }
+    });
 }
 
 // Obtenir les preferences d'un utilisateur
@@ -145,6 +159,21 @@ function isValidCity(text) {
     );
 }
 
+// Distance de Levenshtein entre deux chaînes
+function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            dp[i][j] = a[i-1] === b[j-1]
+                ? dp[i-1][j-1]
+                : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+        }
+    }
+    return dp[m][n];
+}
+
 // Extraire le nom de la ville du texte
 function extractCity(text) {
     const normalized = text.toLowerCase().trim();
@@ -152,7 +181,7 @@ function extractCity(text) {
     // Extraire les mots individuels pour mieux matcher
     const words = normalized.split(/\s+/);
 
-    // 1. Chercher d'abord dans les corrections STT (mot par mot)
+    // 1. Chercher d'abord dans les corrections STT (mot entier uniquement)
     for (const word of words) {
         if (CITY_CORRECTIONS[word]) {
             const corrected = CITY_CORRECTIONS[word];
@@ -162,24 +191,29 @@ function extractCity(text) {
 
     // 2. Chercher dans la phrase complete (pour noms composes comme "san pedro")
     for (const [wrong, correct] of Object.entries(CITY_CORRECTIONS)) {
-        if (normalized.includes(wrong)) {
+        // Mot entier via regex pour eviter "con" dans "conseil"
+        const pattern = new RegExp('\\b' + wrong.replace(/[-]/g, '\\-') + '\\b');
+        if (pattern.test(normalized)) {
             return correct.charAt(0).toUpperCase() + correct.slice(1);
         }
     }
 
-    // 3. Chercher dans les villes connues
+    // 3. Chercher dans les villes connues (mot entier)
     for (const city of KNOWN_CITIES) {
-        if (normalized.includes(city)) {
+        const pattern = new RegExp('\\b' + city.replace(/[-]/g, '\\-') + '\\b');
+        if (pattern.test(normalized)) {
             return city.charAt(0).toUpperCase() + city.slice(1);
         }
     }
 
-    // 4. Chercher similarite phonetique (derniere chance)
+    // 4. Similarite Levenshtein (seuil 0.8) — uniquement pour mots >= 4 chars
     for (const word of words) {
-        if (word.length >= 3) {
+        if (word.length >= 4) {
             for (const city of KNOWN_CITIES) {
-                // Verifier si le mot ressemble a une ville (debut similaire)
-                if (city.startsWith(word.substring(0, 3)) || word.startsWith(city.substring(0, 3))) {
+                if (city.length < 4) continue;  // eviter "man", "kon"
+                const maxLen = Math.max(word.length, city.length);
+                const similarity = 1 - levenshtein(word, city) / maxLen;
+                if (similarity >= 0.8) {
                     return city.charAt(0).toUpperCase() + city.slice(1);
                 }
             }
@@ -187,7 +221,7 @@ function extractCity(text) {
     }
 
     // Si pas trouve, retourner le dernier mot significatif (probable nom de ville)
-    const lastWord = words.filter(w => w.length > 2).pop() || text.trim();
+    const lastWord = words.filter(w => w.length > 3).pop() || text.trim();
     return lastWord.charAt(0).toUpperCase() + lastWord.slice(1).toLowerCase();
 }
 
@@ -1056,7 +1090,8 @@ app.post('/logout', async (req, res) => {
 async function gracefulShutdown(signal) {
     console.log(`\n[SHUTDOWN] Signal ${signal} recu — sauvegarde des préférences...`);
     try {
-        saveUserPreferences();
+        // Ecriture synchrone bloquante au shutdown (pas de race condition possible ici)
+        fs.writeFileSync(USER_PREFS_FILE, JSON.stringify(userPreferences, null, 2));
         console.log(`[SHUTDOWN] Préférences sauvegardées (${Object.keys(userPreferences).length} utilisateurs)`);
     } catch (err) {
         console.error('[SHUTDOWN] Erreur sauvegarde:', err.message);
