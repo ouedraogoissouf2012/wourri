@@ -268,6 +268,29 @@ def convert_wav_to_ogg(wav_path: str, ogg_path: str) -> bool:
     return False
 
 
+_TECH_KEYWORDS = (
+    'NPK', 'santimɛtiri', 'nɔgɔ', 'kilogramu', 'literi', 'poursan',
+    'fertilisan', 'pestisidi', 'fungisidi', 'insektisidi', 'tɔnni',
+)
+
+def _get_speaking_rate(sentence: str) -> float:
+    """Détermine le speaking_rate selon le type de phrase.
+
+    - Salutation (Alu ni…, I ni…, !) → 1.1 : fluide, naturelle
+    - Conseil technique (NPK, mesures, produits) → 1.3 : lent, bien articulé
+    - Défaut → 1.2
+    """
+    import re
+    stripped = sentence.strip()
+    # Salutation : commence par Alu ni / I ni / A ni, ou phrase courte avec !
+    if re.match(r'^(Alu ni|I ni|A ni)', stripped) or (stripped.endswith('!') and len(stripped.split()) <= 8):
+        return 1.1
+    # Conseil technique : contient des mots techniques
+    if any(kw in stripped for kw in _TECH_KEYWORDS):
+        return 1.3
+    return 1.2
+
+
 def _split_sentences(text: str) -> list[str]:
     """Découpe le texte en phrases sur . ! ? et {{...}}"""
     import re
@@ -327,7 +350,8 @@ def synthesize_dioula_text(dioula_text: str) -> str | None:
 
         segments = []
         for sentence in sentences:
-            waveform = _synthesize_sentence(sentence, model, tokenizer)
+            rate = _get_speaking_rate(sentence)
+            waveform = _synthesize_sentence(sentence, model, tokenizer, speaking_rate=rate)
             if waveform is not None:
                 segments.append(waveform)
                 segments.append(silence)

@@ -11,6 +11,7 @@ Approche : IVR intelligent inspiré CGIAR/Viamo
 import json
 import os
 import logging
+from datetime import datetime
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,21 @@ _CORPUS_PATH = Path(__file__).parent.parent.parent / "dictionnaires" / "corpus_i
 _CHROMA_DIR = Path(__file__).parent.parent.parent / "data" / "chroma_ivr"
 
 _chroma_collection = None
+
+
+def _get_current_season() -> str:
+    """Retourne la saison agricole CI selon le mois courant.
+
+    Calendrier Côte d'Ivoire :
+    - Mars-Juin  : grande saison des pluies → saison_pluie
+    - Sep-Oct    : petite saison des pluies → saison_pluie
+    - Nov-Fév    : grande saison sèche     → saison_seche
+    - Jul-Août   : petite saison sèche     → saison_seche
+    """
+    month = datetime.now().month
+    if month in (3, 4, 5, 6, 9, 10):
+        return "saison_pluie"
+    return "saison_seche"
 
 
 def _load_corpus() -> list[dict]:
@@ -213,24 +229,41 @@ def chercher_reponse_ivr(intent: str, cultures: list[str], conditions: list[str]
 
 
 def _best_result(results: dict, conditions: list[str]) -> dict | None:
-    """Sélectionne la meilleure entrée parmi les résultats Chroma."""
+    """Sélectionne la meilleure entrée parmi les résultats Chroma.
+
+    Scoring :
+    - score_validation de base (0.5-1.0)
+    - +0.15 si la saison actuelle correspond aux conditions de l'entrée
+    - +0.05 pour chaque autre condition correspondante
+    """
     if not results or not results.get("ids") or not results["ids"][0]:
         return None
 
     ids = results["ids"][0]
     metadatas = results["metadatas"][0]
 
+    current_season = _get_current_season()
     best = None
     best_score = -1.0
 
     for i, (entry_id, meta) in enumerate(zip(ids, metadatas)):
         score = float(meta.get("score_validation", 0.5))
 
-        # Bonus si les conditions correspondent
         entry_conditions = meta.get("conditions", "").split(",")
+
+        # Bonus saison (priorité haute : l'agriculteur doit recevoir le bon conseil)
+        if current_season in entry_conditions:
+            score += 0.15
+        # Entrée sans contrainte saisonnière → légère pénalité si une entrée saisonnière existe
+        elif not any(c in ("saison_pluie", "saison_seche") for c in entry_conditions if c):
+            score += 0.0  # neutre
+        else:
+            score -= 0.05  # mauvaise saison
+
+        # Bonus pour les autres conditions explicites
         for cond in conditions:
-            if cond in entry_conditions:
-                score += 0.1
+            if cond and cond in entry_conditions:
+                score += 0.05
 
         if score > best_score:
             best_score = score

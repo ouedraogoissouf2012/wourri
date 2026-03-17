@@ -5,6 +5,7 @@ NLU: si le message contient du bambara (transcription ASR), le NLU reconstruit
      une phrase française claire avant d'envoyer à DeepSeek.
 """
 import asyncio
+import re
 from fastapi import APIRouter
 from app.services.deepseek import chat_with_deepseek
 from app.services.weather import get_weather
@@ -361,9 +362,14 @@ async def chat(request: ChatRequest):
                 # → inclut météo réelle + cultures de saison selon la zone de la ville
                 if "{{METEO_CONTEXTUEL}}" in ivr_bambara:
                     from app.data.calendrier_agricole import get_cultures_du_mois
-                    cultures_saison = get_cultures_du_mois(city)
-                    meteo_bam, meteo_fr = _build_meteo_bambara(weather_data, city, cultures_saison)
+                    try:
+                        cultures_saison = get_cultures_du_mois(city)
+                        meteo_bam, _ = _build_meteo_bambara(weather_data, city, cultures_saison)
+                    except Exception:
+                        meteo_bam = ""
                     ivr_bambara = ivr_bambara.replace("{{METEO_CONTEXTUEL}}", meteo_bam)
+                # Sécurité finale : effacer tout tag {{...}} résiduel avant TTS
+                ivr_bambara = re.sub(r'\{\{[^}]+\}\}', '', ivr_bambara).strip()
 
                 # Injecter conseil saisonnier selon le mois actuel
                 cultures_detectees = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
