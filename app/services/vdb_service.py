@@ -60,24 +60,40 @@ def _get_collection():
             metadata={"description": "Wourri corpus IVR agricole bambara/dioula"}
         )
 
-        # Synchroniser si vide ou si le corpus JSON a changé (nouvelles entrées / corrections)
-        corpus_entries = _load_corpus()
+        # Synchroniser si vide, si le count a changé, ou si la version du corpus a changé
+        with open(_CORPUS_PATH, encoding="utf-8") as f:
+            corpus_data = json.load(f)
+        corpus_entries = corpus_data.get("entries", [])
+        corpus_version = corpus_data.get("version", "")
         vdb_count = _chroma_collection.count()
 
-        if vdb_count == 0:
-            logger.info(f"[VDB] Collection vide — peuplement initial ({len(corpus_entries)} entrées)")
+        _VERSION_FILE = _CHROMA_DIR / ".corpus_version"
+        stored_version = _VERSION_FILE.read_text(encoding="utf-8").strip() if _VERSION_FILE.exists() else ""
+
+        needs_rebuild = (
+            vdb_count == 0
+            or vdb_count != len(corpus_entries)
+            or stored_version != corpus_version
+        )
+
+        if needs_rebuild:
+            if vdb_count == 0:
+                logger.info(f"[VDB] Collection vide — peuplement initial ({len(corpus_entries)} entrées)")
+            else:
+                logger.info(
+                    f"[VDB] Corpus mis à jour (count={vdb_count}→{len(corpus_entries)}, "
+                    f"version={stored_version!r}→{corpus_version!r}) — rechargement"
+                )
+                client.delete_collection("corpus_ivr")
+                _chroma_collection = client.get_or_create_collection(
+                    name="corpus_ivr",
+                    embedding_function=ef,
+                    metadata={"description": "Wourri corpus IVR agricole bambara/dioula"}
+                )
             _populate_collection(_chroma_collection, corpus_entries)
-        elif vdb_count != len(corpus_entries):
-            logger.info(f"[VDB] Corpus mis à jour ({vdb_count} → {len(corpus_entries)} entrées) — rechargement")
-            client.delete_collection("corpus_ivr")
-            _chroma_collection = client.get_or_create_collection(
-                name="corpus_ivr",
-                embedding_function=ef,
-                metadata={"description": "Wourri corpus IVR agricole bambara/dioula"}
-            )
-            _populate_collection(_chroma_collection, corpus_entries)
+            _VERSION_FILE.write_text(corpus_version, encoding="utf-8")
         else:
-            logger.info(f"[VDB] Corpus à jour — {vdb_count} entrées")
+            logger.info(f"[VDB] Corpus à jour — {vdb_count} entrées (v{corpus_version})")
 
         return _chroma_collection
 
@@ -103,9 +119,10 @@ def _populate_collection(collection, entries=None):
 
     for entry in entries:
         ids.append(entry["id"])
-        # Document = texte de recherche (tags + réponse FR pour l'embedding)
+        # Document = texte de recherche (tags + réponse FR + phrases bambara CI attestées)
         tags_text = " ".join(entry.get("tags", []))
-        doc_text = f"{entry.get('reponse_fr', '')} {tags_text}"
+        phrases_text = " ".join(p["text"] for p in entry.get("phrases_attestees", []))
+        doc_text = f"{entry.get('reponse_fr', '')} {tags_text} {phrases_text}"
         documents.append(doc_text)
         metadatas.append({
             "intent": entry["intent"],
@@ -289,6 +306,27 @@ def get_reponse_fallback() -> str:
         pass
 
     return "N bɛ i dɛmɛ i ka sɛnɛ ko la. I ka i ka ɲinini wele fɔ cogo wɛrɛ."
+
+
+def get_phrases_for_intent(intent: str, cultures: list[str]) -> list[dict]:
+    """
+    Retourne les phrases_attestees de la première entrée IVR correspondant à intent + culture.
+    Utilisé pour enrichir le meta de la réponse avec des exemples bambara CI réels.
+    """
+    try:
+        with open(_CORPUS_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        for entry in data.get("entries", []):
+            if entry["intent"] != intent:
+                continue
+            entry_cultures = entry.get("cultures", ["*"])
+            if any(c in entry_cultures for c in cultures + ["*"]):
+                phrases = entry.get("phrases_attestees", [])
+                if phrases:
+                    return phrases
+    except Exception as e:
+        logger.warning(f"[VDB] Erreur lecture phrases_attestees (intent={intent}): {e}")
+    return []
 
 
 def initialiser_vdb():

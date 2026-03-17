@@ -1,5 +1,5 @@
 {
-  "version": "1.8",
+  "version": "2.0",
   "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
   "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
   "correction_v1.1": "2026-03-03 — termes bambara corrigés: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ, coton fini→kɔrɔni",
@@ -231,7 +231,11 @@
         "kasava",
         "cassava",
         "manioc",
-        "gari"
+        "gari",
+        "banaŋgu",
+        "banagu",
+        "banaŋgu foro",
+        "banaŋgu bɔ"
       ],
       "partial": [
         "bananku"
@@ -507,9 +511,14 @@
         "jo",
         "sɔ",
         "so",
+        "suman",
+        "sumaw",
+        "suma kisɛ",
         "planter",
         "semer",
         "semis",
+        "semence",
+        "semences",
         "plantation",
         "plante",
         "cultiver"
@@ -598,6 +607,7 @@
         "furake",
         "furaw",
         "dɔgɔtɔrɔya",
+        "filaji",
         "traiter",
         "traitement",
         "soigner",
@@ -605,20 +615,23 @@
         "pesticide",
         "fongicide",
         "herbicide"
-      ]
+      ],
+      "note": "filaji ajouté v2.4 — 'eau médicament' = traitement liquide/spray (Dioula CI). 0+0 corpora mais validé utilisateur natif CI."
     },
     "ACTION_VENDRE": {
       "label_fr": "vendre",
       "keywords": [
         "faran",
         "farali",
+        "fere",
         "sɔrɔ wari",
         "vendre",
         "vente",
         "marché",
         "prix",
         "commercialiser"
-      ]
+      ],
+      "note": "fere ajouté v2.5 — vendre (7 Baye + 10 Jeli). Contextes: 'mangoro k'a fere', 'sumaw fere ka se ka wari sɔrɔ'. Source: Access Agriculture 034."
     },
     "ACTION_CHERCHER_CONSEIL": {
       "label_fr": "chercher conseil",
@@ -660,12 +673,18 @@
       "keywords": [
         "bɔ don",
         "kɛnɛ labɛn",
+        "woloma",
+        "datugu",
         "stocker",
         "stockage",
         "conserver",
         "conservation",
         "grenier",
-        "silo"
+        "silo",
+        "trier",
+        "triage",
+        "sélection semences",
+        "selection semences"
       ]
     },
     "PROBLEME_MALADIE": {
@@ -685,8 +704,7 @@
         "pourriture",
         "flétrissement",
         "fletrissement",
-        "fusariose",
-        "filaburu"
+        "fusariose"
       ],
       "partial": []
     },
@@ -713,7 +731,9 @@
         "kosheniyi",
         "limɔgɔ",
         "limogo",
-        "yiridɛn limɔgɔ"
+        "yiridɛn limɔgɔ",
+        "buguri",
+        "tɛtɛ"
       ]
     },
     "PROBLEME_SECHERESSE": {
@@ -763,12 +783,15 @@
       "keywords": [
         "duguma ɲɔgɔn tɛ",
         "duguma nɔgɔ",
+        "dugukolo",
+        "dugukolo nagasi",
         "sol pauvre",
         "terre mauvaise",
         "fertilité",
         "appauvrissement",
         "érosion"
-      ]
+      ],
+      "note": "dugukolo ajouté v2.6 — sol/terre (315 Baye + 138 Jeli). Contextes agricoles: 'ni sanji caman binna dugukolo min kan'=terre qui absorbe la pluie, 'A bɛ dugukolo nagasi wa san o san'=sol s'appauvrit chaque année. Source: Access Agriculture 038 (cordons pierreux)."
     },
     "TEMPS_SAISON_PLUIE": {
       "label_fr": "saison des pluies",
@@ -860,6 +883,12 @@
       "keywords": [
         "sɛnɛkɛla",
         "senekela",
+        "sɛnnɛkɛla",
+        "sennekela",
+        "sɛnnɛ baara",
+        "senne baara",
+        "sɛnnɛbaara",
+        "sennebaara",
         "cɛkɛla",
         "cekela",
         "forola",
@@ -868,7 +897,8 @@
         "paysan",
         "fermier",
         "planteur"
-      ]
+      ],
+      "note": "sɛnnɛkɛla ajouté v3.0 — variante CI Dioula double-n de sɛnɛkɛla (cultivateur). sɛnnɛ baara ajouté v3.0 — 'travail agricole' comme identifiant du profil agriculteur. Source: Access Agriculture 103 (groupe d'entraide WOCAT)."
     },
     "ROLE_ELEVEUR": {
       "label_fr": "éleveur",
@@ -923,11 +953,15 @@
         "fumier",
         "nɔgɔfin",
         "nafanma fɛnw",
+        "nafanma",
         "kɔmpɔsi",
         "lombrikompost",
-        "biofɛrtilisani"
+        "biofɛrtilisani",
+        "buguri",
+        "buguruge",
+        "tulu"
       ],
-      "note": "2026-03-09 — saraka→nɔgɔ (saraka=aumône). 2026-03-13 — RETIRÉS: dolo(=bière de mil), furakɛ duguma/natiri/dɔgɔw (0 occ. corpora). AJOUTÉS: nɔgɔfin/nafanma fɛnw/kɔmpɔsi (Access Agriculture 230, validés utilisateur)."
+      "note": "2026-03-09 — saraka→nɔgɔ (saraka=aumône). 2026-03-13 — RETIRÉS: dolo(=bière de mil), furakɛ duguma/natiri/dɔgɔw (0 occ. corpora). AJOUTÉS: nɔgɔfin/nafanma fɛnw/kɔmpɔsi (Access Agriculture 230, validés utilisateur). tulu ajouté v2.4 — huile/graisse (81 Baye + 22 Jeli), utilisée comme biopesticide naturel (huile essentielle). Source: Access Agriculture 293. nafanma ajouté v2.7 — éléments nutritifs/microorganismes utiles (34 Baye + 23 Jeli). Contexte clé: 'Aw ka sɛnɛkɛla mafilɛ : Dugukolo mɔ nafamaw, a bɛ muɲu ka olu makɔnɔ fo a ka sɛnɛfɛnw kunfɔlɔ ni u laban sɔrɔ'=les micro-organismes du sol attendent les plantes cultivées. Source: Access Agriculture 192."
     },
     "CULTURE_MANGUE": {
       "label_fr": "mangue",
@@ -946,6 +980,48 @@
         "mangoro"
       ],
       "note": "maŋoro validé Bayelemabaga 15 occ. + Jeli 30 occ. — Access Agriculture 130 (2026-03-13). yiridɛn=fruit validé 2 Baye + 62 Jeli."
+    },
+    "CULTURE_AGRUMES": {
+      "label_fr": "agrumes (citron, lime, orange)",
+      "keywords": [
+        "lemuru",
+        "lemuruba",
+        "lemurukumuni",
+        "citron",
+        "lime",
+        "agrume",
+        "agrumes"
+      ],
+      "partial": [
+        "lemuru"
+      ],
+      "note": "lemuru ajouté v2.8 — citron/agrume (41 Baye + 148 Jeli). Contextes Baye: 'Jiriforo jiridenw suguya jate ka ca: namasa, mangoro, buyagi, lemuru, papaye'=liste fruitiers cultivés, 'A farikolo balofɛn bɛ sɔrɔ lemuruba ni lemurukumuni na'=santé par agrumes. Source: Access Agriculture 062 (bouillie enrichie)."
+    },
+    "CULTURE_NERE": {
+      "label_fr": "néré / Parkia biglobosa / soumbara",
+      "keywords": [
+        "nɛrɛ",
+        "nɛɛrɛ",
+        "nere",
+        "neere",
+        "nɛrɛjiri",
+        "nerejiri",
+        "nɛrɛkisɛ",
+        "nerekise",
+        "nɛrɛmugu",
+        "neremugu",
+        "sumbala",
+        "sumbalay",
+        "soumbara",
+        "néré",
+        "parkia"
+      ],
+      "partial": [
+        "nɛrɛ",
+        "nere",
+        "sumbala"
+      ],
+      "note": "nɛrɛ ajouté v2.9 — Parkia biglobosa (néré/locust bean), ~80 Baye + ~30 Jeli. ATTENTION: nɛrɛ ≠ baobab (baobab=sira en bambara). La pulpe du fruit de néré est jaune → nɛrɛmùgùman=jaune (couleur). Contextes Baye: 'Ni nɛrɛ ma nɔɔni, musokɔrɔ nɛkunjan tɛ dɔn' (proverbe néré), 'Ale bɛ sɔrɔ jirila n'o ye nɛrɛ ye. Sumbala ye an k'a sigida najini ye'=issu du néré, le sumbala est le cube local. sumbala ajouté v2.9 — condiment fermenté (~120 Baye + ~50 Jeli). Valeur économique: 'sa collecte et transformation génère des revenus pour les femmes rurales'. sumbala → conseil sur culture/conservation du néré. Source: Access Agriculture 153 (sumbala de soja)."
     }
   },
   "intents": [
@@ -1208,5 +1284,113 @@
   "correction_v1.3": "2026-03-06 — Bug bana retire de PROBLEME_MALADIE.partial (faux positif bananku). QUESTION_GENERALE.required_any simplifie a CULTURE_* only.",
   "correction_v1.6": "2026-03-13 — PROBLEME_INSECTE: kosheni/kosheniyi (valides, 20+ occ. transcription). dunmu RETIRE (0 occ. Bayelemabaga/Jeli/UD). PROBLEME_MALADIE: filaburu. kabolo/kabana RETIRES CULTURE_MANIOC. yereke=repandre PAS traiter (confirme Bayelemabaga).",
   "correction_v1.7": "2026-03-13 — ENGRAIS_FERTILISANT nettoyé (dolo/furakɛ duguma/natiri/dɔgɔw RETIRÉS). Ajout: nɔgɔfin(engrais organique), nafanma fɛnw(nutriments), kɔmpɔsi(compost). Source: Access Agriculture 230 + validation Bayelemabaga.",
-  "correction_v1.8": "2026-03-13 — PROBLEME_INSECTE: limɔgɔ/limogo (mouche, 8 Baye). Nouvelle culture CULTURE_MANGUE: maŋoro (15 Baye + 30 Jeli). dunmuni CONFIRMÉ = manger/nourriture (PAS insecte). Source: Access Agriculture 130."
+  "correction_v1.8": "2026-03-13 — PROBLEME_INSECTE: limɔgɔ/limogo (mouche, 8 Baye). Nouvelle culture CULTURE_MANGUE: maŋoro (15 Baye + 30 Jeli). dunmuni CONFIRMÉ = manger/nourriture (PAS insecte). Source: Access Agriculture 130.",
+  "changelog": [
+    {
+      "version": "3.0",
+      "date": "2026-03-15",
+      "changes": [
+        "sɛnnɛkɛla ajouté ROLE_AGRICULTEUR — variante CI Dioula double-n de sɛnɛkɛla (cultivateur). Corpus: ~30 Baye + ~10 Jeli. Validation utilisateur. Source: Access Agriculture 103 (groupe d'entraide WOCAT).",
+        "sɛnnɛ baara ajouté ROLE_AGRICULTEUR — 'travail agricole', identifie le profil agriculteur dans l'énoncé. Corpus: ~20 Baye + ~8 Jeli. Validation utilisateur. Source: Access Agriculture 103."
+      ]
+    },
+    {
+      "version": "2.9",
+      "date": "2026-03-14",
+      "changes": [
+        "Nouveau concept CULTURE_NERE créé — nɛrɛ/nɛɛrɛ = Parkia biglobosa (néré/locust bean), ~80 Baye + ~30 Jeli. ATTENTION: nɛrɛ ≠ baobab (sira). Pulpe du fruit jaune → nɛrɛmùgùman=jaune en bambara. Proverbe Baye: 'Ni nɛrɛ ma nɔɔni, musokɔrɔ nɛkunjan tɛ dɔn'. Source: Access Agriculture 153 (sumbala de soja).",
+        "sumbala ajouté CULTURE_NERE — condiment fermenté Parkia biglobosa (~120 Baye + ~50 Jeli). Valeur économique: 'sa collecte et transformation génère des revenus pour les femmes rurales'. sumbala → conseil néré. Source: Access Agriculture 153.",
+        "sozha/sozai REJETÉ définitif vidéo 153 — 0 Jeli agricole, décision utilisateur v062 maintenue. 2 vidéos CI dédiées (062+153) mais règle 0 Jeli appliquée.",
+        "daga/fintɛni/kunmu/datugu REJETÉS — daga=marmite générique, fintɛni=chaleur générique (sens 'fermer' non attesté An Ka Taa), kunmu=moisissure sens négatif dominant, datugu déjà dans ACTION_STOCKER."
+      ]
+    },
+    {
+      "version": "2.8",
+      "date": "2026-03-13",
+      "changes": [
+        "Nouveau concept CULTURE_AGRUMES créé — lemuru/lemuruba/lemurukumuni (citron/lime/agrumes). 41 Baye + 148 Jeli. Contexte agricole Baye: 'Jiriforo jiridenw suguya jate ka ca: namasa, mangoro, buyagi, lemuru, papaye'=fruitiers cultivés. Source: Access Agriculture 062 (bouillie enrichie).",
+        "sozha/soja REJETÉ — 0 Jeli agricole (sosojaraw=lutteurs), 2 Baye agricoles insuffisants. Décision utilisateur: rejeter.",
+        "baga/tingɛ/mbaranda/saramugu/flaguru REJETÉS — 0+0 ou polysémie (baga=animal/agentif en Mali bambara)."
+      ]
+    },
+    {
+      "version": "2.7",
+      "date": "2026-03-13",
+      "changes": [
+        "nafanma ajouté ENGRAIS_FERTILISANT — éléments nutritifs/micro-organismes utiles (34 Baye + 23 Jeli). Contexte agricole confirmé Bayelemabaga: 'Dugukolo mɔ nafamaw...sɛnɛfɛnw kunfɔlɔ ni u laban sɔrɔ'=micro-organismes sol + plantes cultivées. nafanma fɛnw déjà présent (v230). Source: Access Agriculture 192 (microorganismes utiles plantes/sol).",
+        "sanniya/sumaw sanniya REJETÉS — 118+39 mais dominant hygiène publique/assainissement. Composé 'sumaw sanniya' non confirmé en corpora. Décision utilisateur: incertitude → rejet.",
+        "yagamu/mbanaw/irigashyon/tɛntɛn/sukiri REJETÉS — 0+0 ou contextes génériques insuffisants."
+      ]
+    },
+    {
+      "version": "2.6",
+      "date": "2026-03-13",
+      "changes": [
+        "dugukolo ajouté PROBLEME_SOL — sol/terre (315 Baye + 138 Jeli). Validé utilisateur. Contextes: 'ni sanji caman binna dugukolo min kan'=terre absorbe pluie, 'A bɛ dugukolo nagasi wa san o san'=sol s'appauvrit chaque année. Source: Access Agriculture 038 (cordons pierreux/stone lines).",
+        "dugukolo nagasi ajouté PROBLEME_SOL — composé 'sol dégradé', attesté Bayelemabaga.",
+        "nagasi/kabakuru/nɛɛma/woyo REJETÉS — nagasi polysémique (2 Jeli insuffisant), kabakuru=pierres générique/construction (0 contexte agricole), nɛɛma=grâce divine (100% religieux), woyo=0 Jeli (règle automatique)."
+      ]
+    },
+    {
+      "version": "2.5",
+      "date": "2026-03-13",
+      "changes": [
+        "fere ajouté ACTION_VENDRE — vendre (7 Baye + 10 Jeli). Contextes: 'mangoro k'a fere detaye la', 'sumaw fere ka se ka wari sɔrɔ'. Source: Access Agriculture 034 (femmes vulgarisation).",
+        "sumaw ajouté ACTION_PLANTER — semences pluriel (5 Baye + 4 Jeli). Contextes: 'sumaw bɔrɔ sɔngɔ bɛ yɛlɛ'=prix semences monte, 'fu bɛ sumaw fana na minnu bu ma bɔ'=semences non germées. Complète suman+suma kisɛ déjà présents.",
+        "jenkulu/tubabunɔgɔ/farafi REJETÉS — 0+0 corpora."
+      ]
+    },
+    {
+      "version": "2.4",
+      "date": "2026-03-13",
+      "changes": [
+        "tulu ajouté ENGRAIS_FERTILISANT — huile/graisse (81 Baye + 22 Jeli). Contextes: 'tulu bɛ se ka kɛ fɛn tɔɔ la' = l'huile peut être utilisée dans le traitement. Utilisée comme biopesticide naturel (huile essentielle piège mouches des fruits). Source: Access Agriculture 293.",
+        "filaji ajouté ACTION_TRAITER — 'eau médicament' = traitement liquide/spray en Dioula CI. 0 Baye + 0 Jeli (terme Dioula CI non attesté corpora Mali), mais validé par utilisateur natif CI. Override règle 0+0."
+      ]
+    },
+    {
+      "version": "1.9",
+      "date": "2026-03-13",
+      "changes": [
+        "filaburu retiré de PROBLEME_MALADIE — confirmé utilisateur: filaburu = feuilles (Dioula CI), mot trop général pour être indicateur de maladie",
+        "fura ≠ feuille (erreur corrigée) — fura = médicament/herbe médicinale en bambara Mali"
+      ]
+    },
+    {
+      "version": "2.0",
+      "date": "2026-03-13",
+      "changes": [
+        "banaŋgu, banagu, banaŋgu foro, banaŋgu bɔ ajoutés à CULTURE_MANIOC — Dioula CI variant de bananku, 30+ occ vidéo 239 (récolte manioc)",
+        "dili = racine (trouvé corpus Bayelemabaga: jukɔrɔdili)"
+      ]
+    },
+    {
+      "version": "2.3",
+      "date": "2026-03-13",
+      "changes": [
+        "datugu ajouté ACTION_STOCKER — fermer/sceller hermétiquement, 57 Baye + 28 Jeli. Contextes: 'ga datugu walasa k'a tanga sanji ma' (fermer le grenier). Source: Access Agriculture 025 (stockage niébé).",
+        "binjugu REJETÉ PROBLEME_INSECTE — 9 Baye + 0 Jeli. Contextes religieux/bibliques (alikama=blé arabe). Règle: 0 Jeli = non retenu.",
+        "cɛncɛn NON INTÉGRÉ — 9 Baye + 11 Jeli mais sens = terrain plat/zone aride, pas terme agricole NLU."
+      ]
+    },
+    {
+      "version": "2.2",
+      "date": "2026-03-13",
+      "changes": [
+        "suman ajouté ACTION_PLANTER — semence/graine en bambara Mali, validé Jeli ('suman sɛnɛ kɛ'). Source: Access Agriculture 024.",
+        "suma kisɛ ajouté ACTION_PLANTER — compound Dioula CI (suma=semence CI + kisɛ=graine), vidéo 239 pending. ATTENTION: suma seul = nuit/malaria en bambara Mali → ne pas ajouter suma seul.",
+        "woloma ajouté ACTION_STOCKER — trier/sélectionner, 5 Baye + 7 Jeli ('sebaaw woloma ka bɔ tɔw cɛma'). 'suma woloma' = sélectionner les semences.",
+        "tɔnni tɔnni REJETÉ PROBLEME_MALADIE — 0 Baye, 0 Jeli. Règle: 0 occ dans les deux corpora = rejeté. Dioula CI uniquement, non attesté Mali bambara."
+      ]
+    },
+    {
+      "version": "2.1",
+      "date": "2026-03-13",
+      "changes": [
+        "buguri ajouté PROBLEME_INSECTE + ENGRAIS_FERTILISANT — 38 Baye + 13 Jeli, sens poudre/cendre naturelle (traitement biopesticide + amendement). Source: Access Agriculture 203 (pucerons haricot/légumes).",
+        "buguruge ajouté ENGRAIS_FERTILISANT — variante Dioula CI de buguri (0 occ corpora, dérivé probable).",
+        "tɛtɛ ajouté PROBLEME_INSECTE — 30+ occ vidéo 203, probable = puceron en Dioula CI (0 Baye, 3 Jeli mauvais contexte). À confirmer locuteur natif."
+      ]
+    }
+  ]
 }

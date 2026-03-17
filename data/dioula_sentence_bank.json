@@ -1,0 +1,533 @@
+{
+  "description": "Banque de phrases dioula CI extraites des transcriptions Access Agriculture",
+  "version": "1.0",
+  "date_generated": "2026-03-15",
+  "total_sentences": 54,
+  "min_score_used": 1,
+  "usage": "Utiliser pour enrichir corpus_ivr.json et améliorer la naturalité des réponses du bot en CI Dioula. Ajouter --transcription <fichier.txt> pour traiter une nouvelle transcription.",
+  "sentences_by_concept": {
+    "ACTION_PLANTER": [
+      {
+        "text": "sumaw fere ka se ka wari sɔrɔ",
+        "source": "video_034",
+        "keywords": [
+          "fere",
+          "sumaw",
+          "wari"
+        ],
+        "score": 3
+      },
+      {
+        "text": "aw ye sumaw woloma",
+        "source": "video_150",
+        "keywords": [
+          "sumaw",
+          "woloma"
+        ],
+        "score": 2
+      },
+      {
+        "text": "sumaw bɔrɔ sɔngɔ bɛ yɛlɛ",
+        "source": "video_034",
+        "keywords": [
+          "sumaw"
+        ],
+        "score": 1
+      },
+      {
+        "text": "sumaw bɛ ka wili",
+        "source": "video_034",
+        "keywords": [
+          "sumaw"
+        ],
+        "score": 1
+      },
+      {
+        "text": "fu bɛ sumaw fana na minnu bu ma bɔ u la",
+        "source": "video_034",
+        "keywords": [
+          "sumaw"
+        ],
+        "score": 1
+      },
+      {
+        "text": "agriculteur: les micro-organismes bénéfiques du sol attendent les plantes cultivées depuis germination jusqu",
+        "source": "video_192",
+        "keywords": [
+          "plante"
+        ],
+        "score": 1
+      },
+      {
+        "text": "sumaw sanniya",
+        "source": "video_192",
+        "keywords": [
+          "sumaw"
+        ],
+        "score": 1
+      }
+    ],
+    "PROBLEME_MALADIE": [
+      {
+        "text": "bana mi pi sega",
+        "source": "video_150",
+        "keywords": [
+          "bana"
+        ],
+        "score": 1
+      },
+      {
+        "text": "bana ni bi tingɛn sɔrɔ",
+        "source": "video_184",
+        "keywords": [
+          "bana"
+        ],
+        "score": 1
+      },
+      {
+        "text": "afila tɔkisini bana",
+        "source": "video_189",
+        "keywords": [
+          "bana"
+        ],
+        "score": 1
+      },
+      {
+        "text": "siriburu ni mozayiki ni bana ye",
+        "source": "video_193",
+        "keywords": [
+          "bana",
+          "bana ye"
+        ],
+        "score": 1
+      }
+    ],
+    "ACTION_STOCKER": [
+      {
+        "text": "aw ye sumaw woloma",
+        "source": "video_150",
+        "keywords": [
+          "sumaw",
+          "woloma"
+        ],
+        "score": 2
+      },
+      {
+        "text": "bɔrɔ ni kɔnnɔ ka datugu",
+        "source": "video_153",
+        "keywords": [
+          "datugu"
+        ],
+        "score": 1
+      },
+      {
+        "text": "ka datugu ka yɛn",
+        "source": "video_189",
+        "keywords": [
+          "datugu"
+        ],
+        "score": 1
+      },
+      {
+        "text": "dun bɔrɔ kɔnɔ ka datugu",
+        "source": "video_189",
+        "keywords": [
+          "datugu"
+        ],
+        "score": 1
+      },
+      {
+        "text": "aw ye ki se woloma munu yɛn",
+        "source": "video_189",
+        "keywords": [
+          "woloma"
+        ],
+        "score": 1
+      }
+    ],
+    "CULTURE_MAIS": [
+      {
+        "text": "kaba kisɛ magama wolo bo balo",
+        "source": "video_184",
+        "keywords": [
+          "kaba",
+          "wolo"
+        ],
+        "score": 2
+      },
+      {
+        "text": "kaba kisɛ magamaw le ye a bi se ka o ye",
+        "source": "video_184",
+        "keywords": [
+          "kaba"
+        ],
+        "score": 1
+      },
+      {
+        "text": "sumaya ka se kaba kisɛw ma",
+        "source": "video_188",
+        "keywords": [
+          "kaba"
+        ],
+        "score": 1
+      },
+      {
+        "text": "fanŋga di kaba sun ma",
+        "source": "video_188",
+        "keywords": [
+          "kaba"
+        ],
+        "score": 1
+      },
+      {
+        "text": "koperativi mɔgɔw wo be kaba dɔnni mara",
+        "source": "video_189",
+        "keywords": [
+          "kaba"
+        ],
+        "score": 1
+      }
+    ],
+    "ENGRAIS_FERTILISANT": [
+      {
+        "text": "nɔgɔ bi to foro kɔnɔ",
+        "source": "video_033",
+        "keywords": [
+          "nɔgɔ"
+        ],
+        "score": 1
+      },
+      {
+        "text": "ni nɔgɔ ani dugu kolo mɛnɛ cogo",
+        "source": "video_103",
+        "keywords": [
+          "nɔgɔ"
+        ],
+        "score": 1
+      },
+      {
+        "text": "ni mbi filaburu nunuu yagamu dugu kolo la ka kɛ nɔgɔ ye",
+        "source": "video_193",
+        "keywords": [
+          "nɔgɔ"
+        ],
+        "score": 1
+      },
+      {
+        "text": "ka kɛ nɔgɔ ye",
+        "source": "video_193",
+        "keywords": [
+          "nɔgɔ"
+        ],
+        "score": 1
+      }
+    ],
+    "CULTURE_NERE": [
+      {
+        "text": "shyiriye nɛɛrɛ yiri ayiwa ali li ye ma woro",
+        "source": "video_033",
+        "keywords": [
+          "nɛɛrɛ",
+          "woro"
+        ],
+        "score": 2
+      },
+      {
+        "text": "nɛrɛmuguma o cogo la bara ni a sera ki sɛw bɛɛ ma",
+        "source": "video_150",
+        "keywords": [
+          "nɛrɛmugu"
+        ],
+        "score": 1
+      },
+      {
+        "text": "Sumbala ye an k",
+        "source": "video_153",
+        "keywords": [
+          "sumbala"
+        ],
+        "score": 1
+      },
+      {
+        "text": "kɛ nɛrɛ mugula ma ye fulaburu",
+        "source": "video_178",
+        "keywords": [
+          "nɛrɛ"
+        ],
+        "score": 1
+      }
+    ],
+    "ACTION_VENDRE": [
+      {
+        "text": "sumaw fere ka se ka wari sɔrɔ",
+        "source": "video_034",
+        "keywords": [
+          "fere",
+          "sumaw",
+          "wari"
+        ],
+        "score": 3
+      },
+      {
+        "text": "a fere detaye la",
+        "source": "video_034",
+        "keywords": [
+          "fere"
+        ],
+        "score": 1
+      },
+      {
+        "text": "a ka sega tingɛn sanniya anni ka fere",
+        "source": "video_150",
+        "keywords": [
+          "fere"
+        ],
+        "score": 1
+      }
+    ],
+    "ANIMAL_BOVIN": [
+      {
+        "text": "sumaw fere ka se ka wari sɔrɔ",
+        "source": "video_034",
+        "keywords": [
+          "fere",
+          "sumaw",
+          "wari"
+        ],
+        "score": 3
+      },
+      {
+        "text": "wari juru ta",
+        "source": "video_166",
+        "keywords": [
+          "wari"
+        ],
+        "score": 1
+      },
+      {
+        "text": "wari juru sara",
+        "source": "video_166",
+        "keywords": [
+          "wari"
+        ],
+        "score": 1
+      }
+    ],
+    "CULTURE_MANGUE": [
+      {
+        "text": "Jiriforo jiridenw suguya jate ka ca: namasa, mangoro, buyagi, lemuru, papaye",
+        "source": "video_062",
+        "keywords": [
+          "lemuru",
+          "mango",
+          "mangoro",
+          "namasa"
+        ],
+        "score": 3
+      },
+      {
+        "text": "yiridɛn maŋoro",
+        "source": "video_mango_harvest",
+        "keywords": [
+          "maŋoro",
+          "yiridɛn maŋoro"
+        ],
+        "score": 1
+      }
+    ],
+    "ROLE_AGRICULTEUR": [
+      {
+        "text": "Aw ka sɛnɛkɛla mafilɛ : Dugukolo mɔ nafamaw, a bɛ muɲu ka olu makɔnɔ fo a ka sɛnɛfɛnw kunfɔlɔ ni u laban sɔrɔ",
+        "source": "video_192",
+        "keywords": [
+          "dugukolo",
+          "sɛnɛkɛla"
+        ],
+        "score": 2
+      },
+      {
+        "text": "sɛnnɛ baara ko yinma ya",
+        "source": "video_103",
+        "keywords": [
+          "sɛnnɛ baara"
+        ],
+        "score": 1
+      },
+      {
+        "text": "sɛnnɛ baara ko yima ya baara w la",
+        "source": "video_103",
+        "keywords": [
+          "sɛnnɛ baara"
+        ],
+        "score": 1
+      }
+    ],
+    "INTENSITE_FORT": [
+      {
+        "text": "ni sanji caman binna dugukolo min kan ka don o la",
+        "source": "video_038",
+        "keywords": [
+          "caman",
+          "dugukolo",
+          "ji caman",
+          "sanji",
+          "sanji caman"
+        ],
+        "score": 5
+      },
+      {
+        "text": ". Règle 0 Jeli → REJETÉ. De plus,",
+        "source": "video_150",
+        "keywords": [
+          "plus"
+        ],
+        "score": 1
+      }
+    ],
+    "PROBLEME_SOL": [
+      {
+        "text": "ni sanji caman binna dugukolo min kan ka don o la",
+        "source": "video_038",
+        "keywords": [
+          "caman",
+          "dugukolo",
+          "ji caman",
+          "sanji",
+          "sanji caman"
+        ],
+        "score": 5
+      },
+      {
+        "text": "Aw ka sɛnɛkɛla mafilɛ : Dugukolo mɔ nafamaw, a bɛ muɲu ka olu makɔnɔ fo a ka sɛnɛfɛnw kunfɔlɔ ni u laban sɔrɔ",
+        "source": "video_192",
+        "keywords": [
+          "dugukolo",
+          "sɛnɛkɛla"
+        ],
+        "score": 2
+      }
+    ],
+    "CULTURE_AGRUMES": [
+      {
+        "text": "Jiriforo jiridenw suguya jate ka ca: namasa, mangoro, buyagi, lemuru, papaye",
+        "source": "video_062",
+        "keywords": [
+          "lemuru",
+          "mango",
+          "mangoro",
+          "namasa"
+        ],
+        "score": 3
+      },
+      {
+        "text": "A farikolo balofɛn bɛ sɔrɔ lemuruba ni lemurukumuni na ca ya",
+        "source": "video_062",
+        "keywords": [
+          "lemuru",
+          "lemuruba",
+          "lemurukumuni"
+        ],
+        "score": 1
+      }
+    ],
+    "CULTURE_MANIOC": [],
+    "ANIMAL_PORC": [
+      {
+        "text": "shyiriye nɛɛrɛ yiri ayiwa ali li ye ma woro",
+        "source": "video_033",
+        "keywords": [
+          "nɛɛrɛ",
+          "woro"
+        ],
+        "score": 2
+      }
+    ],
+    "ACTION_ARROSER": [
+      {
+        "text": "ni sanji caman binna dugukolo min kan ka don o la",
+        "source": "video_038",
+        "keywords": [
+          "caman",
+          "dugukolo",
+          "ji caman",
+          "sanji",
+          "sanji caman"
+        ],
+        "score": 5
+      }
+    ],
+    "PROBLEME_INONDATION": [
+      {
+        "text": "ni sanji caman binna dugukolo min kan ka don o la",
+        "source": "video_038",
+        "keywords": [
+          "caman",
+          "dugukolo",
+          "ji caman",
+          "sanji",
+          "sanji caman"
+        ],
+        "score": 5
+      }
+    ],
+    "TEMPS_SAISON_PLUIE": [
+      {
+        "text": "ni sanji caman binna dugukolo min kan ka don o la",
+        "source": "video_038",
+        "keywords": [
+          "caman",
+          "dugukolo",
+          "ji caman",
+          "sanji",
+          "sanji caman"
+        ],
+        "score": 5
+      }
+    ],
+    "CULTURE_BANANE": [
+      {
+        "text": "Jiriforo jiridenw suguya jate ka ca: namasa, mangoro, buyagi, lemuru, papaye",
+        "source": "video_062",
+        "keywords": [
+          "lemuru",
+          "mango",
+          "mangoro",
+          "namasa"
+        ],
+        "score": 3
+      }
+    ],
+    "CULTURE_ARACHIDE": [],
+    "ANIMAL_POULET": [
+      {
+        "text": "kaba kisɛ magama wolo bo balo",
+        "source": "video_184",
+        "keywords": [
+          "kaba",
+          "wolo"
+        ],
+        "score": 2
+      }
+    ],
+    "SALUTATION_NUIT": [
+      {
+        "text": "o bi balo sufɛ viri viri ndɔ",
+        "source": "video_184",
+        "keywords": [
+          "sufɛ"
+        ],
+        "score": 1
+      }
+    ],
+    "ACTION_TRAITER": [
+      {
+        "text": "filaji nunu wo sɔnŋɔ ka gɛlɛ",
+        "source": "video_184",
+        "keywords": [
+          "filaji"
+        ],
+        "score": 1
+      }
+    ]
+  }
+}

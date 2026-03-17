@@ -375,6 +375,11 @@ async def chat(request: ChatRequest):
                     audio_url = synthesize_dioula_text(ivr_bambara)
                     audio_language_name = "Dioula"
                 cultures = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
+
+                # Phrases bambara CI réelles associées à cet intent (pour meta/debug)
+                from app.services.vdb_service import get_phrases_for_intent
+                phrases_att = get_phrases_for_intent(nlu_intent, cultures)
+
                 return ChatResponse(
                     response=ivr_bambara,
                     response_dioula=ivr_bambara,
@@ -383,7 +388,12 @@ async def chat(request: ChatRequest):
                     city=city,
                     language=request.language.value,
                     audio_language=audio_language_name,
-                    meta={"intent": nlu_intent, "cultures": cultures, "source": "ivr_exact"}
+                    meta={
+                        "intent": nlu_intent,
+                        "cultures": cultures,
+                        "source": "ivr_exact",
+                        "phrases_attestees": [p["text"] for p in phrases_att[:3]],
+                    }
                 )
 
         # CHEMIN FALLBACK : intent exact non trouvé dans l'IVR
