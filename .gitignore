@@ -62,8 +62,11 @@ data/validation_sources/
 *.tar.gz
 *.zip
 
-# Fichiers de test
+# Fichiers de test unitaires ad-hoc (à la racine)
 sherpa_page.png
 test_*.py
 soloni_*.py
 export_*.py
+
+# Exceptions : outils de validation dans tools/
+!tools/test_tts_batch.py
