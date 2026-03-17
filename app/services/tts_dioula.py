@@ -257,63 +257,170 @@ _TECH_KEYWORDS = (
     'fertilisan', 'pestisidi', 'fungisidi', 'insektisidi', 'tɔnni',
 )
 
+# Marqueurs discursifs bambara → pause AVANT eux (découpage naturel)
+# Format : (pattern_regex, pause_secondes_apres_segment_precedent)
+_BAMBARA_DISCOURSE_MARKERS = [
+    (r'\bnka\b', 0.30),    # "mais / cependant"
+    (r'\bnɔ\b',  0.30),    # "alors / ensuite" (séquentiel)
+    (r'\bfɔlɔ\b', 0.25),   # "d'abord"
+    (r'\bkɔ\b',  0.25),    # "après ça" (souvent en fin de segment)
+]
+
+
 def _get_speaking_rate(sentence: str) -> float:
     """Détermine le speaking_rate selon le type de phrase.
 
-    - Salutation (Alu ni…, I ni…, !) → 1.1 : fluide, naturelle
-    - Conseil technique (NPK, mesures, produits) → 1.3 : lent, bien articulé
-    - Défaut → 1.2
+    Valeurs calibrées pour MMS-TTS-DYU (VITS) :
+    - Salutation courte  → 1.05 : naturel, presque normal
+    - Conseil agricole   → 1.15 : clair, fluide (défaut)
+    - Technique (NPK…)   → 1.25 : lent, bien articulé
     """
     import re
     stripped = sentence.strip()
-    # Salutation : commence par Alu ni / I ni / A ni, ou phrase courte avec !
-    if re.match(r'^(Alu ni|I ni|A ni)', stripped) or (stripped.endswith('!') and len(stripped.split()) <= 8):
-        return 1.1
-    # Conseil technique : contient des mots techniques
+    if re.match(r'^(Aw ni|Alu ni|I ni|A ni)', stripped) or (
+        stripped.endswith('!') and len(stripped.split()) <= 8
+    ):
+        return 1.05
     if any(kw in stripped for kw in _TECH_KEYWORDS):
-        return 1.3
-    return 1.2
+        return 1.25
+    return 1.15
 
 
-def _split_sentences(text: str) -> list[str]:
-    """Découpe le texte en phrases sur . ! ? et {{...}}"""
+def _split_on_bambara_markers(text: str) -> list[tuple[str, float]]:
+    """Découpe un segment sur les marqueurs discursifs bambara.
+    Retourne une liste de (fragment, pause_apres_en_secondes).
+    Ne découpe QUE si les deux parties résultantes ont chacune >= 4 mots
+    (évite les micro-fragments inutiles).
+    """
     import re
-    # Remplacer les templates {{...}} par une pause (ils ne doivent pas être synthétisés)
+    result = [(text, 0.0)]
+
+    for pattern, pause in _BAMBARA_DISCOURSE_MARKERS:
+        new_result = []
+        for seg, seg_pause in result:
+            parts = re.split(r'(?=\s+' + pattern + r')', seg, maxsplit=2)
+            # Ne découper que si les deux parties ont chacune >= 4 mots
+            if len(parts) > 1 and all(len(p.strip().split()) >= 4 for p in parts if p.strip()):
+                for i, p in enumerate(parts):
+                    p = p.strip()
+                    if not p:
+                        continue
+                    is_last = (i == len(parts) - 1)
+                    new_result.append((p, seg_pause if is_last else pause))
+            else:
+                new_result.append((seg, seg_pause))
+        result = new_result
+
+    return result
+
+
+def _force_split_long(text: str, pause: float, max_words: int = 12) -> list[tuple[str, float]]:
+    """Découpe un segment > max_words mots en deux parties égales.
+    Coupe à la frontière de mot la plus proche du milieu.
+    """
+    words = text.split()
+    if len(words) <= max_words:
+        return [(text, pause)]
+
+    mid = len(words) // 2
+    first = ' '.join(words[:mid])
+    second = ' '.join(words[mid:])
+    return [(first, 0.25), (second, pause)]
+
+
+def _split_sentences(text: str) -> list[tuple[str, float]]:
+    """Découpe le texte en segments avec leur pause associée (en secondes).
+
+    Hiérarchie des pauses :
+    - !  →  0.50s  (exclamation)
+    - ?  →  0.50s  (question)
+    - .  →  0.45s  (fin de phrase)
+    - ,  →  0.20s  (respiration / virgule)
+    - marqueur bambara (nka, nɔ…) → 0.30s
+    - découpage forcé (>12 mots)  → 0.25s
+    """
+    import re
+    # Supprimer les templates {{...}}
     text = re.sub(r'\{\{[^}]+\}\}', '', text).strip()
-    # Découper sur ponctuation forte
-    parts = re.split(r'(?<=[.!?])\s+', text)
-    # Filtrer les fragments vides ou trop courts
-    return [p.strip() for p in parts if p.strip() and len(p.strip()) > 1]
+    if not text:
+        return []
+
+    results: list[tuple[str, float]] = []
+
+    # Étape 1 : découper sur ponctuation forte (. ! ?)
+    strong_parts = re.split(r'(?<=[.!?])\s+', text)
+
+    for part in strong_parts:
+        part = part.strip()
+        if not part:
+            continue
+        # Pause selon le signe de ponctuation qui termine ce bloc
+        if part.endswith('!') or part.endswith('?'):
+            end_pause = 0.50
+        elif part.endswith('.'):
+            end_pause = 0.45
+        else:
+            end_pause = 0.40  # dernier fragment sans ponctuation
+
+        # Étape 2 : découper sur les virgules
+        comma_parts = re.split(r',\s*', part)
+
+        for ci, sub in enumerate(comma_parts):
+            sub = sub.strip()
+            if not sub:
+                continue
+            is_last_comma = (ci == len(comma_parts) - 1)
+            comma_pause = end_pause if is_last_comma else 0.20
+
+            # Étape 3 : découper sur marqueurs discursifs bambara
+            marker_segs = _split_on_bambara_markers(sub)
+            for mi, (seg, _) in enumerate(marker_segs):
+                is_last_marker = (mi == len(marker_segs) - 1)
+                seg_pause = comma_pause if is_last_marker else 0.30
+
+                # Étape 4 : forcer la coupure si segment encore trop long
+                results.extend(_force_split_long(seg, seg_pause))
+
+    # Filtrer les fragments vides ou trop courts (< 3 mots → fusionner avec le suivant)
+    cleaned: list[tuple[str, float]] = []
+    for s, p in results:
+        s = s.strip()
+        if not s:
+            continue
+        if len(s.split()) < 3 and cleaned:
+            # Fusionner ce micro-fragment avec le segment précédent
+            prev_s, _ = cleaned[-1]
+            cleaned[-1] = (prev_s + ' ' + s, p)
+        elif len(s.split()) >= 2 or (len(s.split()) == 1 and len(s) > 3):
+            cleaned.append((s, p))
+    return cleaned
 
 
 def _synthesize_sentence(sentence: str, model, tokenizer,
-                         speaking_rate: float = 1.2) -> np.ndarray | None:
-    """Synthétise une phrase unique.
-    speaking_rate > 1.0 = parole plus lente et bien articulée (défaut : 1.2).
-    """
+                         speaking_rate: float = 1.15) -> np.ndarray | None:
+    """Synthétise un segment unique avec le speaking_rate donné."""
     try:
         inputs = tokenizer(sentence, return_tensors="pt")
-        # Modifier temporairement le rythme (speaking_rate scale les durées phonèmes)
         original_rate = model.config.speaking_rate
         model.config.speaking_rate = speaking_rate
         try:
             with torch.no_grad():
                 output = model(**inputs).waveform
         finally:
-            model.config.speaking_rate = original_rate  # toujours restaurer
+            model.config.speaking_rate = original_rate
         return output.squeeze().cpu().numpy()
     except Exception as e:
-        print(f"[TTS] Erreur synthèse phrase '{sentence[:40]}': {e}")
+        print(f"[TTS] Erreur synthèse '{sentence[:40]}': {e}")
         return None
 
 
 def synthesize_dioula_text(dioula_text: str) -> str | None:
     """Génère un fichier audio OGG à partir de texte Dioula.
 
-    Améliorations v2:
-    - Découpage par phrases pour pauses naturelles
-    - length_scale=1.2 : parole 20% plus lente et bien articulée
-    - 350ms de silence entre chaque phrase
+    v3 — pauses variables :
+    - Découpage hiérarchique : . ! ? → virgule → marqueurs bambara → forcé
+    - Pause adaptée : 200ms (virgule) / 300ms (marqueur) / 450ms (fin phrase)
+    - speaking_rate : 1.05 (salutation) / 1.15 (défaut) / 1.25 (technique)
     """
     if not TORCH_AVAILABLE or not dioula_text:
         return None
@@ -324,30 +431,27 @@ def synthesize_dioula_text(dioula_text: str) -> str | None:
             return None
 
         sample_rate = model.config.sampling_rate
-        # 350ms de silence entre les phrases
-        silence_samples = int(sample_rate * 0.35)
-        silence = np.zeros(silence_samples, dtype=np.float32)
 
-        sentences = _split_sentences(dioula_text)
-        if not sentences:
-            sentences = [dioula_text]
+        segments = _split_sentences(dioula_text)
+        if not segments:
+            segments = [(dioula_text, 0.40)]
 
-        segments = []
-        for sentence in sentences:
+        audio_parts = []
+        for i, (sentence, pause_s) in enumerate(segments):
             rate = _get_speaking_rate(sentence)
             waveform = _synthesize_sentence(sentence, model, tokenizer, speaking_rate=rate)
-            if waveform is not None:
-                segments.append(waveform)
-                segments.append(silence)
+            if waveform is None:
+                continue
+            audio_parts.append(waveform)
+            # Ajouter le silence APRÈS ce segment (sauf le dernier)
+            if i < len(segments) - 1:
+                silence_samples = int(sample_rate * pause_s)
+                audio_parts.append(np.zeros(silence_samples, dtype=np.float32))
 
-        if not segments:
+        if not audio_parts:
             return None
 
-        # Retirer le dernier silence (fin de message)
-        if len(segments) > 1:
-            segments = segments[:-1]
-
-        combined = np.concatenate(segments)
+        combined = np.concatenate(audio_parts)
 
         # Normalisation
         max_val = np.max(np.abs(combined))
