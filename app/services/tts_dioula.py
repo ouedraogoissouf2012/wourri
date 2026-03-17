@@ -268,8 +268,46 @@ def convert_wav_to_ogg(wav_path: str, ogg_path: str) -> bool:
     return False
 
 
+def _split_sentences(text: str) -> list[str]:
+    """Découpe le texte en phrases sur . ! ? et {{...}}"""
+    import re
+    # Remplacer les templates {{...}} par une pause (ils ne doivent pas être synthétisés)
+    text = re.sub(r'\{\{[^}]+\}\}', '', text).strip()
+    # Découper sur ponctuation forte
+    parts = re.split(r'(?<=[.!?])\s+', text)
+    # Filtrer les fragments vides ou trop courts
+    return [p.strip() for p in parts if p.strip() and len(p.strip()) > 1]
+
+
+def _synthesize_sentence(sentence: str, model, tokenizer,
+                         speaking_rate: float = 1.2) -> np.ndarray | None:
+    """Synthétise une phrase unique.
+    speaking_rate > 1.0 = parole plus lente et bien articulée (défaut : 1.2).
+    """
+    try:
+        inputs = tokenizer(sentence, return_tensors="pt")
+        # Modifier temporairement le rythme (speaking_rate scale les durées phonèmes)
+        original_rate = model.config.speaking_rate
+        model.config.speaking_rate = speaking_rate
+        try:
+            with torch.no_grad():
+                output = model(**inputs).waveform
+        finally:
+            model.config.speaking_rate = original_rate  # toujours restaurer
+        return output.squeeze().cpu().numpy()
+    except Exception as e:
+        print(f"[TTS] Erreur synthèse phrase '{sentence[:40]}': {e}")
+        return None
+
+
 def synthesize_dioula_text(dioula_text: str) -> str | None:
-    """Génère un fichier audio OGG à partir de texte Dioula"""
+    """Génère un fichier audio OGG à partir de texte Dioula.
+
+    Améliorations v2:
+    - Découpage par phrases pour pauses naturelles
+    - length_scale=1.2 : parole 20% plus lente et bien articulée
+    - 350ms de silence entre chaque phrase
+    """
     if not TORCH_AVAILABLE or not dioula_text:
         return None
 
@@ -278,14 +316,36 @@ def synthesize_dioula_text(dioula_text: str) -> str | None:
         if model is None:
             return None
 
-        inputs = tokenizer(dioula_text, return_tensors="pt")
+        sample_rate = model.config.sampling_rate
+        # 350ms de silence entre les phrases
+        silence_samples = int(sample_rate * 0.35)
+        silence = np.zeros(silence_samples, dtype=np.float32)
 
-        with torch.no_grad():
-            output = model(**inputs).waveform
+        sentences = _split_sentences(dioula_text)
+        if not sentences:
+            sentences = [dioula_text]
 
-        waveform = output.squeeze().cpu().numpy()
-        waveform = waveform / np.max(np.abs(waveform))
-        waveform = (waveform * 32767).astype(np.int16)
+        segments = []
+        for sentence in sentences:
+            waveform = _synthesize_sentence(sentence, model, tokenizer)
+            if waveform is not None:
+                segments.append(waveform)
+                segments.append(silence)
+
+        if not segments:
+            return None
+
+        # Retirer le dernier silence (fin de message)
+        if len(segments) > 1:
+            segments = segments[:-1]
+
+        combined = np.concatenate(segments)
+
+        # Normalisation
+        max_val = np.max(np.abs(combined))
+        if max_val > 0:
+            combined = combined / max_val
+        combined = (combined * 32767).astype(np.int16)
 
         file_id = uuid.uuid4()
         wav_filename = f"dyu_{file_id}.wav"
@@ -294,7 +354,7 @@ def synthesize_dioula_text(dioula_text: str) -> str | None:
         ogg_filepath = os.path.join(settings.audio_output_dir, ogg_filename)
         os.makedirs(settings.audio_output_dir, exist_ok=True)
 
-        wav.write(wav_filepath, rate=model.config.sampling_rate, data=waveform)
+        wav.write(wav_filepath, rate=sample_rate, data=combined)
 
         if convert_wav_to_ogg(wav_filepath, ogg_filepath):
             if os.path.exists(ogg_filepath) and os.path.getsize(ogg_filepath) > 0:
