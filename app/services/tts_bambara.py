@@ -490,46 +490,31 @@ def translate_to_french(bambara_text: str) -> str:
     return result
 
 
-from app.services._ffmpeg import get_ffmpeg as find_ffmpeg
+from app.services._ffmpeg import get_ffmpeg as find_ffmpeg, wav_to_ogg_normalized
 
 
 def convert_wav_to_ogg(wav_path: str, ogg_path: str) -> bool:
-    """Convertit un fichier WAV en OGG (Opus) pour WhatsApp mobile"""
-    ffmpeg_path = find_ffmpeg()
+    """Convertit un fichier WAV en OGG Opus avec normalisation loudnorm EBU R128.
+    Délègue à _ffmpeg.wav_to_ogg_normalized (source unique, loudnorm si disponible).
+    """
+    if wav_to_ogg_normalized(wav_path, ogg_path):
+        return True
 
-    if ffmpeg_path:
-        try:
-            # Utiliser ffmpeg pour la conversion
-            result = subprocess.run([
-                ffmpeg_path, '-y', '-i', wav_path,
-                '-c:a', 'libopus', '-b:a', '64k',
-                '-vbr', 'on', '-compression_level', '10',
-                ogg_path
-            ], capture_output=True, text=True, timeout=30)
-
-            if result.returncode == 0 and os.path.exists(ogg_path):
-                # Supprimer le fichier WAV temporaire
-                os.remove(wav_path)
-                print("Conversion WAV -> OGG reussie avec ffmpeg")
-                return True
-            else:
-                print(f"Erreur ffmpeg: {result.stderr}")
-        except Exception as e:
-            print(f"Erreur ffmpeg: {e}")
-
-    # Fallback: essayer avec pydub
-    print("Essai avec pydub...")
+    # Fallback pydub (sans loudnorm)
     try:
         from pydub import AudioSegment
-        # Configurer le chemin ffmpeg pour pydub
-        if ffmpeg_path and ffmpeg_path != 'ffmpeg':
-            AudioSegment.converter = ffmpeg_path
-            ffprobe_path = ffmpeg_path.replace('ffmpeg.exe', 'ffprobe.exe')
-            AudioSegment.ffprobe = ffprobe_path
-
+        try:
+            ffmpeg_path = find_ffmpeg()
+            if ffmpeg_path != 'ffmpeg':
+                AudioSegment.converter = ffmpeg_path
+        except RuntimeError:
+            pass
         audio = AudioSegment.from_wav(wav_path)
         audio.export(ogg_path, format="ogg", codec="libopus", bitrate="64k")
-        os.remove(wav_path)
+        try:
+            os.remove(wav_path)
+        except OSError:
+            pass
         print("Conversion WAV -> OGG reussie avec pydub")
         return True
     except Exception as e:
