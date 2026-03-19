@@ -1,0 +1,2330 @@
+{
+  "version_corpus": "2.1",
+  "total_mots": 290,
+  "valides": 7,
+  "bons": 86,
+  "risques": 58,
+  "absents": 139,
+  "details": [
+    {
+      "mot": "alu",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "anader",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ananas",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ant",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "antisɛki",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "arrosage",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "avrili",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "azote",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bananku",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bas",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bolisi",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bolisili",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bouture",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bàrànda",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bɔlɔ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bɛnɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "campagne",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "cbd",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "charan",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "cochenille",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "commer",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "compost",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "conposi",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "contextuel",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "coopérative",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "couronne",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "cuivre",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "càyi",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "cè",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "cɔyɔrɔ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "cɛkurun",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "cɛɛn",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "d'ivoire",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "disanburu",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "drenaj",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dunbu",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dɛmɛba",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "export",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "farikolon",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "farine",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "faro",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "feburiye",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "filɛlen",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "folonw",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "fond",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "fongicide",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "fumure",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "fɔrɔ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "gan",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "gari",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "grenier",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "groupement",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "gɛlɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "halakilen",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "iita",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "insecticide",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jaba",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jaune",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jere",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jiriden",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jiridenw",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jiɲɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "juin",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jukoro",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "juluyekalo",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "juni",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "juruni",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jì",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kosheni",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kote",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ku",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kulun",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kà",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɔlɔ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɔrɔfɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɔrɔni",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɛna",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "lemuru",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "lokpe",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "lèmùna",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "magnézium",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "marisi",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "marɔshɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "maŋoro",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "meteo",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "mildiou",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "màlo",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "mɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "mɛnen",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "mɛtiri",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "nasi",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "neem",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "nitrojɛn",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "npk",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "nyɔ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "nɔvanburu",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "official",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "organic",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "phosphate",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "phosphore",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "potasse",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "potassium",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "puceron",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "pépinière",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "rejet",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "rouge",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sak",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "saku",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sanka",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sannin",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "santimɛtiri",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sanubaga",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sanviyekalo",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "senekela",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sugurun",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sulphate",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sumbala",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɔrɔda",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɛgɛla",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɛkɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɛnkɛlɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɛnnɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɛnɛli",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɛtanburu",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tilefɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tilelen",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tilema",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tms",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tɔɔ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "urée",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "wili",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "wourri",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "yellenma",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "yiridɛn",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "zanwiyekalo",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "zuwɛ",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ɔgɔsi",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ɔkitoburu",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ɔkutɔburu",
+      "score": 0,
+      "statut": "ABSENT",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "b'i",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "boli",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "daminɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "de",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "duguma",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dumu",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dɔlɔ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "fali",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "farali",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "filɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "filɛli",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "fu",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "fura",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "furakɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "gouvernement",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "gɛlɛn",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "gɛlɛnw",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "halaki",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "hɛrɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jira",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jiri",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jɛlen",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jɛn",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kafe",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kakawo",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": true
+    },
+    {
+      "mot": "koo",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɔfɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɔlɔsi",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɔnɔnin",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "lakisi",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "limɔgɔ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "minɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "nafama",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "nafolo",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "nunu",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "nɛrɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "olu",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "on",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "saniya",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "seegin",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sogi",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "soso",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sufɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sugu",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɛbɛn",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɛgɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɛnɛkɛla",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tamati",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": true
+    },
+    {
+      "mot": "tiga",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tilalen",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tulu",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tɛmɛnen",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "woso",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": false,
+      "mooreburkina": true
+    },
+    {
+      "mot": "wulafɛ",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "wulanna",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": false
+    },
+    {
+      "mot": "wuli",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ɲinini",
+      "score": 1,
+      "statut": "RISQUE",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "b'a",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ban",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bana",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "banaw",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "banna",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bi",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bila",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bɔrɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "bɛna",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ca",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "caya",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "cogo",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "da",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dan",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "di",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dibi",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dimi",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dugu",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dɔgɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dɔgɔya",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dɔrɔn",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dɛmɛ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dɛmɛbaga",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "fana",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "fara",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "fini",
+      "score": 2,
+      "statut": "BON",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": true
+    },
+    {
+      "mot": "fɛ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ji",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jigi",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "jɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "k'a",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kaba",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": false,
+      "mooreburkina": true
+    },
+    {
+      "mot": "kan",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kana",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kisi",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kurun",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɔnɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɔrɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɛmɛ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "kɛnɛ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "laban",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "labɛn",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "lɔgɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "lɔgɔkun",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "malo",
+      "score": 2,
+      "statut": "BON",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": true
+    },
+    {
+      "mot": "mana",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "mugan",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "mun",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "musow",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "mɔgɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "mɔgɔw",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "mɛn",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ne",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "nɔgɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "nɛgɛ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sa",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sani",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sanji",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sanni",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "se",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sini",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "siran",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sisan",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "siɲɛ",
+      "score": 2,
+      "statut": "BON",
+      "findora": false,
+      "common_voice": true,
+      "mooreburkina": true
+    },
+    {
+      "mot": "sow",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "surun",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɔgɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɔgɔma",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɔn",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɔngɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɔnna",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɔrɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "sɛgɛsɛgɛ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ta",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "to",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tɔw",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "tɛmɛ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "wari",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "wele",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "wɛrɛ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "yɔrɔ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "yɛlɛma",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "yɛrɛ",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ɲi",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ɲini",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "ɲɔgɔn",
+      "score": 2,
+      "statut": "BON",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": false
+    },
+    {
+      "mot": "dugukolo",
+      "score": 3,
+      "statut": "VALIDE",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": true
+    },
+    {
+      "mot": "foro",
+      "score": 3,
+      "statut": "VALIDE",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": true
+    },
+    {
+      "mot": "jan",
+      "score": 3,
+      "statut": "VALIDE",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": true
+    },
+    {
+      "mot": "koro",
+      "score": 3,
+      "statut": "VALIDE",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": true
+    },
+    {
+      "mot": "mara",
+      "score": 3,
+      "statut": "VALIDE",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": true
+    },
+    {
+      "mot": "sira",
+      "score": 3,
+      "statut": "VALIDE",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": true
+    },
+    {
+      "mot": "sɛnɛ",
+      "score": 3,
+      "statut": "VALIDE",
+      "findora": true,
+      "common_voice": true,
+      "mooreburkina": true
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "version": "AXE-5",
+  "date": "2026-03-19",
+  "corpus_version": "2.2",
+  "total": 5,
+  "passed": 5,
+  "results": [
+    {
+      "tc_id": "TC01",
+      "asr_transcription": "N ta kaba bɛ bana ka gɛlɛn, a tɛ dɔgɔya.",
+      "asr_skip": true,
+      "nlu": {
+        "intent": "DIAGNOSTIC_PROBLEME",
+        "confidence": 1.0,
+        "cultures": [
+          "PROBLEME_MALADIE",
+          "CULTURE_MAIS"
+        ],
+        "french": "Mon maïs est malade, les plantes ne poussent pas bien. Quels sont les symptômes possibles et les traitements ?"
+      },
+      "ivr_found": true,
+      "ivr_id": "mais_diagnostic_001",
+      "tts_ok": true,
+      "pass": true,
+      "intent_ok": true,
+      "culture_ok": true,
+      "description": "Problème maïs → DIAGNOSTIC",
+      "intent_attendu": "DIAGNOSTIC_PROBLEME",
+      "culture_attendue": "CULTURE_MAIS"
+    },
+    {
+      "tc_id": "TC02",
+      "asr_transcription": "N ta tiga bɛ bana ka gɛlɛn.",
+      "asr_skip": true,
+      "nlu": {
+        "intent": "DIAGNOSTIC_PROBLEME",
+        "confidence": 1.0,
+        "cultures": [
+          "PROBLEME_MALADIE",
+          "CULTURE_ARACHIDE"
+        ],
+        "french": "Mon arachide est malade, les plantes ne poussent pas bien. Quels sont les symptômes possibles et les traitements ?"
+      },
+      "ivr_found": true,
+      "ivr_id": "arachide_diagnostic_001",
+      "tts_ok": true,
+      "pass": true,
+      "intent_ok": true,
+      "culture_ok": true,
+      "description": "Problème arachide → DIAGNOSTIC",
+      "intent_attendu": "DIAGNOSTIC_PROBLEME",
+      "culture_attendue": "CULTURE_ARACHIDE"
+    },
+    {
+      "tc_id": "TC03",
+      "asr_transcription": "Malo sɛnɛ bɛ kɛ cogo di kalo jumɛn na?",
+      "asr_skip": true,
+      "nlu": {
+        "intent": "QUESTION_SAISON_PLANTATION",
+        "confidence": 1.0,
+        "cultures": [
+          "ACTION_PLANTER",
+          "CULTURE_RIZ"
+        ],
+        "french": "Quelle est la meilleure saison pour planter du riz dans ma région ?"
+      },
+      "ivr_found": true,
+      "ivr_id": "riz_saison_seche_001",
+      "tts_ok": true,
+      "pass": true,
+      "intent_ok": true,
+      "culture_ok": true,
+      "description": "Saison riz → QUESTION_SAISON_PLANTATION",
+      "intent_attendu": "QUESTION_SAISON_PLANTATION",
+      "culture_attendue": "CULTURE_RIZ"
+    },
+    {
+      "tc_id": "TC04",
+      "asr_transcription": "Maŋoro bɛ se ka bɔ joona wa? Cogo di?",
+      "asr_skip": true,
+      "nlu": {
+        "intent": "QUESTION_RECOLTE",
+        "confidence": 1.0,
+        "cultures": [
+          "ACTION_RECOLTER",
+          "CULTURE_MANGUE"
+        ],
+        "french": "Quand et comment récolter ma culture ?"
+      },
+      "ivr_found": true,
+      "ivr_id": "manioc_recolte_001",
+      "tts_ok": true,
+      "pass": true,
+      "intent_ok": true,
+      "culture_ok": true,
+      "description": "Récolte mangue → QUESTION_RECOLTE",
+      "intent_attendu": "QUESTION_RECOLTE",
+      "culture_attendue": "CULTURE_MANGUE"
+    },
+    {
+      "tc_id": "TC05",
+      "asr_transcription": "Ku sɛnɛ kalo jumɛn bɛ ɲuman?",
+      "asr_skip": true,
+      "nlu": {
+        "intent": "QUESTION_SAISON_PLANTATION",
+        "confidence": 1.0,
+        "cultures": [
+          "CULTURE_IGNAME",
+          "ACTION_PLANTER"
+        ],
+        "french": "Quelle est la meilleure saison pour planter de l' igname dans ma région ?"
+      },
+      "ivr_found": true,
+      "ivr_id": "igname_saison_001",
+      "tts_ok": true,
+      "pass": true,
+      "intent_ok": true,
+      "culture_ok": true,
+      "description": "Saison igname → QUESTION_SAISON_PLANTATION",
+      "intent_attendu": "QUESTION_SAISON_PLANTATION",
+      "culture_attendue": "CULTURE_IGNAME"
+    }
+  ]
+}

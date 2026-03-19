@@ -1,0 +1,229 @@
+{
+  "ok": 37,
+  "erreurs": 0,
+  "details": [
+    {
+      "id": "mangue_limogo_diagnostic_001",
+      "nb_mots": 22,
+      "duree_s": 7.36,
+      "statut": "OK"
+    },
+    {
+      "id": "manioc_kosheni_prevention_001",
+      "nb_mots": 19,
+      "duree_s": 7.55,
+      "statut": "OK"
+    },
+    {
+      "id": "manioc_kosheni_symptomes_001",
+      "nb_mots": 22,
+      "duree_s": 7.52,
+      "statut": "OK"
+    },
+    {
+      "id": "nere_diagnostic_001",
+      "nb_mots": 25,
+      "duree_s": 9.34,
+      "statut": "OK"
+    },
+    {
+      "id": "riz_saison_seche_001",
+      "nb_mots": 25,
+      "duree_s": 8.1,
+      "statut": "OK"
+    },
+    {
+      "id": "manioc_kosheni_traitement_001",
+      "nb_mots": 25,
+      "duree_s": 9.04,
+      "statut": "OK"
+    },
+    {
+      "id": "agrumes_diagnostic_001",
+      "nb_mots": 23,
+      "duree_s": 7.52,
+      "statut": "OK"
+    },
+    {
+      "id": "arachide_diagnostic_001",
+      "nb_mots": 23,
+      "duree_s": 8.06,
+      "statut": "OK"
+    },
+    {
+      "id": "cacao_recolte_001",
+      "nb_mots": 22,
+      "duree_s": 8.35,
+      "statut": "OK"
+    },
+    {
+      "id": "igname_conseil_001",
+      "nb_mots": 21,
+      "duree_s": 7.31,
+      "statut": "OK"
+    },
+    {
+      "id": "mangue_conseil_001",
+      "nb_mots": 20,
+      "duree_s": 7.63,
+      "statut": "OK"
+    },
+    {
+      "id": "nere_conseil_001",
+      "nb_mots": 24,
+      "duree_s": 9.49,
+      "statut": "OK"
+    },
+    {
+      "id": "agrumes_conseil_001",
+      "nb_mots": 24,
+      "duree_s": 9.54,
+      "statut": "OK"
+    },
+    {
+      "id": "haricot_irrigation_001",
+      "nb_mots": 23,
+      "duree_s": 7.66,
+      "statut": "OK"
+    },
+    {
+      "id": "mais_irrigation_001",
+      "nb_mots": 25,
+      "duree_s": 8.75,
+      "statut": "OK"
+    },
+    {
+      "id": "igname_recolte_001",
+      "nb_mots": 24,
+      "duree_s": 6.53,
+      "statut": "OK"
+    },
+    {
+      "id": "igname_stockage_001",
+      "nb_mots": 26,
+      "duree_s": 8.88,
+      "statut": "OK"
+    },
+    {
+      "id": "cacao_stockage_001",
+      "nb_mots": 20,
+      "duree_s": 7.33,
+      "statut": "OK"
+    },
+    {
+      "id": "patate_irrigation_001",
+      "nb_mots": 21,
+      "duree_s": 6.43,
+      "statut": "OK"
+    },
+    {
+      "id": "mais_diagnostic_001",
+      "nb_mots": 25,
+      "duree_s": 6.67,
+      "statut": "OK"
+    },
+    {
+      "id": "banane_saison_001",
+      "nb_mots": 21,
+      "duree_s": 7.9,
+      "statut": "OK"
+    },
+    {
+      "id": "banane_recolte_001",
+      "nb_mots": 22,
+      "duree_s": 6.32,
+      "statut": "OK"
+    },
+    {
+      "id": "tomate_saison_001",
+      "nb_mots": 20,
+      "duree_s": 5.76,
+      "statut": "OK"
+    },
+    {
+      "id": "tomate_recolte_001",
+      "nb_mots": 23,
+      "duree_s": 6.54,
+      "statut": "OK"
+    },
+    {
+      "id": "gombo_recolte_001",
+      "nb_mots": 25,
+      "duree_s": 7.89,
+      "statut": "OK"
+    },
+    {
+      "id": "sesame_diagnostic_001",
+      "nb_mots": 21,
+      "duree_s": 7.76,
+      "statut": "OK"
+    },
+    {
+      "id": "nere_stockage_001",
+      "nb_mots": 22,
+      "duree_s": 6.61,
+      "statut": "OK"
+    },
+    {
+      "id": "riz_diagnostic_002",
+      "nb_mots": 25,
+      "duree_s": 8.27,
+      "statut": "OK"
+    },
+    {
+      "id": "mais_stockage_001",
+      "nb_mots": 25,
+      "duree_s": 8.72,
+      "statut": "OK"
+    },
+    {
+      "id": "igname_irrigation_001",
+      "nb_mots": 21,
+      "duree_s": 6.99,
+      "statut": "OK"
+    },
+    {
+      "id": "manioc_conseil_001",
+      "nb_mots": 25,
+      "duree_s": 6.94,
+      "statut": "OK"
+    },
+    {
+      "id": "manioc_stockage_001",
+      "nb_mots": 24,
+      "duree_s": 7.36,
+      "statut": "OK"
+    },
+    {
+      "id": "manioc_diagnostic_001",
+      "nb_mots": 24,
+      "duree_s": 10.34,
+      "statut": "OK"
+    },
+    {
+      "id": "haricot_recolte_001",
+      "nb_mots": 20,
+      "duree_s": 6.27,
+      "statut": "OK"
+    },
+    {
+      "id": "oignon_recolte_001",
+      "nb_mots": 25,
+      "duree_s": 8.77,
+      "statut": "OK"
+    },
+    {
+      "id": "oignon_stockage_001",
+      "nb_mots": 21,
+      "duree_s": 7.54,
+      "statut": "OK"
+    },
+    {
+      "id": "patate_recolte_001",
+      "nb_mots": 25,
+      "duree_s": 8.62,
+      "statut": "OK"
+    }
+  ],
+  "erreurs_detail": []
+}
