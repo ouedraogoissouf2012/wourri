@@ -1,5 +1,5 @@
 {
-  "version": "2.0",
+  "version": "2.1",
   "description": "Corpus IVR agricole Wourri — réponses pré-écrites en bambara/dioula par intent × culture",
   "note": "Inspiré approche CGIAR/Viamo. Phrases à valider par locuteur natif bambara/dioula agricole. Score_validation = estimation initiale.",
   "correction_v1.1": "2026-03-03 — termes igname (danburu→ku) et manioc (barakama→bananku) corrigés.",
@@ -211,7 +211,7 @@
       "conditions": [
         "PROBLEME_INSECTE"
       ],
-      "reponse_bambara": "Ni kulun bɛ i màlo dumu, furakɛ sow ka kan. Aw ye furakɛ bɔ màlo kan tile fila o tile fila. Kulun bɛ màlo halaki ni a ma daminɛ.",
+      "reponse_bambara": "Ni kulun bɛ màlo dumu, furakɛ sow ka kan. Aw ye furakɛ bɔ tile fila o tile fila. Kulun bɛ halaki ni a ma daminɛ.",
       "reponse_fr": "Si des insectes mangent ton riz, il faut traiter. Pulvérise un produit sur le riz tous les 2 jours. Les insectes peuvent détruire le riz si on ne commence pas.",
       "score_validation": 0.67,
       "tags": [
@@ -383,7 +383,7 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Kaba b'a fɛ jì dɔɔni tile o tile. Ni sanji te na, aw ye jì faro la kɔni. Kaba bɛ sa ni jì ma sɔrɔ sɛnɛli kɔ tile bi saba kɔnɔ.",
+      "reponse_bambara": "Kaba b'a fɛ jì tile o tile. Ni sanji tɛ, aw ye jì faro la. Kaba bɛ sa ni jì tɛ tile bi saba kɔnɔ.",
       "reponse_fr": "Le maïs a besoin d'un peu d'eau chaque jour. Si la pluie ne vient pas, arrose le champ tôt le matin. Le maïs peut mourir sans eau dans les 30 premiers jours.",
       "score_validation": 0.7,
       "tags": [
@@ -484,7 +484,7 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Kaba filɛlen kɔ, aw ye a jǎ tile o tile tile la. Aw ye a don saku la bɔlɔ tɛ yɔrɔ. Aw ye fura don saku kɔnɔ kulun ma.",
+      "reponse_bambara": "Kaba filɛlen kɔ, aw ye a jǎ tile la. Aw ye a don saku la bɔlɔ tɛ. Aw ye fura don saku kɔnɔ kulun ma.",
       "reponse_fr": "Après la récolte, fais sécher le maïs au soleil chaque jour. Mets-le dans des sacs à l'abri de l'humidité. Mets un produit anti-insectes dans le sac.",
       "score_validation": 0.7,
       "tags": [
@@ -588,7 +588,7 @@
       "conditions": [
         "PROBLEME_MALADIE"
       ],
-      "reponse_bambara": "Ni kaba fura ye sɛgɛ ka gɛlɛn, bana bɛ a la. Aw ye furakɛ bɔ a kan joona ka na. Ni kaba bɛɛ ta, aw ye a cɛ ka bɔ.",
+      "reponse_bambara": "Ni kaba fura sɛgɛ ka gɛlɛn, bana bɛ a la. Aw ye furakɛ bɔ joona. Ni kaba bɛɛ bana, aw ye a cɛ ka bɔ.",
       "reponse_fr": "Si les feuilles de maïs jaunissent et sèchent, c'est une maladie. Traite rapidement avec un produit. Si tout le maïs est touché, arrache et brûle.",
       "score_validation": 0.67,
       "tags": [
@@ -771,7 +771,7 @@
       "conditions": [
         "PROBLEME_MALADIE"
       ],
-      "reponse_bambara": "Ni tiga fura ye gɛlɛn ka sɛgɛ, jì gɛlɛn bɛ a kɔnɔ. Aw ye jì don faro la joona tile o tile. Ni tiga bɛ bɔlɔ, jì caman don — aw ye drenaj labɛn.",
+      "reponse_bambara": "Ni tiga fura gɛlɛn, jì gɛlɛn bɛ a kɔnɔ. Aw ye jì don tile o tile. Ni tiga bɔlɔ, aw ye drenaj labɛn.",
       "reponse_fr": "Si les feuilles d'arachide sèchent et jaunissent, c'est le manque d'eau. Arrose rapidement chaque jour. Si les arachides pourrissent, il y a trop d'eau — améliore le drainage.",
       "score_validation": 0.67,
       "tags": [
@@ -790,7 +790,7 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku sɛnɛ la ka ɲi, aw ye foro sannin labɛn ka ɲɛ. Ku bɛ se ka kɛ ɲɛ ni jɛn ka ɲɛ ye. Aw ye dunbu kɛ foro la k'i ka ku dɛmɛ.",
+      "reponse_bambara": "Ka ku sɛnɛ, aw ye foro labɛn ka ɲɛ. Ku b'a fɛ jɛn ka ɲɛ. Aw ye dunbu kɛ foro la.",
       "reponse_fr": "Pour un bon rendement en igname, prépare bien ton sol. L'igname pousse mieux dans un sol meuble. Fais des buttes pour aider la croissance des tubercules.",
       "score_validation": 0.8,
       "tags": [
@@ -829,7 +829,7 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku tilalen waati ye kalo 7 ni kalo 9 sɛnɛ kɔfɛ. Ni sira bɛ la, ku bɛ ɲɛ ka bɔ. Aw ye ku bɔ ni hɛrɛ ye k'a kɛ ɲɔgɔn na.",
+      "reponse_bambara": "Ku tilalen waati ye kalo 7 ni 9 cɛ. Ni sira bɛ la, ku ɲɛ ka bɔ. Aw ye ku bɔ ni hɛrɛ ye.",
       "reponse_fr": "L'igname est prête à récolter 7 à 9 mois après la plantation. Quand les feuilles sèchent, c'est le bon moment. Déterrez avec soin pour ne pas abîmer les tubercules.",
       "score_validation": 0.8,
       "tags": [
@@ -848,7 +848,7 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku bɛ jɛ jì ye sɛnɛ fɔlɔ tuma na. Ni sanji ma na, aw ye ji don tile kelen kelen na. Jì caman bɛ ku bɔrɔ, o kana kɛ.",
+      "reponse_bambara": "Ku b'a fɛ jì sɛnɛ fɔlɔ. Ni sanji tɛ, aw ye ji don tile kelen kelen. Jì caman bɛ ku bɔrɔ.",
       "reponse_fr": "L'igname a besoin d'eau surtout au début de sa croissance. Si la pluie manque, arrosez une fois par jour. Évitez l'excès d'eau qui fait pourrir les tubercules.",
       "score_validation": 0.8,
       "tags": [
@@ -887,7 +887,7 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku minɛnen bɛ se ka sɔrɔ kalo 3 ni kalo 6. Aw ye u bila yɔrɔ kɔnɔnin la, jì tɛ kɔnɔ. Ku ma fini ka ji don a la sɔrɔ ɲɛ.",
+      "reponse_bambara": "Ku bɛ se ka sɔrɔ kalo 3 ni 6 cɛ. Aw ye u bila yɔrɔ kɔnɔnin la, jì tɛ kɔnɔ. Ku ma fini ka ji don.",
       "reponse_fr": "L'igname peut se conserver 3 à 6 mois dans un endroit ventilé. Gardez-les à l'ombre dans un lieu sec. Ne les lavez pas avant de stocker.",
       "score_validation": 0.8,
       "tags": [
@@ -944,7 +944,7 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Bananku sɛnɛ bɛ se ka kɛ foro sɔgɔ bɛɛ la. Aw ye bouture kɛ mɛtiri kelen sɔngɔ na. Bananku bɛ se ka bɔ kalo 8 ni kalo 18 cɛ.",
+      "reponse_bambara": "Bananku sɛnɛ bɛ se ka kɛ foro sɔgɔ bɛɛ la. Aw ye bouture kɛ mɛtiri kelen sɔngɔ. Bananku bɛ bɔ kalo 8 ni 18 cɛ.",
       "reponse_fr": "Le manioc pousse dans tous types de sols. Plantez les boutures à 1 mètre de distance. Le manioc peut se récolter après 8 à 18 mois selon la variété.",
       "score_validation": 0.8,
       "tags": [
@@ -1038,7 +1038,7 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Bananku kura bɛ bɔrɔ joona, tile fila ni tile saba. Aw ye a jɛ ka fu, wala gari kɛ a la. Bananku jɛlen bɛ se ka sɔrɔ kalo caman.",
+      "reponse_bambara": "Bananku kura bɛ bɔrɔ tile fila ni saba cɛ. Aw ye a jɛ ka fu wala gari kɛ. Bananku jɛlen bɛ sɔrɔ kalo caman.",
       "reponse_fr": "Le manioc frais ne se conserve pas longtemps, 2 à 3 jours maximum. Pour conserver, faites-le sécher ou transformez-le en gari. Le manioc séché peut durer plusieurs mois.",
       "score_validation": 0.8,
       "tags": [
@@ -1077,7 +1077,7 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Bananku bana kɔrɔ bɛ sira kɛ jaune ye ani kɔ. Ni sira bɛ kɔ ani jaune ye, bɔ joona. TMS wala IITA jira sɛnɛ bɛ se ka bana jɔ.",
+      "reponse_bambara": "Ni bananku sira bɛ jaune ka kɔ, bana bɛ a la. Aw ye sɛnkɛlɛ bana bɔ joona. TMS wala IITA jira bɛ bana jɔ.",
       "reponse_fr": "La mosaïque du manioc est la maladie la plus grave — elle fait jaunir et tordre les feuilles. Si vous voyez des feuilles tordues et jaunes, arrachez les plants malades vite. Plantez des variétés résistantes comme TMS ou IITA.",
       "score_validation": 0.8,
       "tags": [
@@ -1136,7 +1136,7 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo tilalen tuma ye sɔrɔda bɛ jaune wala rouge ye tuma. Aw ye a bɔ ni fɛn tɔɔrɔ ye ka jiri ma bɛ. Tilalen bɛ kɛ siɲɛ fila san kelen na: ɔkitoburu ani marisi.",
+      "reponse_bambara": "Ni kakawo bɛ jaune wala rouge, tilalen tuma ye. Aw ye a bɔ ni hɛrɛ ye. Tilalen bɛ kɛ ɔkitoburu ni marisi.",
       "reponse_fr": "Le cacao se récolte quand les cabosses deviennent jaunes ou rouges. Coupez avec un outil tranchant sans abîmer la tige. Récoltez deux fois par an : octobre-décembre et mars-juin.",
       "score_validation": 0.72,
       "tags": [
@@ -1195,7 +1195,7 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo jɛlen ka fu bɛ se ka sɔrɔ kalo caman saka ɲuman kɔnɔ. Jì bɛ a kɛ nɔgɔ, kana a bila jì yɔrɔ la. Kakawo jɛlen ɲuman bɛ farali ka ɲɛ.",
+      "reponse_bambara": "Kakawo jɛlen ka fu bɛ se ka sɔrɔ kalo caman. Kana a bila jì yɔrɔ la. Kakawo ɲuman bɛ farali.",
       "reponse_fr": "Après séchage, le cacao peut se garder plusieurs mois dans des sacs propres. L'humidité fait moisir, ne stockez pas dans un endroit humide. Un cacao bien séché se vend mieux.",
       "score_validation": 0.72,
       "tags": [
@@ -1256,7 +1256,7 @@
       "conditions": [
         "TEMPS_SAISON_SECHE"
       ],
-      "reponse_bambara": "Tilema waati la, malo sɛnɛ tɛ se ka kɛ jì ma. Aw ye to ka tɛmɛ sanji waati tuma, mɛ wala sɛtanburu kalo. Ni ji bɛ ɲɛ foro la, i bɛ se ka sɛnɛ tilema la fana.",
+      "reponse_bambara": "Tilema waati la, màlo b'a fɛ jì. Aw ye sɛnɛ mɛ wala sɛtanburu kalo. Ni ji bɛ ɲɛ foro la, aw bɛ se ka sɛnɛ.",
       "reponse_fr": "En saison sèche, le riz ne peut pas pousser sans eau. Attendez la saison des pluies en mai ou septembre. Si vous avez de l'eau disponible pour irriguer, vous pouvez planter en saison sèche aussi.",
       "score_validation": 0.73,
       "tags": [
@@ -1800,7 +1800,7 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda bɛ se ka sɛnɛ san bɛɛ ni jì bɛ ɲɛ. Sanji waati na, bàrànda bɛ ɲɛ ka kura joona. Aw ye sɛnɛ sanji na wala ni jì bɛ ɲɛ.",
+      "reponse_bambara": "Bàrànda bɛ sɛnɛ san bɛɛ ni jì bɛ ɲɛ. Sanji waati na, a bɛ ɲɛ joona. Aw ye sɛnɛ sanji tuma.",
       "reponse_fr": "La banane peut être plantée toute l'année si l'eau est disponible. En saison des pluies, la banane pousse vite. Plante pendant les pluies ou si tu as de l'eau.",
       "score_validation": 0.7,
       "tags": [
@@ -1827,7 +1827,7 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda tilalen waati ye kalo kɔnɔntɔn ni kalo tan sɛnɛ kɔfɛ. Ni bàrànda bɛ la ka kɔrɔ, aw ye tilalen kɛ. Aw ye tilalen kɛ joona k'a kɛ ɲɔgɔn na.",
+      "reponse_bambara": "Bàrànda tilalen waati ye kalo kɔnɔntɔn ni tan cɛ. Ni a bɛ la ka kɔrɔ, aw ye tilalen kɛ. Tilalen kɛ joona.",
       "reponse_fr": "La banane est prête 9 à 10 mois après la plantation. Quand les fruits grossissent et jaunissent légèrement, c'est le moment. Récoltez vite pour éviter la surmaturation.",
       "score_validation": 0.7,
       "tags": [
@@ -2008,7 +2008,7 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Tamati bɛ se ka sɛnɛ san bɛɛ ni jì bɛ ɲɛ. Tilema waati na, tamati bɛ ɲɛ ka ɲɛ ni arrosage bɛ ɲɛ. Aw ye pépinière kɛ sannin ka fɔlɔ.",
+      "reponse_bambara": "Tamati bɛ sɛnɛ san bɛɛ ni jì bɛ ɲɛ. Tilema waati, aw ye arrosage kɛ. Aw ye pépinière kɛ sannin.",
       "reponse_fr": "La tomate peut être plantée toute l'année si l'eau est disponible. En saison sèche, la tomate pousse bien avec un bon arrosage. Fais d'abord la pépinière.",
       "score_validation": 0.75,
       "tags": [
@@ -2027,7 +2027,7 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Tamati tilalen waati ye kalo saba sɛnɛ kɔfɛ. Ni tamati bɛ la ka kɔrɔ, aw ye tilalen kɛ. Aw ye tilalen kɛ tile kelen kelen na ni sɔrɔ bɛ ɲɛ.",
+      "reponse_bambara": "Tamati tilalen waati ye kalo saba sɛnɛ kɔfɛ. Ni a bɛ la ka kɔrɔ, aw ye tilalen kɛ. Tilalen kɛ tile kelen kelen.",
       "reponse_fr": "La tomate est prête à récolter 3 mois après la plantation. Quand les fruits rougissent, c'est le moment. Récoltez chaque jour quand il y a des fruits mûrs.",
       "score_validation": 0.75,
       "tags": [
@@ -2179,7 +2179,7 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso tilalen waati ye kalo saba ni kalo naani sɛnɛ kɔfɛ. Ni soso bɛ la ka kɔrɔ, aw ye tilalen kɛ. Aw ye tilalen kɛ ka jigi kɛ joona.",
+      "reponse_bambara": "Soso tilalen waati ye kalo saba ni naani cɛ. Ni a bɛ la ka kɔrɔ, aw ye tilalen kɛ joona.",
       "reponse_fr": "Le haricot est prêt à récolter 3 à 4 mois après la plantation. Quand les gousses sèchent, c'est le bon moment. Récoltez vite avant les pluies.",
       "score_validation": 0.7,
       "tags": [
@@ -2198,7 +2198,7 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso bɛ jɛ jì ye sɛnɛ kɔfɛ tile mugan kɔnɔ. Ni sanji ma na, aw ye ji don foro la tile kelen kelen na. Jì caman bɛ soso bɔrɔ, o kana kɛ.",
+      "reponse_bambara": "Soso b'a fɛ jì tile mugan sɛnɛ kɔfɛ. Ni sanji tɛ, aw ye ji don tile kelen kelen. Jì caman bɛ soso bɔrɔ.",
       "reponse_fr": "Le haricot a besoin d'eau surtout les 20 premiers jours. Si la pluie manque, arrosez chaque jour. Trop d'eau fait pourrir le haricot, évitez l'excès.",
       "score_validation": 0.7,
       "tags": [
@@ -2331,7 +2331,7 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan tilalen waati ye kalo fila wala saba sɛnɛ kɔfɛ. Ni gan bɛ la ka koro, aw ye tilalen kɛ joona. Aw ye tilalen kɛ tile kelen kelen ni kelen.",
+      "reponse_bambara": "Gan tilalen waati ye kalo fila ni saba cɛ. Ni a bɛ la ka kɔrɔ, aw ye tilalen kɛ joona. Tilalen kɛ tile kelen kelen.",
       "reponse_fr": "Le gombo est prêt à récolter 2 à 3 mois après la plantation. Quand les fruits sont tendres et bien formés, récoltez vite. Récoltez un jour sur deux pour garder la qualité.",
       "score_validation": 0.7,
       "tags": [
@@ -2483,7 +2483,7 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba tilalen waati ye kalo saba wala naani sɛnɛ kɔfɛ. Ni jaba jiri bɛ la, tilalen waati ye. Aw ye jaba bɔ ni hɛrɛ ye ka jigi kɛ joona.",
+      "reponse_bambara": "Jaba tilalen waati ye kalo saba ni naani cɛ. Ni jaba jiri bɛ la, aw ye tilalen kɛ. Aw ye jaba bɔ ni hɛrɛ ye.",
       "reponse_fr": "L'oignon est prêt à récolter 3 à 4 mois après la plantation. Quand les fanes tombent, c'est le moment. Déterrez avec soin et mettez à sécher.",
       "score_validation": 0.7,
       "tags": [
@@ -2578,7 +2578,7 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba bolisili waati ye kalo wɔɔrɔ ka jɛ ni ɲi. Aw ye jaba bolisi yɔrɔ sugurun na wala lɔgɔ la. Aw ye jaba mɛ ka ɲɛ sannin ka bolisi.",
+      "reponse_bambara": "Jaba bolisili waati ye kalo wɔɔrɔ. Aw ye jaba bolisi yɔrɔ sugurun na wala lɔgɔ la. Aw ye jaba mɛ sannin.",
       "reponse_fr": "L'oignon peut se conserver jusqu'à 6 mois. Stocke-le dans un endroit sec ou sur des claies. Fais-le bien sécher avant de stocker.",
       "score_validation": 0.7,
       "tags": [
@@ -2634,7 +2634,7 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso tilalen waati ye kalo saba ni kalo naani sɛnɛ kɔfɛ. Ni sira bɛ la ka gɛlɛn, o ye tilalen jɛ ye. Aw ye duguma cɛ ka woso bɔ.",
+      "reponse_bambara": "Woso tilalen waati ye kalo saba ni naani cɛ. Ni sira bɛ la ka gɛlɛn, tilalen waati ye. Aw ye duguma cɛ ka woso bɔ.",
       "reponse_fr": "La patate douce est prête à récolter 3 à 4 mois après la plantation. Quand les feuilles commencent à jaunir, c'est le signe. Creusez pour sortir les tubercules.",
       "score_validation": 0.7,
       "tags": [
@@ -2653,7 +2653,7 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso bɛ jɛ jì ye nka tɛ se ka jì caman sɔn. Ni sanji tɛ, aw ye ji dɔɔni don foro la. Woso bɛ se ka kɛ jiɲɛ la kalo kelen.",
+      "reponse_bambara": "Woso b'a fɛ jì dɔɔni. Ni sanji tɛ, aw ye jì don foro la. Woso bɛ se ka kɛ kalo kelen.",
       "reponse_fr": "La patate douce a besoin d'eau mais ne supporte pas l'excès. Sans pluie, arrosez légèrement. La patate peut tenir un mois sans eau.",
       "score_validation": 0.7,
       "tags": [
@@ -2843,7 +2843,7 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni bɛnɛ jira bɛ jɛ ka fara wala bana ye a la, fongicide bɛ se ka dɛmɛ. Aw ye furakɛ joona bana wulanna ɲɛ. Aw ye jira halakilen bɛɛ bɔ.",
+      "reponse_bambara": "Ni bɛnɛ jira bɛ jɛ ka fara, fongicide bɛ se ka dɛmɛ. Aw ye furakɛ joona. Aw ye jira halakilen bɔ.",
       "reponse_fr": "Si les feuilles du sésame tombent ou brunissent, un fongicide peut aider. Traitez rapidement dès les premiers signes de maladie. Arrachez les plants très malades.",
       "score_validation": 0.65,
       "tags": [
@@ -3208,7 +3208,7 @@
       "conditions": [
         "PROBLEME_INSECTE"
       ],
-      "reponse_bambara": "Ni aw ye aw ta bananku fura kɔrɔ la fenw cɛkurun ye, kosheni bɛ a la. Kosheni bi fura yɛlɛma ka sɛnnɛ halaki joona. Aw ye a sɛnkɛlɛ bana don kɛ bɔ foro la ka joona yɛrɛkɛ kɛ.",
+      "reponse_bambara": "Ni cɛkurun bɛ bananku fura kɔrɔ, kosheni bɛ a la. A bɛ sɛnnɛ halaki joona. Aw ye sɛnkɛlɛ bana bɔ foro la.",
       "reponse_fr": "Si tu vois des taches blanches sous les feuilles de ton manioc, c'est la cochenille. La cochenille fait flétrir les feuilles et détruit la plante rapidement. Arrache les plants malades et traite vite.",
       "score_validation": 0.72,
       "tags": [
@@ -3232,7 +3232,7 @@
       "conditions": [
         "PROBLEME_INSECTE"
       ],
-      "reponse_bambara": "Ka kosheni bali bananku la, aw ye sɛnkɛlɛ bana minw don kɛ bɔ foro la. O kɔ, aw ye antisɛki fara sɛnkɛlɛ tɔw la. Ni i ma antisɛki sɔrɔ, tulu ni ji cɛ ye dɛmɛ kɛ.",
+      "reponse_bambara": "Aw ye sɛnkɛlɛ bana bɔ foro la. O kɔ, aw ye antisɛki fara sɛnkɛlɛ tɔw la. Ni antisɛki tɛ, tulu ni ji cɛ dɛmɛ kɛna.",
       "reponse_fr": "Pour traiter la cochenille sur ton manioc, arrache les plants malades et retire-les du champ. Ensuite, applique un insecticide sur les plants restants. Si tu n'as pas d'insecticide, un mélange d'huile et d'eau peut aider.",
       "score_validation": 0.7,
       "tags": [
@@ -3253,7 +3253,7 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Ka aw ta bananku kisi kosheni na, aw ye sɛnkɛlɛ sanubaga dɔrɔn sɛnɛ. Kalo kelen kelen, aw ye aw ta foro kɔlɔsi ka kosheni ɲini. Ni aw ye kosheni daminɛ ye, aw ye sɛnkɛlɛ bana don kɛ joona bɔ.",
+      "reponse_bambara": "Ka bananku kisi, aw ye sɛnkɛlɛ sanubaga sɛnɛ. Kɔlɔsi foro kalo kelen. Ni kosheni ye, bɔ sɛnkɛlɛ bana joona.",
       "reponse_fr": "Pour protéger ton manioc contre la cochenille, plante seulement des boutures saines. Surveille ton champ chaque mois. Si tu vois les premiers signes de cochenille, arrache immédiatement les plants malades.",
       "score_validation": 0.68,
       "tags": [
@@ -3275,7 +3275,7 @@
         "PROBLEME_INSECTE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni aw ye aw ta maŋoro bana ye, yiridɛn limɔgɔ bi kɛ o sabu ye. O limɔgɔ bɛ yiridɛn kɔnɔ la ka yiridɛn bana. Joona, aw ye maŋoro banaw bɔ aw ta foro la. Ka aw ta foro kɔlɔsi kalo kelen kelen na.",
+      "reponse_bambara": "Ni maŋoro bɛ bana, yiridɛn limɔgɔ bɛ o kɛ. Aw ye jiri banaw bɔ foro la joona. Kɔlɔsi foro kalo kelen kelen.",
       "reponse_fr": "Si tu vois tes mangues pourrir, la mouche des fruits peut en être la cause. Cet insecte pénètre à l'intérieur du fruit et le fait pourrir. Retire rapidement les mangues abîmées de ton champ. Surveille ton champ chaque mois.",
       "score_validation": 0.62,
       "tags": [
@@ -3310,7 +3310,7 @@
         "CULTURE_MANGUE"
       ],
       "conditions": [],
-      "reponse_bambara": "Maŋoro sɛnɛ waati ɲuman ye tile selidon ni zanwiyekalo tɛmɛnen. Ni i ye maŋoro yiridɛnw dɔw bana ye, o bɔ foro la joona. Ka aw ta jiri kɔlɔsi sanka kalo kelen kelen na.",
+      "reponse_bambara": "Maŋoro sɛnɛ ɲuman ye zanwiyekalo. Ni maŋoro bana ye, o bɔ foro la joona. Kɔlɔsi jiri sanka kalo kelen kelen.",
       "reponse_fr": "Le manguier produit bien entre décembre et mars. Si tu vois des fruits pourris, retire-les du champ immédiatement. Surveille tes arbres et tes fruits régulièrement.",
       "score_validation": 0.6,
       "tags": [
@@ -3344,7 +3344,7 @@
         "CULTURE_NERE"
       ],
       "conditions": [],
-      "reponse_bambara": "Nɛrɛ jiri ka nafama caman. Aw ye a sɛnɛ aw ta foro da la — a bɛna ca tuma jan. Aw bɛna sumbala kɛ a ka jiridenw na kà wari sɔrɔ lɔgɔ la.",
+      "reponse_bambara": "Nɛrɛ jiri ka nafama caman. Aw ye a sɛnɛ foro da la, a bɛna ca. Aw bɛna sumbala kɛ jiridenw na ka wari sɔrɔ.",
       "reponse_fr": "Le néré est un arbre très utile. Plante-le en bordure de ton champ, il pousse longtemps. Tu pourras faire du sumbala avec ses graines pour vendre au marché.",
       "score_validation": 0.8,
       "tags": [
@@ -3362,7 +3362,7 @@
         "CULTURE_NERE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni aw ta nɛrɛ jiri bɛ dimi, aw ye a ka folonw ni farikolon filɛ. Ni folonw bɛ yellenma, aw ye jì caman don a la. Ni farikolon bɛ sɛgɛsɛgɛ, a bɛ dɔnnin ka kɛ ko nin ye.",
+      "reponse_bambara": "Ni nɛrɛ jiri bɛ dimi, aw ye folonw filɛ. Ni folonw yellenma, aw ye jì don a la. Ni farikolon sɛgɛsɛgɛ, bana bɛ a la.",
       "reponse_fr": "Si ton néré a un problème, observe les feuilles et l'écorce. Si les feuilles jaunissent, arrose davantage. Si l'écorce se fend, c'est normal avec l'âge.",
       "score_validation": 0.75,
       "tags": [
@@ -3401,7 +3401,7 @@
         "CULTURE_NERE"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye nɛrɛ jiridenw jukoro ka ɲɛ sɔrɔ kà mara. Aw ye olu don sɛkɛ kɔnɔ, jì kana sɔrɔ olu ma. Sumbala min kɛra, a bɛna ɲɛ tile caaman na.",
+      "reponse_bambara": "Aw ye nɛrɛ jiridenw jukoro ka mara. Aw ye olu don sɛkɛ kɔnɔ, jì kana sɔrɔ. Sumbala bɛna ɲɛ tile caman na.",
       "reponse_fr": "Sèche bien les graines de néré avant de les stocker. Mets-les dans un sac fermé, à l'abri de l'humidité. Le sumbala préparé se conserve plusieurs jours.",
       "score_validation": 0.8,
       "tags": [
@@ -3439,7 +3439,7 @@
       "conditions": [
         "saison_pluie"
       ],
-      "reponse_bambara": "Lemuru sɛnɛ ɲɛ fɛ, aw ye dunbu ba kɛ kà nɔgɔ don a kɔnɔ. Aw ye sɛnɛ sanji tuma daminɛ la. Aw ye jì don a la kalo wɔɔrɔ kɔnɔ don ô don.",
+      "reponse_bambara": "Ka lemuru sɛnɛ, aw ye dunbu kɛ ka nɔgɔ don a kɔnɔ. Aw ye sɛnɛ sanji tuma. Aw ye jì don kalo wɔɔrɔ kɔnɔ.",
       "reponse_fr": "Pour planter des agrumes, creuse un grand trou et mets du compost dedans. Plante en début de saison des pluies. Arrose chaque jour pendant les six premiers mois.",
       "score_validation": 0.75,
       "tags": [
@@ -3457,7 +3457,7 @@
         "CULTURE_AGRUMES"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni aw ta lemuru ka folonw bɛ yellenma, a ka kama nɔgɔ dɔgɔ. Aw ye nɔgɔ kɛnɛ don k'a yɛlɛma. Ni tɔɔ dibi bɛ folonw kan, aw ye neem jiri ji bɔ kà a la.",
+      "reponse_bambara": "Ni lemuru folonw yellenma, nɔgɔ dɔgɔ bɛ o kɛ. Aw ye nɔgɔ kɛnɛ don. Tɔɔ dibi bɛ ye, aw ye neem ji la.",
       "reponse_fr": "Si les feuilles de tes agrumes jaunissent, c'est souvent un manque d'engrais. Applique de l'engrais pour corriger ça. Si des taches noires apparaissent, traite avec du jus de feuilles de neem.",
       "score_validation": 0.75,
       "tags": [
@@ -3513,5 +3513,6 @@
   "ajout_v1.7": "2026-03-13 — 2 nouvelles entrées CULTURE_MANGUE (diagnostic mouche des fruits + conseil production). Source: access_agriculture_128. yiridɛn limɔgɔ = mouche des fruits confirmé. jan ≠ piège (= long/loin en bambara). Total: 153 entrées.",
   "ajout_v1.8": "2026-03-15 — Ajout champ 'phrases_attestees' sur 20 entrees. 58 phrases CI Dioula reelles issues de 54 phrases extraites de 30 transcriptions Access Agriculture. Aucune modification de reponse_bambara.",
   "correction_v1.9": "2026-03-17 — Révision syntaxe CI dioula: kosɛbɛ→caman, lajɛ→filɛ (verbe CI), I ka (impératif)→Aw ye (respectueux pluriel CI), I ni X tɔ→Alu ni X (salutation CI initiation), i ka (possessif)→aw ta (possessif CI).",
-  "ajout_v2.0": "Ajout CULTURE_NERE (5 entrées: conseil, diagnostic, récolte, stockage, vente) et CULTURE_AGRUMES (4 entrées: conseil, diagnostic, engrais, irrigation). Syntaxe CI v1.9 respectée."
+  "ajout_v2.0": "Ajout CULTURE_NERE (5 entrées: conseil, diagnostic, récolte, stockage, vente) et CULTURE_AGRUMES (4 entrées: conseil, diagnostic, engrais, irrigation). Syntaxe CI v1.9 respectée.",
+  "correction_v2.1": "2026-03-18 — Axe 1: réécriture 37 phrases > 28 mots. Sources: Findora (20k FR-dyu), Common Voice dyu (5028 phrases), proverbes dioula (194). Toutes phrases réduites à ≤ 26 mots."
 }

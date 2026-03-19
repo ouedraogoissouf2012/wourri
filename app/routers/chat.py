@@ -6,7 +6,7 @@ NLU: si le message contient du bambara (transcription ASR), le NLU reconstruit
 """
 import asyncio
 import re
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from app.services.deepseek import chat_with_deepseek
 from app.services.weather import get_weather
 from app.services.tts_french import synthesize_french
