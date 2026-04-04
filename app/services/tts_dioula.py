@@ -266,19 +266,19 @@ def _get_speaking_rate(sentence: str) -> float:
     """Détermine le speaking_rate selon le type de phrase.
 
     Valeurs calibrées pour MMS-TTS-DYU (VITS) :
-    - Salutation courte  → 1.05 : naturel, presque normal
-    - Conseil agricole   → 1.15 : clair, fluide (défaut)
-    - Technique (NPK…)   → 1.25 : lent, bien articulé
+    - Salutation courte  → 0.95 : naturel, chaleureux
+    - Conseil agricole   → 1.0  : vitesse naturelle (défaut)
+    - Technique (NPK…)   → 1.10 : légèrement plus lent, bien articulé
     """
     import re
     stripped = sentence.strip()
     if re.match(r'^(Aw ni|Alu ni|I ni|A ni)', stripped) or (
         stripped.endswith('!') and len(stripped.split()) <= 8
     ):
-        return 1.05
+        return 0.95
     if any(kw in stripped for kw in _TECH_KEYWORDS):
-        return 1.25
-    return 1.15
+        return 1.10
+    return 1.0
 
 
 def _split_on_bambara_markers(text: str) -> list[tuple[str, float]]:
@@ -309,7 +309,7 @@ def _split_on_bambara_markers(text: str) -> list[tuple[str, float]]:
     return result
 
 
-def _force_split_long(text: str, pause: float, max_words: int = 12) -> list[tuple[str, float]]:
+def _force_split_long(text: str, pause: float, max_words: int = 20) -> list[tuple[str, float]]:
     """Découpe un segment > max_words mots en deux parties égales.
     Coupe à la frontière de mot la plus proche du milieu.
     """
@@ -320,7 +320,7 @@ def _force_split_long(text: str, pause: float, max_words: int = 12) -> list[tupl
     mid = len(words) // 2
     first = ' '.join(words[:mid])
     second = ' '.join(words[mid:])
-    return [(first, 0.25), (second, pause)]
+    return [(first, 0.30), (second, pause)]
 
 
 def _split_sentences(text: str) -> list[tuple[str, float]]:
@@ -438,10 +438,11 @@ def synthesize_dioula_text(dioula_text: str) -> str | None:
             if waveform is None:
                 continue
             audio_parts.append(waveform)
-            # Ajouter le silence APRÈS ce segment (sauf le dernier)
-            if i < len(segments) - 1:
-                silence_samples = int(sample_rate * pause_s)
-                audio_parts.append(np.zeros(silence_samples, dtype=np.float32))
+            # Ajouter le silence APRÈS ce segment
+            # Dernier segment → silence de fin 0.30s (évite la coupure brusque)
+            actual_pause = pause_s if i < len(segments) - 1 else 0.30
+            silence_samples = int(sample_rate * actual_pause)
+            audio_parts.append(np.zeros(silence_samples, dtype=np.float32))
 
         if not audio_parts:
             return None

@@ -14,6 +14,10 @@ from app.services.asr_soloni_nemo import (
     transcribe_bambara_nemo,
     check_nemo_asr_status,
 )
+from app.services.asr_mms_dyu import (
+    transcribe_dioula_mms,
+    check_mms_dyu_status,
+)
 from app.services.tts_bambara import translate_to_french
 from app.security import require_api_key, limiter
 
@@ -63,11 +67,27 @@ _ASR_FIXES = {
     # ========== MOTS AGRICOLES ==========
     "malon": "malo",        # riz
     "kaban": "kaba",        # maïs
+    "ka ba": "kaba",        # maïs (fragmenté)
+    "kabal": "kaba",        # maïs (déformé)
+    "kab ": "kaba ",        # maïs (tronqué)
+    "walakaba": "kaba",     # maïs (variante longue)
     "tigan": "tiga",        # arachide
     "foron": "foro",        # champ
     "jinan": "jina",        # légume
     "banan": "bana",        # maladie (des plantes)
     "sunan": "sunu",        # mil
+    "bananku": "bananku",   # manioc (déjà correct)
+    "manioku": "bananku",   # manioc (loanword FR)
+
+    # ========== TEMPS / SAISON ==========
+    "wagati jumen": "wagati jumɛn",   # à quel moment
+    "wagati jumin": "wagati jumɛn",
+    "wagatijumen": "wagati jumɛn",
+    "min na ": "jumɛn na ",           # confusion min/jumɛn
+    "tuma jumen": "wagati jumɛn",     # synonyme tuma = wagati
+    "tuma jumin": "wagati jumɛn",
+    "san jumen": "san jumɛn",         # quelle année
+    "kalo jumen": "kalo jumɛn",       # quel mois
 
     # Voyelles confondues (e/ɛ, o/ɔ)
     "senɛ": "sɛnɛ", "sene": "sɛnɛ",
@@ -79,6 +99,8 @@ _ASR_FIXES = {
 
     # ========== QUESTIONS AGRICOLES COURANTES ==========
     "malo sene": "malo sɛnɛ",
+    "kaba sene": "kaba sɛnɛ",        # planter le maïs
+    "kaba dan": "kaba dan",           # planter le maïs (variante)
     "foro labɛn": "foro labɛn",
     "jii don": "ji don",
 }
@@ -183,12 +205,35 @@ async def transcribe_and_translate(
     # Transcription ASR
     print(f"[ASR] Transcription en {language}...")
 
-    # Bambara : utiliser NeMo TDT (decodeur complet, meilleure qualite)
+    # Bambara/Dioula : NeMo TDT en premier, MMS-dyu en second passage si besoin
     if language == "bam":
         transcription = await transcribe_bambara_nemo(audio_bytes, extension)
         if transcription is None:
-            print("[ASR] NeMo echoue, fallback MMS-1B-ALL...")
+            print("[ASR] NeMo échoué, fallback MMS-dyu...")
+            transcription = await transcribe_dioula_mms(audio_bytes, extension)
+        if transcription is None:
+            print("[ASR] MMS-dyu échoué, fallback MMS-1B-ALL générique...")
             transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
+
+        # Second passage MMS-dyu : si NeMo a transcrit mais sans mots agricoles clés,
+        # tenter MMS-dyu qui connaît mieux le vocabulaire dioula CI
+        if transcription:
+            _AGRI_KEYWORDS = {"malo", "kaba", "tiga", "bananku", "foro", "sɛnɛ",
+                              "sanji", "ji", "bana", "gan", "jaba", "woso", "ku",
+                              "kɔrɔni", "tamati", "mangoro", "wagati", "kalo"}
+            words = set(transcription.lower().split())
+            has_agri = bool(words & _AGRI_KEYWORDS)
+            if not has_agri and len(words) >= 3:
+                print(f"[ASR] Pas de mot agricole détecté → second passage MMS-dyu...")
+                mms_result = await transcribe_dioula_mms(audio_bytes, extension)
+                if mms_result:
+                    mms_words = set(mms_result.lower().split())
+                    mms_has_agri = bool(mms_words & _AGRI_KEYWORDS)
+                    if mms_has_agri:
+                        print(f"[ASR] MMS-dyu a trouvé des mots agricoles: '{mms_result}'")
+                        transcription = mms_result
+                    else:
+                        print(f"[ASR] MMS-dyu non concluant, on garde NeMo")
     else:
         transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
 

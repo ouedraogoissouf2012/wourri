@@ -214,8 +214,15 @@ def _chercher_ivr_par_concept(concepts: dict) -> str | None:
         return None
 
     cultures = [k for k in concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
+
+    # Si ACTION_PLANTER détecté sans culture (ASR a raté le nom de la plante),
+    # essayer CULTURE_MAIS (culture #1 en CI) comme défaut
     if not cultures:
-        return None
+        if "ACTION_PLANTER" in concepts or "ACTION_CHERCHER_CONSEIL" in concepts:
+            print("[Chat IVR] ACTION_PLANTER sans culture → essai CULTURE_MAIS par défaut")
+            cultures = ["CULTURE_MAIS"]
+        else:
+            return None
 
     ACTION_TO_INTENT = {
         "ACTION_PLANTER":          "QUESTION_SAISON_PLANTATION",
@@ -304,7 +311,7 @@ def detect_city_in_message(message: str) -> str | None:
 
 @router.post("/", response_model=ChatResponse, dependencies=[Depends(require_api_key)])
 @limiter.limit("10/minute")
-async def chat(http_request: Request, request: ChatRequest):
+async def chat(request: Request, body: ChatRequest):
     """
     Envoie un message à l'assistant WOURI
 
@@ -319,21 +326,21 @@ async def chat(http_request: Request, request: ChatRequest):
     """
     try:
         # Détecter si le message mentionne une ville différente de celle configurée
-        mentioned_city = detect_city_in_message(request.message)
-        city = mentioned_city if mentioned_city else request.city
-        if mentioned_city and mentioned_city.lower() != request.city.lower():
-            print(f"[Chat] Ville détectée dans le message: {mentioned_city} (défaut: {request.city})")
+        mentioned_city = detect_city_in_message(body.message)
+        city = mentioned_city if mentioned_city else body.city
+        if mentioned_city and mentioned_city.lower() != body.city.lower():
+            print(f"[Chat] Ville détectée dans le message: {mentioned_city} (défaut: {body.city})")
 
         # NLU: si bambara_text fourni (depuis ASR), reconstruire une phrase claire
         # Le NLU peut aussi détecter les messages hors-sujet et répondre directement
-        message_for_deepseek = request.message
+        message_for_deepseek = body.message
         nlu_intent = None
         nlu_concepts = {}
 
-        if request.language in (Language.DIOULA, Language.BOTH):
+        if body.language in (Language.DIOULA, Language.BOTH):
             message_for_deepseek, nlu_intent, nlu_concepts = _apply_nlu_preprocessing(
-                message=request.message,
-                bambara_text=request.bambara_text
+                message=body.message,
+                bambara_text=body.bambara_text
             )
             # Si hors sujet → tenter DeepSeek avec prompt agricole strict
             # (évite la frustration face à un message vide pour une vraie question)
@@ -349,7 +356,7 @@ async def chat(http_request: Request, request: ChatRequest):
 
         # CHEMIN PRINCIPAL IVR : chercher réponse bambara pré-validée dans la VDB
         # (évite DeepSeek + traduction pour les cas couverts par le corpus)
-        if request.language in (Language.DIOULA, Language.BOTH) and nlu_intent:
+        if body.language in (Language.DIOULA, Language.BOTH) and nlu_intent:
             ivr_bambara = _chercher_ivr(intent=nlu_intent, concepts=nlu_concepts)
             if ivr_bambara:
                 print(f"[Chat IVR] Réponse corpus trouvée — chemin direct bambara (intent={nlu_intent})")
@@ -373,7 +380,7 @@ async def chat(http_request: Request, request: ChatRequest):
                 if conseil:
                     ivr_bambara = ivr_bambara + " " + conseil["bambara"]
 
-                if request.include_audio:
+                if body.include_audio:
                     from app.services.tts_dioula import synthesize_dioula_text
                     audio_url = await asyncio.to_thread(synthesize_dioula_text, ivr_bambara)
                     audio_language_name = "Dioula"
@@ -389,7 +396,7 @@ async def chat(http_request: Request, request: ChatRequest):
                     response_local=None,
                     audio_url=audio_url,
                     city=city,
-                    language=request.language.value,
+                    language=body.language.value,
                     audio_language=audio_language_name,
                     meta={
                         "intent": nlu_intent,
@@ -403,13 +410,13 @@ async def chat(http_request: Request, request: ChatRequest):
         print(f"[Chat IVR] Hors corpus (intent={nlu_intent}) → recherche par concept")
 
         # DIOULA / BOTH : recherche par concept d'abord
-        if request.language in (Language.DIOULA, Language.BOTH):
+        if body.language in (Language.DIOULA, Language.BOTH):
             bambara_fallback = _chercher_ivr_par_concept(nlu_concepts)
             fallback_source = "ivr_fallback" if bambara_fallback else None
 
             if bambara_fallback:
                 # Concept agricole trouvé dans le corpus → répondre directement
-                if request.include_audio:
+                if body.include_audio:
                     from app.services.tts_dioula import synthesize_dioula_text
                     audio_url = await asyncio.to_thread(synthesize_dioula_text, bambara_fallback)
                     audio_language_name = "Dioula"
@@ -420,7 +427,7 @@ async def chat(http_request: Request, request: ChatRequest):
                     response_local=None,
                     audio_url=audio_url,
                     city=city,
-                    language=request.language.value,
+                    language=body.language.value,
                     audio_language=audio_language_name,
                     meta={"intent": nlu_intent, "cultures": cultures, "source": fallback_source}
                 )
@@ -432,14 +439,14 @@ async def chat(http_request: Request, request: ChatRequest):
                 message=message_for_deepseek,
                 weather_data=weather_data,
                 language=Language.DIOULA,
-                user_id=getattr(request, 'user_id', None)
+                user_id=getattr(body, 'user_id', None)
             )
             # Traduire la réponse DeepSeek (FR) en bambara pour l'audio
             from app.services.tts_dioula import synthesize_dioula
             audio_url_dioula, bambara_translated = await asyncio.to_thread(
                 lambda: (None, deepseek_response)  # texte français → TTS direct si traduction indispo
             )
-            if request.include_audio:
+            if body.include_audio:
                 audio_url, bambara_translated = await synthesize_dioula(deepseek_response)
                 audio_language_name = "Dioula"
             cultures = [k for k in nlu_concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
@@ -449,7 +456,7 @@ async def chat(http_request: Request, request: ChatRequest):
                 response_local=None,
                 audio_url=audio_url,
                 city=city,
-                language=request.language.value,
+                language=body.language.value,
                 audio_language=audio_language_name,
                 meta={"intent": nlu_intent, "cultures": cultures, "source": "deepseek_open"}
             )
@@ -460,9 +467,9 @@ async def chat(http_request: Request, request: ChatRequest):
             message=message_for_deepseek,
             weather_data=weather_data,
             language=Language.FRENCH,
-            user_id=request.user_id
+            user_id=body.user_id
         )
-        if request.include_audio:
+        if body.include_audio:
             audio_url = await synthesize_french(response_text)
             audio_language_name = "Français"
 
@@ -472,7 +479,7 @@ async def chat(http_request: Request, request: ChatRequest):
             response_local=None,
             audio_url=audio_url,
             city=city,
-            language=request.language.value,
+            language=body.language.value,
             audio_language=audio_language_name
         )
     except Exception as e:
@@ -482,8 +489,8 @@ async def chat(http_request: Request, request: ChatRequest):
             response_dioula=None,
             response_local=None,
             audio_url=None,
-            city=request.city,
-            language=request.language.value,
+            city=body.city,
+            language=body.language.value,
             audio_language=None
         )
 

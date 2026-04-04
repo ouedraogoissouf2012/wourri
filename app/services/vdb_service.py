@@ -55,8 +55,8 @@ def _get_current_season() -> str:
     return "saison_seche"
 
 
-def _load_corpus() -> list[dict]:
-    """Charge le corpus IVR depuis le fichier JSON."""
+def _load_corpus_entries() -> list[dict]:
+    """Charge les entrées du corpus IVR depuis le fichier JSON."""
     with open(_CORPUS_PATH, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("entries", [])
@@ -140,7 +140,7 @@ def _get_collection():
 def _populate_collection(collection, entries=None):
     """Peuple la collection Chroma depuis le corpus JSON (ou depuis entries si fourni)."""
     if entries is None:
-        entries = _load_corpus()
+        entries = _load_corpus_entries()
     if not entries:
         logger.warning("[VDB] Corpus IVR vide — rien à indexer")
         return
