@@ -4,20 +4,10 @@ Reconnaissance vocale pour langues ivoiriennes via MMS-1B-ALL + NLLB-200
 """
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 import re
-from app.services.asr_ivorian import (
-    transcribe_audio_bytes,
-    get_supported_asr_languages,
-    check_asr_status,
-    IVORIAN_ASR_LANGUAGES
-)
-from app.services.asr_soloni_nemo import (
-    transcribe_bambara_nemo,
-    check_nemo_asr_status,
-)
-from app.services.asr_mms_dyu import (
-    transcribe_dioula_mms,
-    check_mms_dyu_status,
-)
+from app.services.asr import get_asr_chain, get_generic_asr_chain
+from app.data.constants import get_asr_languages
+
+IVORIAN_ASR_LANGUAGES = get_asr_languages()
 from app.services.tts_bambara import translate_to_french
 from app.security import require_api_key, limiter
 import logging
@@ -211,40 +201,15 @@ async def transcribe_and_translate(
 
     lang_name = IVORIAN_ASR_LANGUAGES[language][0]
 
-    # Transcription ASR
+    # Transcription ASR via chaîne de providers (Liskov : tous interchangeables)
     logger.info("[ASR] Transcription en %s...", language)
 
-    # Bambara/Dioula : NeMo TDT en premier, MMS-dyu en second passage si besoin
     if language == "bam":
-        transcription = await transcribe_bambara_nemo(audio_bytes, extension)
-        if transcription is None:
-            logger.warning("[ASR] NeMo échoué, fallback MMS-dyu...")
-            transcription = await transcribe_dioula_mms(audio_bytes, extension)
-        if transcription is None:
-            logger.warning("[ASR] MMS-dyu échoué, fallback MMS-1B-ALL générique...")
-            transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
-
-        # Second passage MMS-dyu : si NeMo a transcrit mais sans mots agricoles clés,
-        # tenter MMS-dyu qui connaît mieux le vocabulaire dioula CI
-        if transcription:
-            _AGRI_KEYWORDS = {"malo", "kaba", "tiga", "bananku", "foro", "sɛnɛ",
-                              "sanji", "ji", "bana", "gan", "jaba", "woso", "ku",
-                              "kɔrɔni", "tamati", "mangoro", "wagati", "kalo"}
-            words = set(transcription.lower().split())
-            has_agri = bool(words & _AGRI_KEYWORDS)
-            if not has_agri and len(words) >= 3:
-                logger.info("[ASR] Pas de mot agricole détecté → second passage MMS-dyu...")
-                mms_result = await transcribe_dioula_mms(audio_bytes, extension)
-                if mms_result:
-                    mms_words = set(mms_result.lower().split())
-                    mms_has_agri = bool(mms_words & _AGRI_KEYWORDS)
-                    if mms_has_agri:
-                        logger.info("[ASR] MMS-dyu a trouvé des mots agricoles: '%s'", mms_result)
-                        transcription = mms_result
-                    else:
-                        logger.info("[ASR] MMS-dyu non concluant, on garde NeMo")
+        chain = get_asr_chain()
     else:
-        transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
+        chain = get_generic_asr_chain(language)
+
+    transcription = await chain.transcribe(audio_bytes, extension)
 
     if transcription is None:
         raise HTTPException(status_code=500, detail="Echec de la transcription")
@@ -300,7 +265,7 @@ async def transcribe_and_translate(
 @router.get("/languages")
 async def list_asr_languages():
     """Liste les langues disponibles pour la reconnaissance vocale"""
-    languages = get_supported_asr_languages()
+    languages = {code: name for code, (name, _) in IVORIAN_ASR_LANGUAGES.items()}
     return {
         "languages": languages,
         "total": len(languages),
@@ -319,7 +284,13 @@ async def list_asr_languages():
 @router.get("/status")
 async def asr_status():
     """Vérifie le statut du service ASR"""
-    asr_info = check_asr_status()
+    chain = get_asr_chain()
+    asr_info = {
+        "providers": [
+            {"name": p.name, "available": p.is_available()}
+            for p in chain.providers
+        ],
+    }
     return {
         "local_asr": asr_info,
         "translation": {
