@@ -15,6 +15,7 @@ import re
 import subprocess
 import logging
 from app.config import get_settings
+from app.data.constants import IVORIAN_CITY_NAMES
 
 logger = logging.getLogger(__name__)
 
@@ -74,14 +75,7 @@ def get_tts_model():
 
 
 # Noms de villes ivoiriennes à ne PAS traduire (NLLB les déforme)
-IVORIAN_CITIES = [
-    "Man", "Korhogo", "Bouaké", "Yamoussoukro", "Abidjan", "San-Pedro",
-    "Daloa", "Divo", "Gagnoa", "Bonoua", "Soubré", "Abengourou",
-    "Ferkessédougou", "Odienné", "Séguéla", "Bondoukou", "Aboisso",
-    "Danané", "Duékoué", "Guiglo", "Tabou", "Sassandra", "Grand-Bassam",
-    "Jacqueville", "Agboville", "Dabou", "Dimbokro", "Toumodi",
-    "Tiébissou", "Katiola", "Boundiali", "Tengrela", "Anyama", "Bingerville"
-]
+IVORIAN_CITIES = IVORIAN_CITY_NAMES
 
 # Placeholder pour protéger les villes pendant la traduction
 CITY_PLACEHOLDER = "VILLE_PROTEGEE_{}"

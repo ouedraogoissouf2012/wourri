@@ -14,7 +14,10 @@ class Language(str, Enum):
 
 
 class IvorianLanguage(str, Enum):
-    """Langues ivoiriennes TTS disponibles (Facebook MMS)"""
+    """Langues ivoiriennes TTS disponibles (Facebook MMS).
+
+    IMPORTANT: doit rester synchronisé avec SUPPORTED_LANGUAGES dans app/data/constants.py
+    """
     BAMBARA = "bam"       # Bambara/Dioula
     ATTIE = "ati"         # Attié
     SENOUFO_DJIMINI = "dyi"  # Sénoufo Djimini

@@ -13,6 +13,7 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 from app.config import get_settings
+from app.data.constants import get_asr_languages
 from app.services._ffmpeg import get_ffmpeg
 
 settings = get_settings()
@@ -39,17 +40,7 @@ try:
 except ImportError:
     logger.warning("[ASR] torchaudio non installe")
 
-# Langues ivoiriennes supportees pour ASR
-IVORIAN_ASR_LANGUAGES = {
-    "bam": ("Bambara/Dioula", "bam"),
-    "ati": ("Attie", "ati"),
-    "dyi": ("Senoufo Djimini", "dyi"),
-    "myk": ("Senoufo Mamara", "myk"),
-    "gud": ("Dida Yocoboue", "gud"),
-    "adj": ("Adioukrou", "adj"),
-    "dnj": ("Dan/Yacouba", "dnj"),
-    "wob": ("Wobe", "wob"),
-}
+IVORIAN_ASR_LANGUAGES = get_asr_languages()
 
 from app.services.model_registry import registry
 

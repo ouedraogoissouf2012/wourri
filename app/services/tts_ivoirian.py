@@ -19,39 +19,17 @@ import subprocess
 import logging
 from typing import Optional, Dict, Tuple
 from app.config import get_settings
+from app.data.constants import get_tts_languages, LANGUAGE_ALIASES as _LANG_ALIASES, resolve_language_alias
 
 logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
-# Configuration des langues ivoiriennes avec TTS
-IVORIAN_LANGUAGES = {
-    # Code: (nom_affichage, modele_huggingface, code_nllb_traduction)
-    "bam": ("Bambara/Dioula", "facebook/mms-tts-bam", "bam_Latn"),
-    "ati": ("Attié", "facebook/mms-tts-ati", None),  # Pas de traduction NLLB
-    "dyi": ("Sénoufo Djimini", "facebook/mms-tts-dyi", None),
-    "myk": ("Sénoufo Mamara", "facebook/mms-tts-myk", None),
-    "gud": ("Dida Yocoboué", "facebook/mms-tts-gud", None),
-    "adj": ("Adioukrou", "facebook/mms-tts-adj", None),
-    "dnj": ("Dan/Yacouba", "facebook/mms-tts-dnj", None),
-    "wob": ("Wobé", "facebook/mms-tts-wob", None),
-}
+# Configuration des langues ivoiriennes avec TTS (source unique : constants.py)
+IVORIAN_LANGUAGES = get_tts_languages()
 
-# Alias pour faciliter l'utilisation
-LANGUAGE_ALIASES = {
-    "bambara": "bam",
-    "dioula": "bam",
-    "jula": "bam",
-    "attie": "ati",
-    "senoufo": "dyi",  # Djimini par défaut
-    "senoufo_djimini": "dyi",
-    "senoufo_mamara": "myk",
-    "dida": "gud",
-    "adioukrou": "adj",
-    "dan": "dnj",
-    "yacouba": "dnj",
-    "wobe": "wob",
-}
+# Alias pour faciliter l'utilisation (source unique : constants.py)
+LANGUAGE_ALIASES = _LANG_ALIASES
 
 # Vérifier si torch est disponible
 TORCH_AVAILABLE = False
@@ -81,17 +59,7 @@ def get_supported_languages() -> Dict[str, str]:
 
 def resolve_language_code(language: str) -> Optional[str]:
     """Résout un alias de langue vers son code ISO"""
-    language_lower = language.lower().strip()
-
-    # Vérifier si c'est déjà un code valide
-    if language_lower in IVORIAN_LANGUAGES:
-        return language_lower
-
-    # Vérifier les alias
-    if language_lower in LANGUAGE_ALIASES:
-        return LANGUAGE_ALIASES[language_lower]
-
-    return None
+    return resolve_language_alias(language)
 
 
 def _make_ivoirian_loader(resolved_code: str):
