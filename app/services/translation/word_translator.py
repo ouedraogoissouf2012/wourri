@@ -2,10 +2,13 @@
 WOURI - Traduction par dictionnaire (mots + patterns)
 Strategie 1 : la plus rapide et precise, limitee au vocabulaire connu.
 """
+import logging
 import re
 from typing import Optional
 from .interfaces import ITranslator, TranslationResult, Direction
 from .dictionary_repository import DictionaryRepository
+
+logger = logging.getLogger(__name__)
 
 
 # Annotations grammaticales Bamadaba à exclure des traductions
@@ -343,7 +346,7 @@ class WordTranslator(ITranslator):
         # Si trop de mots étaient des tags grammaticaux, le dictionnaire
         # ne comprend pas vraiment cette phrase -> déléguer à NLLB
         if grammar_filtered >= 2 and grammar_filtered >= total * 0.3:
-            print(f"[dictionnaire] BAM->FR: {grammar_filtered}/{total} mots = tags grammaticaux, delegation NLLB")
+            logger.info(f"[dictionnaire] BAM->FR: {grammar_filtered}/{total} mots = tags grammaticaux, delegation NLLB")
             return None
 
         if confidence < 0.4:

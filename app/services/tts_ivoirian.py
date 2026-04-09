@@ -16,8 +16,11 @@ Langues supportées:
 import uuid
 import os
 import subprocess
+import logging
 from typing import Optional, Dict, Tuple
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -65,11 +68,10 @@ try:
     wav = _wav
     TORCH_AVAILABLE = True
 except ImportError:
-    print("INFO: torch non installé - TTS Ivoirien désactivé")
-    print("Pour activer: pip install torch transformers scipy")
+    logger.info("torch non installé - TTS Ivoirien désactivé")
+    logger.info("Pour activer: pip install torch transformers scipy")
 
-# Cache des modèles TTS (un par langue)
-_tts_models: Dict[str, Tuple] = {}
+from app.services.model_registry import registry
 
 
 def get_supported_languages() -> Dict[str, str]:
@@ -92,42 +94,40 @@ def resolve_language_code(language: str) -> Optional[str]:
     return None
 
 
-def get_tts_model(language_code: str):
-    """Charge le modèle TTS pour une langue spécifique (lazy loading)"""
-    global _tts_models
+def _make_ivoirian_loader(resolved_code: str):
+    """Crée un loader pour un modèle TTS ivoirien donné."""
+    lang_info = IVORIAN_LANGUAGES[resolved_code]
+    model_name = lang_info[1]
 
+    def _loader():
+        logger.info(f"Chargement du modèle TTS {lang_info[0]} ({model_name})...")
+        from transformers import VitsModel, AutoTokenizer
+
+        model = VitsModel.from_pretrained(model_name)
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        logger.info(f"Modèle TTS {lang_info[0]} chargé!")
+        return model, tokenizer
+
+    return _loader
+
+
+def get_tts_model(language_code: str):
+    """Charge le modèle TTS pour une langue spécifique (lazy loading via ModelRegistry)"""
     if not TORCH_AVAILABLE:
         return None, None
 
     # Résoudre le code de langue
     resolved_code = resolve_language_code(language_code)
     if not resolved_code:
-        print(f"Langue non supportée: {language_code}")
+        logger.warning(f"Langue non supportée: {language_code}")
         return None, None
 
-    # Vérifier le cache
-    if resolved_code in _tts_models:
-        return _tts_models[resolved_code]
-
-    # Charger le modèle
-    lang_info = IVORIAN_LANGUAGES[resolved_code]
-    model_name = lang_info[1]
-
-    print(f"Chargement du modèle TTS {lang_info[0]} ({model_name})...")
+    registry_key = f"tts_ivoirian_{resolved_code}"
 
     try:
-        from transformers import VitsModel, AutoTokenizer
-
-        model = VitsModel.from_pretrained(model_name)
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-        _tts_models[resolved_code] = (model, tokenizer)
-        print(f"Modèle TTS {lang_info[0]} chargé!")
-
-        return model, tokenizer
-
+        return registry.get(registry_key, loader=_make_ivoirian_loader(resolved_code))
     except Exception as e:
-        print(f"Erreur chargement modèle {model_name}: {e}")
+        logger.error(f"Erreur chargement modèle {IVORIAN_LANGUAGES[resolved_code][1]}: {e}")
         return None, None
 
 
@@ -151,7 +151,7 @@ def convert_wav_to_ogg(wav_path: str, ogg_path: str) -> bool:
                 os.remove(wav_path)
                 return True
         except Exception as e:
-            print(f"Erreur ffmpeg: {e}")
+            logger.error(f"Erreur ffmpeg: {e}")
 
     # Fallback avec pydub
     try:
@@ -164,7 +164,7 @@ def convert_wav_to_ogg(wav_path: str, ogg_path: str) -> bool:
         os.remove(wav_path)
         return True
     except Exception as e:
-        print(f"Erreur pydub: {e}")
+        logger.error(f"Erreur pydub: {e}")
 
     return False
 
@@ -186,7 +186,7 @@ def synthesize_ivorian_text(text: str, language: str = "bam") -> Optional[str]:
     # Résoudre le code de langue
     resolved_code = resolve_language_code(language)
     if not resolved_code:
-        print(f"Langue non supportée: {language}")
+        logger.warning(f"Langue non supportée: {language}")
         return None
 
     try:
@@ -224,7 +224,7 @@ def synthesize_ivorian_text(text: str, language: str = "bam") -> Optional[str]:
             return f"/static/audio/{wav_filename}"
 
     except Exception as e:
-        print(f"Erreur TTS {language}: {e}")
+        logger.error(f"Erreur TTS {language}: {e}")
 
     return None
 
@@ -258,7 +258,10 @@ def check_models_status() -> dict:
     status = {
         "torch_available": TORCH_AVAILABLE,
         "languages_available": get_supported_languages(),
-        "models_loaded": list(_tts_models.keys()),
+        "models_loaded": [
+            code for code in IVORIAN_LANGUAGES
+            if registry.is_loaded(f"tts_ivoirian_{code}")
+        ],
         "total_languages": len(IVORIAN_LANGUAGES),
     }
     return status

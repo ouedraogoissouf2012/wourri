@@ -15,9 +15,12 @@ Usage:
         pass
 """
 import json
+import logging
 import os
 from dataclasses import dataclass, field
 from typing import Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 from .concept_extractor import ConceptExtractor
 from .intent_classifier import IntentClassifier
@@ -69,7 +72,7 @@ class NLUService:
         self._builder = SentenceBuilder()
         self._out_of_scope = self._config.get("out_of_scope_response", {})
 
-        print(
+        logger.info(
             f"[NLU] Chargé: {len(self._config.get('concepts', {}))} concepts, "
             f"{len(self._config.get('intents', []))} intents"
         )
@@ -104,11 +107,11 @@ class NLUService:
 
         # ---- Étape 1: Extraction des concepts ----
         concepts = self._extractor.extract(bambara_text)
-        print(f"[NLU] Concepts: {list(concepts.keys())}")
+        logger.info(f"[NLU] Concepts: {list(concepts.keys())}")
 
         # ---- Étape 2: Classification de l'intention ----
         intent, confidence, matched_data = self._classifier.classify(concepts)
-        print(f"[NLU] Intent: {intent} (confiance={confidence:.2f})")
+        logger.info(f"[NLU] Intent: {intent} (confiance={confidence:.2f})")
 
         # ---- Étape 3: Reconstruction de la phrase française ----
         french_sentence = None
@@ -124,7 +127,7 @@ class NLUService:
                     out_of_scope_response=self._out_of_scope.get("fr")
                 )
                 if french_sentence:
-                    print(f"[NLU] Phrase reconstruite: '{french_sentence}'")
+                    logger.info(f"[NLU] Phrase reconstruite: '{french_sentence}'")
 
         return NLUResult(
             bambara_text=bambara_text,
@@ -177,12 +180,12 @@ def get_nlu_service() -> Optional[NLUService]:
     concepts_path = os.path.join(base_dir, "dictionnaires", "nlu_concepts.json")
 
     if not os.path.exists(concepts_path):
-        print(f"[NLU] Fichier non trouvé: {concepts_path} — NLU désactivé")
+        logger.warning(f"[NLU] Fichier non trouvé: {concepts_path} — NLU désactivé")
         return None
 
     try:
         _nlu_service = NLUService(concepts_path)
         return _nlu_service
     except Exception as e:
-        print(f"[NLU] Erreur chargement: {e}")
+        logger.error(f"[NLU] Erreur chargement: {e}")
         return None

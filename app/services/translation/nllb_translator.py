@@ -4,8 +4,11 @@ Stratégie 3 : la plus lente mais couvre tout le vocabulaire.
 Utilisée quand le dictionnaire ne suffit pas.
 Pré-chargée au démarrage pour éviter les OOM pendant les requêtes.
 """
+import logging
 from typing import Optional
 from .interfaces import ITranslator, TranslationResult, Direction
+
+logger = logging.getLogger(__name__)
 
 
 class NLLBTranslator(ITranslator):
@@ -37,15 +40,15 @@ class NLLBTranslator(ITranslator):
             from app.config import get_settings
             settings = get_settings()
 
-            print("[NLLB] Chargement du modèle de traduction...")
+            logger.info("[NLLB] Chargement du modèle de traduction...")
             self._tokenizer = AutoTokenizer.from_pretrained(settings.hf_translator_model)
             self._model = AutoModelForSeq2SeqLM.from_pretrained(settings.hf_translator_model)
             self._model.eval()
-            print("[NLLB] Modèle chargé!")
+            logger.info("[NLLB] Modèle chargé!")
             return True
         except Exception as e:
-            print(f"[NLLB] Erreur chargement: {e}")
-            print("[NLLB] NLLB désactivé - le dictionnaire sera utilisé seul")
+            logger.error(f"[NLLB] Erreur chargement: {e}")
+            logger.warning("[NLLB] NLLB désactivé - le dictionnaire sera utilisé seul")
             self._load_failed = True
             return False
 
@@ -102,7 +105,7 @@ class NLLBTranslator(ITranslator):
             )
 
         except Exception as e:
-            print(f"[NLLB] Erreur traduction: {e}")
+            logger.error(f"[NLLB] Erreur traduction: {e}")
             return None
 
     def get_model_and_tokenizer(self):

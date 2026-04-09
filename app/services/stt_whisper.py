@@ -5,6 +5,7 @@ Utilise CTranslate2 pour des performances 4x plus rapides
 NOTE: Necessite faster-whisper
 Pour installer: pip install faster-whisper
 """
+import logging
 import os
 
 # Désactiver les symlinks sur Windows (évite les erreurs de permission)
@@ -17,6 +18,8 @@ import subprocess
 from app.config import get_settings
 from app.services._ffmpeg import get_ffmpeg
 
+logger = logging.getLogger(__name__)
+
 settings = get_settings()
 
 # Chemin ffmpeg — résolu au premier appel via get_ffmpeg()
@@ -28,9 +31,9 @@ def find_ffmpeg():
 
 _ffmpeg_executable = find_ffmpeg()
 if _ffmpeg_executable:
-    print(f"FFmpeg trouve: {_ffmpeg_executable}")
+    logger.info(f"FFmpeg trouve: {_ffmpeg_executable}")
 else:
-    print("ATTENTION: FFmpeg non trouve - STT peut ne pas fonctionner")
+    logger.warning("ATTENTION: FFmpeg non trouve - STT peut ne pas fonctionner")
 
 
 def convert_audio_to_wav(input_path: str) -> str | None:
@@ -45,7 +48,7 @@ def convert_audio_to_wav(input_path: str) -> str | None:
         Chemin vers le fichier WAV converti ou None si erreur
     """
     if not _ffmpeg_executable:
-        print("[STT] FFmpeg non disponible - utilisation du fichier original")
+        logger.warning("[STT] FFmpeg non disponible - utilisation du fichier original")
         return None
 
     # Créer un chemin pour le fichier WAV temporaire
@@ -66,17 +69,17 @@ def convert_audio_to_wav(input_path: str) -> str | None:
         result = subprocess.run(cmd, capture_output=True, timeout=10)
 
         if result.returncode == 0 and os.path.exists(wav_path):
-            print(f"[STT] Audio converti en WAV: {wav_path}")
+            logger.info(f"[STT] Audio converti en WAV: {wav_path}")
             return wav_path
         else:
-            print(f"[STT] Erreur conversion audio: {result.stderr.decode() if result.stderr else 'Unknown'}")
+            logger.error(f"[STT] Erreur conversion audio: {result.stderr.decode() if result.stderr else 'Unknown'}")
             return None
 
     except subprocess.TimeoutExpired:
-        print("[STT] Timeout conversion audio")
+        logger.warning("[STT] Timeout conversion audio")
         return None
     except Exception as e:
-        print(f"[STT] Erreur conversion: {e}")
+        logger.error(f"[STT] Erreur conversion: {e}")
         return None
 
 # Verifier si faster-whisper est disponible
@@ -87,10 +90,10 @@ try:
     from faster_whisper import WhisperModel as _WhisperModel
     WhisperModel = _WhisperModel
     WHISPER_AVAILABLE = True
-    print("faster-whisper disponible")
+    logger.info("faster-whisper disponible")
 except ImportError:
-    print("INFO: faster-whisper non installe - STT desactive")
-    print("Pour activer: pip install faster-whisper")
+    logger.info("INFO: faster-whisper non installe - STT desactive")
+    logger.info("Pour activer: pip install faster-whisper")
 
 # Cache du modele
 _whisper_model = None
@@ -109,8 +112,8 @@ def get_whisper_model(model_name: str = None):
         _model_name = model_name
 
     if _whisper_model is None:
-        print(f"Chargement du modele Faster-Whisper ({_model_name})...")
-        print("(Premier chargement peut prendre 1-2 minutes pour telecharger le modele)")
+        logger.info(f"Chargement du modele Faster-Whisper ({_model_name})...")
+        logger.info("(Premier chargement peut prendre 1-2 minutes pour telecharger le modele)")
 
         # Configuration optimisée pour CPU Windows
         # compute_type: int8 pour CPU (plus rapide et moins de RAM)
@@ -122,7 +125,7 @@ def get_whisper_model(model_name: str = None):
             cpu_threads=4,        # Utiliser 4 threads CPU
             num_workers=1         # 1 worker pour la stabilité
         )
-        print(f"Modele Faster-Whisper ({_model_name}) charge!")
+        logger.info(f"Modele Faster-Whisper ({_model_name}) charge!")
 
     return _whisper_model
 
@@ -142,7 +145,7 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
         return None
 
     if not os.path.exists(audio_path):
-        print(f"Fichier audio non trouve: {audio_path}")
+        logger.error(f"Fichier audio non trouve: {audio_path}")
         return None
 
     # Convertir l'audio en WAV pour une meilleure qualité
@@ -156,7 +159,7 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
             wav_path = convert_audio_to_wav(audio_path)
             if wav_path and os.path.exists(wav_path):
                 transcribe_path = wav_path
-                print(f"[Whisper] Fichier converti en WAV")
+                logger.info(f"[Whisper] Fichier converti en WAV")
 
         model = get_whisper_model()
         if model is None:
@@ -175,8 +178,8 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
         )
 
         # Transcrire avec Faster-Whisper
-        print(f"[Faster-Whisper] Transcription avec modele {_model_name}")
-        print(f"[Faster-Whisper] Fichier: {transcribe_path}")
+        logger.info(f"[Faster-Whisper] Transcription avec modele {_model_name}")
+        logger.info(f"[Faster-Whisper] Fichier: {transcribe_path}")
 
         # Configuration optimisée pour vitesse et précision
         segments, info = model.transcribe(
@@ -212,27 +215,27 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
             transcribed_texts.append(segment.text.strip())
 
         transcribed_text = " ".join(transcribed_texts).strip()
-        print(f"[Faster-Whisper] Résultat brut: '{transcribed_text}'")
-        print(f"[Faster-Whisper] Langue détectée: {info.language} (prob: {info.language_probability:.2f})")
-        print(f"[Faster-Whisper] Durée audio: {info.duration:.1f}s")
+        logger.info(f"[Faster-Whisper] Résultat brut: '{transcribed_text}'")
+        logger.info(f"[Faster-Whisper] Langue détectée: {info.language} (prob: {info.language_probability:.2f})")
+        logger.info(f"[Faster-Whisper] Durée audio: {info.duration:.1f}s")
 
         # Corriger les termes agricoles mal transcrits (AVANT les villes)
         transcribed_text = correct_agricultural_terms(transcribed_text)
-        print(f"[Faster-Whisper] Après correction agricole: '{transcribed_text}'")
+        logger.info(f"[Faster-Whisper] Après correction agricole: '{transcribed_text}'")
 
         # Corriger les noms de villes mal transcrits
         transcribed_text = correct_city_names(transcribed_text)
-        print(f"[Faster-Whisper] Après correction villes: '{transcribed_text}'")
+        logger.info(f"[Faster-Whisper] Après correction villes: '{transcribed_text}'")
 
         # Vérifier si le résultat semble être une hallucination
         if is_likely_hallucination(transcribed_text):
-            print(f"[Faster-Whisper] Détection d'hallucination possible, texte ignoré")
+            logger.warning(f"[Faster-Whisper] Détection d'hallucination possible, texte ignoré")
             return None
 
         # Détecter si l'audio était probablement en Dioula
         likely_dioula = is_likely_dioula_input(transcribed_text, info.language_probability)
         if likely_dioula:
-            print(f"[Faster-Whisper] ATTENTION: Audio probablement en Dioula, transcription peut être incorrecte")
+            logger.warning(f"[Faster-Whisper] ATTENTION: Audio probablement en Dioula, transcription peut être incorrecte")
 
         return {
             "text": transcribed_text,
@@ -243,9 +246,7 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
         }
 
     except Exception as e:
-        print(f"Erreur transcription Faster-Whisper: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Erreur transcription Faster-Whisper: {e}", exc_info=True)
         return None
 
     finally:
@@ -457,7 +458,7 @@ def correct_agricultural_terms(text: str) -> str:
             import re
             pattern = re.compile(re.escape(wrong), re.IGNORECASE)
             result = pattern.sub(correct, result)
-            print(f"[Faster-Whisper] Correction agricole: '{wrong}' -> '{correct}'")
+            logger.info(f"[Faster-Whisper] Correction agricole: '{wrong}' -> '{correct}'")
 
     return result
 
@@ -695,7 +696,7 @@ def correct_city_names(text: str) -> str:
             import re
             pattern = re.compile(re.escape(wrong), re.IGNORECASE)
             result = pattern.sub(correct, result)
-            print(f"[Faster-Whisper] Correction ville: '{wrong}' -> '{correct}'")
+            logger.info(f"[Faster-Whisper] Correction ville: '{wrong}' -> '{correct}'")
 
     return result
 
@@ -723,7 +724,7 @@ def is_likely_hallucination(text: str) -> bool:
     # Caractères non-latins (signe d'hallucination)
     non_latin_chars = sum(1 for c in text if ord(c) > 0x024F and not c.isspace())
     if non_latin_chars > len(text) * 0.2:  # Plus de 20% de caractères non-latins
-        print(f"[Faster-Whisper] Trop de caractères non-latins détectés")
+        logger.warning(f"[Faster-Whisper] Trop de caractères non-latins détectés")
         return True
 
     # Phrases répétitives (signe d'hallucination)
@@ -738,7 +739,7 @@ def is_likely_hallucination(text: str) -> bool:
             # Si un mot apparaît plus de 50% du temps, c'est suspect
             max_count = max(word_counts.values())
             if max_count > len(words) * 0.5:
-                print(f"[Faster-Whisper] Répétition excessive détectée")
+                logger.warning(f"[Faster-Whisper] Répétition excessive détectée")
                 return True
 
     # Phrases génériques connues comme hallucinations de Whisper
@@ -759,7 +760,7 @@ def is_likely_hallucination(text: str) -> bool:
     text_lower = text.lower()
     for pattern in hallucination_patterns:
         if pattern in text_lower:
-            print(f"[Faster-Whisper] Pattern d'hallucination détecté: {pattern}")
+            logger.warning(f"[Faster-Whisper] Pattern d'hallucination détecté: {pattern}")
             return True
 
     return False
@@ -811,12 +812,12 @@ def is_likely_dioula_input(text: str, language_probability: float = 0.0) -> bool
 
     for pattern in incoherent_patterns:
         if pattern in text_lower:
-            print(f"[STT] Détection Dioula probable: pattern '{pattern}' trouvé")
+            logger.info(f"[STT] Détection Dioula probable: pattern '{pattern}' trouvé")
             return True
 
     # Si la probabilité de langue est basse (<70%), c'est suspect
     if 0 < language_probability < 0.7:
-        print(f"[STT] Détection Dioula probable: probabilité langue faible ({language_probability:.2f})")
+        logger.info(f"[STT] Détection Dioula probable: probabilité langue faible ({language_probability:.2f})")
         return True
 
     return False
@@ -856,15 +857,15 @@ async def transcribe_audio_bytes(audio_bytes: bytes, filename: str = "audio.wav"
         # DEBUG: Copier pour analyse
         with open(debug_path, "wb") as f:
             f.write(audio_bytes)
-        print(f"[STT DEBUG] Audio sauvegarde: {debug_path} ({len(audio_bytes)} bytes)")
+        logger.info(f"[STT DEBUG] Audio sauvegarde: {debug_path} ({len(audio_bytes)} bytes)")
 
         result = transcribe_audio(temp_path, language)
 
         # DEBUG: Log le resultat
         if result:
-            print(f"[STT DEBUG] Resultat transcription: '{result['text']}'")
+            logger.info(f"[STT DEBUG] Resultat transcription: '{result['text']}'")
         else:
-            print(f"[STT DEBUG] Transcription echouee (None)")
+            logger.warning(f"[STT DEBUG] Transcription echouee (None)")
 
         return result
 

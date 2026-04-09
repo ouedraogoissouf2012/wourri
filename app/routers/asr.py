@@ -20,6 +20,9 @@ from app.services.asr_mms_dyu import (
 )
 from app.services.tts_bambara import translate_to_french
 from app.security import require_api_key, limiter
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/asr", tags=["ASR"])
 
@@ -41,7 +44,7 @@ def _run_nlu(bambara_text: str) -> dict:
             "nlu_has_greeting": result.has_greeting,
         }
     except Exception as e:
-        print(f"[ASR] NLU erreur: {e}")
+        logger.error("[ASR] NLU erreur: %s", e)
         return {}
 
 
@@ -141,6 +144,9 @@ async def transcribe_audio(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erreur lecture fichier: {str(e)}")
 
+    if len(audio_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Fichier audio trop volumineux (max 10 MB)")
+
     if len(audio_bytes) == 0:
         raise HTTPException(status_code=400, detail="Fichier audio vide")
 
@@ -192,6 +198,9 @@ async def transcribe_and_translate(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erreur lecture fichier: {str(e)}")
 
+    if len(audio_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Fichier audio trop volumineux (max 10 MB)")
+
     if len(audio_bytes) == 0:
         raise HTTPException(status_code=400, detail="Fichier audio vide")
 
@@ -203,16 +212,16 @@ async def transcribe_and_translate(
     lang_name = IVORIAN_ASR_LANGUAGES[language][0]
 
     # Transcription ASR
-    print(f"[ASR] Transcription en {language}...")
+    logger.info("[ASR] Transcription en %s...", language)
 
     # Bambara/Dioula : NeMo TDT en premier, MMS-dyu en second passage si besoin
     if language == "bam":
         transcription = await transcribe_bambara_nemo(audio_bytes, extension)
         if transcription is None:
-            print("[ASR] NeMo échoué, fallback MMS-dyu...")
+            logger.warning("[ASR] NeMo échoué, fallback MMS-dyu...")
             transcription = await transcribe_dioula_mms(audio_bytes, extension)
         if transcription is None:
-            print("[ASR] MMS-dyu échoué, fallback MMS-1B-ALL générique...")
+            logger.warning("[ASR] MMS-dyu échoué, fallback MMS-1B-ALL générique...")
             transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
 
         # Second passage MMS-dyu : si NeMo a transcrit mais sans mots agricoles clés,
@@ -224,29 +233,29 @@ async def transcribe_and_translate(
             words = set(transcription.lower().split())
             has_agri = bool(words & _AGRI_KEYWORDS)
             if not has_agri and len(words) >= 3:
-                print(f"[ASR] Pas de mot agricole détecté → second passage MMS-dyu...")
+                logger.info("[ASR] Pas de mot agricole détecté → second passage MMS-dyu...")
                 mms_result = await transcribe_dioula_mms(audio_bytes, extension)
                 if mms_result:
                     mms_words = set(mms_result.lower().split())
                     mms_has_agri = bool(mms_words & _AGRI_KEYWORDS)
                     if mms_has_agri:
-                        print(f"[ASR] MMS-dyu a trouvé des mots agricoles: '{mms_result}'")
+                        logger.info("[ASR] MMS-dyu a trouvé des mots agricoles: '%s'", mms_result)
                         transcription = mms_result
                     else:
-                        print(f"[ASR] MMS-dyu non concluant, on garde NeMo")
+                        logger.info("[ASR] MMS-dyu non concluant, on garde NeMo")
     else:
         transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
 
     if transcription is None:
         raise HTTPException(status_code=500, detail="Echec de la transcription")
 
-    print(f"[ASR] Transcription brute: '{transcription}'")
+    logger.info("[ASR] Transcription brute: '%s'", transcription)
 
     # Nettoyage post-ASR
     if language == "bam":
         cleaned = clean_asr_transcription(transcription)
         if cleaned != transcription:
-            print(f"[ASR] Après nettoyage: '{cleaned}'")
+            logger.info("[ASR] Après nettoyage: '%s'", cleaned)
             transcription = cleaned
 
     # Traduction BAM → FR (uniquement pour Bambara)
@@ -255,12 +264,12 @@ async def transcribe_and_translate(
 
     if language == "bam":
         try:
-            print(f"[ASR] Traduction Bambara -> Francais...")
+            logger.info("[ASR] Traduction Bambara -> Francais...")
             french_translation = translate_to_french(transcription)
-            print(f"[ASR] Traduction: '{french_translation}'")
+            logger.info("[ASR] Traduction: '%s'", french_translation)
             translation_available = True
         except Exception as e:
-            print(f"[ASR] Erreur traduction: {e}")
+            logger.error("[ASR] Erreur traduction: %s", e)
 
     # NLU: extraction de concepts + reconstruction de phrase française
     # nlu_message est la phrase française reconstruite (plus précise que french_translation)
@@ -269,7 +278,7 @@ async def transcribe_and_translate(
     if language == "bam":
         nlu_data = _run_nlu(transcription)
         if nlu_data.get("nlu_message"):
-            print(f"[ASR] NLU → phrase reconstruite: '{nlu_data['nlu_message']}'")
+            logger.info("[ASR] NLU → phrase reconstruite: '%s'", nlu_data['nlu_message'])
 
     return {
         "transcription": transcription,

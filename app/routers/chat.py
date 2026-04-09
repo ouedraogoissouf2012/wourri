@@ -5,6 +5,7 @@ NLU: si le message contient du bambara (transcription ASR), le NLU reconstruit
      une phrase française claire avant d'envoyer à DeepSeek.
 """
 import asyncio
+import logging
 import re
 from fastapi import APIRouter, Request
 from app.services.deepseek import chat_with_deepseek
@@ -18,6 +19,8 @@ from app.data.calendrier_agricole import get_conseil_saisonnier
 from fastapi import Depends
 from app.config import get_settings
 from app.security import require_api_key, limiter
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -80,8 +83,8 @@ def _build_meteo_bambara(weather_data: dict | None, city: str, cultures: list = 
         bam += f" Sisan ye {liste_bam} sɛnɛ waati ye aw ka zone kɔnɔ."
         fr  += f" En ce moment, les cultures de saison dans votre zone sont : {liste_fr}."
 
-    print(f"[METEO BAM] {bam}")
-    print(f"[METEO FR]  {fr}")
+    logger.info("[METEO BAM] %s", bam)
+    logger.info("[METEO FR]  %s", fr)
     return (bam, fr)
 
 
@@ -113,7 +116,7 @@ def _apply_nlu_preprocessing(message: str, bambara_text: str | None = None) -> t
 
         # Hors sujet agricole → retourner le message hors-sujet directement
         if result.is_out_of_scope:
-            print(f"[Chat NLU] Hors sujet détecté pour: '{bambara_text_to_analyze[:50]}'")
+            logger.info("[Chat NLU] Hors sujet détecté pour: '%s'", bambara_text_to_analyze[:50])
             return result.out_of_scope_message_fr or message, "HORS_SUJET", {}
 
         concepts = result.concepts or {}
@@ -121,13 +124,13 @@ def _apply_nlu_preprocessing(message: str, bambara_text: str | None = None) -> t
         # Phrase reconstruite disponible → enrichir avec contexte culture/animal
         if result.french_sentence:
             enriched = _enrich_message_for_deepseek(result.french_sentence, concepts)
-            print(f"[Chat NLU] Phrase reconstruite: '{result.french_sentence}'")
+            logger.info("[Chat NLU] Phrase reconstruite: '%s'", result.french_sentence)
             return enriched, result.intent, concepts
 
         return message, result.intent if result.intent else None, concepts
 
     except Exception as e:
-        print(f"[Chat NLU] Erreur: {e}")
+        logger.error("[Chat NLU] Erreur: %s", e)
         return message, None, {}
 
 
@@ -158,7 +161,7 @@ def _enrich_message_for_deepseek(french_sentence: str, concepts: dict) -> str:
     sujet = culture or animal
     if sujet:
         prefix = f"[Paysan cultive: {sujet}] "
-        print(f"[Chat NLU] Contexte ajouté: {prefix.strip()}")
+        logger.info("[Chat NLU] Contexte ajouté: %s", prefix.strip())
         return prefix + french_sentence
 
     return french_sentence
@@ -186,13 +189,13 @@ def _chercher_ivr(intent: str, concepts: dict) -> str | None:
 
         if result:
             score = result.get("score_validation", 0.0)
-            print(f"[VDB] Réponse trouvée: {result['id']} (score={score:.2f})")
-            print(f"[REPONSE BAM] {result['reponse_bambara']}")
-            print(f"[REPONSE FR]  {result.get('reponse_fr', '(non disponible)')}")
+            logger.info("[VDB] Réponse trouvée: %s (score=%.2f)", result['id'], score)
+            logger.info("[REPONSE BAM] %s", result['reponse_bambara'])
+            logger.info("[REPONSE FR]  %s", result.get('reponse_fr', '(non disponible)'))
             return result["reponse_bambara"]
 
     except Exception as e:
-        print(f"[VDB] Erreur recherche IVR: {e}")
+        logger.error("[VDB] Erreur recherche IVR: %s", e)
 
     return None
 
@@ -219,7 +222,7 @@ def _chercher_ivr_par_concept(concepts: dict) -> str | None:
     # essayer CULTURE_MAIS (culture #1 en CI) comme défaut
     if not cultures:
         if "ACTION_PLANTER" in concepts or "ACTION_CHERCHER_CONSEIL" in concepts:
-            print("[Chat IVR] ACTION_PLANTER sans culture → essai CULTURE_MAIS par défaut")
+            logger.info("[Chat IVR] ACTION_PLANTER sans culture → essai CULTURE_MAIS par défaut")
             cultures = ["CULTURE_MAIS"]
         else:
             return None
@@ -246,17 +249,17 @@ def _chercher_ivr_par_concept(concepts: dict) -> str | None:
         if intent_candidat:
             result = chercher_reponse_ivr(intent=intent_candidat, cultures=cultures, conditions=[])
             if result:
-                print(f"[Chat IVR] Approché par concept: {result['id']} (intent={intent_candidat})")
+                logger.info("[Chat IVR] Approché par concept: %s (intent=%s)", result['id'], intent_candidat)
                 return result["reponse_bambara"]
 
         # Défaut : conseil de production pour la culture détectée
         result = chercher_reponse_ivr(intent="CONSEIL_PRODUCTION", cultures=cultures, conditions=[])
         if result:
-            print(f"[Chat IVR] Approché par concept: {result['id']} (CONSEIL_PRODUCTION défaut)")
+            logger.info("[Chat IVR] Approché par concept: %s (CONSEIL_PRODUCTION défaut)", result['id'])
             return result["reponse_bambara"]
 
     except Exception as e:
-        print(f"[Chat IVR] Erreur recherche par concept: {e}")
+        logger.error("[Chat IVR] Erreur recherche par concept: %s", e)
 
     return None
 
@@ -281,13 +284,13 @@ async def _translate_to_bambara_enhanced(french_text: str) -> str:
         )
 
         if confidence > 0.6:
-            print(f"[Chat Trad] Méthode: {method}, conf={confidence:.2f}")
+            logger.info("[Chat Trad] Méthode: %s, conf=%.2f", method, confidence)
             return bambara
         else:
-            print(f"[Chat Trad] Confiance insuffisante ({confidence:.2f} < 0.6) → fallback NLLB")
+            logger.warning("[Chat Trad] Confiance insuffisante (%.2f < 0.6) → fallback NLLB", confidence)
 
     except Exception as e:
-        print(f"[Chat Trad] DeepSeek translation erreur: {e}")
+        logger.error("[Chat Trad] DeepSeek translation erreur: %s", e)
 
     # Fallback NLLB (chemin existant)
     return translate_to_bambara(french_text)
@@ -329,7 +332,7 @@ async def chat(request: Request, body: ChatRequest):
         mentioned_city = detect_city_in_message(body.message)
         city = mentioned_city if mentioned_city else body.city
         if mentioned_city and mentioned_city.lower() != body.city.lower():
-            print(f"[Chat] Ville détectée dans le message: {mentioned_city} (défaut: {body.city})")
+            logger.info("[Chat] Ville détectée dans le message: %s (défaut: %s)", mentioned_city, body.city)
 
         # NLU: si bambara_text fourni (depuis ASR), reconstruire une phrase claire
         # Le NLU peut aussi détecter les messages hors-sujet et répondre directement
@@ -359,7 +362,7 @@ async def chat(request: Request, body: ChatRequest):
         if body.language in (Language.DIOULA, Language.BOTH) and nlu_intent:
             ivr_bambara = _chercher_ivr(intent=nlu_intent, concepts=nlu_concepts)
             if ivr_bambara:
-                print(f"[Chat IVR] Réponse corpus trouvée — chemin direct bambara (intent={nlu_intent})")
+                logger.info("[Chat IVR] Réponse corpus trouvée — chemin direct bambara (intent=%s)", nlu_intent)
 
                 # Remplacer {{METEO_CONTEXTUEL}} si présent (entrées salutation)
                 # → inclut météo réelle + cultures de saison selon la zone de la ville
@@ -407,7 +410,7 @@ async def chat(request: Request, body: ChatRequest):
                 )
 
         # CHEMIN FALLBACK : intent exact non trouvé dans l'IVR
-        print(f"[Chat IVR] Hors corpus (intent={nlu_intent}) → recherche par concept")
+        logger.info("[Chat IVR] Hors corpus (intent=%s) → recherche par concept", nlu_intent)
 
         # DIOULA / BOTH : recherche par concept d'abord
         if body.language in (Language.DIOULA, Language.BOTH):
@@ -434,7 +437,7 @@ async def chat(request: Request, body: ChatRequest):
 
             # Aucun concept agricole identifié → DeepSeek avec prompt agricole strict
             # (question ouverte: "comment traiter la rouille du maïs ?", question hors-corpus, etc.)
-            print(f"[Chat IVR] Aucun concept → DeepSeek fallback agricole (intent={nlu_intent})")
+            logger.info("[Chat IVR] Aucun concept → DeepSeek fallback agricole (intent=%s)", nlu_intent)
             deepseek_response = await chat_with_deepseek(
                 message=message_for_deepseek,
                 weather_data=weather_data,
@@ -483,7 +486,7 @@ async def chat(request: Request, body: ChatRequest):
             audio_language=audio_language_name
         )
     except Exception as e:
-        print(f"Erreur chat: {e}")
+        logger.error("Erreur chat: %s", e)
         return ChatResponse(
             response="Désolé, je rencontre des problèmes de connexion. Vérifiez votre connexion internet et réessayez.",
             response_dioula=None,

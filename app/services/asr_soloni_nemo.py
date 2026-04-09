@@ -4,10 +4,13 @@ Utilise model.transcribe() directement - beaucoup plus precis que la tete CTC se
 Les fichiers temp sont dans C:/soloni/temp/ pour eviter les problemes de chemin.
 """
 import asyncio
+import logging
 import os
 import uuid
 import subprocess
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 import tempfile
 # Chemin du modèle NeMo — configurable via NEMO_MODEL_PATH dans .env
@@ -32,52 +35,49 @@ try:
     nemo_asr = _nemo_asr
     torch = _torch
     NEMO_AVAILABLE = True
-    print("[ASR-NEMO] NeMo disponible")
+    logger.info("[ASR-NEMO] NeMo disponible")
 except ImportError as e:
-    print(f"[ASR-NEMO] NeMo non installe: {e}")
+    logger.warning(f"[ASR-NEMO] NeMo non installe: {e}")
 
-# Singleton modele
-_model = None
+from app.services.model_registry import registry
 
 
 def get_nemo_model():
-    """Charge le modele NeMo Soloni (lazy loading, singleton)"""
-    global _model
-
+    """Charge le modele NeMo Soloni (lazy loading, via ModelRegistry)"""
     if not NEMO_AVAILABLE:
         return None
 
-    if _model is not None:
-        return _model
-
     if not os.path.exists(NEMO_PATH):
-        print(f"[ASR-NEMO] Modele non trouve: {NEMO_PATH}")
+        logger.warning(f"[ASR-NEMO] Modele non trouve: {NEMO_PATH}")
         return None
 
-    try:
-        print("[ASR-NEMO] Chargement modele NeMo Soloni...")
-        _model = nemo_asr.models.ASRModel.restore_from(
+    def _load():
+        logger.info("[ASR-NEMO] Chargement modele NeMo Soloni...")
+        model = nemo_asr.models.ASRModel.restore_from(
             NEMO_PATH, map_location=torch.device('cpu')
         )
-        _model.eval()
+        model.eval()
 
         # Activer malsd_batch — stratégie recommandée par NeMo pour les modèles TDT
         # (beam/default est expérimental et moins précis sur les syllabes courtes)
         try:
             from omegaconf import open_dict
-            with open_dict(_model.cfg):
-                _model.cfg.decoding.strategy = "beam"
-                _model.cfg.decoding.beam.beam_size = 4
-                _model.cfg.decoding.beam.search_type = "malsd_batch"
-            _model.change_decoding_strategy(_model.cfg.decoding)
-            print("[ASR-NEMO] Décodeur malsd_batch activé (beam_size=4, TDT optimisé)")
+            with open_dict(model.cfg):
+                model.cfg.decoding.strategy = "beam"
+                model.cfg.decoding.beam.beam_size = 4
+                model.cfg.decoding.beam.search_type = "malsd_batch"
+            model.change_decoding_strategy(model.cfg.decoding)
+            logger.info("[ASR-NEMO] Décodeur malsd_batch activé (beam_size=4, TDT optimisé)")
         except Exception as beam_err:
-            print(f"[ASR-NEMO] malsd_batch non disponible, mode greedy: {beam_err}")
+            logger.warning(f"[ASR-NEMO] malsd_batch non disponible, mode greedy: {beam_err}")
 
-        print("[ASR-NEMO] Modele charge!")
-        return _model
+        logger.info("[ASR-NEMO] Modele charge!")
+        return model
+
+    try:
+        return registry.get("nemo_soloni", loader=_load)
     except Exception as e:
-        print(f"[ASR-NEMO] Erreur chargement: {e}")
+        logger.error(f"[ASR-NEMO] Erreur chargement: {e}")
         return None
 
 
@@ -107,9 +107,7 @@ def transcribe_wav(wav_path: str) -> Optional[str]:
         return str(result).strip()
 
     except Exception as e:
-        print(f"[ASR-NEMO] Erreur inference: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"[ASR-NEMO] Erreur inference: {e}", exc_info=True)
         return None
 
 
@@ -119,7 +117,7 @@ def _convert_to_wav_16k(input_path: str, output_path: str) -> bool:
     try:
         ffmpeg_path = get_ffmpeg()
     except RuntimeError:
-        print("[ASR-NEMO] FFmpeg non trouve")
+        logger.error("[ASR-NEMO] FFmpeg non trouve")
         return False
 
     try:
@@ -131,7 +129,7 @@ def _convert_to_wav_16k(input_path: str, output_path: str) -> bool:
         result = subprocess.run(cmd, capture_output=True, timeout=30)
         return result.returncode == 0 and os.path.exists(output_path)
     except Exception as e:
-        print(f"[ASR-NEMO] Erreur ffmpeg: {e}")
+        logger.error(f"[ASR-NEMO] Erreur ffmpeg: {e}")
         return False
 
 
@@ -148,7 +146,7 @@ async def transcribe_bambara_nemo(audio_bytes: bytes, file_extension: str = "ogg
             f.write(audio_bytes)
 
         if not _convert_to_wav_16k(temp_path, wav_path):
-            print("[ASR-NEMO] Echec conversion WAV")
+            logger.error("[ASR-NEMO] Echec conversion WAV")
             return None
 
         # Inférence ML dans un thread séparé pour ne pas bloquer asyncio
@@ -157,7 +155,7 @@ async def transcribe_bambara_nemo(audio_bytes: bytes, file_extension: str = "ogg
         if result:
             from app.services.asr_bambara_normalizer import normalize_bambara_asr
             result = normalize_bambara_asr(result)
-        print(f"[ASR-NEMO] Transcription: '{result}'")
+        logger.info(f"[ASR-NEMO] Transcription: '{result}'")
         return result
 
     finally:
@@ -173,5 +171,5 @@ def check_nemo_asr_status() -> dict:
     return {
         "nemo_available": NEMO_AVAILABLE,
         "model_path_exists": os.path.exists(NEMO_PATH),
-        "model_loaded": _model is not None,
+        "model_loaded": registry.is_loaded("nemo_soloni"),
     }

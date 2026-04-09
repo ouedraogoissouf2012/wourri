@@ -5,10 +5,13 @@ Charge le JSON une seule fois, fournit des lookups rapides.
 Gère la normalisation des tons pour le matching ASR.
 """
 import json
+import logging
 import os
 import unicodedata
 from typing import Optional
 from .interfaces import IDictionaryRepository, DictionaryEntry, Direction
+
+logger = logging.getLogger(__name__)
 
 
 def strip_tones(text: str) -> str:
@@ -101,7 +104,7 @@ class DictionaryRepository(IDictionaryRepository):
         """Charge le dictionnaire de mots"""
         dict_path = os.path.join(self._dir, "bambara_francais.json")
         if not os.path.exists(dict_path):
-            print(f"[DictRepo] Fichier dictionnaire non trouvé: {dict_path}")
+            logger.warning(f"[DictRepo] Fichier dictionnaire non trouvé: {dict_path}")
             return
 
         with open(dict_path, "r", encoding="utf-8") as f:
@@ -169,7 +172,7 @@ class DictionaryRepository(IDictionaryRepository):
         self._stats["total_mots"] = len(self._words_bam_fr)
         self._stats["total_mots_notone"] = len(self._words_bam_fr_notone)
         self._stats["total_patterns"] = len(self._patterns_bam_fr) + len(self._patterns_fr_bam)
-        print(f"[DictRepo] {len(self._words_bam_fr)} mots BAM->FR ({len(self._words_bam_fr_notone)} sans tons), {len(self._words_fr_bam)} mots FR->BAM, {self._stats['total_patterns']} patterns")
+        logger.info(f"[DictRepo] {len(self._words_bam_fr)} mots BAM->FR ({len(self._words_bam_fr_notone)} sans tons), {len(self._words_fr_bam)} mots FR->BAM, {self._stats['total_patterns']} patterns")
 
     def _load_phrases(self):
         """Charge les phrases parallèles"""
@@ -192,7 +195,7 @@ class DictionaryRepository(IDictionaryRepository):
                 self._phrases_fr_bam[fr.lower()] = entry.get("bam", "")
 
         self._stats["total_phrases"] = len(self._phrases_bam_fr)
-        print(f"[DictRepo] {len(self._phrases_bam_fr)} phrases parallèles chargées")
+        logger.info(f"[DictRepo] {len(self._phrases_bam_fr)} phrases parallèles chargées")
 
     def lookup_word(self, word: str, direction: Direction) -> Optional[DictionaryEntry]:
         self._ensure_loaded()

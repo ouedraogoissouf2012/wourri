@@ -7,7 +7,10 @@ import uuid
 import os
 import re
 import subprocess
+import logging
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 from app.services._ffmpeg import get_ffmpeg
 
 settings = get_settings()
@@ -109,13 +112,13 @@ async def synthesize_french(text: str) -> str | None:
                     return f"/static/audio/{ogg_filename}"
 
             except Exception as conv_err:
-                print(f"Erreur conversion ffmpeg: {conv_err}")
+                logger.error(f"Erreur conversion ffmpeg: {conv_err}")
                 # Fallback: retourner le WAV si conversion échoue
                 if os.path.exists(wav_filepath):
                     return f"/static/audio/{wav_filename}"
 
     except Exception as e:
-        print(f"Erreur TTS français Piper: {e}")
+        logger.error(f"Erreur TTS français Piper: {e}")
 
     return None
 

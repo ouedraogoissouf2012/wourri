@@ -6,12 +6,15 @@ Complémentaire à NeMo Soloni : utilisé en second passage quand NeMo
 ne détecte pas de mots-clés agricoles attendus.
 """
 import asyncio
+import logging
 import os
 import uuid
 import subprocess
 import tempfile
 from typing import Optional
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 ADAPTER_PATH = Path(__file__).parent.parent.parent / "modeles_manuels" / "mms-dioula-adapter"
 TEMP_DIR = os.getenv("MMS_TEMP_DIR", os.path.join(tempfile.gettempdir(), "mms_dyu_temp"))
@@ -24,38 +27,34 @@ try:
     torch = _torch
     MMS_DYU_AVAILABLE = True
 except ImportError:
-    print("[ASR-MMS-DYU] torch non disponible")
+    logger.warning("[ASR-MMS-DYU] torch non disponible")
 
-_model = None
-_processor = None
+from app.services.model_registry import registry
 
 
 def get_mms_dyu_model():
-    """Charge le modèle MMS-dyu fine-tuné (lazy loading, singleton)."""
-    global _model, _processor
-
+    """Charge le modèle MMS-dyu fine-tuné (lazy loading, via ModelRegistry)."""
     if not MMS_DYU_AVAILABLE:
         return None, None
 
-    if _model is not None:
-        return _model, _processor
-
     if not ADAPTER_PATH.exists():
-        print(f"[ASR-MMS-DYU] Adapter non trouvé: {ADAPTER_PATH}")
+        logger.warning(f"[ASR-MMS-DYU] Adapter non trouvé: {ADAPTER_PATH}")
         return None, None
 
-    try:
+    def _load():
         from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
-        print("[ASR-MMS-DYU] Chargement adapter MMS-dyu fine-tuné...")
-        _model = Wav2Vec2ForCTC.from_pretrained(str(ADAPTER_PATH))
-        _processor = Wav2Vec2Processor.from_pretrained(str(ADAPTER_PATH))
-        _model.eval()
-        print("[ASR-MMS-DYU] Adapter chargé!")
-        return _model, _processor
+        logger.info("[ASR-MMS-DYU] Chargement adapter MMS-dyu fine-tuné...")
+        model = Wav2Vec2ForCTC.from_pretrained(str(ADAPTER_PATH))
+        processor = Wav2Vec2Processor.from_pretrained(str(ADAPTER_PATH))
+        model.eval()
+        logger.info("[ASR-MMS-DYU] Adapter chargé!")
+        return (model, processor)
 
+    try:
+        return registry.get("mms_dyu", loader=_load)
     except Exception as e:
-        print(f"[ASR-MMS-DYU] Erreur chargement: {e}")
+        logger.error(f"[ASR-MMS-DYU] Erreur chargement: {e}")
         return None, None
 
 
@@ -78,7 +77,7 @@ def transcribe_wav_mms(wav_path: str) -> Optional[str]:
         return transcription.strip()
 
     except Exception as e:
-        print(f"[ASR-MMS-DYU] Erreur transcription: {e}")
+        logger.error(f"[ASR-MMS-DYU] Erreur transcription: {e}")
         return None
 
 
@@ -105,15 +104,15 @@ async def transcribe_dioula_mms(audio_bytes: bytes, file_extension: str = "ogg")
             ]
             result = subprocess.run(cmd, capture_output=True, timeout=30)
             if result.returncode != 0 or not os.path.exists(wav_path):
-                print("[ASR-MMS-DYU] Échec conversion WAV")
+                logger.error("[ASR-MMS-DYU] Échec conversion WAV")
                 return None
         except Exception as e:
-            print(f"[ASR-MMS-DYU] Erreur ffmpeg: {e}")
+            logger.error(f"[ASR-MMS-DYU] Erreur ffmpeg: {e}")
             return None
 
         transcription = await asyncio.to_thread(transcribe_wav_mms, wav_path)
         if transcription:
-            print(f"[ASR-MMS-DYU] Transcription: '{transcription}'")
+            logger.info(f"[ASR-MMS-DYU] Transcription: '{transcription}'")
         return transcription
 
     finally:
@@ -130,5 +129,5 @@ def check_mms_dyu_status() -> dict:
         "available": MMS_DYU_AVAILABLE,
         "adapter_path": str(ADAPTER_PATH),
         "adapter_exists": ADAPTER_PATH.exists(),
-        "model_loaded": _model is not None,
+        "model_loaded": registry.is_loaded("mms_dyu"),
     }

@@ -1,10 +1,14 @@
 """
 WOURI - Routes Speech-to-Text (Whisper)
 """
+import logging
+
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from app.services import stt_whisper
 from app.services.deepseek import correct_stt_transcription
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/stt", tags=["Speech-to-Text"])
 
@@ -32,8 +36,11 @@ async def transcribe_audio(
     if not audio_bytes:
         raise HTTPException(status_code=400, detail="Fichier audio vide")
 
+    if len(audio_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Fichier audio trop volumineux (max 10 MB)")
+
     # Transcrire
-    print(f"[STT] Transcription demandee: {len(audio_bytes)} bytes, langue={language}, fichier={audio.filename}")
+    logger.info(f"[STT] Transcription demandee: {len(audio_bytes)} bytes, langue={language}, fichier={audio.filename}")
 
     try:
         result = await stt_whisper.transcribe_audio_bytes(
@@ -42,11 +49,11 @@ async def transcribe_audio(
             language=language
         )
     except Exception as e:
-        print(f"[STT] Erreur exception: {e}")
+        logger.error(f"[STT] Erreur exception: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur transcription: {str(e)}")
 
     if result is None:
-        print("[STT] Resultat None - transcription echouee")
+        logger.error("[STT] Resultat None - transcription echouee")
         raise HTTPException(status_code=500, detail="Erreur lors de la transcription - resultat vide")
 
     # Correction intelligente via DeepSeek (corrige villes et termes agricoles)
@@ -56,7 +63,7 @@ async def transcribe_audio(
     # Vérifier si l'audio était probablement en Dioula
     likely_dioula = result.get("likely_dioula_input", False)
     if likely_dioula:
-        print(f"[STT] Audio détecté comme Dioula - transcription peut être incorrecte")
+        logger.info(f"[STT] Audio détecté comme Dioula - transcription peut être incorrecte")
 
     return JSONResponse(content={
         "success": True,

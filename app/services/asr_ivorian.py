@@ -4,10 +4,13 @@ Utilise Facebook MMS-1B-ALL pour la reconnaissance vocale
 VERSION: Utilise torchaudio.load() directement
 """
 import asyncio
+import logging
 import os
 import uuid
 import subprocess
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from app.config import get_settings
 from app.services._ffmpeg import get_ffmpeg
@@ -24,17 +27,17 @@ try:
     import torch as _torch
     torch = _torch
     TORCH_AVAILABLE = True
-    print(f"[ASR] torch {torch.__version__} disponible")
+    logger.info(f"[ASR] torch {torch.__version__} disponible")
 except ImportError:
-    print("[ASR] torch non installe - ASR desactive")
+    logger.warning("[ASR] torch non installe - ASR desactive")
 
 try:
     import torchaudio as _torchaudio
     torchaudio = _torchaudio
     TORCHAUDIO_AVAILABLE = True
-    print(f"[ASR] torchaudio {torchaudio.__version__} disponible")
+    logger.info(f"[ASR] torchaudio {torchaudio.__version__} disponible")
 except ImportError:
-    print("[ASR] torchaudio non installe")
+    logger.warning("[ASR] torchaudio non installe")
 
 # Langues ivoiriennes supportees pour ASR
 IVORIAN_ASR_LANGUAGES = {
@@ -48,46 +51,48 @@ IVORIAN_ASR_LANGUAGES = {
     "wob": ("Wobe", "wob"),
 }
 
-# Cache du modele ASR
-_asr_model = None
-_asr_processor = None
+from app.services.model_registry import registry
+
+# Langue courante — sert à détecter un changement de langue et recharger l'adapter
 _current_language = None
 
 
 def get_asr_model(language_code: str = "bam"):
-    """Charge le modele ASR MMS (lazy loading)"""
-    global _asr_model, _asr_processor, _current_language
+    """Charge le modele ASR MMS (lazy loading, via ModelRegistry)"""
+    global _current_language
 
     if not TORCH_AVAILABLE:
-        print("[ASR] torch non disponible")
+        logger.warning("[ASR] torch non disponible")
         return None, None
 
-    # Recharger si la langue change
-    if _asr_model is None or _current_language != language_code:
-        print(f"[ASR] Chargement du modele ASR pour {language_code}...")
+    # Si la langue change, décharger l'ancien modèle pour recharger avec le bon adapter
+    if _current_language is not None and _current_language != language_code:
+        registry.unload("mms_ivorian")
 
-        try:
-            from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
+    def _load():
+        from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
-            model_id = "facebook/mms-1b-all"
+        logger.info(f"[ASR] Chargement du modele ASR pour {language_code}...")
 
-            _asr_processor = Wav2Vec2Processor.from_pretrained(model_id)
-            _asr_model = Wav2Vec2ForCTC.from_pretrained(model_id)
+        model_id = "facebook/mms-1b-all"
 
-            # Configurer la langue cible
-            _asr_processor.tokenizer.set_target_lang(language_code)
-            _asr_model.load_adapter(language_code)
+        processor = Wav2Vec2Processor.from_pretrained(model_id)
+        model = Wav2Vec2ForCTC.from_pretrained(model_id)
 
-            _current_language = language_code
-            print(f"[ASR] Modele charge pour {IVORIAN_ASR_LANGUAGES.get(language_code, (language_code,))[0]}!")
+        # Configurer la langue cible
+        processor.tokenizer.set_target_lang(language_code)
+        model.load_adapter(language_code)
 
-        except Exception as e:
-            print(f"[ASR] Erreur chargement modele: {e}")
-            import traceback
-            traceback.print_exc()
-            return None, None
+        logger.info(f"[ASR] Modele charge pour {IVORIAN_ASR_LANGUAGES.get(language_code, (language_code,))[0]}!")
+        return (model, processor)
 
-    return _asr_model, _asr_processor
+    try:
+        result = registry.get("mms_ivorian", loader=_load)
+        _current_language = language_code
+        return result
+    except Exception as e:
+        logger.error(f"[ASR] Erreur chargement modele: {e}", exc_info=True)
+        return None, None
 
 
 def convert_to_wav_16k(input_path: str, output_path: str) -> bool:
@@ -95,7 +100,7 @@ def convert_to_wav_16k(input_path: str, output_path: str) -> bool:
     try:
         ffmpeg_path = get_ffmpeg()
     except RuntimeError as e:
-        print(f"[ASR] {e}")
+        logger.error(f"[ASR] {e}")
         return False
 
     try:
@@ -108,14 +113,14 @@ def convert_to_wav_16k(input_path: str, output_path: str) -> bool:
         ]
         result = subprocess.run(cmd, capture_output=True, timeout=30)
         if result.returncode == 0 and os.path.exists(output_path):
-            print(f"[ASR] Converti en WAV 16kHz: {output_path}")
+            logger.info(f"[ASR] Converti en WAV 16kHz: {output_path}")
             return True
         else:
             stderr = result.stderr.decode() if result.stderr else 'Unknown error'
-            print(f"[ASR] Erreur ffmpeg: {stderr[:200]}")
+            logger.error(f"[ASR] Erreur ffmpeg: {stderr[:200]}")
             return False
     except Exception as e:
-        print(f"[ASR] Erreur conversion: {e}")
+        logger.error(f"[ASR] Erreur conversion: {e}")
         return False
 
 
@@ -124,32 +129,32 @@ def load_audio_wav(audio_path: str):
     try:
         # Methode 1: Utiliser torchaudio si disponible
         if TORCHAUDIO_AVAILABLE:
-            print(f"[ASR] Chargement avec torchaudio: {audio_path}")
+            logger.info(f"[ASR] Chargement avec torchaudio: {audio_path}")
             waveform, sample_rate = torchaudio.load(audio_path)
             # Convertir en numpy
             waveform = waveform.squeeze().numpy()
             return waveform, sample_rate
     except Exception as e:
-        print(f"[ASR] Erreur torchaudio: {e}")
+        logger.error(f"[ASR] Erreur torchaudio: {e}")
 
     # Methode 2: Utiliser soundfile comme fallback
     try:
         import soundfile as sf
-        print(f"[ASR] Chargement avec soundfile: {audio_path}")
+        logger.info(f"[ASR] Chargement avec soundfile: {audio_path}")
         waveform, sample_rate = sf.read(audio_path, dtype='float32')
         return waveform, sample_rate
     except Exception as e:
-        print(f"[ASR] Erreur soundfile: {e}")
+        logger.error(f"[ASR] Erreur soundfile: {e}")
 
     # Methode 3: Utiliser scipy comme dernier recours
     try:
         from scipy.io import wavfile
-        print(f"[ASR] Chargement avec scipy: {audio_path}")
+        logger.info(f"[ASR] Chargement avec scipy: {audio_path}")
         sample_rate, waveform = wavfile.read(audio_path)
         waveform = waveform.astype('float32') / 32768.0  # Normaliser
         return waveform, sample_rate
     except Exception as e:
-        print(f"[ASR] Erreur scipy: {e}")
+        logger.error(f"[ASR] Erreur scipy: {e}")
 
     return None, None
 
@@ -157,31 +162,31 @@ def load_audio_wav(audio_path: str):
 def transcribe_audio(audio_path: str, language_code: str = "bam") -> Optional[str]:
     """Transcrit un fichier audio WAV en texte"""
     if not TORCH_AVAILABLE:
-        print("[ASR] torch non disponible")
+        logger.warning("[ASR] torch non disponible")
         return None
 
     if language_code not in IVORIAN_ASR_LANGUAGES:
-        print(f"[ASR] Langue {language_code} non supportee")
+        logger.warning(f"[ASR] Langue {language_code} non supportee")
         return None
 
     if not os.path.exists(audio_path):
-        print(f"[ASR] Fichier non trouve: {audio_path}")
+        logger.error(f"[ASR] Fichier non trouve: {audio_path}")
         return None
 
     try:
         # Charger le modele
         model, processor = get_asr_model(language_code)
         if model is None or processor is None:
-            print("[ASR] Modele non charge")
+            logger.error("[ASR] Modele non charge")
             return None
 
         # Charger l'audio
         waveform, sample_rate = load_audio_wav(audio_path)
         if waveform is None:
-            print("[ASR] Impossible de charger l'audio")
+            logger.error("[ASR] Impossible de charger l'audio")
             return None
 
-        print(f"[ASR] Audio: {len(waveform)} samples, {sample_rate}Hz")
+        logger.info(f"[ASR] Audio: {len(waveform)} samples, {sample_rate}Hz")
 
         # Resampler si necessaire (MMS requiert 16kHz)
         if sample_rate != 16000:
@@ -189,7 +194,7 @@ def transcribe_audio(audio_path: str, language_code: str = "bam") -> Optional[st
             import numpy as np
             num_samples = int(len(waveform) * 16000 / sample_rate)
             waveform = signal.resample(waveform, num_samples).astype(np.float32)
-            print(f"[ASR] Resample {sample_rate}Hz -> 16000Hz")
+            logger.info(f"[ASR] Resample {sample_rate}Hz -> 16000Hz")
 
         # Preparer les inputs pour le modele
         inputs = processor(
@@ -199,7 +204,7 @@ def transcribe_audio(audio_path: str, language_code: str = "bam") -> Optional[st
         )
 
         # Inference
-        print("[ASR] Inference...")
+        logger.info("[ASR] Inference...")
         with torch.no_grad():
             logits = model(**inputs).logits
 
@@ -207,13 +212,11 @@ def transcribe_audio(audio_path: str, language_code: str = "bam") -> Optional[st
         predicted_ids = torch.argmax(logits, dim=-1)[0]
         transcription = processor.decode(predicted_ids)
 
-        print(f"[ASR] Transcription: '{transcription}'")
+        logger.info(f"[ASR] Transcription: '{transcription}'")
         return transcription.strip()
 
     except Exception as e:
-        print(f"[ASR] Erreur transcription: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"[ASR] Erreur transcription: {e}", exc_info=True)
         return None
 
 
@@ -221,7 +224,7 @@ async def transcribe_audio_bytes(audio_bytes: bytes, language_code: str = "bam",
                                   file_extension: str = "ogg") -> Optional[str]:
     """Transcrit des bytes audio en texte"""
     if not TORCH_AVAILABLE:
-        print("[ASR] torch non disponible")
+        logger.warning("[ASR] torch non disponible")
         return None
 
     # Creer dossier temporaire
@@ -236,11 +239,11 @@ async def transcribe_audio_bytes(audio_bytes: bytes, language_code: str = "bam",
         # Sauvegarder le fichier audio
         with open(temp_path, "wb") as f:
             f.write(audio_bytes)
-        print(f"[ASR] Audio sauvegarde: {temp_path} ({len(audio_bytes)} bytes)")
+        logger.info(f"[ASR] Audio sauvegarde: {temp_path} ({len(audio_bytes)} bytes)")
 
         # Toujours convertir en WAV 16kHz avec ffmpeg
         if not convert_to_wav_16k(temp_path, wav_path):
-            print("[ASR] Echec conversion WAV")
+            logger.error("[ASR] Echec conversion WAV")
             return None
 
         # Inférence ML dans un thread séparé pour ne pas bloquer asyncio
@@ -267,7 +270,7 @@ def check_asr_status() -> dict:
     return {
         "torch_available": TORCH_AVAILABLE,
         "torchaudio_available": TORCHAUDIO_AVAILABLE,
-        "model_loaded": _asr_model is not None,
+        "model_loaded": registry.is_loaded("mms_ivorian"),
         "current_language": _current_language,
         "supported_languages": list(IVORIAN_ASR_LANGUAGES.keys())
     }

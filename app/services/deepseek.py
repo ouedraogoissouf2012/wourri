@@ -1,7 +1,10 @@
 """
 WOURI - Service Chat (DeepSeek API)
 """
+import logging
 import httpx
+
+logger = logging.getLogger(__name__)
 from app.config import get_settings
 from app.models.schemas import Language
 from app.services.conversation_history import get_history_for_deepseek, add_message
@@ -96,7 +99,7 @@ LANGUE: Réponds en français clair et accessible.
         history = get_history_for_deepseek(user_id, max_messages=6)
         if history:
             messages.extend(history)
-            print(f"[DeepSeek] Historique chargé: {len(history)} messages pour {user_id[:15]}...")
+            logger.info(f"[DeepSeek] Historique chargé: {len(history)} messages pour {user_id[:15]}...")
 
     # Ajouter le message actuel
     messages.append({"role": "user", "content": message})
@@ -133,14 +136,14 @@ LANGUE: Réponds en français clair et accessible.
 
                 return response_text
             else:
-                print(f"[DeepSeek] Erreur API: {response.status_code}")
+                logger.error(f"[DeepSeek] Erreur API: {response.status_code}")
                 return f"Erreur API: {response.status_code} - {response.text}"
 
     except httpx.TimeoutException:
-        print("[DeepSeek] Timeout après 20s")
+        logger.warning("[DeepSeek] Timeout après 20s")
         return "Désolé, le service met trop de temps à répondre. Réessayez."
     except Exception as e:
-        print(f"[DeepSeek] Erreur: {e}")
+        logger.error(f"[DeepSeek] Erreur: {e}")
         return f"Erreur: {str(e)}"
 
 
@@ -163,7 +166,7 @@ async def correct_stt_transcription(raw_text: str) -> str:
         return raw_text
 
     if not settings.deepseek_api_key:
-        print("[STT Correction] Pas de clé DeepSeek, retour texte brut")
+        logger.warning("[STT Correction] Pas de clé DeepSeek, retour texte brut")
         return raw_text
 
     # Prompt spécialisé pour la correction STT
@@ -230,17 +233,17 @@ RÈGLES STRICTES:
                 if corrected.startswith("'") and corrected.endswith("'"):
                     corrected = corrected[1:-1]
 
-                print(f"[STT Correction] '{raw_text}' → '{corrected}'")
+                logger.info(f"[STT Correction] '{raw_text}' → '{corrected}'")
                 return corrected
             else:
-                print(f"[STT Correction] Erreur API: {response.status_code}")
+                logger.error(f"[STT Correction] Erreur API: {response.status_code}")
                 return raw_text
 
     except httpx.TimeoutException:
-        print("[STT Correction] Timeout, retour texte brut")
+        logger.warning("[STT Correction] Timeout, retour texte brut")
         return raw_text
     except Exception as e:
-        print(f"[STT Correction] Erreur: {e}")
+        logger.error(f"[STT Correction] Erreur: {e}")
         return raw_text
 
 

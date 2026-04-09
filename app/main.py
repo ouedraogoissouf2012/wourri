@@ -2,6 +2,8 @@
 WOURI - Application FastAPI
 Assistant agricole intelligent pour la Côte d'Ivoire
 """
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -11,6 +13,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 import os
 
+from app.core.logging_config import setup_logging
 from app.config import get_settings
 from app.routers import weather, chat, tts, stt, rag, asr, feedback
 from app.services.deepseek import check_deepseek_status
@@ -20,105 +23,112 @@ from app.services.rag_knowledge import check_rag_status
 from app.data.cities import get_all_cities
 
 settings = get_settings()
+setup_logging(
+    log_level="DEBUG" if settings.debug else "INFO",
+    log_dir=os.path.join(os.path.dirname(__file__), "..", "logs"),
+)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestion du cycle de vie de l'application"""
-    print("=" * 50)
-    print("WOURI - Démarrage")
-    print("=" * 50)
-    print(f"Version: {settings.app_version}")
-    print(f"Debug: {settings.debug}")
-    print(f"Villes disponibles: {len(get_all_cities())}")
-    print("=" * 50)
+    logger.info("=" * 50)
+    logger.info("WOURI - Démarrage")
+    logger.info("=" * 50)
+    logger.info("Version: %s", settings.app_version)
+    logger.info("Debug: %s", settings.debug)
+    logger.info("Villes disponibles: %d", len(get_all_cities()))
+    logger.info("=" * 50)
 
     # 0. Précharger le service NLU (JSON seulement, très rapide ~10ms)
     try:
         from app.services.nlu import get_nlu_service
-        print("[PRELOAD] Chargement NLU (lexique concepts bambara)...")
+        logger.info("[PRELOAD] Chargement NLU (lexique concepts bambara)...")
         nlu = get_nlu_service()
         if nlu:
             stats = nlu.get_stats()
-            print(f"[PRELOAD] NLU: OK ({stats['total_concepts']} concepts, {stats['total_keywords']} mots-clés)")
+            logger.info("[PRELOAD] NLU: OK (%d concepts, %d mots-clés)", stats['total_concepts'], stats['total_keywords'])
         else:
-            print("[PRELOAD] NLU: désactivé (fichier nlu_concepts.json non trouvé)")
+            logger.warning("[PRELOAD] NLU: désactivé (fichier nlu_concepts.json non trouvé)")
     except Exception as e:
-        print(f"[PRELOAD] NLU: ERREUR - {e}")
+        logger.error("[PRELOAD] NLU: ERREUR - %s", e)
 
     # 1. Précharger ASR NeMo Soloni (decodeur TDT complet, bambara)
     try:
         from app.services.asr_soloni_nemo import get_nemo_model
-        print("[PRELOAD] Chargement ASR NeMo Soloni (TDT, bambara)...")
+        logger.info("[PRELOAD] Chargement ASR NeMo Soloni (TDT, bambara)...")
         get_nemo_model()
-        print("[PRELOAD] ASR NeMo Soloni: OK")
+        logger.info("[PRELOAD] ASR NeMo Soloni: OK")
     except Exception as e:
-        print(f"[PRELOAD] ASR NeMo Soloni: ERREUR - {e}")
+        logger.error("[PRELOAD] ASR NeMo Soloni: ERREUR - %s", e)
 
     # 2. Précharger le TranslationService (dictionnaire + NLLB)
     try:
         from app.services.translation import get_translation_service
-        print("[PRELOAD] Chargement du TranslationService (dictionnaire)...")
+        logger.info("[PRELOAD] Chargement du TranslationService (dictionnaire)...")
         service = get_translation_service()
         stats = service.get_stats()
-        print(f"[PRELOAD] Dictionnaire: OK ({stats['dictionnaire']['total_mots']} mots)")
-        print("[PRELOAD] Chargement de NLLB-200 (traduction FR<->BAM)...")
+        logger.info("[PRELOAD] Dictionnaire: OK (%d mots)", stats['dictionnaire']['total_mots'])
+        logger.info("[PRELOAD] Chargement de NLLB-200 (traduction FR<->BAM)...")
         service.preload_nllb()
     except Exception as e:
-        print(f"[PRELOAD] TranslationService: ERREUR - {e}")
+        logger.error("[PRELOAD] TranslationService: ERREUR - %s", e)
 
     # 3. Précharger TTS Bambara
     try:
         from app.services.tts_bambara import get_tts_model
-        print("[PRELOAD] Chargement du TTS Bambara (mms-tts-bam)...")
+        logger.info("[PRELOAD] Chargement du TTS Bambara (mms-tts-bam)...")
         get_tts_model()
-        print("[PRELOAD] TTS Bambara: OK")
+        logger.info("[PRELOAD] TTS Bambara: OK")
     except Exception as e:
-        print(f"[PRELOAD] TTS Bambara: ERREUR - {e}")
+        logger.error("[PRELOAD] TTS Bambara: ERREUR - %s", e)
 
     # 3b. Précharger TTS Dioula (voix ivoirienne pour utilisateurs en mode dioula)
     try:
         from app.services.tts_dioula import get_tts_model_dioula
-        print("[PRELOAD] Chargement du TTS Dioula (mms-tts-dyu)...")
+        logger.info("[PRELOAD] Chargement du TTS Dioula (mms-tts-dyu)...")
         get_tts_model_dioula()
-        print("[PRELOAD] TTS Dioula: OK")
+        logger.info("[PRELOAD] TTS Dioula: OK")
     except Exception as e:
-        print(f"[PRELOAD] TTS Dioula: ERREUR - {e}")
+        logger.error("[PRELOAD] TTS Dioula: ERREUR - %s", e)
 
     # 4. Précharger Whisper (STT français)
     try:
         from app.services.stt_whisper import get_whisper_model
-        print("[PRELOAD] Chargement de Faster-Whisper (large-v3-turbo)...")
+        logger.info("[PRELOAD] Chargement de Faster-Whisper (large-v3-turbo)...")
         get_whisper_model()
-        print("[PRELOAD] Whisper: OK")
+        logger.info("[PRELOAD] Whisper: OK")
     except Exception as e:
-        print(f"[PRELOAD] Whisper: ERREUR - {e}")
+        logger.error("[PRELOAD] Whisper: ERREUR - %s", e)
 
     # 5. Pré-initialiser la BD vectorielle IVR (Chroma + corpus bambara)
     try:
         from app.services.vdb_service import initialiser_vdb
-        print("[PRELOAD] Initialisation BD vectorielle IVR (corpus bambara pré-validé)...")
+        logger.info("[PRELOAD] Initialisation BD vectorielle IVR (corpus bambara pré-validé)...")
         initialiser_vdb()
     except Exception as e:
-        print(f"[PRELOAD] BD vectorielle IVR: ERREUR - {e}")
+        logger.error("[PRELOAD] BD vectorielle IVR: ERREUR - %s", e)
 
     # 6. Démarrer le nettoyage automatique des fichiers audio
     try:
         from app.services.audio_cleanup import start_cleanup_scheduler
         start_cleanup_scheduler()
-        print("[PRELOAD] Nettoyage audio: OK (fichiers > 7j supprimés automatiquement)")
+        logger.info("[PRELOAD] Nettoyage audio: OK (fichiers > 7j supprimés automatiquement)")
     except Exception as e:
-        print(f"[PRELOAD] Nettoyage audio: ERREUR - {e}")
+        logger.error("[PRELOAD] Nettoyage audio: ERREUR - %s", e)
 
-    print("\n[PRELOAD] Tous les modeles charges!")
-    print("=" * 50)
+    logger.info("[PRELOAD] Tous les modeles charges!")
+    logger.info("=" * 50)
 
     yield
 
     # Arrêt propre
     from app.services.audio_cleanup import stop_cleanup_scheduler
+    from app.services.model_registry import registry
     stop_cleanup_scheduler()
-    print("WOURI - Arrêt")
+    registry.unload_all()
+    logger.info("WOURI - Arrêt")
 
 
 # Créer l'application FastAPI

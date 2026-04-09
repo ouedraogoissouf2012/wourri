@@ -15,8 +15,11 @@ Pipeline:
     ↓ Si score >= 0.4 → retourner texte bambara
       Sinon → fallback NLLB
 """
+import logging
 import httpx
 from typing import Optional, Dict, Tuple
+
+logger = logging.getLogger(__name__)
 
 # Mots français à ignorer lors de l'extraction des ancres (stop words)
 _FR_STOP_WORDS = {
@@ -175,7 +178,7 @@ async def translate_fr_to_bambara_deepseek(
         candidates = extract_anchor_candidates(french_text)
         anchors = build_anchors(candidates, fr_to_bam_index)
         if anchors:
-            print(f"[DeepSeek Trad] Ancres: {anchors}")
+            logger.info(f"[DeepSeek Trad] Ancres: {anchors}")
 
     prompt = build_deepseek_translation_prompt(french_text, anchors)
 
@@ -198,7 +201,7 @@ async def translate_fr_to_bambara_deepseek(
             response = await client.post(url, headers=headers, json=payload)
 
         if response.status_code != 200:
-            print(f"[DeepSeek Trad] Erreur API: {response.status_code}")
+            logger.error(f"[DeepSeek Trad] Erreur API: {response.status_code}")
             return None, 0.0
 
         data = response.json()
@@ -208,14 +211,14 @@ async def translate_fr_to_bambara_deepseek(
         if bambara_text.startswith('"') and bambara_text.endswith('"'):
             bambara_text = bambara_text[1:-1]
 
-        print(f"[DeepSeek Trad] FR: '{french_text[:50]}' → BAM: '{bambara_text[:60]}'")
+        logger.info(f"[DeepSeek Trad] FR: '{french_text[:50]}' → BAM: '{bambara_text[:60]}'")
         return bambara_text, 0.6  # Confiance de base sans back-translation
 
     except httpx.TimeoutException:
-        print("[DeepSeek Trad] Timeout")
+        logger.warning("[DeepSeek Trad] Timeout")
         return None, 0.0
     except Exception as e:
-        print(f"[DeepSeek Trad] Erreur: {e}")
+        logger.error(f"[DeepSeek Trad] Erreur: {e}")
         return None, 0.0
 
 
@@ -247,14 +250,14 @@ async def translate_fr_to_bambara_with_validation(
         back_fr = svc.translate(bambara_result, Direction.BAM_TO_FR).text
         back_score = score_back_translation(french_text, back_fr)
         final_conf = (base_conf + back_score) / 2.0
-        print(f"[DeepSeek Trad] Back-trad: '{back_fr[:50]}' → score={back_score:.2f}, conf_finale={final_conf:.2f}")
+        logger.info(f"[DeepSeek Trad] Back-trad: '{back_fr[:50]}' → score={back_score:.2f}, conf_finale={final_conf:.2f}")
 
         if final_conf >= 0.35:
             return bambara_result, final_conf, "deepseek+anchors+backval"
         else:
-            print(f"[DeepSeek Trad] Score trop bas ({final_conf:.2f}) → fallback NLLB")
+            logger.warning(f"[DeepSeek Trad] Score trop bas ({final_conf:.2f}) → fallback NLLB")
             return french_text, 0.0, "passthrough"
     except Exception as e:
-        print(f"[DeepSeek Trad] Back-translation échouée: {e}")
+        logger.error(f"[DeepSeek Trad] Back-translation échouée: {e}")
         # Retourner quand même la traduction DeepSeek sans validation
         return bambara_result, base_conf * 0.7, "deepseek+anchors"

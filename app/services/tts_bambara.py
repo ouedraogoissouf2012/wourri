@@ -13,7 +13,10 @@ import uuid
 import os
 import re
 import subprocess
+import logging
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -38,37 +41,36 @@ try:
     wav = _wav
     TORCH_AVAILABLE = True
 except ImportError:
-    print("INFO: torch non installé - TTS Bambara désactivé")
-    print("Pour activer: pip install torch transformers scipy")
+    logger.info("torch non installé - TTS Bambara désactivé")
+    logger.info("Pour activer: pip install torch transformers scipy")
 
-# Cache des modèles TTS
-_tts_model = None
-_tts_tokenizer = None
+from app.services.model_registry import registry
+
+
+def _load_tts_bambara():
+    """Charge le modele TTS Bambara (model, tokenizer)."""
+    logger.info("Chargement du modele TTS Bambara...")
+    from transformers import VitsModel, AutoTokenizer
+
+    # Utiliser le modele local s'il existe
+    if os.path.exists(TTS_MODEL_PATH) and os.path.exists(os.path.join(TTS_MODEL_PATH, "model.safetensors")):
+        logger.info(f"Utilisation du modele local: {TTS_MODEL_PATH}")
+        model = VitsModel.from_pretrained(TTS_MODEL_PATH)
+        tokenizer = AutoTokenizer.from_pretrained(TTS_MODEL_PATH)
+    else:
+        logger.info("Telechargement depuis HuggingFace...")
+        model = VitsModel.from_pretrained(settings.hf_tts_model)
+        tokenizer = AutoTokenizer.from_pretrained(settings.hf_tts_model)
+    logger.info("Modele TTS Bambara charge!")
+    return model, tokenizer
 
 
 def get_tts_model():
-    """Charge le modele TTS Bambara (lazy loading)"""
-    global _tts_model, _tts_tokenizer
-
+    """Charge le modele TTS Bambara (lazy loading via ModelRegistry)"""
     if not TORCH_AVAILABLE:
         return None, None
 
-    if _tts_model is None:
-        print("Chargement du modele TTS Bambara...")
-        from transformers import VitsModel, AutoTokenizer
-
-        # Utiliser le modele local s'il existe
-        if os.path.exists(TTS_MODEL_PATH) and os.path.exists(os.path.join(TTS_MODEL_PATH, "model.safetensors")):
-            print(f"Utilisation du modele local: {TTS_MODEL_PATH}")
-            _tts_model = VitsModel.from_pretrained(TTS_MODEL_PATH)
-            _tts_tokenizer = AutoTokenizer.from_pretrained(TTS_MODEL_PATH)
-        else:
-            print("Telechargement depuis HuggingFace...")
-            _tts_model = VitsModel.from_pretrained(settings.hf_tts_model)
-            _tts_tokenizer = AutoTokenizer.from_pretrained(settings.hf_tts_model)
-        print("Modele TTS Bambara charge!")
-
-    return _tts_model, _tts_tokenizer
+    return registry.get("tts_bambara", loader=_load_tts_bambara)
 
 
 # Noms de villes ivoiriennes à ne PAS traduire (NLLB les déforme)
@@ -342,7 +344,7 @@ def translate_to_bambara(french_text: str) -> str:
     # Protéger les noms de villes
     protected_text, city_map = protect_city_names(remaining_text)
     if city_map:
-        print(f"[Traduction] Villes protégées: {list(city_map.values())}")
+        logger.info(f"[Traduction] Villes protégées: {list(city_map.values())}")
 
     # Prétraitement
     preprocessed = preprocess_french_text(protected_text)
@@ -387,9 +389,9 @@ def translate_to_bambara(french_text: str) -> str:
         result = f"{greeting_bam} {result}"
 
     try:
-        print(f"[Bambara] Traduit: {len(french_text)} chars -> {len(result)} chars")
+        logger.info(f"[Bambara] Traduit: {len(french_text)} chars -> {len(result)} chars")
     except UnicodeEncodeError:
-        print("[Bambara] Traduction effectuee")
+        logger.info("[Bambara] Traduction effectuee")
 
     return result
 
@@ -515,10 +517,10 @@ def convert_wav_to_ogg(wav_path: str, ogg_path: str) -> bool:
             os.remove(wav_path)
         except OSError:
             pass
-        print("Conversion WAV -> OGG reussie avec pydub")
+        logger.info("Conversion WAV -> OGG reussie avec pydub")
         return True
     except Exception as e:
-        print(f"Erreur pydub: {e}")
+        logger.error(f"Erreur pydub: {e}")
 
     return False
 
@@ -559,11 +561,11 @@ def synthesize_bambara_text(bambara_text: str) -> str | None:
 
         # Fallback: retourner le WAV si conversion echoue
         if os.path.exists(wav_filepath) and os.path.getsize(wav_filepath) > 0:
-            print("Fallback: utilisation du fichier WAV")
+            logger.warning("Fallback: utilisation du fichier WAV")
             return f"/static/audio/{wav_filename}"
 
     except Exception as e:
-        print(f"Erreur TTS Bambara: {e}")
+        logger.error(f"Erreur TTS Bambara: {e}")
 
     return None
 
@@ -577,18 +579,18 @@ async def synthesize_bambara(french_text: str) -> tuple[str | None, str | None]:
         bambara_text = translate_to_bambara(french_text)
         # Utiliser encode/decode pour éviter les erreurs d'encodage Windows
         try:
-            print(f"Traduction: {french_text} -> {bambara_text}")
+            logger.info(f"Traduction: {french_text} -> {bambara_text}")
         except UnicodeEncodeError:
-            print(f"Traduction effectuee (caracteres speciaux Bambara)")
+            logger.info(f"Traduction effectuee (caracteres speciaux Bambara)")
 
         audio_url = synthesize_bambara_text(bambara_text)
         return audio_url, bambara_text
 
     except Exception as e:
         try:
-            print(f"Erreur synthese Bambara: {e}")
+            logger.error(f"Erreur synthese Bambara: {e}")
         except UnicodeEncodeError:
-            print("Erreur synthese Bambara (erreur encodage)")
+            logger.error("Erreur synthese Bambara (erreur encodage)")
         return None, None
 
 
@@ -605,7 +607,7 @@ def check_models_status() -> dict:
 
     return {
         "torch_available": TORCH_AVAILABLE,
-        "tts_loaded": _tts_model is not None,
+        "tts_loaded": registry.is_loaded("tts_bambara"),
         "translator_loaded": translator_loaded,
         "tts_model": settings.hf_tts_model,
         "translator_model": settings.hf_translator_model

@@ -3,8 +3,11 @@ WOURI - Service Météo (Open-Meteo)
 100% GRATUIT - Pas de clé API requise
 Avec cache pour réduire les appels API
 """
+import logging
 import httpx
 import time
+
+logger = logging.getLogger(__name__)
 from app.data.cities import get_city, get_all_cities
 from app.config import get_settings
 
@@ -24,10 +27,10 @@ def get_cached_weather(city_name: str) -> dict | None:
         cached = _weather_cache[city_lower]
         age = time.time() - cached["timestamp"]
         if age < CACHE_DURATION:
-            print(f"[MÉTÉO] Cache HIT pour {city_name} (age: {int(age)}s)")
+            logger.info(f"[MÉTÉO] Cache HIT pour {city_name} (age: {int(age)}s)")
             return cached["data"]
         else:
-            print(f"[MÉTÉO] Cache EXPIRÉ pour {city_name} (age: {int(age)}s)")
+            logger.info(f"[MÉTÉO] Cache EXPIRÉ pour {city_name} (age: {int(age)}s)")
     return None
 
 
@@ -38,7 +41,7 @@ def set_cached_weather(city_name: str, data: dict):
         "data": data,
         "timestamp": time.time()
     }
-    print(f"[MÉTÉO] Cache SET pour {city_name}")
+    logger.info(f"[MÉTÉO] Cache SET pour {city_name}")
 
 # Codes météo WMO
 WEATHER_CODES = {
@@ -119,7 +122,7 @@ async def get_weather(city_name: str) -> dict | None:
                 return result
 
     except Exception as e:
-        print(f"[MÉTÉO] Erreur API: {e}")
+        logger.error(f"[MÉTÉO] Erreur API: {e}")
         return None
 
     return None

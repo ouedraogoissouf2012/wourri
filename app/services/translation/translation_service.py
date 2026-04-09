@@ -3,9 +3,12 @@ WOURI - Service de traduction (Orchestrateur)
 Principe: Strategy Pattern + Chain of Responsibility
 Essaie chaque stratégie par priorité jusqu'à obtenir un résultat satisfaisant.
 """
+import logging
 import os
 from typing import Optional
 from .interfaces import ITranslator, TranslationResult, Direction
+
+logger = logging.getLogger(__name__)
 from .dictionary_repository import DictionaryRepository
 from .word_translator import WordTranslator
 from .nllb_translator import NLLBTranslator
@@ -50,7 +53,7 @@ class TranslationService:
         # Trier par priorité
         self._strategies.sort(key=lambda s: s.priority)
         names = [s.name for s in self._strategies]
-        print(f"[TranslationService] Stratégies: {' -> '.join(names)}")
+        logger.info(f"[TranslationService] Stratégies: {' -> '.join(names)}")
 
     def translate(self, text: str, direction: Direction) -> TranslationResult:
         """
@@ -76,7 +79,7 @@ class TranslationService:
                     continue
 
                 log_text = result.text[:60] + "..." if len(result.text) > 60 else result.text
-                print(f"[{strategy.name}] '{text[:40]}' -> '{log_text}' (conf: {result.confidence:.1%})")
+                logger.info(f"[{strategy.name}] '{text[:40]}' -> '{log_text}' (conf: {result.confidence:.1%})")
 
                 # Si confiance haute, on prend directement
                 if result.confidence >= 0.7:
@@ -87,7 +90,7 @@ class TranslationService:
                     best_result = result
 
             except Exception as e:
-                print(f"[{strategy.name}] Erreur: {e}")
+                logger.error(f"[{strategy.name}] Erreur: {e}")
                 continue
 
         # Retourner le meilleur résultat ou le texte original
@@ -117,9 +120,9 @@ class TranslationService:
         if self._nllb:
             success = self._nllb._ensure_loaded()
             if success:
-                print("[PRELOAD] NLLB: OK")
+                logger.info("[PRELOAD] NLLB: OK")
             else:
-                print("[PRELOAD] NLLB: ECHEC (dictionnaire seul sera utilisé)")
+                logger.warning("[PRELOAD] NLLB: ECHEC (dictionnaire seul sera utilisé)")
 
     def get_nllb_model_and_tokenizer(self):
         """Accès NLLB pour compatibilité avec tts_bambara"""

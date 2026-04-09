@@ -13,7 +13,10 @@ Modèles utilisés:
 import uuid
 import os
 import subprocess
+import logging
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -32,29 +35,28 @@ try:
     wav = _wav
     TORCH_AVAILABLE = True
 except ImportError:
-    print("INFO: torch non installé - TTS Dioula désactivé")
+    logger.info("torch non installé - TTS Dioula désactivé")
 
-# Cache du modèle TTS Dioula uniquement (NLLB partagé via TranslationService)
-_tts_model_dioula = None
-_tts_tokenizer_dioula = None
+from app.services.model_registry import registry
+
+
+def _load_tts_dioula():
+    """Charge le modèle TTS Dioula (model, tokenizer)."""
+    logger.info("Chargement du modèle TTS Dioula (mms-tts-dyu)...")
+    from transformers import VitsModel, AutoTokenizer
+
+    model = VitsModel.from_pretrained("facebook/mms-tts-dyu")
+    tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-dyu")
+    logger.info("Modèle TTS Dioula chargé!")
+    return model, tokenizer
 
 
 def get_tts_model_dioula():
-    """Charge le modèle TTS Dioula (lazy loading)"""
-    global _tts_model_dioula, _tts_tokenizer_dioula
-
+    """Charge le modèle TTS Dioula (lazy loading via ModelRegistry)"""
     if not TORCH_AVAILABLE:
         return None, None
 
-    if _tts_model_dioula is None:
-        print("Chargement du modèle TTS Dioula (mms-tts-dyu)...")
-        from transformers import VitsModel, AutoTokenizer
-
-        _tts_model_dioula = VitsModel.from_pretrained("facebook/mms-tts-dyu")
-        _tts_tokenizer_dioula = AutoTokenizer.from_pretrained("facebook/mms-tts-dyu")
-        print("Modèle TTS Dioula chargé!")
-
-    return _tts_model_dioula, _tts_tokenizer_dioula
+    return registry.get("tts_dioula", loader=_load_tts_dioula)
 
 
 def _get_nllb():
@@ -242,7 +244,7 @@ def convert_wav_to_ogg(wav_path: str, ogg_path: str) -> bool:
             pass
         return True
     except Exception as e:
-        print(f"[TTS] Erreur pydub fallback: {e}")
+        logger.error(f"[TTS] Erreur pydub fallback: {e}")
 
     return False
 
@@ -405,7 +407,7 @@ def _synthesize_sentence(sentence: str, model, tokenizer,
             model.config.speaking_rate = original_rate
         return output.squeeze().cpu().numpy()
     except Exception as e:
-        print(f"[TTS] Erreur synthèse '{sentence[:40]}': {e}")
+        logger.error(f"[TTS] Erreur synthèse '{sentence[:40]}': {e}")
         return None
 
 
@@ -472,7 +474,7 @@ def synthesize_dioula_text(dioula_text: str) -> str | None:
             return f"/static/audio/{wav_filename}"
 
     except Exception as e:
-        print(f"Erreur TTS Dioula: {e}")
+        logger.error(f"Erreur TTS Dioula: {e}")
 
     return None
 
@@ -485,15 +487,15 @@ async def synthesize_dioula(french_text: str) -> tuple[str | None, str | None]:
     try:
         dioula_text = translate_to_dioula(french_text)
         try:
-            print(f"Traduction Dioula: {french_text[:50]}... -> {dioula_text[:50]}...")
+            logger.info(f"Traduction Dioula: {french_text[:50]}... -> {dioula_text[:50]}...")
         except UnicodeEncodeError:
-            print("Traduction Dioula effectuée")
+            logger.info("Traduction Dioula effectuée")
 
         audio_url = synthesize_dioula_text(dioula_text)
         return audio_url, dioula_text
 
     except Exception as e:
-        print(f"Erreur synthèse Dioula: {e}")
+        logger.error(f"Erreur synthèse Dioula: {e}")
         return None, None
 
 
@@ -503,7 +505,7 @@ def check_dioula_status() -> dict:
     nllb_model, _ = get_translation_service().get_nllb_model_and_tokenizer()
     return {
         "torch_available": TORCH_AVAILABLE,
-        "tts_loaded": _tts_model_dioula is not None,
+        "tts_loaded": registry.is_loaded("tts_dioula"),
         "translator_loaded": nllb_model is not None,
         "tts_model": "facebook/mms-tts-dyu",
         "translation_code": "dyu_Latn",

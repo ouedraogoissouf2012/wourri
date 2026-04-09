@@ -5,10 +5,13 @@ Base de connaissances agricoles avec embeddings
 NOTE: Necessite sentence-transformers
 Pour installer: pip install sentence-transformers
 """
+import logging
 import os
 import json
 from typing import List, Optional
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -24,8 +27,8 @@ try:
     np = _np
     RAG_AVAILABLE = True
 except ImportError:
-    print("INFO: sentence-transformers non installe - RAG desactive")
-    print("Pour activer: pip install sentence-transformers")
+    logger.info("INFO: sentence-transformers non installe - RAG desactive")
+    logger.info("Pour activer: pip install sentence-transformers")
 
 # Cache du modele et des embeddings
 _embedding_model = None
@@ -48,15 +51,15 @@ def get_embedding_model():
         return None
 
     if _embedding_model is None:
-        print("Chargement du modele d'embeddings...")
+        logger.info("Chargement du modele d'embeddings...")
         # Utiliser le modele local s'il existe, sinon telecharger
         if os.path.exists(MODEL_PATH):
-            print(f"Utilisation du modele local: {MODEL_PATH}")
+            logger.info(f"Utilisation du modele local: {MODEL_PATH}")
             _embedding_model = SentenceTransformer(MODEL_PATH)
         else:
-            print("Telechargement du modele depuis HuggingFace...")
+            logger.info("Telechargement du modele depuis HuggingFace...")
             _embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-        print("Modele d'embeddings charge!")
+        logger.info("Modele d'embeddings charge!")
 
     return _embedding_model
 
@@ -102,7 +105,7 @@ def add_document(text: str, metadata: dict = None) -> bool:
         return True
 
     except Exception as e:
-        print(f"Erreur ajout document: {e}")
+        logger.error(f"Erreur ajout document: {e}")
         return False
 
 
@@ -147,7 +150,7 @@ def search(query: str, top_k: int = 3) -> List[dict]:
         return results
 
     except Exception as e:
-        print(f"Erreur recherche RAG: {e}")
+        logger.error(f"Erreur recherche RAG: {e}")
         return []
 
 
@@ -173,11 +176,11 @@ def load_knowledge_base(filepath: str) -> int:
             if add_document(doc.get("text", ""), doc.get("metadata")):
                 count += 1
 
-        print(f"Base de connaissances chargee: {count} documents")
+        logger.info(f"Base de connaissances chargee: {count} documents")
         return count
 
     except Exception as e:
-        print(f"Erreur chargement base: {e}")
+        logger.error(f"Erreur chargement base: {e}")
         return 0
 
 
@@ -197,7 +200,7 @@ def save_knowledge_base(filepath: str) -> bool:
         return True
 
     except Exception as e:
-        print(f"Erreur sauvegarde base: {e}")
+        logger.error(f"Erreur sauvegarde base: {e}")
         return False
 
 
@@ -243,7 +246,7 @@ def init_default_knowledge():
         if add_document(doc["text"], doc["metadata"]):
             count += 1
 
-    print(f"Base de connaissances initialisee: {count} documents agricoles")
+    logger.info(f"Base de connaissances initialisee: {count} documents agricoles")
     return count
 
 

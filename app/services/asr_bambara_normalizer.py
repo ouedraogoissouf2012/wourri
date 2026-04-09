@@ -9,8 +9,11 @@ NeMo TDT (Soloni) produit deux types d'erreurs sur le bambara/dioula :
 Ce module corrige ces erreurs APRÈS la transcription NeMo,
 AVANT que le texte arrive au NLU.
 """
+import logging
 import unicodedata
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================
@@ -121,7 +124,7 @@ def _apply_phrase_subs(text: str) -> str:
     for wrong, correct in PHRASE_SUBS.items():
         if wrong in result:
             result = result.replace(wrong, correct)
-            print(f"[ASR-NORM] Substitution phonétique: '{wrong}' → '{correct}'")
+            logger.info(f"[ASR-NORM] Substitution phonétique: '{wrong}' → '{correct}'")
     return result
 
 
@@ -163,6 +166,6 @@ def normalize_bambara_asr(text: str) -> Optional[str]:
     result = " ".join(corrected_words)
 
     if result != text:
-        print(f"[ASR-NORM] Fusion corrigée: '{text}' → '{result}'")
+        logger.info(f"[ASR-NORM] Fusion corrigée: '{text}' → '{result}'")
 
     return result
