@@ -62,6 +62,14 @@ class ASRChain:
         """
         result = await self._try_chain(audio_bytes, file_extension)
 
+        # Normalisation post-ASR (corrections exactes + fuzzy matching NLU)
+        if result:
+            from app.services.asr_normalizer import normalize_asr_output
+            normalized = normalize_asr_output(result)
+            if normalized != result:
+                logger.info("[ASRChain] Normalisé: '%s' → '%s'", result, normalized)
+                result = normalized
+
         if result and self._agri_fallback and self._agri_fallback.is_available():
             if not self._has_agri_keywords(result):
                 words_count = len(result.split())

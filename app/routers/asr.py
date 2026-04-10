@@ -38,75 +38,8 @@ def _run_nlu(bambara_text: str) -> dict:
         return {}
 
 
-# Nettoyage post-ASR : l'ASR MMS-1B-ALL fait des erreurs phonétiques récurrentes
-# Ces corrections sont appliquées AVANT la traduction BAM→FR
-_ASR_FIXES = {
-    # ========== SALUTATIONS ==========
-    "sɔrɔma": "sɔgɔma", "sorɔma": "sɔgɔma", "soroma": "sogoma",
-    "sɔrɔ ma": "sɔgɔma", "sagɔma": "sɔgɔma", "sagoma": "sogoma",
-    "sɔgɔ ma": "sɔgɔma", "sogo ma": "sogoma",
-    "ani sɔgɔma": "i ni sɔgɔma", "ani sogoma": "i ni sogoma",
-    "ani ce": "i ni ce", "anise": "i ni ce", "anice": "i ni ce",
-    # Soir (wulafɛ) — NeMo fragmente ou déforme
-    "wulari": "wulafɛ", "wulafe": "wulafɛ", "wula fe": "wulafɛ",
-    "ani wula": "a ni wulafɛ", "ani wulafe": "a ni wulafɛ",
-    # Nuit (sufɛ) — NeMo fragmente "sufɛ" en morceaux absurdes
-    "su ani so": "a ni sufɛ", "an ni sa kɔnɔ": "a ni sufɛ",
-    "an ni su": "a ni sufɛ", "a ni su": "a ni sufɛ",
-    "sufe": "sufɛ", "su fe": "sufɛ",
-    # Midi (tilefɛ)
-    "tile fe": "tilefɛ", "tilefe": "tilefɛ", "tile fɛ": "tilefɛ",
-
-    # ========== MOTS AGRICOLES ==========
-    "malon": "malo",        # riz
-    "kaban": "kaba",        # maïs
-    "ka ba": "kaba",        # maïs (fragmenté)
-    "kabal": "kaba",        # maïs (déformé)
-    "kab ": "kaba ",        # maïs (tronqué)
-    "walakaba": "kaba",     # maïs (variante longue)
-    "tigan": "tiga",        # arachide
-    "foron": "foro",        # champ
-    "jinan": "jina",        # légume
-    "banan": "bana",        # maladie (des plantes)
-    "sunan": "sunu",        # mil
-    "bananku": "bananku",   # manioc (déjà correct)
-    "manioku": "bananku",   # manioc (loanword FR)
-
-    # ========== TEMPS / SAISON ==========
-    "wagati jumen": "wagati jumɛn",   # à quel moment
-    "wagati jumin": "wagati jumɛn",
-    "wagatijumen": "wagati jumɛn",
-    "min na ": "jumɛn na ",           # confusion min/jumɛn
-    "tuma jumen": "wagati jumɛn",     # synonyme tuma = wagati
-    "tuma jumin": "wagati jumɛn",
-    "san jumen": "san jumɛn",         # quelle année
-    "kalo jumen": "kalo jumɛn",       # quel mois
-
-    # Voyelles confondues (e/ɛ, o/ɔ)
-    "senɛ": "sɛnɛ", "sene": "sɛnɛ",
-    "kolo": "kɔlɔ", "kolɔ": "kɔlɔ",
-
-    # ========== VERBES/MARQUEURS ==========
-    " kan ": " ka ",
-    " be ": " bɛ ",
-
-    # ========== QUESTIONS AGRICOLES COURANTES ==========
-    "malo sene": "malo sɛnɛ",
-    "kaba sene": "kaba sɛnɛ",        # planter le maïs
-    "kaba dan": "kaba dan",           # planter le maïs (variante)
-    "foro labɛn": "foro labɛn",
-    "jii don": "ji don",
-}
-
-
-def clean_asr_transcription(text: str) -> str:
-    """Corrige les erreurs ASR courantes de MMS-1B-ALL pour le bambara."""
-    if not text:
-        return text
-    result = f" {text} "
-    for wrong, correct in _ASR_FIXES.items():
-        result = result.replace(wrong, correct)
-    return result.strip()
+# Post-ASR : la normalisation est maintenant dans ASRChain (asr_normalizer.py)
+# Plus de dict _ASR_FIXES ici — source unique dans dictionnaires/asr_corrections.json
 
 
 @router.post("/transcribe", dependencies=[Depends(require_api_key)])
@@ -216,12 +149,7 @@ async def transcribe_and_translate(
 
     logger.info("[ASR] Transcription brute: '%s'", transcription)
 
-    # Nettoyage post-ASR
-    if language == "bam":
-        cleaned = clean_asr_transcription(transcription)
-        if cleaned != transcription:
-            logger.info("[ASR] Après nettoyage: '%s'", cleaned)
-            transcription = cleaned
+    # Note: le nettoyage post-ASR est maintenant intégré dans ASRChain (asr_normalizer.py)
 
     # Traduction BAM → FR (uniquement pour Bambara)
     french_translation = None

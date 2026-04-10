@@ -1,0 +1,61 @@
+{
+  "_description": "Corrections exactes post-ASR pour le bambara/dioula. Source unique — ne pas dupliquer ailleurs.",
+  "_categories": {
+    "salutations": "Fusions et fragmentations de salutations par NeMo",
+    "multi_mots": "Corrections structurelles multi-mots (espaces, particules)",
+    "loanwords": "Mots d'emprunt mal transcrits"
+  },
+
+  "corrections": {
+    "salutations": {
+      "sɔrɔma": "sɔgɔma",
+      "sorɔma": "sɔgɔma",
+      "soroma": "sogoma",
+      "sɔrɔ ma": "sɔgɔma",
+      "sagɔma": "sɔgɔma",
+      "sagoma": "sogoma",
+      "sɔgɔ ma": "sɔgɔma",
+      "sogo ma": "sogoma",
+      "ani sɔgɔma": "i ni sɔgɔma",
+      "ani sogoma": "i ni sogoma",
+      "ani ce": "i ni ce",
+      "anise": "i ni ce",
+      "anice": "i ni ce",
+      "wulari": "wulafɛ",
+      "wulafe": "wulafɛ",
+      "wula fe": "wulafɛ",
+      "ani wula": "a ni wulafɛ",
+      "ani wulafe": "a ni wulafɛ",
+      "su ani so": "a ni sufɛ",
+      "an ni sa kɔnɔ": "a ni sufɛ",
+      "an ni su": "a ni sufɛ",
+      "a ni su": "a ni sufɛ",
+      "sufe": "sufɛ",
+      "su fe": "sufɛ",
+      "tile fe": "tilefɛ",
+      "tilefe": "tilefɛ",
+      "tile fɛ": "tilefɛ"
+    },
+
+    "multi_mots": {
+      "ka ba": "kaba",
+      "walakaba": "kaba",
+      "wagati jumen": "wagati jumɛn",
+      "wagati jumin": "wagati jumɛn",
+      "wagatijumen": "wagati jumɛn",
+      "tuma jumen": "wagati jumɛn",
+      "tuma jumin": "wagati jumɛn",
+      "san jumen": "san jumɛn",
+      "kalo jumen": "kalo jumɛn",
+      "malo sene": "malo sɛnɛ",
+      "kaba sene": "kaba sɛnɛ",
+      "jii don": "ji don",
+      " kan ": " ka ",
+      " be ": " bɛ "
+    },
+
+    "loanwords": {
+      "manioku": "bananku"
+    }
+  }
+}
