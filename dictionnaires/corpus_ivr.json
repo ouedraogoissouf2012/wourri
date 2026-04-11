@@ -1,5 +1,5 @@
 {
-  "version": "2.2",
+  "version": "2.3",
   "description": "Corpus IVR agricole Wourri — réponses pré-écrites en bambara/dioula par intent × culture",
   "note": "Inspiré approche CGIAR/Viamo. Phrases à valider par locuteur natif bambara/dioula agricole. Score_validation = estimation initiale.",
   "correction_v1.1": "2026-03-03 — termes igname (danburu→ku) et manioc (barakama→bananku) corrigés.",
@@ -110,8 +110,8 @@
       "conditions": [
         "saison_seche"
       ],
-      "reponse_bambara": "Tilema la, màlo sɛnɛli ka ɲi ni jì bɛ yɔrɔ. Aw ye màlo sɛnɛ bas-fond la jì bɛ yɔrɔ. Sanji tuma kɔ, foro caman bɛ se.",
-      "reponse_fr": "En saison sèche, le riz se plante là où il y a de l'eau. Plante le riz dans les bas-fonds où l'eau reste. Après la saison des pluies, beaucoup de champs sont possibles.",
+      "reponse_bambara": "Ni sanji tɛ, malo sɛnɛ ka ɲi ji bɛ yɔrɔ. Aw ye malo sɛnɛ bas-fond la ji bɛ yɔrɔ. Sanji tuma kɔ, foro caman bɛ se.",
+      "reponse_fr": "Sans pluie, le riz se plante là où il y a de l eau. Plante le riz dans les bas-fonds. Après la saison des pluies, beaucoup de champs sont possibles.",
       "score_validation": 0.65,
       "tags": [
         "riz",
@@ -183,7 +183,7 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "Màlo filɛlen kɔ, aw ye a jǎ tile o tile ka ɲɛ. Aw ye a don grenier la jì tɛ yɔrɔ. Grenier ka kan ka kɛ duguma kan.",
+      "reponse_bambara": "Màlo filɛlen kɔ, aw ye a jǎ tile o tile ka ɲɛ. Aw ye a don bɔn la jì tɛ yɔrɔ. Grenier ka kan ka kɛ duguma kan.",
       "reponse_fr": "Après la récolte, sèche bien ton riz au soleil chaque jour. Mets-le dans un grenier sans humidité. Le grenier doit être surélevé du sol.",
       "score_validation": 0.72,
       "tags": [
@@ -201,8 +201,8 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "Màlo sɔngɔ ka ca tilema kɔ. Aw ye càyi caya fara sugu ma. Ni i màlo mara, i bɛ wari caman sɔrɔ.",
-      "reponse_fr": "Le prix du riz monte après la saison sèche. Amène ton surplus au marché. Si tu gardes ton riz, tu obtiendras plus d'argent.",
+      "reponse_bambara": "Malo sɔngɔ ka ca sanji kɔ. Aw ye malo caya fara sugu ma. Ni i malo mara, i bɛ wari caman sɔrɔ.",
+      "reponse_fr": "Le prix du riz monte après la saison des pluies. Amène ton surplus au marché. Si tu gardes ton riz, tu obtiendras plus d argent.",
       "score_validation": 0.68,
       "tags": [
         "riz",
@@ -1115,7 +1115,7 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye tiga jǎ ka ɲɛ sani aw ka a don grenier la. Jì bɛ tiga halaki joona. Aw ye tiga mara bɔlɔ tɛ yɔrɔ ni saniya la.",
+      "reponse_bambara": "Aw ye tiga jǎ ka ɲɛ sani aw ka a don bɔn la. Jì bɛ tiga halaki joona. Aw ye tiga mara bɔlɔ tɛ yɔrɔ ni saniya la.",
       "reponse_fr": "Sèche bien les arachides avant de les mettre au grenier. L'humidité abîme rapidement les arachides. Garde-les dans un endroit sec et propre.",
       "score_validation": 0.73,
       "tags": [
@@ -1134,8 +1134,8 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Tiga sɔngɔ ka ca sanji kɔ tilema daminɛ la. Aw ye tiga caya fara sugu ma o waati la. Dɔlɔ mɔgɔw bɛ tiga san sɔngɔ ɲuman na.",
-      "reponse_fr": "Le prix des arachides monte après la saison des pluies au début de la saison sèche. Amène ton surplus au marché à ce moment. Les huileries achètent les arachides à bon prix.",
+      "reponse_bambara": "Tiga sɔngɔ ka ca sanji kɔ. Aw ye tiga caya fara sugu ma o waati la. Dɔlɔ mɔgɔw bɛ tiga san sɔngɔ ɲuman na.",
+      "reponse_fr": "Le prix des arachides monte après la saison des pluies. Amène ton surplus au marché. Les huileries achètent les arachides à bon prix.",
       "score_validation": 0.69,
       "tags": [
         "arachide",
@@ -1360,7 +1360,7 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Bananku sɛnɛ bɛ se ka kɛ foro sɔgɔ bɛɛ la. Aw ye bouture kɛ mɛtiri kelen sɔngɔ. Bananku bɛ bɔ kalo 8 ni 18 cɛ.",
+      "reponse_bambara": "Bananku sɛnɛ bɛ se ka kɛ foro sɔgɔ bɛɛ la. Aw ye bolo kɛ mɛtiri kelen sɔngɔ. Bananku bɛ bɔ kalo 8 ni 18 cɛ.",
       "reponse_fr": "Le manioc pousse dans tous types de sols. Plantez les boutures à 1 mètre de distance. Le manioc peut se récolter après 8 à 18 mois selon la variété.",
       "score_validation": 0.8,
       "tags": [
@@ -1379,8 +1379,8 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Bananku bɛ se ka sɛnɛ sanji waati bɛɛ. Nka sanji wulanna la ka ɲi caman. Aw ye bouture don duguma kɔrɔ. Tilema jan na kana sɛnɛ.",
-      "reponse_fr": "Le manioc peut être planté toute l'année mais le meilleur moment c'est au début de la saison des pluies. Plantez les boutures en biais dans le sol. Évitez de planter en saison très sèche.",
+      "reponse_bambara": "Bananku bɛ se ka sɛnɛ sanji waati bɛɛ. Nka sanji daminɛ ka ɲi caman. Aw ye bolo don duguma kɔrɔ. Ni sanji tɛ caman kana sɛnɛ.",
+      "reponse_fr": "Le manioc peut être planté toute l année mais le début des pluies est le meilleur moment. Plantez les boutures en biais. Evitez de planter quand il ne pleut pas du tout.",
       "score_validation": 0.8,
       "tags": [
         "manioc",
@@ -1416,8 +1416,8 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Bananku bɛ se ka to jiɲɛ la kalo 3 banna. O ye a ka sɔn ye caman. Ni tilema bɛ jan caman, ji dɔɔni bɛ a dɛmɛ.",
-      "reponse_fr": "Le manioc résiste très bien à la sécheresse, c'est sa grande force. Il peut tenir sans pluie pendant 3 mois. Si la sécheresse est longue, un arrosage léger aide quand même.",
+      "reponse_bambara": "Bananku bɛ se ka to ji tɛ la kalo 3. O ye a ka sɔn ye caman. Ni sanji tɛ caman, ji dɔɔni bɛ a dɛmɛ.",
+      "reponse_fr": "Le manioc résiste bien à la sécheresse, il tient 3 mois sans pluie. Si la sécheresse est longue, un arrosage léger aide.",
       "score_validation": 0.8,
       "tags": [
         "manioc",
@@ -1532,7 +1532,7 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo sɛnɛ waati ɲuman ye avrili ni mɛ kalo, sanji waati fɔlɔ. Kakawo juruni bɛ jɛ jì waati bɛɛ. Aw ye pépinière labɛn fɔlɔ sɛnɛ ɲɛ.",
+      "reponse_bambara": "Kakawo sɛnɛ waati ɲuman ye avrili ni mɛ kalo, sanji waati fɔlɔ. Kakawo juruni bɛ jɛ jì waati bɛɛ. Aw ye deen foro labɛn fɔlɔ sɛnɛ ɲɛ.",
       "reponse_fr": "Le meilleur moment pour planter le cacao c'est en avril ou mai, au début de la grande saison des pluies. Les jeunes plants ont besoin d'humidité constante. Préparez une pépinière d'abord.",
       "score_validation": 0.72,
       "tags": [
@@ -1572,8 +1572,8 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo bɛ jɛ sanji ye caman, a bɛ se. Tilema dɔɔni bɛ se. Ni tilema bɛ jan kalo 3 san, aw ye ji bila.",
-      "reponse_fr": "Le cacao a besoin de beaucoup de pluie, mais résiste à une courte saison sèche. Si la sécheresse dure plus de 3 mois, des arrosages sont nécessaires.",
+      "reponse_bambara": "Kakawo bɛ sanji ye caman. Ni sanji tɛ dɔɔni a bɛ se. Ni sanji tɛ kalo 3 san, aw ye ji bila.",
+      "reponse_fr": "Le cacao a besoin de beaucoup de pluie. Il résiste à une courte sécheresse. Si pas de pluie pendant 3 mois, arrosez.",
       "score_validation": 0.7,
       "tags": [
         "cacao",
@@ -1672,8 +1672,8 @@
       "conditions": [
         "TEMPS_SAISON_SECHE"
       ],
-      "reponse_bambara": "Tilema waati la, màlo b'a fɛ jì. Aw ye sɛnɛ mɛ wala sɛtanburu kalo. Ni ji bɛ ɲɛ foro la, aw bɛ se ka sɛnɛ.",
-      "reponse_fr": "En saison sèche, le riz ne peut pas pousser sans eau. Attendez la saison des pluies en mai ou septembre. Si vous avez de l'eau disponible pour irriguer, vous pouvez planter en saison sèche aussi.",
+      "reponse_bambara": "Malo sɛnɛ waati ɲuman ye mɛ kalo ye. Sanji bɛ na o waati la ka foro ɲɛ. Aw ye foro labɛn sisan.",
+      "reponse_fr": "Le meilleur moment pour planter le riz est en mai. La pluie arrive à ce moment pour arroser le champ. Préparez votre champ maintenant.",
       "score_validation": 0.73,
       "tags": [
         "riz",
@@ -1693,8 +1693,8 @@
       "conditions": [
         "TEMPS_SAISON_SECHE"
       ],
-      "reponse_bambara": "Tilema waati la, kaba sɛnɛ tɛ ɲɛ ji ma. Aw ye to ka tɛmɛ sanji waati. Marisi wala ɔgɔsi kalo sanji bɛ wuli ka foro ɲɛ.",
-      "reponse_fr": "En saison sèche, le maïs ne pousse pas bien sans eau. Attendez la saison des pluies. En mars ou août les pluies arrivent pour bien arroser le champ.",
+      "reponse_bambara": "Ni sanji tɛ, kaba sɛnɛ tɛ ɲɛ ji ma. Aw ye to ka sanji waati sɔrɔ. Marisi wala awirili kalo sanji bɛ na ka foro ɲɛ.",
+      "reponse_fr": "Sans pluie, le maïs ne pousse pas bien. Attendez la saison des pluies. En mars ou avril les pluies arrivent pour arroser le champ.",
       "score_validation": 0.72,
       "tags": [
         "maïs",
@@ -1746,8 +1746,8 @@
       "conditions": [
         "TEMPS_SAISON_SECHE"
       ],
-      "reponse_bambara": "Tilema waati la, tiga sɛnɛ tɛ ɲɛ. Aw ye to ka tɛmɛ sanji waati, mɛ wala sɛtanburu kalo. Tiga bɛ jɛ sanji ye ka sɛnɛ.",
-      "reponse_fr": "En saison sèche, l'arachide ne pousse pas. Attendez la saison des pluies, en mai ou septembre. L'arachide a besoin de pluie pour bien démarrer.",
+      "reponse_bambara": "Ni sanji tɛ, tiga sɛnɛ tɛ ɲɛ. Aw ye sanji waati sɔrɔ, mɛ wala sɛtanburu kalo. Tiga bɛ sanji ye ka sɛnɛ.",
+      "reponse_fr": "Sans pluie, l arachide ne pousse pas. Attendez la saison des pluies, en mai ou septembre. L arachide a besoin de pluie pour démarrer.",
       "score_validation": 0.72,
       "tags": [
         "arachide",
@@ -2405,7 +2405,7 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Tamati sɛnɛ la ka ɲi, aw ye pépinière kɛ sannin. Aw ye pépinière yɔrɔ yɛlɛma tile mugan kɔnɔ. Aw ye tamati sɛnɛ santimɛtiri bi ni mugan.",
+      "reponse_bambara": "Tomati sɛnɛ la ka ɲi, aw ye deen foro kɛ sannin. Aw ye deen foro yɔrɔ yɛlɛma tile mugan kɔnɔ. Aw ye tomati sɛnɛ santimɛtiri bi ni mugan.",
       "reponse_fr": "Pour bien cultiver la tomate, fais d'abord une pépinière. Transplante les plants de pépinière après 20 jours. Plante la tomate avec 20 cm d'écart.",
       "score_validation": 0.75,
       "tags": [
@@ -2424,8 +2424,8 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Tamati bɛ sɛnɛ san bɛɛ ni jì bɛ ɲɛ. Tilema waati, aw ye arrosage kɛ. Aw ye pépinière kɛ sannin.",
-      "reponse_fr": "La tomate peut être plantée toute l'année si l'eau est disponible. En saison sèche, la tomate pousse bien avec un bon arrosage. Fais d'abord la pépinière.",
+      "reponse_bambara": "Tomati bɛ sɛnɛ san bɛɛ ni ji bɛ ɲɛ. Ni sanji tɛ, aw ye ji bila foro la tile o tile. Aw ye tomati deen sɛnɛ fɔlɔ ka a cɛ foro la.",
+      "reponse_fr": "La tomate peut etre plantee toute l annee si l eau est disponible. Sans pluie, arrosez votre champ chaque jour. Faites d abord un semis puis transplantez au champ.",
       "score_validation": 0.75,
       "tags": [
         "tomate",
@@ -2443,7 +2443,7 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Tamati tilalen waati ye kalo saba sɛnɛ kɔfɛ. Ni a bɛ la ka kɔrɔ, aw ye tilalen kɛ. Tilalen kɛ tile kelen kelen.",
+      "reponse_bambara": "Tomati tilalen waati ye kalo saba sɛnɛ kɔfɛ. Ni a bɛ la ka kɔrɔ, aw ye tilalen kɛ. Tilalen kɛ tile kelen kelen.",
       "reponse_fr": "La tomate est prête à récolter 3 mois après la plantation. Quand les fruits rougissent, c'est le moment. Récoltez chaque jour quand il y a des fruits mûrs.",
       "score_validation": 0.75,
       "tags": [
@@ -2462,7 +2462,7 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Tamati bɛ jɛ jì ye tile bɛɛ. Aw ye ji don foro la tile kelen kelen na. Ni jì bana, tamati bɛ la ka kɛ ɲɔgɔn na.",
+      "reponse_bambara": "Tomati bɛ jɛ jì ye tile bɛɛ. Aw ye ji don foro la tile kelen kelen na. Ni jì bana, tomati bɛ la ka kɛ ɲɔgɔn na.",
       "reponse_fr": "La tomate a besoin d'eau chaque jour. Arrosez le champ quotidiennement. Sans eau, la tomate se dessèche vite.",
       "score_validation": 0.75,
       "tags": [
@@ -2481,7 +2481,7 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Tamati bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. Urée don tile mugan kɔfɛ ka tamati dɛmɛ. Aw ye fumure kɛ fana ka ɲɛ.",
+      "reponse_bambara": "Tomati bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. Urée don tile mugan kɔfɛ ka tomati dɛmɛ. Aw ye fumure kɛ fana ka ɲɛ.",
       "reponse_fr": "La tomate a besoin de NPK 15-15-15 après la plantation. Apportez de l'urée 20 jours après pour la croissance. Le compost est aussi très bien.",
       "score_validation": 0.75,
       "tags": [
@@ -2500,7 +2500,7 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni tamati fura bɛ kɛ wɛrɛ wɛrɛ, mildiou bana bɛ a la. Aw ye furakɛ fongicide la joona. ANADER bɛ se ka i dɛmɛ.",
+      "reponse_bambara": "Ni tomati fura bɛ kɛ wɛrɛ wɛrɛ, mildiou bana bɛ a la. Aw ye furakɛ fongicide la joona. ANADER bɛ se ka i dɛmɛ.",
       "reponse_fr": "Si les feuilles de tomate changent de couleur, c'est le mildiou. Traitez avec un fongicide rapidement. L'agent ANADER peut vous aider.",
       "score_validation": 0.75,
       "tags": [
@@ -2519,7 +2519,7 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Tamati farali kɛ joona tilalen kɔfɛ. Aw ye farali kɛ marɔshɛ la wala commerçant ye. Tamati mana tilalen, a bɛ gɛlɛ joona.",
+      "reponse_bambara": "Tomati farali kɛ joona tilalen kɔfɛ. Aw ye farali kɛ marɔshɛ la wala commerçant ye. Tomati mana tilalen, a bɛ gɛlɛ joona.",
       "reponse_fr": "Vendez la tomate juste après la récolte. Vendez au marché ou à un commerçant. La tomate mûre se détériore vite, vendez rapidement.",
       "score_validation": 0.75,
       "tags": [
@@ -2538,7 +2538,7 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Tamati bolisili waati ye tile seegin ka jɛ. Aw ye tamati bolisi yɔrɔ sugurun na. Aw ye farali kɛ joona k'a bɔ.",
+      "reponse_bambara": "Tomati bolisili waati ye tile seegin ka jɛ. Aw ye tomati bolisi yɔrɔ sugurun na. Aw ye farali kɛ joona k'a bɔ.",
       "reponse_fr": "La tomate se conserve environ 7 jours. Stocke-la dans un endroit frais. Vends vite avant qu'elle ne soit trop mûre.",
       "score_validation": 0.75,
       "tags": [
@@ -2728,8 +2728,8 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan sɛnɛ waati ɲuman ye sanji tuma na. Mɛ wala sɛtanburu kalo bɛ ɲɛ. Tilema waati fana, gan bɛ se ka sɛnɛ ni jì bɛ ɲɛ.",
-      "reponse_fr": "Le meilleur moment pour planter le gombo c'est la saison des pluies. Mai ou septembre c'est bien. En saison sèche aussi, le gombo peut pousser avec de l'eau.",
+      "reponse_bambara": "Gan sɛnɛ waati ɲuman ye sanji tuma na. Mɛ wala sɛtanburu kalo bɛ ɲɛ. Ni sanji tɛ fana, gan bɛ se ka sɛnɛ ni ji bɛ ɲɛ.",
+      "reponse_fr": "Le meilleur moment pour le gombo c est la saison des pluies. Mai ou septembre c est bien. Sans pluie aussi, le gombo peut pousser avec de l eau.",
       "score_validation": 0.7,
       "tags": [
         "gombo",
@@ -2861,7 +2861,7 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba sɛnɛ la ka ɲi, aw ye pépinière kɛ sannin. Aw ye pépinière yɔrɔ yɛlɛma tile mugan kɔnɔ. Aw ye jaba sɛnɛ santimɛtiri bi ni mugan.",
+      "reponse_bambara": "Jaba sɛnɛ la ka ɲi, aw ye deen foro kɛ sannin. Aw ye deen foro yɔrɔ yɛlɛma tile mugan kɔnɔ. Aw ye jaba sɛnɛ santimɛtiri bi ni mugan.",
       "reponse_fr": "Pour bien cultiver l'oignon, fais d'abord une pépinière. Transplante les plants après 20 jours. Plante l'oignon avec 10 à 15 cm d'écart.",
       "score_validation": 0.7,
       "tags": [
@@ -2880,8 +2880,8 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba sɛnɛ waati ɲuman ye tilema na wala sanji dɔgɔ tuma. Nɔvanburu ni disanburu kalo bɛ ɲɛ ka sɛnɛ. Aw ye pépinière kɛ sannin ka fɔlɔ.",
-      "reponse_fr": "Le meilleur moment pour l'oignon c'est la saison sèche ou la petite saison des pluies. Novembre et décembre c'est bien. Fais d'abord ta pépinière.",
+      "reponse_bambara": "Jaba sɛnɛ waati ɲuman ye sanji tɛ waati na. Nɔwanburu ni desanburu kalo bɛ ɲɛ ka sɛnɛ. Aw ye deen foro kɛ fɔlɔ.",
+      "reponse_fr": "Le meilleur moment pour l oignon c est quand il ne pleut pas. Novembre et décembre c est bien. Faites d abord la pépinière.",
       "score_validation": 0.7,
       "tags": [
         "oignon",
@@ -2918,7 +2918,7 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba bɛ jɛ jì ye tile bɛɛ. Aw ye ji don foro la tile kelen kelen na. Tilelen kɔ waati, aw ye arrosage dɔgɔya.",
+      "reponse_bambara": "Jaba bɛ jɛ jì ye tile bɛɛ. Aw ye ji don foro la tile kelen kelen na. Tilelen kɔ waati, aw ye ji bilali dɔgɔya.",
       "reponse_fr": "L'oignon a besoin d'eau chaque jour. Arrosez le champ quotidiennement. Vers la fin réduisez l'arrosage pour que l'oignon durcisse.",
       "score_validation": 0.7,
       "tags": [
@@ -2975,8 +2975,8 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba farali kɛ marɔshɛ la wala kɔlɔ la. Jaba sɔngɔ ka ɲi tilema waati na. Aw ye bolisi kɛ joona ka sɔngɔ ɲuman sɔrɔ.",
-      "reponse_fr": "Vendez l'oignon au marché ou à un commerçant. Le prix de l'oignon est meilleur en saison sèche. Stockez bien pour avoir un meilleur prix.",
+      "reponse_bambara": "Jaba farali kɛ sugu la wala julakɛla fɛ. Jaba sɔngɔ ka ɲi sanji tɛ waati na. Aw ye a mara ka sɔngɔ ɲuman sɔrɔ.",
+      "reponse_fr": "Vendez l oignon au marché ou à un commerçant. Le prix est meilleur quand il ne pleut pas. Stockez bien pour avoir un meilleur prix.",
       "score_validation": 0.7,
       "tags": [
         "oignon",
@@ -3126,8 +3126,8 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso farali kɛ marɔshɛ la wala kɔlɔ la. Aw ye woso farali kura tile saba kɔfɛ tilalen. Sɔngɔ ka ɲi tilema waati na.",
-      "reponse_fr": "Vendez la patate douce au marché ou à un commerçant. Vendez frais dans les 3 jours après récolte. Le prix est meilleur en saison sèche.",
+      "reponse_bambara": "Woso farali kɛ sugu la wala julakɛla fɛ. Aw ye woso fara tile saba kɔfɛ. Sɔngɔ ka ɲi sanji tɛ waati na.",
+      "reponse_fr": "Vendez la patate douce au marché. Vendez frais dans les 3 jours après récolte. Le prix est meilleur quand il ne pleut pas.",
       "score_validation": 0.7,
       "tags": [
         "patate douce",
@@ -3335,7 +3335,7 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe sɛnɛ waati ɲuman ye sanji tuma na. Mɛ wala juin kalo bɛ ɲɛ. Aw ye pépinière labɛn fɔlɔ sɛnɛ ɲɛ.",
+      "reponse_bambara": "Kafe sɛnɛ waati ɲuman ye sanji tuma na. Mɛ wala juin kalo bɛ ɲɛ. Aw ye deen foro labɛn fɔlɔ sɛnɛ ɲɛ.",
       "reponse_fr": "Le meilleur moment pour planter le café c'est la saison des pluies. Mai ou juin c'est bien. Prépare une pépinière avant de planter.",
       "score_validation": 0.65,
       "tags": [

@@ -267,20 +267,20 @@ _BAMBARA_DISCOURSE_MARKERS = [
 def _get_speaking_rate(sentence: str) -> float:
     """Détermine le speaking_rate selon le type de phrase.
 
-    Valeurs calibrées pour MMS-TTS-DYU (VITS) :
-    - Salutation courte  → 0.95 : naturel, chaleureux
-    - Conseil agricole   → 1.0  : vitesse naturelle (défaut)
-    - Technique (NPK…)   → 1.10 : légèrement plus lent, bien articulé
+    Valeurs calibrées pour MMS-TTS-DYU (VITS) — validées en production :
+    - Salutation courte  → 1.05 : naturel, presque normal
+    - Conseil agricole   → 1.15 : clair, fluide (défaut)
+    - Technique (NPK…)   → 1.25 : lent, bien articulé
     """
     import re
     stripped = sentence.strip()
     if re.match(r'^(Aw ni|Alu ni|I ni|A ni)', stripped) or (
         stripped.endswith('!') and len(stripped.split()) <= 8
     ):
-        return 0.95
+        return 1.05
     if any(kw in stripped for kw in _TECH_KEYWORDS):
-        return 1.10
-    return 1.0
+        return 1.25
+    return 1.15
 
 
 def _split_on_bambara_markers(text: str) -> list[tuple[str, float]]:
@@ -393,10 +393,56 @@ def _split_sentences(text: str) -> list[tuple[str, float]]:
     return cleaned
 
 
+def _trim_leading_silence(waveform: np.ndarray, threshold: float = 0.01,
+                          keep_ms: int = 30, sample_rate: int = 16000) -> np.ndarray:
+    """Coupe le silence naturel au début d'un waveform VITS.
+
+    MMS-TTS-DYU produit ~400ms de silence au début de chaque segment
+    (transitoire du modèle). On garde keep_ms (30ms) pour éviter
+    un démarrage trop brusque.
+    """
+    above = np.where(np.abs(waveform) > threshold)[0]
+    if len(above) == 0:
+        return waveform
+    voice_start = above[0]
+    keep_samples = int(sample_rate * keep_ms / 1000)
+    trim_point = max(0, voice_start - keep_samples)
+    return waveform[trim_point:]
+
+
+def _clean_for_tts(text: str) -> str:
+    """Nettoie le texte bambara pour le TTS MMS-DYU.
+
+    MMS-TTS-DYU ne gère pas :
+    - Les tons diacritiques (à, è, ì, ò, ù) → produit du bruit
+    - Les apostrophes dans les contractions (b'a, k'a, n'a) → prononciation erronée
+
+    On retire les tons tout en gardant les caractères bambara (ɛ, ɔ, ŋ, ɲ).
+    """
+    import unicodedata
+    # Décomposer les caractères accentués, retirer les marques de ton
+    result = []
+    for ch in unicodedata.normalize("NFD", text):
+        if unicodedata.category(ch) == "Mn":  # Mark, Nonspacing (tons)
+            continue
+        result.append(ch)
+    cleaned = "".join(result)
+    # Remplacer les apostrophes par un espace (b'a → b a)
+    cleaned = cleaned.replace("'", " ").replace("'", " ")
+    # Réduire les espaces multiples
+    cleaned = " ".join(cleaned.split())
+    return cleaned
+
+
 def _synthesize_sentence(sentence: str, model, tokenizer,
                          speaking_rate: float = 1.15) -> np.ndarray | None:
-    """Synthétise un segment unique avec le speaking_rate donné."""
+    """Synthétise un segment unique avec le speaking_rate donné.
+
+    Nettoie les tons + apostrophes avant synthèse.
+    Trim le silence naturel VITS (~400ms) au début de chaque segment.
+    """
     try:
+        sentence = _clean_for_tts(sentence)
         inputs = tokenizer(sentence, return_tensors="pt")
         original_rate = model.config.speaking_rate
         model.config.speaking_rate = speaking_rate
@@ -405,7 +451,8 @@ def _synthesize_sentence(sentence: str, model, tokenizer,
                 output = model(**inputs).waveform
         finally:
             model.config.speaking_rate = original_rate
-        return output.squeeze().cpu().numpy()
+        waveform = output.squeeze().cpu().numpy()
+        return _trim_leading_silence(waveform, sample_rate=model.config.sampling_rate)
     except Exception as e:
         logger.error(f"[TTS] Erreur synthèse '{sentence[:40]}': {e}")
         return None
@@ -434,6 +481,10 @@ def synthesize_dioula_text(dioula_text: str) -> str | None:
             segments = [(dioula_text, 0.40)]
 
         audio_parts = []
+
+        # Silence initial 50ms — compense le preskip Opus (104 samples)
+        audio_parts.append(np.zeros(int(sample_rate * 0.05), dtype=np.float32))
+
         for i, (sentence, pause_s) in enumerate(segments):
             rate = _get_speaking_rate(sentence)
             waveform = _synthesize_sentence(sentence, model, tokenizer, speaking_rate=rate)
