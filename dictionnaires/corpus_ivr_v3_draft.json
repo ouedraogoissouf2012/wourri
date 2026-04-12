@@ -12,7 +12,7 @@
     "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
     "SOV_respecte": "verbe en fin de proposition"
   },
-  "total": 38,
+  "total": 46,
   "entries": [
     {
       "id": "riz_conseil_001",
@@ -292,6 +292,78 @@
       ],
       "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
+    },
+    {
+      "id": "oignon_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_OIGNON"
+      ],
+      "new_bam": "Fɔlɔ aw ye jaba den foroo kɛ. Tile mugan kɔ aw ye den turu foroo la. Aw ye jaba da santimɛtiri tan ni duuru.",
+      "fr": "Pour bien cultiver l'oignon, fais d'abord une pépinière. Transplante les plants après 20 jours. Plante l'oignon avec 10 à 15 cm d'écart."
+    },
+    {
+      "id": "oignon_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": [
+        "CULTURE_OIGNON"
+      ],
+      "new_bam": "Jaba sɛnɛ tuma ɲuman ye sanjiii tɛ tuma na. Nowanburuuu ni desanburuuu kalo ka ɲi. Aw ye den foroo kɛ fɔlɔ.",
+      "fr": "Le meilleur moment pour l oignon c est quand il ne pleut pas. Novembre et décembre c est bien. Faites d abord la pépinière."
+    },
+    {
+      "id": "oignon_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": [
+        "CULTURE_OIGNON"
+      ],
+      "new_bam": "Kalo saba ni naani cɛ jaba bɛ se ka bɔ. Ni jaba fura bɛ bin, tigɛ tuma ye. Aw ye jaba bɔ dugukoloo la ka a ja.",
+      "fr": "L'oignon est prêt à récolter 3 à 4 mois après la plantation. Quand les fanes tombent, c'est le moment. Déterrez avec soin et mettez à sécher."
+    },
+    {
+      "id": "oignon_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_OIGNON"
+      ],
+      "new_bam": "Jaba bɛ ji fɛ tile o tile. Aw ye ji don foroo la tile bɛɛ. Laban na ji dɔgɔya ka jaba gɛlɛya.",
+      "fr": "L'oignon a besoin d'eau chaque jour. Arrosez le champ quotidiennement. Vers la fin réduisez l'arrosage pour que l'oignon durcisse."
+    },
+    {
+      "id": "oignon_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_OIGNON"
+      ],
+      "new_bam": "Sɛnɛ kɔ NPK don dugukoloo la. Potasi bɛ jaba dɛmɛ ka bon. Kalo o kalo furakɛli kɛ.",
+      "fr": "L'oignon a besoin de NPK 15-15-15 après la plantation. Le potassium l'aide aussi à se former. Faites le traitement chaque mois."
+    },
+    {
+      "id": "oignon_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_OIGNON"
+      ],
+      "new_bam": "Ni jaba fura bɛ bin joona dɔɔni, bana bɛ a la. Aw ye furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "fr": "Si les fanes de l'oignon tombent trop tôt, il y a une maladie. Traitez avec un fongicide rapidement. L'agent ANADER peut vous aider."
+    },
+    {
+      "id": "oignon_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_OIGNON"
+      ],
+      "new_bam": "Aw ye jaba fere sugu la wala julabaga fɛ. Sanjiii tɛ tuma na sɔngɔ ka ɲi. Aw ye a mara ka ɲɛ ka sɔngɔ ɲuman sɔrɔ.",
+      "fr": "Vendez l oignon au marché ou à un commerçant. Le prix est meilleur quand il ne pleut pas. Stockez bien pour avoir un meilleur prix."
+    },
+    {
+      "id": "oignon_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_OIGNON"
+      ],
+      "new_bam": "Jaba bɛ se ka to kalo wɔɔrɔ. Aw ye a mara yɔrɔ jalen na wala gala kan. Aw ye jaba ja ka ɲɛ fɔlɔ sani ka a mara.",
+      "fr": "L'oignon peut se conserver jusqu'à 6 mois. Stocke-le dans un endroit sec ou sur des claies. Fais-le bien sécher avant de stocker."
     },
     {
       "id": "generic_salutation_001",
