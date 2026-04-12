@@ -56,7 +56,7 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Karo saba sɛnɛ kɔ, maa loo bɛ se ka tigɛ. Ni maa loo kisɛ gɛlɛn, tigɛ tuma ye. Aw ye maa loo tigɛ ka a jɛ tile la.",
+      "new_bam": "Kalo saba sɛnɛ kɔ, maa loo bɛ se ka tigɛ. Ni maa loo kisɛ gɛlɛn, tigɛ tuma ye. Aw ye maa loo tigɛ ka a jɛ tile la.",
       "fr": "Trois mois après le semis le riz peut être récolté. Quand le grain est dur c'est le moment. Récoltez et séchez au soleil."
     },
     {
@@ -65,7 +65,7 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Maa loo bɛ ji fɛ kosɛbɛ. Tile o tile, aw ye ji don foroo la. Karo fɔlɔ la ni ji ma sɔrɔ, maa loo tɛ se ka bɔ.",
+      "new_bam": "Maa loo bɛ ji fɛ kosɛbɛ. Tile o tile, aw ye ji don foroo la. Kalo fɔlɔ la ni ji ma sɔrɔ, maa loo tɛ se ka bɔ.",
       "fr": "Le riz a besoin de beaucoup d'eau. Chaque jour arrosez le champ. Le premier mois sans eau le riz ne pousse pas."
     },
     {
@@ -182,7 +182,7 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Karo wɔɔrɔ sɛnɛ kɔ, kabaa sɔngɔ ka ca. Sugu mɔgɔw bɛ kabaa san o tuma la. Aw ye aw ta kabaa mara ka sɔngɔ ɲuman sɔrɔ.",
+      "new_bam": "Kalo wɔɔrɔ sɛnɛ kɔ, kabaa sɔngɔ ka ca. Sugu mɔgɔw bɛ kabaa san o tuma la. Aw ye aw ta kabaa mara ka sɔngɔ ɲuman sɔrɔ.",
       "fr": "Six mois après la récolte le prix du maïs monte. Les commerçants achètent à ce moment. Gardez votre maïs pour un meilleur prix."
     },
     {
@@ -218,7 +218,7 @@
       "cultures": [
         "CULTURE_TOMATE"
       ],
-      "new_bam": "Karo fila ni kɔ sɛnɛ kɔ ntomati bɛ se ka tigɛ. Ni a bɛ wulen tigɛ tuma ye. Sɔgɔma joona a tigɛ.",
+      "new_bam": "Kalo fila ni kɔ sɛnɛ kɔ ntomati bɛ se ka tigɛ. Ni a bɛ wulen tigɛ tuma ye. Sɔgɔma joona a tigɛ.",
       "fr": "Deux mois et demi après le semis la tomate se récolte. Quand elle est rouge c'est le moment. Récoltez le matin tôt."
     },
     {
@@ -263,7 +263,7 @@
       "cultures": [
         "CULTURE_ARACHIDE"
       ],
-      "new_bam": "Karo saba sɛnɛ kɔ ti ga bɛ se ka bɔ. Ti ga bɔ dugukoloo la ka a jɛ. Tile saba a jɛ tile la.",
+      "new_bam": "Kalo saba sɛnɛ kɔ ti ga bɛ se ka bɔ. Ti ga bɔ dugukoloo la ka a jɛ. Tile saba a jɛ tile la.",
       "fr": "Trois mois après le semis l'arachide peut être récoltée. Arrachez de terre et séchez. Trois jours séchez au soleil."
     },
     {
@@ -290,7 +290,7 @@
       "cultures": [
         "CULTURE_MANIOC"
       ],
-      "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
+      "new_bam": "Kalo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
     },
     {
