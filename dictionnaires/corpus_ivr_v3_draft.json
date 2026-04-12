@@ -12,7 +12,7 @@
     "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
     "SOV_respecte": "verbe en fin de proposition"
   },
-  "total": 38,
+  "total": 43,
   "entries": [
     {
       "id": "riz_conseil_001",
@@ -265,6 +265,51 @@
       ],
       "new_bam": "Karo saba sɛnɛ kɔ ti ga bɛ se ka bɔ. Ti ga bɔ dugukoloo la ka a jɛ. Tile saba a jɛ tile la.",
       "fr": "Trois mois après le semis l'arachide peut être récoltée. Arrachez de terre et séchez. Trois jours séchez au soleil."
+    },
+    {
+      "id": "arachide_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_ARACHIDE"
+      ],
+      "new_bam": "Ti ga tɛ ji caman fɛ. Sanjiii dɔɔni tile saba o tile saba ka kɛnɛ. Ni ji caman don dugukoloo la, ti ga bɛ cɛn.",
+      "fr": "L'arachide ne veut pas trop d'eau. Un peu de pluie tous les 3 jours suffit. Si trop d'eau entre dans la terre, l'arachide pourrit."
+    },
+    {
+      "id": "arachide_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_ARACHIDE"
+      ],
+      "new_bam": "Ti ga tɛ nɔgɔ caman fɛ. Sɛnɛ tuma na aw ye fosifɔri don dugukoloo la. Ti ga bɛ azɔti kɛ a yɛrɛ, nɔgɔ caman man ɲi.",
+      "fr": "L'arachide n'a besoin que de peu d'engrais. Mets du phosphore dans la terre au moment de planter. L'arachide fabrique son propre azote, trop d'engrais c'est mauvais."
+    },
+    {
+      "id": "arachide_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_ARACHIDE"
+      ],
+      "new_bam": "Aw ye ti ga ja ka ɲɛ sani ka a don bɔn la. Ji bɛ ti ga halaki joona. Aw ye a mara yɔrɔ jalen ni saniya la.",
+      "fr": "Sèche bien les arachides avant de les mettre au grenier. L'humidité abîme rapidement les arachides. Garde-les dans un endroit sec et propre."
+    },
+    {
+      "id": "arachide_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_ARACHIDE"
+      ],
+      "new_bam": "Sanjiii kɔ ti ga sɔngɔ ka ca. Aw ye ti ga caya fara sugu la. Tulu kɛlaw bɛ ti ga san sɔngɔ ɲuman na.",
+      "fr": "Le prix des arachides monte après la saison des pluies. Amène ton surplus au marché. Les huileries achètent les arachides à bon prix."
+    },
+    {
+      "id": "arachide_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_ARACHIDE"
+      ],
+      "new_bam": "Ni ti ga fura bɛ ja, ji ka dɔgɔ. Joona aw ye ji don tile o tile. Ni ti ga bɛ cɛn, ji ka ca, aw ye ji bɔli labɛn.",
+      "fr": "Si les feuilles d'arachide sèchent et jaunissent, c'est le manque d'eau. Arrose rapidement chaque jour. Si les arachides pourrissent, il y a trop d'eau — améliore le drainage."
     },
     {
       "id": "manioc_conseil_001",
