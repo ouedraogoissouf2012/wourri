@@ -12,7 +12,7 @@
     "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
     "SOV_respecte": "verbe en fin de proposition"
   },
-  "total": 38,
+  "total": 46,
   "entries": [
     {
       "id": "riz_conseil_001",
@@ -292,6 +292,78 @@
       ],
       "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
+    },
+    {
+      "id": "gombo_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_GOMBO"
+      ],
+      "new_bam": "Aw ye dugukoloo labɛn ka ɲɛ fɔlɔ. Aw ye gan da santimɛtiri mugan mugan. Sɛnɛ kɔ nɔgɔ don dugukoloo la.",
+      "fr": "Pour bien cultiver le gombo, prépare bien ton sol. Plante le gombo avec 20 cm d'écart. Mets de l'engrais dans le sol après la plantation."
+    },
+    {
+      "id": "gombo_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": [
+        "CULTURE_GOMBO"
+      ],
+      "new_bam": "Gan sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛɛɛ wala sɛtanburuuu kalo ka ɲi. Sanjiii tɛ fana, gan bɛ se ka bɔ ni ji bɛ yen.",
+      "fr": "Le meilleur moment pour le gombo c est la saison des pluies. Mai ou septembre c est bien. Sans pluie aussi, le gombo peut pousser avec de l eau."
+    },
+    {
+      "id": "gombo_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": [
+        "CULTURE_GOMBO"
+      ],
+      "new_bam": "Kalo fila ni saba cɛ gan bɛ se ka tigɛ. Ni gan den bɛ nɔgɔ ka ɲɛ, tigɛ tuma ye. Tile fila o tile fila aw ye tigɛ.",
+      "fr": "Le gombo est prêt à récolter 2 à 3 mois après la plantation. Quand les fruits sont tendres et bien formés, récoltez vite. Récoltez un jour sur deux pour garder la qualité."
+    },
+    {
+      "id": "gombo_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_GOMBO"
+      ],
+      "new_bam": "Gan bɛ ji fɛ tile o tile. Aw ye ji don foroo la tile bɛɛ. Ni ji bɛ yen gan bɛ bɔ joona.",
+      "fr": "Le gombo a besoin d'eau chaque jour. Arrosez le champ quotidiennement. Le gombo pousse vite quand l'eau est disponible."
+    },
+    {
+      "id": "gombo_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_GOMBO"
+      ],
+      "new_bam": "Sɛnɛ kɔ NPK don dugukoloo la. Kɔnpɔsi fana bɛ a dɛmɛ ka bɔ. Kalo o kalo furakɛli kɛ.",
+      "fr": "Le gombo a besoin de NPK 15-15-15 après la plantation. Du compost l'aide aussi à bien pousser. Faites le traitement chaque mois."
+    },
+    {
+      "id": "gombo_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_GOMBO"
+      ],
+      "new_bam": "Ni gan fura bɛ wɛrɛ, bana wala kulun bɛ a la. Aw ye furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "fr": "Si les feuilles du gombo changent, il y a maladie ou pucerons. Traitez avec un insecticide rapidement. L'agent ANADER peut vous aider."
+    },
+    {
+      "id": "gombo_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_GOMBO"
+      ],
+      "new_bam": "Tigɛ kɔ joona aw ye gan fere. Aw ye sugu ta tuma bɛɛ. Gan mɔlen bɛ halaki joona, aw ye fere joona.",
+      "fr": "Vendez le gombo juste après la récolte. Allez vendre au marché régulièrement. Le gombo mûr se détériore vite, vendez rapidement."
+    },
+    {
+      "id": "gombo_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_GOMBO"
+      ],
+      "new_bam": "Gan bɛ se ka to tile wolonfila. Aw ye a mara yɔrɔ surunya na. Aw ye fere joona sani a ka halaki.",
+      "fr": "Le gombo se conserve environ 7 jours. Stocke-le dans un endroit frais. Vends vite avant qu'il ne se détériore."
     },
     {
       "id": "generic_salutation_001",
