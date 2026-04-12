@@ -12,7 +12,7 @@
     "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
     "SOV_respecte": "verbe en fin de proposition"
   },
-  "total": 38,
+  "total": 46,
   "entries": [
     {
       "id": "riz_conseil_001",
@@ -292,6 +292,78 @@
       ],
       "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
+    },
+    {
+      "id": "cacao_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_CACAO"
+      ],
+      "new_bam": "Kakawo ye Kote Divwari sɛnɛ kɔrɔ ye. Aw ye a sɛnɛ yiri kɔrɔ ka den kɛnɛw lakisi. San saba ni duuru cɛ kakawo fɔlɔ bɛ bɔ.",
+      "fr": "Le cacao est la principale culture de rente en Côte d'Ivoire. Plantez à l'ombre d'autres arbres pour protéger les jeunes plants. Le premier cacao arrive après 3 à 5 ans."
+    },
+    {
+      "id": "cacao_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": [
+        "CULTURE_CACAO"
+      ],
+      "new_bam": "Kakawo sɛnɛ tuma ɲuman ye awiriliiii ni mɛɛɛ kalo, sanjiii tuma fɔlɔ. Den kɛnɛw bɛ ji fɛ tuma bɛɛ. Aw ye den foroo labɛn fɔlɔ.",
+      "fr": "Le meilleur moment pour planter le cacao c'est en avril ou mai, au début de la grande saison des pluies. Les jeunes plants ont besoin d'humidité constante. Préparez une pépinière d'abord."
+    },
+    {
+      "id": "cacao_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": [
+        "CULTURE_CACAO"
+      ],
+      "new_bam": "Ni kakawo den bɛ nɛrɛmugu wala bilenman, tigɛ tuma ye. Aw ye a tigɛ ka ɲɛ, aw kana bolo halaki. Ɔkitɔburu ni marisiii kalo cɛ, tigɛ bɛ kɛ.",
+      "fr": "Le cacao se récolte quand les cabosses deviennent jaunes ou rouges. Coupez avec un outil tranchant sans abîmer la tige. Récoltez deux fois par an : octobre-décembre et mars-juin."
+    },
+    {
+      "id": "cacao_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_CACAO"
+      ],
+      "new_bam": "Kakawo bɛ sanjiii fɛ kosɛbɛ. Ji tɛ dɔɔni a bɛ se. Ni sanjiii tɛ kalo saba, aw ye ji don.",
+      "fr": "Le cacao a besoin de beaucoup de pluie. Il résiste à une courte sécheresse. Si pas de pluie pendant 3 mois, arrosez."
+    },
+    {
+      "id": "cacao_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_CACAO"
+      ],
+      "new_bam": "Kakawo bɛ nɔgɔ fɛ san bɛɛ. NPK wala potasi don sanjiii tuma fɔlɔ ni laban. Dugukolo ɲuman na kakawo den caman bɛ bɔ.",
+      "fr": "Le cacao a besoin d'engrais chaque année. Mettez NPK ou potasse deux fois par an, au début et à la fin de la saison des pluies. Un sol bien fertilisé donne plus de cabosses."
+    },
+    {
+      "id": "cacao_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_CACAO"
+      ],
+      "new_bam": "Kakawo jalen bɛ se ka to kalo caman saki saniyalen na. Aw kana a bila ji bɛ yɔrɔ. Kakawo jalen ka ɲɛ bɛ sɔngɔ ɲuman sɔrɔ.",
+      "fr": "Après séchage, le cacao peut se garder plusieurs mois dans des sacs propres. L'humidité fait moisir, ne stockez pas dans un endroit humide. Un cacao bien séché se vend mieux."
+    },
+    {
+      "id": "cacao_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_CACAO"
+      ],
+      "new_bam": "Aw ye aw ka kakawo fere jɛkulun na, sɔngɔ ɲuman bɛ sɔrɔ. Gɔfɛrɛnɛman bɛ sɔngɔ sɛbɛn san bɛɛ. Aw ye fere tuma ɲuman makɔnɔ.",
+      "fr": "Vendez votre cacao à une coopérative pour avoir le meilleur prix. Le gouvernement fixe le prix officiel chaque année. Attendez la campagne officielle pour vendre."
+    },
+    {
+      "id": "cacao_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_CACAO"
+      ],
+      "new_bam": "Kakawo bana kɔrɔ ye cɛnni ye, den bɛ finman. Ni den bananen ye, aw ye a bɔ ka a jɛni. Aw ye kɥivri furakɛli kɛ, yiri da yɔrɔ jan.",
+      "fr": "La pourriture brune est la maladie la plus grave du cacao — les cabosses noircissent. Si vous voyez des cabosses malades, retirez et brûlez-les vite. Traitez au cuivre et espacez bien les arbres."
     },
     {
       "id": "generic_salutation_001",
