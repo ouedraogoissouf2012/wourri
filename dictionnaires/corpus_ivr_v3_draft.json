@@ -12,7 +12,7 @@
     "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
     "SOV_respecte": "verbe en fin de proposition"
   },
-  "total": 38,
+  "total": 46,
   "entries": [
     {
       "id": "riz_conseil_001",
@@ -292,6 +292,78 @@
       ],
       "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
+    },
+    {
+      "id": "coton_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_COTON"
+      ],
+      "new_bam": "Aw ye foroo labɛn ka ɲɛ fɔlɔ. Aw ye kɔrɔni da santimɛtiri mugan mugan. NPK bɛ a dɛmɛ ka bɔ.",
+      "fr": "Pour bien cultiver le coton, prépare bien ton champ. Plante le coton avec 20 cm d'écart. Le NPK peut l'aider."
+    },
+    {
+      "id": "coton_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": [
+        "CULTURE_COTON"
+      ],
+      "new_bam": "Kɔrɔni sɛnɛ tuma ye sanjiii bɛ daminɛ tuma. Mɛɛɛ wala sɛtanburuuu kalo ka ɲi. Aw ye kɔrɔni sɛnɛ sanjiii fɔlɔ na.",
+      "fr": "La saison de plantation du coton c'est quand les pluies commencent. Mai ou septembre c'est bien. Plante le coton au début des pluies."
+    },
+    {
+      "id": "coton_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": [
+        "CULTURE_COTON"
+      ],
+      "new_bam": "Kalo kɔnɔntɔn ni tan sɛnɛ kɔ kɔrɔni bɛ se ka tigɛ. Ni kɔrɔni den bɛ yɛlɛ, tigɛ tuma ye. Aw ye tigɛ joona ka a kisi.",
+      "fr": "Le coton est prêt à récolter 9 à 10 mois après la plantation. Quand les capsules s'ouvrent, c'est le bon moment. Faites la récolte vite pour éviter les pertes."
+    },
+    {
+      "id": "coton_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_COTON"
+      ],
+      "new_bam": "Kɔrɔni bɛ ji fɛ sɛnɛ kɔ. Ni sanjiii tɛ na joona, aw ye ji don foroo la. Kɔrɔni bɛ se ka sɔn ji tɛ ma dɔɔni.",
+      "fr": "Le coton a besoin d'eau après la plantation. Si la pluie tarde, arrosez le champ. Le coton peut aussi résister à la sécheresse."
+    },
+    {
+      "id": "coton_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_COTON"
+      ],
+      "new_bam": "Kɔrɔni bɛ NPK fɛ kosɛbɛ. Ire fana bɛ a dɛmɛ ka bɔ ka ɲɛ. Tile tan ni duuru sɛnɛ kɔ furakɛli kɛ.",
+      "fr": "Le coton préfère le NPK 14-23-14. L'urée l'aide aussi à bien pousser. Faites le traitement 15 jours après la plantation."
+    },
+    {
+      "id": "coton_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_COTON"
+      ],
+      "new_bam": "Ni kɔrɔni fura bɛ bin joona, bana wala kulun bɛ a la. Aw ye furakɛli kɛ ka kɔrɔni kisi. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "fr": "Si les fleurs de coton tombent trop vite, il y a maladie ou insectes. Traitez avec un insecticide pour protéger le coton. L'agent ANADER peut vous aider."
+    },
+    {
+      "id": "coton_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_COTON"
+      ],
+      "new_bam": "Aw ye kɔrɔni fere jɛkulun fɛ. Jɛkulun bɛ sɔngɔ ɲuman sɔrɔ aw ye. Tigɛ kɔ joona aw ye kɔrɔni mara ka ɲɛ.",
+      "fr": "Vendez le coton à travers un groupement. Le groupement vous obtient un meilleur prix. Stockez bien votre coton juste après la récolte."
+    },
+    {
+      "id": "coton_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_COTON"
+      ],
+      "new_bam": "Aw ye kɔrɔni don saki na yɔrɔ jalen na. Aw ye saki siri ka ɲɛ. Ji kana se kɔrɔni mara yɔrɔ ma.",
+      "fr": "Pour stocker le coton, mettez-le dans un endroit sec. Mettez le coton dans des sacs et attachez-les. L'eau ne doit pas atteindre le lieu de stockage."
     },
     {
       "id": "generic_salutation_001",
