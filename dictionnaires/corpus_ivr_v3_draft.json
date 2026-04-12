@@ -12,7 +12,7 @@
     "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
     "SOV_respecte": "verbe en fin de proposition"
   },
-  "total": 38,
+  "total": 46,
   "entries": [
     {
       "id": "riz_conseil_001",
@@ -292,6 +292,78 @@
       ],
       "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
+    },
+    {
+      "id": "mil_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_MIL"
+      ],
+      "new_bam": "Aw ye foroo labɛn ka ɲɛ fɔlɔ. Aw ye nyɔ da santimɛtiri mugan mugan. Sɛnɛ kɔ NPK don dugukoloo la.",
+      "fr": "Pour bien cultiver le mil, prépare bien ton champ d'abord. Plante le mil avec 20 cm d'écart. Mets du NPK 15-15-15 dans le sol après la plantation."
+    },
+    {
+      "id": "mil_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": [
+        "CULTURE_MIL"
+      ],
+      "new_bam": "Nyɔ sɛnɛ tuma ɲuman ye sanjiii fɔlɔ tuma na. Mɛɛɛ wala sɛtanburuuu kalo, nyɔ bɛ se ka sɛnɛ. Aw ye sanjiii fɔlɔ makɔnɔ.",
+      "fr": "Le meilleur moment pour planter le mil c'est au début des pluies. En mai ou septembre le mil peut être planté. Attends que les pluies commencent d'abord."
+    },
+    {
+      "id": "mil_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": [
+        "CULTURE_MIL"
+      ],
+      "new_bam": "Kalo naani sɛnɛ kɔ nyɔ bɛ se ka tigɛ. Ni nyɔ bolo bɛ ja, a mɔlen don. Aw ye tigɛ joona sanjiii ɲɛ.",
+      "fr": "Le mil est prêt à récolter 4 mois après la plantation. Quand les tiges sèchent, le mil est mûr. Faites la récolte vite avant les pluies."
+    },
+    {
+      "id": "mil_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_MIL"
+      ],
+      "new_bam": "Nyɔ bɛ ji fɛ tile mugan fɔlɔ kɔnɔ. Ni sanjiii tɛ na, aw ye ji don foroo la. Ji caman bɛ nyɔ cɛn, aw kana a kɛ.",
+      "fr": "Le mil a besoin d'eau surtout les 20 premiers jours. Si la pluie manque, arrosez le champ. Trop d'eau fait pourrir le mil, évitez l'excès."
+    },
+    {
+      "id": "mil_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_MIL"
+      ],
+      "new_bam": "Sɛnɛ kɔ NPK don dugukoloo la. Tile mugan kɔ ire don ka nyɔ dɛmɛ. Tile tan ni duuru kɔ furakɛli kɛ.",
+      "fr": "Le mil a besoin de NPK 15-15-15 après la plantation. Apportez de l'urée 20 jours après pour aider la croissance. Faites le traitement 15 jours après la plantation."
+    },
+    {
+      "id": "mil_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_MIL"
+      ],
+      "new_bam": "Ni nyɔ bolo bɛ wɛrɛ, bana bɛ a la. Aw ye furakɛli kɛ ka nyɔ kisi. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "fr": "Si les tiges du mil changent de couleur, il y a une maladie. Appliquez un traitement pour sauver le mil. L'agent ANADER peut vous aider."
+    },
+    {
+      "id": "mil_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_MIL"
+      ],
+      "new_bam": "Nyɔ fere tuma ɲuman ye tigɛ kɔ joona. Aw ye nyɔ fere sugu la wala julabaga fɛ. Sanjiii kɔ sɔngɔ ka ɲi.",
+      "fr": "Le meilleur moment pour vendre le mil c'est juste après la récolte. Vendez au marché ou à un commerçant. Le prix est meilleur après la saison des pluies."
+    },
+    {
+      "id": "mil_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_MIL"
+      ],
+      "new_bam": "Aw ye nyɔ ja ka ɲɛ fɔlɔ. Aw ye nyɔ don saki ɲuman na. Yɔrɔ jalen na a mara ka nyɔ kisi.",
+      "fr": "Pour stocker le mil, faites-le bien sécher d'abord. Mettez le mil dans un bon sac pour le conserver. Le lieu de stockage doit être au sec pour protéger le mil."
     },
     {
       "id": "generic_salutation_001",
