@@ -12,7 +12,7 @@
     "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
     "SOV_respecte": "verbe en fin de proposition"
   },
-  "total": 38,
+  "total": 46,
   "entries": [
     {
       "id": "riz_conseil_001",
@@ -292,6 +292,78 @@
       ],
       "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
+    },
+    {
+      "id": "patate_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_PATATE"
+      ],
+      "new_bam": "Aw ye dugukoloo labɛn ka ɲɛ. Aw ye woso bolo da santimɛtiri bi saba. Sanjiii tuma na sɛnɛ ka ɲi.",
+      "fr": "Pour bien cultiver la patate douce, prépare bien ton sol. Plante les boutures à 30 cm d'écart. La saison des pluies est le meilleur moment."
+    },
+    {
+      "id": "patate_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": [
+        "CULTURE_PATATE"
+      ],
+      "new_bam": "Woso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛɛɛ wala sɛtanburuuu kalo ka ɲi. Sisan aw ye foroo labɛn.",
+      "fr": "Le meilleur moment pour planter la patate douce c'est la saison des pluies. Mai ou septembre c'est bon. Prépare ton champ maintenant pour être prêt."
+    },
+    {
+      "id": "patate_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": [
+        "CULTURE_PATATE"
+      ],
+      "new_bam": "Kalo saba ni naani cɛ woso bɛ se ka bɔ. Ni fura bɛ nɛrɛmugu, tigɛ tuma ye. Aw ye dugukoloo sɛgɛsɛgɛ ka woso bɔ.",
+      "fr": "La patate douce est prête à récolter 3 à 4 mois après la plantation. Quand les feuilles commencent à jaunir, c'est le signe. Creusez pour sortir les tubercules."
+    },
+    {
+      "id": "patate_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_PATATE"
+      ],
+      "new_bam": "Woso bɛ ji fɛ nka ji caman man ɲi. Ni sanjiii tɛ na, ji dɔɔni don. Woso bɛ se ka to kalo kelen ji tɛ.",
+      "fr": "La patate douce a besoin d'eau mais ne supporte pas l'excès. Sans pluie, arrosez légèrement. La patate peut tenir un mois sans eau."
+    },
+    {
+      "id": "patate_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_PATATE"
+      ],
+      "new_bam": "Woso bɛ nɔgɔ bɔlen fɛ sɛnɛ ɲɛ. NPK dɔɔni sɛnɛ kɔ ka kɛnɛ. Nɔgɔ caman bɛ woso halaki.",
+      "fr": "La patate douce aime la fumure organique avant la plantation. Un peu de NPK juste après la plantation suffit. Trop d'engrais abîme la patate."
+    },
+    {
+      "id": "patate_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_PATATE"
+      ],
+      "new_bam": "Ni woso bolo bɛ ja ka bin, kulun bɛ a la. Aw ye furakɛli kɛ joona. Woso bananen bɔ foroo la.",
+      "fr": "Si les tiges de la patate douce se flétrisent ou tombent trop tôt, c'est le charançon. Traitez avec un insecticide rapidement. Arrachez les plants très atteints."
+    },
+    {
+      "id": "patate_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_PATATE"
+      ],
+      "new_bam": "Aw ye woso fere sugu la. Tigɛ kɔ tile saba kɔnɔ aw ye fere. Sanjiii tɛ tuma na sɔngɔ ka ɲi.",
+      "fr": "Vendez la patate douce au marché. Vendez frais dans les 3 jours après récolte. Le prix est meilleur quand il ne pleut pas."
+    },
+    {
+      "id": "patate_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_PATATE"
+      ],
+      "new_bam": "Woso kura bɛ se ka to kalo kelen. Aw ye a mara yɔrɔ surunya na fiɲɛ bɛ yɔrɔ. Aw ye a ja ka a mara tuma jan.",
+      "fr": "La patate douce fraîche ne se conserve qu'un mois environ. Stockez dans un endroit frais et ventilé. Faites sécher pour une meilleure conservation."
     },
     {
       "id": "generic_salutation_001",
