@@ -1,6 +1,17 @@
 {
-  "version": "3.0-draft",
-  "description": "Phrases IVR reecrites en bambara SOV naturel - DRAFT a valider",
+  "version": "3.0-dioula-ci",
+  "description": "Corpus IVR v3 en DIOULA IVOIRIEN (dyu). Corrigé depuis bambara malien. Vérifié contre Findora 20k paires.",
+  "corrections_appliquees": {
+    "waati→tuma": "1114 occ. CI (Findora)",
+    "kalo→karo": "282 occ. CI (Findora)",
+    "kɔlɔsi→kɔrɔsi": "347 occ. CI (Findora)",
+    "feere→fere": "5 occ. CI (Findora)",
+    "dɔgɔkun→lɔgɔkun": "31 occ. CI (Findora)",
+    "sɛnɛkɛla→sɛnɛbaga": "1 occ. CI (Findora)",
+    "deen→den": "attesté grammaire",
+    "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
+    "SOV_respecte": "verbe en fin de proposition"
+  },
   "total": 38,
   "entries": [
     {
@@ -9,8 +20,8 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Aw ye malo sɛnɛ mɛ kalo la, sanji waati la. Aw ye dugukolo ɲini min bɛ ji mara. Aw ye a sɛnɛ santimɛtiri mugan mugan.",
-      "fr": "Plantez le riz en mai pendant les pluies. Cherchez un sol qui garde l'eau. Plantez avec 20cm d'écart."
+      "new_bam": "Mɛɛɛ karo la aw ye maa loo sɛnɛ. Sanji tuma na dugukoloo ɲini min bɛ ji mara. A da santimɛtiri mugan mugan.",
+      "fr": "En mai, plantez le riz. Pendant les pluies, cherchez un sol qui garde l'eau. Plantez à 20cm d'écart."
     },
     {
       "id": "riz_saison_001",
@@ -18,7 +29,7 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Malo sɛnɛ waati ɲuman ye mɛ kalo ye. O waati la sanji bɛ na ka foro ɲɛ. Aw ye foro labɛn ka ɲɛ.",
+      "new_bam": "Maa loo sɛnɛ tuma ɲuman ye mɛɛɛ karo ye. O tuma la sanjiii bɛ na ka foroo ɲɛ. Aw ye foroo labɛn ka ɲɛ.",
       "fr": "Le meilleur moment pour le riz est mai. La pluie arrive pour arroser. Préparez bien votre terre."
     },
     {
@@ -27,8 +38,8 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Ni sanji tɛ na, aw bɛ se ka malo sɛnɛ ji bɛ yɔrɔ. Aw ye malo sɛnɛ dugukolo jiman na. Sanji kɔ, foro caman bɛ se.",
-      "fr": "Sans pluie plantez le riz là où il y a de l'eau. Plantez dans un sol humide. Après la pluie beaucoup de champs sont possibles."
+      "new_bam": "Ni sanjiii tɛ na aw bɛ se ka maa loo sɛnɛ ji bɛ yɔrɔ. Dugukolo jiman na aw ye maa loo sɛnɛ. Sanji kɔ foroo caman bɛ se.",
+      "fr": "Sans pluie plantez le riz là où il y a de l'eau. Dans un sol humide, plantez. Après la pluie beaucoup de champs sont possibles."
     },
     {
       "id": "riz_saison_seche_001",
@@ -36,8 +47,8 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Malo sɛnɛ waati ɲuman ye mɛ kalo ye. O waati la sanji bɛ na. Aw ye aw ka foro labɛn sisan.",
-      "fr": "Le meilleur moment pour le riz est mai. La pluie arrive à ce moment. Préparez votre champ maintenant."
+      "new_bam": "Maa loo sɛnɛ tuma ɲuman ye mɛɛɛ karo ye. O tuma la sanjiii bɛ na. Sisan aw ye aw ka foroo labɛn.",
+      "fr": "Le meilleur moment pour le riz est mai. La pluie arrive à ce moment. Maintenant, préparez votre champ."
     },
     {
       "id": "riz_recolte_001",
@@ -45,7 +56,7 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Kalo saba sɛnɛ kɔ, malo bɛ se ka tigɛ. Ni malo kisɛ bɛ gɛlɛn, tigɛ waati ye. Aw ye malo tigɛ ka a jɛ tile la.",
+      "new_bam": "Karo saba sɛnɛ kɔ, maa loo bɛ se ka tigɛ. Ni maa loo kisɛ gɛlɛn, tigɛ tuma ye. Aw ye maa loo tigɛ ka a jɛ tile la.",
       "fr": "Trois mois après le semis le riz peut être récolté. Quand le grain est dur c'est le moment. Récoltez et séchez au soleil."
     },
     {
@@ -54,8 +65,8 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Malo bɛ ji fɛ kosɛbɛ. Aw ye ji don foro la tile o tile. Ni ji ma sɔrɔ kalo fɔlɔ la, malo tɛ se ka bɔ.",
-      "fr": "Le riz a besoin de beaucoup d'eau. Arrosez chaque jour. Sans eau le premier mois le riz ne pousse pas."
+      "new_bam": "Maa loo bɛ ji fɛ kosɛbɛ. Tile o tile, aw ye ji don foroo la. Karo fɔlɔ la ni ji ma sɔrɔ, maa loo tɛ se ka bɔ.",
+      "fr": "Le riz a besoin de beaucoup d'eau. Chaque jour arrosez le champ. Le premier mois sans eau le riz ne pousse pas."
     },
     {
       "id": "riz_engrais_001",
@@ -63,8 +74,8 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Aw ye NPK don dugukolo la sɛnɛ waati la. Dɔgɔkun wɔɔrɔ kɔ, aw ye ire don. Nɔgɔ bɛ malo dɛmɛ ka bɔ ka ɲɛ.",
-      "fr": "Mettez du NPK au moment du semis. Six semaines après ajoutez de l'urée. L'engrais aide le riz à bien pousser."
+      "new_bam": "Sɛnɛ tuma na aw ye NPK don dugukoloo la. Lɔgɔkun wɔɔrɔ kɔ ire don. Nɔgɔ bɛ maa loo dɛmɛ ka bɔ ka ɲɛ.",
+      "fr": "Au moment du semis mettez du NPK dans le sol. Six semaines après ajoutez de l'urée. L'engrais aide le riz à bien pousser."
     },
     {
       "id": "riz_stockage_001",
@@ -72,7 +83,7 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Malo tigɛlen kɔ, aw ye a jɛ tile la ka ɲɛ. Aw ye a don bɔn la ji tɛ yɔrɔ. Malo jɛlen bɛ se ka to kalo caman.",
+      "new_bam": "Maa loo tigɛlen kɔ a jɛ tile la ka ɲɛ. A don bɔn la ji tɛ yɔrɔ. Maa loo jɛlen bɛ se ka to karo caman.",
       "fr": "Après la récolte séchez bien au soleil. Stockez dans un grenier sec. Le riz sec se conserve longtemps."
     },
     {
@@ -81,8 +92,8 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Malo sɔngɔ ka ca sanji kɔ. Aw ye malo caya fara sugu la. Ni aw ye malo mara, aw bɛ wari caman sɔrɔ.",
-      "fr": "Le prix du riz monte après les pluies. Amenez le surplus au marché. Si vous gardez le riz vous aurez plus d'argent."
+      "new_bam": "Sanji kɔ maa loo sɔngɔ ka ca. Maa loo caya fara sugu la. Ni aw ye maa loo mara aw bɛ wari caman sɔrɔ.",
+      "fr": "Après les pluies le prix du riz monte. Amenez le surplus au marché. Si vous gardez le riz vous aurez plus d'argent."
     },
     {
       "id": "riz_diagnostic_001",
@@ -90,8 +101,8 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Ni malo fura bɛ gɛlɛn ka wɛrɛ, bana bɛ a la. Aw ye fura bananen bɔ foro la joona. Aw ye foro kɔlɔsi dɔgɔkun o dɔgɔkun.",
-      "fr": "Si les feuilles jaunissent c'est une maladie. Enlevez les plants malades vite. Surveillez le champ chaque semaine."
+      "new_bam": "Ni maa loo fura bɛ wɛrɛ ka gɛlɛn bana bɛ a la. Joona aw ye fura bananen bɔ foroo la. Lɔgɔkun o lɔgɔkun foroo kɔrɔsi.",
+      "fr": "Si les feuilles jaunissent c'est une maladie. Vite enlevez les plants malades. Chaque semaine surveillez le champ."
     },
     {
       "id": "riz_diagnostic_002",
@@ -99,8 +110,8 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Ni kulun bɛ malo dumu, aw ye furakɛ bɔ. Aw ye furakɛ kɛ tile fila o tile fila. Aw ye foro kɔlɔsi ka ɲɛ.",
-      "fr": "Si les insectes mangent le riz traitez. Traitez tous les deux jours. Surveillez bien le champ."
+      "new_bam": "Ni kulun bɛ maa loo dumu furakɛ bɔ. Tile fila o tile fila furakɛ kɛ. Foro kɔrɔsi ka ɲɛ.",
+      "fr": "Si les insectes mangent le riz traitez. Tous les deux jours traitez. Surveillez bien le champ."
     },
     {
       "id": "mais_conseil_001",
@@ -108,8 +119,8 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Aw ye kaba sɛnɛ awirili kalo la, sanji fɔlɔ kɔ. Aw ye dugukolo sɛgɛsɛgɛ ka ɲɛ. Aw ye a dan santimɛtiri bi seegin seegin.",
-      "fr": "Plantez le maïs en avril après les premières pluies. Labourez bien la terre. Plantez à 80cm d'écart."
+      "new_bam": "Awiriliiii karo la sanjiii fɔlɔ kɔ aw ye kabaa sɛnɛ. Dugukolo sɛgɛsɛgɛ ka ɲɛ. A da santimɛtiri bi seegin seegin.",
+      "fr": "En avril après les premières pluies plantez le maïs. Labourez bien la terre. Plantez à 80cm d'écart."
     },
     {
       "id": "mais_saison_001",
@@ -117,7 +128,7 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Kaba sɛnɛ waati ɲuman ye awirili ni mɛ kalo ye. Sanji dɔɔni ka kan ka na fɔlɔ. Aw ye kaba kisɛ dan dugukolo la.",
+      "new_bam": "Kaba sɛnɛ tuma ɲuman ye awiriliiii ni mɛɛɛ karo ye. Sanji dɔɔni ka kan ka na fɔlɔ. Aw ye kabaa kisɛ da dugukoloo la.",
       "fr": "Le meilleur moment pour le maïs est avril-mai. Il faut un peu de pluie d'abord. Semez les grains dans la terre."
     },
     {
@@ -126,7 +137,7 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Ni sanji tɛ na, kaba tɛ se ka bɔ. Aw ye sanji waati makɔnɔ. Marisi wala awirili kalo la, sanji bɛ na.",
+      "new_bam": "Ni sanjiii tɛ na, kabaa tɛ se ka bɔ. Aw ye sanjiii tuma makɔnɔ. Marisiii wala awiriliiii karo la, sanjiii bɛ na.",
       "fr": "Sans pluie le maïs ne pousse pas. Attendez la saison des pluies. En mars ou avril la pluie arrive."
     },
     {
@@ -135,7 +146,7 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Tile kɛmɛ sɛnɛ kɔ, kaba bɛ se ka tigɛ. Ni kaba gɛlɛn ka jɛ, tigɛ waati ye. Aw ye kaba jɛ tile la.",
+      "new_bam": "Tile kɛmɛ sɛnɛ kɔ, kabaa bɛ se ka tigɛ. Ni kabaa gɛlɛn ka jɛ, tigɛ tuma ye. Aw ye kabaa jɛ tile la.",
       "fr": "Cent jours après le semis le maïs peut être récolté. Quand l'épi est dur et sec c'est le moment. Séchez au soleil."
     },
     {
@@ -144,7 +155,7 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Kaba bɛ ji fɛ tile o tile. Ni sanji tɛ na, aw ye ji don foro la. Sɛnɛ kɔ dɔgɔkun fɔlɔ la, ji ka kan ka don.",
+      "new_bam": "Kaba bɛ ji fɛ tile o tile. Ni sanjiii tɛ na, aw ye ji don foroo la. Sɛnɛ kɔ lɔgɔkun fɔlɔ la, ji ka kan ka don.",
       "fr": "Le maïs a besoin d'eau chaque jour. Sans pluie arrosez le champ. La première semaine après le semis l'eau est cruciale."
     },
     {
@@ -153,8 +164,8 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Aw ye NPK don dugukolo la sɛnɛ waati la. Tile bi saba kɔ, aw ye ire don. Nɔgɔ bɛ kaba dɛmɛ ka bon.",
-      "fr": "Mettez du NPK au moment du semis. Trente jours après ajoutez de l'urée. L'engrais aide le maïs à grandir."
+      "new_bam": "Sɛnɛ tuma na NPK don dugukoloo la. Tile bi saba kɔ ire don. Nɔgɔ bɛ kabaa dɛmɛ ka bon.",
+      "fr": "Au moment du semis mettez du NPK. Trente jours après ajoutez de l'urée. L'engrais aide le maïs à grandir."
     },
     {
       "id": "mais_stockage_001",
@@ -162,7 +173,7 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Kaba tigɛlen kɔ, aw ye a jɛ tile la. Aw ye a don saku la bɔn kɔnɔ. Ji kana don a la.",
+      "new_bam": "Kaba tigɛlen kɔ a jɛ tile la. A don saku la bɔn kɔnɔ. Ji kana don a la.",
       "fr": "Après la récolte séchez le maïs au soleil. Mettez dans des sacs au grenier. L'humidité ne doit pas y entrer."
     },
     {
@@ -171,8 +182,8 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Kaba sɔngɔ ka ca kalo wɔɔrɔ sɛnɛ kɔ. Sugu mɔgɔw bɛ kaba san o waati la. Aw ye aw ta kaba mara ka sɔngɔ ɲuman sɔrɔ.",
-      "fr": "Le prix du maïs monte six mois après la récolte. Les commerçants achètent à ce moment. Gardez votre maïs pour un meilleur prix."
+      "new_bam": "Karo wɔɔrɔ sɛnɛ kɔ, kabaa sɔngɔ ka ca. Sugu mɔgɔw bɛ kabaa san o tuma la. Aw ye aw ta kabaa mara ka sɔngɔ ɲuman sɔrɔ.",
+      "fr": "Six mois après la récolte le prix du maïs monte. Les commerçants achètent à ce moment. Gardez votre maïs pour un meilleur prix."
     },
     {
       "id": "mais_diagnostic_001",
@@ -180,7 +191,7 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Ni kaba fura bɛ gɛlɛn, bana bɛ a la. Aw ye furakɛ kɛ joona. Aw ye kaba bananen bɔ foro la.",
+      "new_bam": "Ni kabaa fura bɛ gɛlɛn bana bɛ a la. Joona furakɛ kɛ. Kaba bananen bɔ foroo la.",
       "fr": "Si les feuilles jaunissent c'est une maladie. Traitez rapidement. Enlevez les plants malades."
     },
     {
@@ -189,8 +200,8 @@
       "cultures": [
         "CULTURE_TOMATE"
       ],
-      "new_bam": "Tomati sɛnɛ la, aw ye kisɛ dan fɔlɔ ka deen bɔ. O kɔ aw ye deen cɛ foro la. Aw ye ji don tile o tile.",
-      "fr": "Pour la tomate semez d'abord pour faire des plants. Puis transplantez au champ. Arrosez chaque jour."
+      "new_bam": "Ntomati sɛnɛ la kisɛ da fɔlɔ ka den bɔ. O kɔ den cɛ foroo la. Tile o tile ji don.",
+      "fr": "Pour la tomate semez d'abord pour faire des plants. Puis transplantez au champ. Chaque jour arrosez."
     },
     {
       "id": "tomate_saison_001",
@@ -198,7 +209,7 @@
       "cultures": [
         "CULTURE_TOMATE"
       ],
-      "new_bam": "San bɛɛ aw bɛ se ka tomati sɛnɛ, ni ji bɛ yen. Ni sanji tɛ na, aw ye ji don foro la tile bɛɛ. Aw ye tomati kisɛ dan fɔlɔ, o kɔ aw ye a cɛ foro la.",
+      "new_bam": "San bɛɛ aw bɛ se ka ntomati sɛnɛ ni ji bɛ yen. Ni sanjiii tɛ na tile bɛɛ ji don foroo la. Kisɛ da fɔlɔ o kɔ a cɛ foroo la.",
       "fr": "Toute l'année vous pouvez planter la tomate si l'eau est là. Sans pluie arrosez chaque jour. Semez d'abord puis transplantez."
     },
     {
@@ -207,7 +218,7 @@
       "cultures": [
         "CULTURE_TOMATE"
       ],
-      "new_bam": "Kalo fila ni kɔ sɛnɛ kɔ, tomati bɛ se ka tigɛ. Ni a bɛ wulen, tigɛ waati ye. Aw ye a tigɛ sɔgɔma joona.",
+      "new_bam": "Karo fila ni kɔ sɛnɛ kɔ ntomati bɛ se ka tigɛ. Ni a bɛ wulen tigɛ tuma ye. Sɔgɔma joona a tigɛ.",
       "fr": "Deux mois et demi après le semis la tomate se récolte. Quand elle est rouge c'est le moment. Récoltez le matin tôt."
     },
     {
@@ -216,8 +227,8 @@
       "cultures": [
         "CULTURE_TOMATE"
       ],
-      "new_bam": "Tomati bɛ ji fɛ kosɛbɛ tile o tile. Aw ye ji don tomati juku kɔrɔ. Aw kana ji don tomati fura kan.",
-      "fr": "La tomate a besoin de beaucoup d'eau chaque jour. Arrosez au pied. N'arrosez pas sur les feuilles."
+      "new_bam": "Tile o tile, ntomati bɛ ji fɛ kosɛbɛ. Aw ye ji don ntomati juku kɔrɔ. Aw kana ji don ntomati fura kan.",
+      "fr": "Chaque jour la tomate a besoin de beaucoup d'eau. Arrosez au pied. N'arrosez pas sur les feuilles."
     },
     {
       "id": "arachide_conseil_001",
@@ -225,8 +236,8 @@
       "cultures": [
         "CULTURE_ARACHIDE"
       ],
-      "new_bam": "Aw ye tiga sɛnɛ mɛ kalo la, sanji waati la. Aw ye dugukolo sɛgɛsɛgɛ ka ɲɛ. Aw ye tiga kisɛ dan santimɛtiri mugan mugan.",
-      "fr": "Plantez l'arachide en mai pendant les pluies. Labourez bien la terre. Semez à 20cm d'écart."
+      "new_bam": "Mɛɛɛ karo la sanjiii tuma na aw ye ti ga sɛnɛ. Dugukolo sɛgɛsɛgɛ ka ɲɛ. Ti ga kisɛ da santimɛtiri mugan mugan.",
+      "fr": "En mai pendant les pluies plantez l'arachide. Labourez bien la terre. Semez à 20cm d'écart."
     },
     {
       "id": "arachide_saison_001",
@@ -234,7 +245,7 @@
       "cultures": [
         "CULTURE_ARACHIDE"
       ],
-      "new_bam": "Tiga sɛnɛ waati ɲuman ye mɛ ni zuwɛn kalo ye. Dugukolo ka kan ka labɛn ka ɲɛ. Tiga bɛ sanji fɛ ka bɔ.",
+      "new_bam": "Ti ga sɛnɛ tuma ɲuman ye mɛɛɛ ni zuwɛɛɛn karo ye. Dugukolo ka kan ka labɛn ka ɲɛ. Ti ga bɛ sanjiii fɛ ka bɔ.",
       "fr": "Le meilleur moment pour l'arachide est mai-juin. Le sol doit être bien préparé. L'arachide a besoin de pluie."
     },
     {
@@ -243,7 +254,7 @@
       "cultures": [
         "CULTURE_ARACHIDE"
       ],
-      "new_bam": "Ni sanji tɛ na, tiga tɛ se ka bɔ. Aw ye mɛ wala sɛtanburu kalo makɔnɔ. Tiga bɛ sanji fɛ ka se ka bɔ.",
+      "new_bam": "Ni sanjiii tɛ na, ti ga tɛ se ka bɔ. Aw ye mɛɛɛ wala sɛtanburuuu karo makɔnɔ. Ti ga bɛ sanjiii fɛ ka se ka bɔ.",
       "fr": "Sans pluie l'arachide ne pousse pas. Attendez mai ou septembre. L'arachide a besoin de pluie."
     },
     {
@@ -252,8 +263,8 @@
       "cultures": [
         "CULTURE_ARACHIDE"
       ],
-      "new_bam": "Kalo saba sɛnɛ kɔ, tiga bɛ se ka bɔ. Aw ye tiga bɔ dugukolo la ka a jɛ. Aw ye a jɛ tile la tile saba.",
-      "fr": "Trois mois après le semis l'arachide peut être récoltée. Arrachez de terre et séchez. Séchez au soleil trois jours."
+      "new_bam": "Karo saba sɛnɛ kɔ ti ga bɛ se ka bɔ. Ti ga bɔ dugukoloo la ka a jɛ. Tile saba a jɛ tile la.",
+      "fr": "Trois mois après le semis l'arachide peut être récoltée. Arrachez de terre et séchez. Trois jours séchez au soleil."
     },
     {
       "id": "manioc_conseil_001",
@@ -261,7 +272,7 @@
       "cultures": [
         "CULTURE_MANIOC"
       ],
-      "new_bam": "Bananku sɛnɛ la, aw ye bolo kɛ mɛtiri kelen kelen. Aw ye bolo turu dugukolo la kɔrɔ kɔrɔ. Bananku tɛ nɔgɔ caman fɛ.",
+      "new_bam": "Bananku sɛnɛ la bolo kɛ mɛtɛrɛ kelen kelen. Bolo turu dugukoloo la kɔrɔ kɔrɔ. Bananku tɛ nɔgɔ caman fɛ.",
       "fr": "Pour le manioc coupez des boutures d'un mètre. Plantez en biais dans la terre. Le manioc n'a pas besoin de beaucoup d'engrais."
     },
     {
@@ -270,7 +281,7 @@
       "cultures": [
         "CULTURE_MANIOC"
       ],
-      "new_bam": "San bɛɛ aw bɛ se ka bananku sɛnɛ. Nka sanji daminɛ waati ka ɲi. Aw ye bolo turu dugukolo la. Ni sanji tɛ na kosɛbɛ, aw kana sɛnɛ.",
+      "new_bam": "San bɛɛ aw bɛ se ka banankuuu sɛnɛ, nka sanjiii daminɛ tuma ka ɲi. Aw ye bolo turu dugukoloo la. Ni sanjiii tɛ na kosɛbɛ, aw kana sɛnɛ.",
       "fr": "Toute l'année vous pouvez planter le manioc. Mais le début des pluies est le meilleur. Plantez les boutures. S'il ne pleut pas du tout ne plantez pas."
     },
     {
@@ -279,7 +290,7 @@
       "cultures": [
         "CULTURE_MANIOC"
       ],
-      "new_bam": "Kalo kɔnɔntɔn ni san kelen cɛ, bananku bɛ se ka bɔ. Aw ye dugukolo sɛgɛsɛgɛ ka bananku bɔ. Aw ye a kɛ tile fila kɔnɔ.",
+      "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
     },
     {
@@ -288,7 +299,7 @@
       "cultures": [
         "*"
       ],
-      "new_bam": "A ni ce! Ne ye Wourri ye, sɛnɛkɛla dɛmɛbaga. Aw bɛ mun fɛ ka dɔn?",
+      "new_bam": "A ni ce! Ne ye Wourri ye sɛnɛbaga dɛmɛbaga. Aw bɛ mun fɛ ka dɔn?",
       "fr": "Bonjour! Je suis Wourri, l'assistant des agriculteurs. Que voulez-vous savoir?"
     },
     {
@@ -297,7 +308,7 @@
       "cultures": [
         "*"
       ],
-      "new_bam": "Ne ye Wourri ye, sɛnɛkɛla dɛmɛbaga dɔrɔn. Ne tɛ se ka aw dɛmɛ o ko la. Aw ye sɛnɛ ko ɲinini kɛ.",
+      "new_bam": "Ne ye Wourri ye, sɛnɛbaga dɛmɛbaga dɔrɔn. Ne tɛ se ka aw dɛmɛ o ko la. Aw ye sɛnɛ ko ɲini kɛ.",
       "fr": "Je suis Wourri, assistant agricole seulement. Je ne peux pas vous aider pour ça. Posez une question sur l'agriculture."
     },
     {
@@ -306,7 +317,7 @@
       "cultures": [
         "*"
       ],
-      "new_bam": "Ne bɛ aw dɛmɛ sɛnɛ ko la. Aw ye aw ta ɲinini fɔ ka ɲɛ. Ne bɛ se ka aw dɛmɛ malo, kaba, tiga ko la.",
+      "new_bam": "Ne bɛ aw dɛmɛ sɛnɛ ko la. Aw ta ɲini fɔ ka ɲɛ. Ne bɛ se ka aw dɛmɛ maa loo ni kabaa ni ti ga ko la.",
       "fr": "Je vous aide pour l'agriculture. Posez votre question clairement. Je peux vous aider sur le riz, maïs, arachide."
     },
     {
