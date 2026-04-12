@@ -12,7 +12,7 @@
     "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
     "SOV_respecte": "verbe en fin de proposition"
   },
-  "total": 38,
+  "total": 46,
   "entries": [
     {
       "id": "riz_conseil_001",
@@ -292,6 +292,78 @@
       ],
       "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
+    },
+    {
+      "id": "manioc_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_MANIOC"
+      ],
+      "new_bam": "Banankuuu bɛ se ka to ji tɛ kalo saba. A ka sɔn ji tɛ ma kosɛbɛ. Ni sanjiii tɛ caman, ji dɔɔni bɛ a dɛmɛ.",
+      "fr": "Le manioc résiste bien à la sécheresse, il tient 3 mois sans pluie. Si la sécheresse est longue, un arrosage léger aide."
+    },
+    {
+      "id": "manioc_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_MANIOC"
+      ],
+      "new_bam": "Banankuuu tɛ nɔgɔ caman fɛ. Sɛnɛ tuma na NPK dɔɔni don dugukoloo la. Dugukolo ɲuman na, banankuuu bɛ bɔ nɔgɔ tɛ.",
+      "fr": "Le manioc n'a pas besoin de beaucoup d'engrais. Une petite dose de NPK au moment de la plantation suffit. Dans un bon sol, il pousse même sans engrais."
+    },
+    {
+      "id": "manioc_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_MANIOC"
+      ],
+      "new_bam": "Banankuuu kura bɛ cɛn tile fila ni saba kɔnɔ. Aw ye a ja wala gari kɛ. Banankuuu jalen bɛ se ka to kalo caman.",
+      "fr": "Le manioc frais ne se conserve pas longtemps, 2 à 3 jours maximum. Pour conserver, faites-le sécher ou transformez-le en gari. Le manioc séché peut durer plusieurs mois."
+    },
+    {
+      "id": "manioc_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_MANIOC"
+      ],
+      "new_bam": "Banankuuu fere ka ɲi gari wala fu ye. Aw ye a fere kura wala gari kɛ. Sugu la banankuuu saniyalen fere ka ɲi.",
+      "fr": "Le manioc se vend bien sous forme de gari ou de farine. Vendez frais ou transformez pour plus de valeur. Le marché aime le manioc propre et bien sélectionné."
+    },
+    {
+      "id": "manioc_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_MANIOC"
+      ],
+      "new_bam": "Mozayiki bɛ banankuuu fura wɛrɛ ka a nɔnkɔn. Ni fura bɛ wɛrɛ ka nɔnkɔn, aw ye a bɔ joona. Aw ye TMS wala IITA jira sɛnɛ, olu bɛ bana kisi.",
+      "fr": "La mosaïque du manioc est la maladie la plus grave — elle fait jaunir et tordre les feuilles. Si vous voyez des feuilles tordues et jaunes, arrachez les plants malades vite. Plantez des variétés résistantes comme TMS ou IITA."
+    },
+    {
+      "id": "manioc_kosheni_symptomes_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_MANIOC"
+      ],
+      "new_bam": "Ni taa jɛmanw bɛ banankuuu fura kɔrɔ, kosheni bɛ a la. A bɛ fura halaki joona. Aw ye banankuuu bananen bɔ foroo la.",
+      "fr": "Si tu vois des taches blanches sous les feuilles de ton manioc, c'est la cochenille. La cochenille fait flétrir les feuilles et détruit la plante rapidement. Arrache les plants malades et traite vite."
+    },
+    {
+      "id": "manioc_kosheni_traitement_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_MANIOC"
+      ],
+      "new_bam": "Aw ye banankuuu bananen bɔ foroo la. O kɔ aw ye furakɛli kɛ tɔw la. Ni furakɛli tɛ, tulu ni ji fara ka a kɛ fura ye.",
+      "fr": "Pour traiter la cochenille sur ton manioc, arrache les plants malades et retire-les du champ. Ensuite, applique un insecticide sur les plants restants. Si tu n'as pas d'insecticide, un mélange d'huile et d'eau peut aider."
+    },
+    {
+      "id": "manioc_kosheni_prevention_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_MANIOC"
+      ],
+      "new_bam": "Ka banankuuu kisi, aw ye bolo kɛnɛ dɔrɔn sɛnɛ. Kalo o kalo foroo kɔrɔsi. Ni kosheni ye, aw ye a bɔ joona.",
+      "fr": "Pour protéger ton manioc contre la cochenille, plante seulement des boutures saines. Surveille ton champ chaque mois. Si tu vois les premiers signes de cochenille, arrache immédiatement les plants malades."
     },
     {
       "id": "generic_salutation_001",
