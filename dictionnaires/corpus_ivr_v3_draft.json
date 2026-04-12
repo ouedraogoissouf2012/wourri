@@ -3,7 +3,7 @@
   "description": "Corpus IVR v3 en DIOULA IVOIRIEN (dyu). Corrigé depuis bambara malien. Vérifié contre Findora 20k paires.",
   "corrections_appliquees": {
     "waati→tuma": "1114 occ. CI (Findora)",
-    "kalo→karo": "282 occ. CI (Findora)",
+    "kalo_conserve": "kalo est correct en dioula CI — karo était une erreur",
     "kɔlɔsi→kɔrɔsi": "347 occ. CI (Findora)",
     "feere→fere": "5 occ. CI (Findora)",
     "dɔgɔkun→lɔgɔkun": "31 occ. CI (Findora)",
@@ -20,7 +20,7 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Mɛɛɛ karo la aw ye maa loo sɛnɛ. Sanji tuma na dugukoloo ɲini min bɛ ji mara. A da santimɛtiri mugan mugan.",
+      "new_bam": "Mɛɛɛ kalo la aw ye maa loo sɛnɛ. Sanji tuma na dugukoloo ɲini min bɛ ji mara. A da santimɛtiri mugan mugan.",
       "fr": "En mai, plantez le riz. Pendant les pluies, cherchez un sol qui garde l'eau. Plantez à 20cm d'écart."
     },
     {
@@ -29,7 +29,7 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Maa loo sɛnɛ tuma ɲuman ye mɛɛɛ karo ye. O tuma la sanjiii bɛ na ka foroo ɲɛ. Aw ye foroo labɛn ka ɲɛ.",
+      "new_bam": "Maa loo sɛnɛ tuma ɲuman ye mɛɛɛ kalo ye. O tuma la sanjiii bɛ na ka foroo ɲɛ. Aw ye foroo labɛn ka ɲɛ.",
       "fr": "Le meilleur moment pour le riz est mai. La pluie arrive pour arroser. Préparez bien votre terre."
     },
     {
@@ -47,7 +47,7 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Maa loo sɛnɛ tuma ɲuman ye mɛɛɛ karo ye. O tuma la sanjiii bɛ na. Sisan aw ye aw ka foroo labɛn.",
+      "new_bam": "Maa loo sɛnɛ tuma ɲuman ye mɛɛɛ kalo ye. O tuma la sanjiii bɛ na. Sisan aw ye aw ka foroo labɛn.",
       "fr": "Le meilleur moment pour le riz est mai. La pluie arrive à ce moment. Maintenant, préparez votre champ."
     },
     {
@@ -83,7 +83,7 @@
       "cultures": [
         "CULTURE_RIZ"
       ],
-      "new_bam": "Maa loo tigɛlen kɔ a jɛ tile la ka ɲɛ. A don bɔn la ji tɛ yɔrɔ. Maa loo jɛlen bɛ se ka to karo caman.",
+      "new_bam": "Maa loo tigɛlen kɔ a jɛ tile la ka ɲɛ. A don bɔn la ji tɛ yɔrɔ. Maa loo jɛlen bɛ se ka to kalo caman.",
       "fr": "Après la récolte séchez bien au soleil. Stockez dans un grenier sec. Le riz sec se conserve longtemps."
     },
     {
@@ -119,7 +119,7 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Awiriliiii karo la sanjiii fɔlɔ kɔ aw ye kabaa sɛnɛ. Dugukolo sɛgɛsɛgɛ ka ɲɛ. A da santimɛtiri bi seegin seegin.",
+      "new_bam": "Awiriliiii kalo la sanjiii fɔlɔ kɔ aw ye kabaa sɛnɛ. Dugukolo sɛgɛsɛgɛ ka ɲɛ. A da santimɛtiri bi seegin seegin.",
       "fr": "En avril après les premières pluies plantez le maïs. Labourez bien la terre. Plantez à 80cm d'écart."
     },
     {
@@ -128,7 +128,7 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Kaba sɛnɛ tuma ɲuman ye awiriliiii ni mɛɛɛ karo ye. Sanji dɔɔni ka kan ka na fɔlɔ. Aw ye kabaa kisɛ da dugukoloo la.",
+      "new_bam": "Kaba sɛnɛ tuma ɲuman ye awiriliiii ni mɛɛɛ kalo ye. Sanji dɔɔni ka kan ka na fɔlɔ. Aw ye kabaa kisɛ da dugukoloo la.",
       "fr": "Le meilleur moment pour le maïs est avril-mai. Il faut un peu de pluie d'abord. Semez les grains dans la terre."
     },
     {
@@ -137,7 +137,7 @@
       "cultures": [
         "CULTURE_MAIS"
       ],
-      "new_bam": "Ni sanjiii tɛ na, kabaa tɛ se ka bɔ. Aw ye sanjiii tuma makɔnɔ. Marisiii wala awiriliiii karo la, sanjiii bɛ na.",
+      "new_bam": "Ni sanjiii tɛ na, kabaa tɛ se ka bɔ. Aw ye sanjiii tuma makɔnɔ. Marisiii wala awiriliiii kalo la, sanjiii bɛ na.",
       "fr": "Sans pluie le maïs ne pousse pas. Attendez la saison des pluies. En mars ou avril la pluie arrive."
     },
     {
@@ -236,7 +236,7 @@
       "cultures": [
         "CULTURE_ARACHIDE"
       ],
-      "new_bam": "Mɛɛɛ karo la sanjiii tuma na aw ye ti ga sɛnɛ. Dugukolo sɛgɛsɛgɛ ka ɲɛ. Ti ga kisɛ da santimɛtiri mugan mugan.",
+      "new_bam": "Mɛɛɛ kalo la sanjiii tuma na aw ye ti ga sɛnɛ. Dugukolo sɛgɛsɛgɛ ka ɲɛ. Ti ga kisɛ da santimɛtiri mugan mugan.",
       "fr": "En mai pendant les pluies plantez l'arachide. Labourez bien la terre. Semez à 20cm d'écart."
     },
     {
@@ -245,7 +245,7 @@
       "cultures": [
         "CULTURE_ARACHIDE"
       ],
-      "new_bam": "Ti ga sɛnɛ tuma ɲuman ye mɛɛɛ ni zuwɛɛɛn karo ye. Dugukolo ka kan ka labɛn ka ɲɛ. Ti ga bɛ sanjiii fɛ ka bɔ.",
+      "new_bam": "Ti ga sɛnɛ tuma ɲuman ye mɛɛɛ ni zuwɛɛɛn kalo ye. Dugukolo ka kan ka labɛn ka ɲɛ. Ti ga bɛ sanjiii fɛ ka bɔ.",
       "fr": "Le meilleur moment pour l'arachide est mai-juin. Le sol doit être bien préparé. L'arachide a besoin de pluie."
     },
     {
@@ -254,7 +254,7 @@
       "cultures": [
         "CULTURE_ARACHIDE"
       ],
-      "new_bam": "Ni sanjiii tɛ na, ti ga tɛ se ka bɔ. Aw ye mɛɛɛ wala sɛtanburuuu karo makɔnɔ. Ti ga bɛ sanjiii fɛ ka se ka bɔ.",
+      "new_bam": "Ni sanjiii tɛ na, ti ga tɛ se ka bɔ. Aw ye mɛɛɛ wala sɛtanburuuu kalo makɔnɔ. Ti ga bɛ sanjiii fɛ ka se ka bɔ.",
       "fr": "Sans pluie l'arachide ne pousse pas. Attendez mai ou septembre. L'arachide a besoin de pluie."
     },
     {
