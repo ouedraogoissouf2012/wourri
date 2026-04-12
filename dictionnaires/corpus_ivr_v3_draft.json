@@ -12,7 +12,7 @@
     "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
     "SOV_respecte": "verbe en fin de proposition"
   },
-  "total": 38,
+  "total": 46,
   "entries": [
     {
       "id": "riz_conseil_001",
@@ -292,6 +292,78 @@
       ],
       "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
+    },
+    {
+      "id": "haricot_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_HARICOT"
+      ],
+      "new_bam": "Aw ye dugukoloo labɛn ka ɲɛ fɔlɔ. Aw ye soso da santimɛtiri mugan mugan. NPK bɛ a dɛmɛ ka bɔ.",
+      "fr": "Pour bien cultiver le haricot, prépare bien ton sol. Plante le haricot avec 20 cm d'écart. Le NPK 0-20-20 peut l'aider."
+    },
+    {
+      "id": "haricot_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": [
+        "CULTURE_HARICOT"
+      ],
+      "new_bam": "Soso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛɛɛ wala sɛtanburuuu kalo ka ɲi. Aw ye sanjiii fɔlɔ makɔnɔ.",
+      "fr": "Le meilleur moment pour planter le haricot c'est la saison des pluies. Mai ou septembre c'est bien. Attends que les pluies commencent."
+    },
+    {
+      "id": "haricot_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": [
+        "CULTURE_HARICOT"
+      ],
+      "new_bam": "Kalo saba ni naani cɛ soso bɛ se ka tigɛ. Ni soso gɔsi bɛ ja, tigɛ tuma ye. Aw ye tigɛ joona sanjiii ɲɛ.",
+      "fr": "Le haricot est prêt à récolter 3 à 4 mois après la plantation. Quand les gousses sèchent, c'est le bon moment. Récoltez vite avant les pluies."
+    },
+    {
+      "id": "haricot_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_HARICOT"
+      ],
+      "new_bam": "Soso bɛ ji fɛ tile mugan fɔlɔ kɔnɔ. Ni sanjiii tɛ na, aw ye ji don tile o tile. Ji caman bɛ soso cɛn.",
+      "fr": "Le haricot a besoin d'eau surtout les 20 premiers jours. Si la pluie manque, arrosez chaque jour. Trop d'eau fait pourrir le haricot, évitez l'excès."
+    },
+    {
+      "id": "haricot_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_HARICOT"
+      ],
+      "new_bam": "Sɛnɛ kɔ NPK don dugukoloo la. Soso bɛ azɔti kɛ a yɛrɛ, nɔgɔ caman man ɲi. Tile tan ni duuru kɔ furakɛli kɛ.",
+      "fr": "Le haricot a besoin de NPK 0-20-20 après la plantation. La légumineuse fixe l'azote pour s'aider. Faites le traitement 15 jours après la plantation."
+    },
+    {
+      "id": "haricot_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_HARICOT"
+      ],
+      "new_bam": "Ni soso fura bɛ wɛrɛ, bana bɛ a la. Aw ye furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "fr": "Si les feuilles du haricot changent de couleur, il y a une maladie. Traitez avec un fongicide rapidement. L'agent ANADER peut vous aider."
+    },
+    {
+      "id": "haricot_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_HARICOT"
+      ],
+      "new_bam": "Aw ye soso fere sugu la wala julabaga fɛ. Aw ye a mara ka ɲɛ sani ka fere. Soso ɲuman sɔngɔ ka ɲi.",
+      "fr": "Vendez le haricot au marché ou à un commerçant. Stockez-le bien avant de vendre. Le prix est bon quand le haricot est de bonne qualité."
+    },
+    {
+      "id": "haricot_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_HARICOT"
+      ],
+      "new_bam": "Aw ye soso ja ka ɲɛ fɔlɔ. Aw ye soso don saki ɲuman na. Yɔrɔ jalen na a mara ka soso kisi.",
+      "fr": "Pour stocker le haricot, faites-le bien sécher d'abord. Mettez le haricot dans un bon sac pour le conserver. Le lieu de stockage doit être sec pour protéger le haricot."
     },
     {
       "id": "generic_salutation_001",
