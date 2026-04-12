@@ -12,7 +12,7 @@
     "complement_temps_en_tete": "GRAMMAIRE_DIOULA §1",
     "SOV_respecte": "verbe en fin de proposition"
   },
-  "total": 38,
+  "total": 46,
   "entries": [
     {
       "id": "riz_conseil_001",
@@ -292,6 +292,78 @@
       ],
       "new_bam": "Karo kɔnɔntɔn ni san kelen cɛ banankuuu bɛ se ka bɔ. Dugukolo sɛgɛsɛgɛ ka banankuuu bɔ. Tile fila kɔnɔ a kɛ.",
       "fr": "Entre neuf mois et un an le manioc peut être récolté. Creusez pour extraire les tubercules. Utilisez dans les deux jours."
+    },
+    {
+      "id": "banane_conseil_001",
+      "intent": "CONSEIL_PRODUCTION",
+      "cultures": [
+        "CULTURE_BANANE"
+      ],
+      "new_bam": "Aw ye dugukoloo labɛn ka ɲɛ. Aw ye bàrànda da mɛtɛrɛ fila ni saba cɛ. Nɔgɔ bɔlen wala kɔnpɔsi don dugukoloo la.",
+      "fr": "Pour bien cultiver la banane, prépare bien ton sol. Plante le bananier avec 2 à 3 mètres d'écart. Mets du compost ou de l'engrais dans le sol."
+    },
+    {
+      "id": "banane_saison_001",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "cultures": [
+        "CULTURE_BANANE"
+      ],
+      "new_bam": "Bàrànda bɛ se ka sɛnɛ san bɛɛ ni ji bɛ yen. Sanjiii tuma na a bɛ bɔ joona. Aw ye sɛnɛ sanjiii tuma na.",
+      "fr": "La banane peut être plantée toute l'année si l'eau est disponible. En saison des pluies, la banane pousse vite. Plante pendant les pluies ou si tu as de l'eau."
+    },
+    {
+      "id": "banane_recolte_001",
+      "intent": "QUESTION_RECOLTE",
+      "cultures": [
+        "CULTURE_BANANE"
+      ],
+      "new_bam": "Kalo kɔnɔntɔn ni tan cɛ bàrànda bɛ se ka tigɛ. Ni den bɛ bon ka nɛrɛmugu dɔɔni, tigɛ tuma ye. Aw ye tigɛ joona.",
+      "fr": "La banane est prête 9 à 10 mois après la plantation. Quand les fruits grossissent et jaunissent légèrement, c'est le moment. Récoltez vite pour éviter la surmaturation."
+    },
+    {
+      "id": "banane_irrigation_001",
+      "intent": "QUESTION_IRRIGATION",
+      "cultures": [
+        "CULTURE_BANANE"
+      ],
+      "new_bam": "Bàrànda bɛ ji fɛ kosɛbɛ. Aw ye ji don foroo la tile o tile. Ji caman man ɲi, aw ye ji bɔli labɛn.",
+      "fr": "La banane a vraiment besoin d'eau. Arrose le champ chaque jour. Trop d'eau n'est pas bien — améliore le drainage."
+    },
+    {
+      "id": "banane_engrais_001",
+      "intent": "QUESTION_ENGRAIS",
+      "cultures": [
+        "CULTURE_BANANE"
+      ],
+      "new_bam": "Bàrànda bɛ potasi fɛ kosɛbɛ. NPK wala kɔnpɔsi don ka ɲɛ. Kalo o kalo furakɛli kɛ.",
+      "fr": "La banane a particulièrement besoin de potassium. Le NPK 0-0-60 ou du compost est bien. Faites le traitement chaque mois."
+    },
+    {
+      "id": "banane_diagnostic_001",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "cultures": [
+        "CULTURE_BANANE"
+      ],
+      "new_bam": "Ni bàrànda fura bɛ wɛrɛ, bana bɛ a la. Aw ye yiri bananen bɔ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "fr": "Si les feuilles du bananier changent de couleur, il y a une maladie. Retirez les pieds malades vite pour aider. L'agent ANADER peut vous aider pour le traitement."
+    },
+    {
+      "id": "banane_vente_001",
+      "intent": "QUESTION_VENTE",
+      "cultures": [
+        "CULTURE_BANANE"
+      ],
+      "new_bam": "Tigɛ kɔ joona aw ye bàrànda fere. Aw ye a fere sugu la wala julabaga fɛ. Bàrànda mɔlen bɛ halaki joona.",
+      "fr": "Vendez la banane juste après la récolte. Vendez au marché ou à un commerçant. Une fois mûre la banane se détériore vite."
+    },
+    {
+      "id": "banane_stockage_001",
+      "intent": "QUESTION_STOCKAGE",
+      "cultures": [
+        "CULTURE_BANANE"
+      ],
+      "new_bam": "Bàrànda bɛ se ka to tile wolonfila. Aw ye a mara yɔrɔ surunya na. Aw ye fere joona sani a ka mɔ kosɛbɛ.",
+      "fr": "La banane se conserve environ 7 jours. Stocke-la dans un endroit frais à l'ombre. Vends vite avant qu'elle ne soit trop mûre."
     },
     {
       "id": "generic_salutation_001",
