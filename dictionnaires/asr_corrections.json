@@ -56,6 +56,19 @@
 
     "loanwords": {
       "manioku": "bananku"
+    },
+
+    "cultures_nemo_errors": {
+      "_description": "Corrections issues de tests vocaux WhatsApp réels (2026-04-13). 8/15 cultures mal transcrites par NeMo Soloni.",
+
+      "tigka": "tiga",
+      "kaban kuru": "bananku",
+      "kabarada": "bàrànda",
+      "mangogo": "mangoro",
+      "kɔrɔ ni sɛnɛ": "kɔrɔni sɛnɛ",
+      "ka ka aw sɛnɛ": "ka kakawo sɛnɛ",
+      "ka gɛrɛ sɛnɛ": "ka gan sɛnɛ",
+      "ka ga sɛnɛ": "ka gan sɛnɛ"
     }
   }
 }
