@@ -250,9 +250,12 @@ _GRAMMAR_WORDS: frozenset[str] = frozenset({
 
 # Mots qui ne doivent JAMAIS participer à une fusion culture
 # (trop fréquents en bambara, produisent des faux positifs)
+# Cas réel : an+ni → anni → matche fini (fonio) = faux positif
 _NEVER_FUSE: frozenset[str] = frozenset({
+    "n", "ne", "i", "a", "an", "ni", "u", "o", "aw",
     "bɛ", "be", "tɛ", "te", "fɛ", "fe", "ye", "ma",
-    "bɛna", "tɛna", "se", "kɛ", "ke",
+    "bɛna", "tɛna", "se", "kɛ", "ke", "don", "min",
+    "wa", "la", "na",
 })
 
 # Vocabulaire cultures — construit une fois depuis nlu_concepts.json
