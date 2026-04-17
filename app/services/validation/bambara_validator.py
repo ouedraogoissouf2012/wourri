@@ -1,13 +1,14 @@
 """
-Pipeline DÉCOUVERTE bambara — Wourri (v2)
-==========================================
+Pipeline DÉCOUVERTE bambara/dioula — Wourri (v3)
+=================================================
 Pour un concept français → chercher dans les sources →
-collecter TOUS les termes bambara trouvés →
+collecter TOUS les termes bambara/dioula trouvés →
 le terme qui revient le plus = le meilleur terme.
 
-Sources actives (8) :
+Sources actives (10) :
   Source 0 : agri_dict.json — dictionnaire agricole validé multi-sources (×5)
-  Locales  : Bayelemabaga TF-IDF (×3), jeli-asr (confirmation), UD Bambara (confirmation)
+  Dioula CI: Koumankan4Dyula TF-IDF (×3), Findora TF-IDF (×3)
+  Bambara  : Bayelemabaga TF-IDF (×2), jeli-asr (confirmation), UD Bambara (confirmation)
   En ligne : Bamadaba CNRS (×2), VOA Bambara, Bambara.org, Bamanankan.org
 
 Sources écartées (raison) :
@@ -15,7 +16,15 @@ Sources écartées (raison) :
   Lexilogos   → page de liens, pas un dictionnaire
   Live Lingua → téléchargement manuel requis
 
-Score max = 5 + 3 + 2 + 1 + 1 + 1 + 1 + 1 + 1 = 16
+v3 changements (2026-04-17) :
+  - Ajout Koumankan4Dyula (10 929 paires dioula CI, UVCI) poids ×3
+  - Ajout Findora (20 513 paires dioula CI) poids ×3
+  - Bayelemabaga réduit de ×3 à ×2 (bambara Mali, pas CI)
+  - Score max = 5 + 3 + 3 + 2 + 2 + 1 + 1 + 1 + 1 + 1 = 20
+
+Score max = 20
+Seuil auto-validation = 8/20
+Seuil décision manuelle = 5-7/20
 """
 
 import re
@@ -63,6 +72,16 @@ _jeli_loaded = False
 
 _ud_mots: set = set()
 _ud_loaded = False
+
+_kouman_fr: list = []
+_kouman_dyu: list = []
+_kouman_loaded = False
+_kouman_global_freq: Counter = Counter()
+
+_findora_fr: list = []
+_findora_dyu: list = []
+_findora_loaded = False
+_findora_global_freq: Counter = Counter()
 
 
 def _charger_agri_dict():
@@ -122,6 +141,38 @@ def _charger_ud():
         with open(f, encoding="utf-8") as fp:
             _ud_mots = {l.strip().lower() for l in fp if l.strip()}
     _ud_loaded = True
+
+
+def _charger_koumankan():
+    """Charge Koumankan4Dyula — 10 929 paires dioula CI (UVCI)."""
+    global _kouman_fr, _kouman_dyu, _kouman_loaded
+    if _kouman_loaded:
+        return
+    fr_f = DATA_DIR / "koumankan" / "koumankan.fr"
+    dyu_f = DATA_DIR / "koumankan" / "koumankan.dyu"
+    if fr_f.exists() and dyu_f.exists():
+        with open(fr_f, encoding="utf-8") as f:
+            _kouman_fr = f.readlines()
+        with open(dyu_f, encoding="utf-8") as f:
+            _kouman_dyu = f.readlines()
+    _kouman_loaded = True
+    logger.info(f"[VAL] Koumankan: {len(_kouman_fr)} paires chargées (dioula CI)")
+
+
+def _charger_findora():
+    """Charge Findora — 20 513 paires dioula CI."""
+    global _findora_fr, _findora_dyu, _findora_loaded
+    if _findora_loaded:
+        return
+    fr_f = DATA_DIR / "findora" / "findora.fr"
+    dyu_f = DATA_DIR / "findora" / "findora.dyu"
+    if fr_f.exists() and dyu_f.exists():
+        with open(fr_f, encoding="utf-8") as f:
+            _findora_fr = f.readlines()
+        with open(dyu_f, encoding="utf-8") as f:
+            _findora_dyu = f.readlines()
+    _findora_loaded = True
+    logger.info(f"[VAL] Findora: {len(_findora_fr)} paires chargées (dioula CI)")
 
 
 # ─────────────────────────────────────────────
@@ -294,6 +345,112 @@ def _bayelemabaga(concept_fr: str) -> Counter:
 
 
 # ─────────────────────────────────────────────
+# Source 1b — Koumankan4Dyula (DIOULA CI, TF-IDF)
+# ─────────────────────────────────────────────
+
+def _koumankan(concept_fr: str) -> Counter:
+    """
+    TF-IDF sur Koumankan4Dyula (10 929 paires dioula CI, UVCI).
+    Même logique que _bayelemabaga mais sur du dioula CI pur.
+    """
+    global _kouman_global_freq
+    _charger_koumankan()
+
+    concept = concept_fr.lower()
+
+    def _match(ligne_fr: str) -> bool:
+        return bool(re.search(r'\b' + re.escape(concept) + r'\b', ligne_fr.lower()))
+
+    lignes_match = [
+        dyu for fr, dyu in zip(_kouman_fr, _kouman_dyu)
+        if _match(fr)
+    ]
+
+    if len(lignes_match) < 2:
+        return Counter()
+
+    tf = Counter()
+    for ligne in lignes_match:
+        tf.update(_tokeniser_simple(ligne))
+
+    if not _kouman_global_freq:
+        logger.info("[VAL] Calcul frequence globale Koumankan (une fois)...")
+        for ligne in _kouman_dyu:
+            _kouman_global_freq.update(_tokeniser_simple(ligne))
+        logger.info(f"[VAL] Koumankan vocabulaire: {len(_kouman_global_freq)} mots uniques")
+
+    n_match = len(lignes_match)
+    n_total = max(len(_kouman_dyu), 1)
+
+    scores = Counter()
+    for terme, freq_match in tf.items():
+        freq_global = _kouman_global_freq.get(terme, 0)
+        if freq_global < 2:
+            continue
+        if freq_match < 1:
+            continue
+        tf_rate = freq_match / n_match
+        idf_rate = freq_global / n_total
+        ratio = tf_rate / idf_rate
+        scores[terme] = max(1, round(ratio * 100))
+
+    return scores
+
+
+# ─────────────────────────────────────────────
+# Source 1c — Findora (DIOULA CI, TF-IDF)
+# ─────────────────────────────────────────────
+
+def _findora(concept_fr: str) -> Counter:
+    """
+    TF-IDF sur Findora (20 513 paires dioula CI).
+    Même logique que Koumankan.
+    """
+    global _findora_global_freq
+    _charger_findora()
+
+    concept = concept_fr.lower()
+
+    def _match(ligne_fr: str) -> bool:
+        return bool(re.search(r'\b' + re.escape(concept) + r'\b', ligne_fr.lower()))
+
+    lignes_match = [
+        dyu for fr, dyu in zip(_findora_fr, _findora_dyu)
+        if _match(fr)
+    ]
+
+    if len(lignes_match) < 2:
+        return Counter()
+
+    tf = Counter()
+    for ligne in lignes_match:
+        tf.update(_tokeniser_simple(ligne))
+
+    if not _findora_global_freq:
+        logger.info("[VAL] Calcul frequence globale Findora (une fois)...")
+        for ligne in _findora_dyu:
+            _findora_global_freq.update(_tokeniser_simple(ligne))
+        logger.info(f"[VAL] Findora vocabulaire: {len(_findora_global_freq)} mots uniques")
+
+    n_match = len(lignes_match)
+    n_total = max(len(_findora_dyu), 1)
+
+    scores = Counter()
+    for terme, freq_match in tf.items():
+        freq_global = _findora_global_freq.get(terme, 0)
+        if freq_global < 2:
+            continue
+        if freq_match < 1:
+            continue
+        tf_rate = freq_match / n_match
+        idf_rate = freq_global / n_total
+        ratio = tf_rate / idf_rate
+        scores[terme] = max(1, round(ratio * 100))
+
+    return scores
+
+
+# ─────────────────────────────────────────────
 # Source 2 — jeli-asr (confirmation)
 # ─────────────────────────────────────────────
 
@@ -408,7 +565,9 @@ def _bamanankan_org(concept_fr: str) -> list:
 SOURCES_PRINCIPALES = [
     # (nom, fonction, poids_vote)
     ("agri_dict",    _agri_dict_lookup, 5),  # Dico validé multi-sources — poids maximum
-    ("bayelemabaga", _bayelemabaga,     3),  # Local TF-IDF
+    ("koumankan",    _koumankan,        3),  # Dioula CI (UVCI) — TF-IDF
+    ("findora",      _findora,          3),  # Dioula CI — TF-IDF
+    ("bayelemabaga", _bayelemabaga,     2),  # Bambara Mali — TF-IDF (réduit de 3→2)
     ("bamadaba",     _bamadaba,         2),  # CNRS, académique
     ("voa_bambara",  _voa_bambara,      1),
     ("bambara_org",  _bambara_org,      1),
@@ -425,7 +584,7 @@ SCORE_MAX = (
     sum(p for _, _, p in SOURCES_PRINCIPALES) +
     sum(p for _, _, p in SOURCES_CONFIRMATION)
 )
-# = 5 + 3 + 2 + 1 + 1 + 1 + 1 + 1 + 1 = 16
+# = 5 + 3 + 3 + 2 + 2 + 1 + 1 + 1 + 1 + 1 = 20
 
 
 # ─────────────────────────────────────────────
