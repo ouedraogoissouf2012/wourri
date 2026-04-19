@@ -315,6 +315,20 @@ class ChatService:
         """Cherche une réponse IVR approchée par concept."""
         logger.info("[ChatService] Hors corpus (intent=%s) → recherche concept", nlu.intent)
 
+        # Fix #94 : détection action agricole sans culture → clarification
+        has_agri_action = any(
+            a in nlu.concepts for a in ("ACTION_PLANTER", "ACTION_CHERCHER_CONSEIL",
+                                         "ACTION_RECOLTER", "ACTION_ARROSER",
+                                         "ACTION_TRAITER", "ACTION_STOCKER")
+        )
+        has_culture = any(
+            k.startswith("CULTURE_") or k.startswith("ANIMAL_")
+            for k in nlu.concepts
+        )
+        if has_agri_action and not has_culture:
+            logger.info("[ChatService] Action agricole sans culture → clarification")
+            return await self._clarify_missing_culture(city, include_audio, language, nlu)
+
         bambara = self._search_ivr_by_concept(nlu.concepts)
         if not bambara:
             return None
@@ -334,6 +348,46 @@ class ChatService:
             meta={"intent": nlu.intent, "cultures": cultures, "source": "ivr_fallback"},
         )
 
+    async def _clarify_missing_culture(
+        self,
+        city: str,
+        include_audio: bool,
+        language: Language,
+        nlu: NLUResult,
+    ) -> ChatResult:
+        """Demande à l'utilisateur de préciser la culture.
+
+        Fix #94 : remplace le fallback silencieux vers CULTURE_MAIS.
+        Dit clairement en dioula : "de quelle culture parles-tu ?"
+        """
+        # Message bilingue dioula + français
+        message_dyu = (
+            "N'ma a faamu ka ɲɛ. I be kuma sɛnɛ fɛn juma kan? "
+            "Malo, kaba, tiga, kakawo wala dɔ wɛrɛ?"
+        )
+        message_fr = (
+            "Je n'ai pas bien compris. De quelle culture parles-tu ? "
+            "Riz, maïs, arachide, cacao ou autre ?"
+        )
+
+        audio_url = None
+        if include_audio:
+            audio_url = await self._synthesize_dioula(message_dyu)
+
+        return ChatResult(
+            response=message_dyu if language == Language.DIOULA else message_fr,
+            response_dioula=message_dyu,
+            audio_url=audio_url,
+            city=city,
+            language=language.value,
+            audio_language="Dioula" if audio_url else None,
+            meta={
+                "intent": nlu.intent,
+                "source": "clarification_culture",
+                "detected_actions": [a for a in nlu.concepts if a.startswith("ACTION_")],
+            },
+        )
+
     def _search_ivr_by_concept(self, concepts: dict) -> Optional[str]:
         """Recherche IVR par concept (fallback niveau 2)."""
         if not concepts:
@@ -343,11 +397,12 @@ class ChatService:
 
         cultures = [k for k in concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
         if not cultures:
-            if "ACTION_PLANTER" in concepts or "ACTION_CHERCHER_CONSEIL" in concepts:
-                logger.info("[ChatService] ACTION_PLANTER sans culture → CULTURE_MAIS défaut")
-                cultures = ["CULTURE_MAIS"]
-            else:
-                return None
+            # Fix #94 : plus de fallback silencieux vers CULTURE_MAIS.
+            # Si l'utilisateur exprime une action agricole sans préciser la culture,
+            # on retourne None pour déclencher une clarification en amont.
+            # Avant ce fix : ACTION_PLANTER sans culture → réponse sur le maïs par défaut (bug)
+            logger.info("[ChatService] Action agricole sans culture détectée → clarification nécessaire")
+            return None
 
         intent_candidat = next(
             (intent for action, intent in _ACTION_TO_INTENT.items() if action in concepts),
