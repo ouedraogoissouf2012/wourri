@@ -18,11 +18,14 @@ salt aléatoire stable dans .env.
 """
 import hashlib
 import logging
-import os
+
+from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-_PII_SALT: str = os.getenv("PII_SALT", "")
+# Lecture via Pydantic Settings (qui charge .env correctement) plutôt que
+# os.getenv() qui n'a pas connaissance du .env
+_PII_SALT: str = get_settings().pii_salt
 _SALT_WARNED: bool = False
 
 

@@ -8,11 +8,12 @@ WOURI — Sécurité API
   Si non configurée → mode dev permissif (warn uniquement)
 """
 import logging
-import os
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import APIKeyHeader
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+
+from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,9 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["10/minute"])
 
 # ── API Key header ─────────────────────────────────────────────────────────────
 _API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
-_API_SECRET_KEY: str | None = os.getenv("API_SECRET_KEY")
+# Lecture via Pydantic Settings (qui charge .env correctement) plutôt que
+# os.getenv() qui n'a pas connaissance du .env
+_API_SECRET_KEY: str | None = get_settings().api_secret_key or None
 
 if not _API_SECRET_KEY:
     logger.warning(
