@@ -56,10 +56,8 @@ def _get_current_season() -> str:
 
 
 def _load_corpus_entries() -> list[dict]:
-    """Charge les entrées du corpus IVR depuis le fichier JSON."""
-    with open(_CORPUS_PATH, encoding="utf-8") as f:
-        data = json.load(f)
-    return data.get("entries", [])
+    """Retourne les entrées du corpus IVR (via le cache de _load_corpus)."""
+    return _load_corpus().get("entries", [])
 
 
 def _get_collection():
