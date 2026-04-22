@@ -15,8 +15,9 @@ class Settings(BaseSettings):
     app_version: str = "1.0.0"
     # ENV : "development" (défaut) ou "production"
     env: str = "development"
-    # debug automatiquement False en production
-    debug: bool = True
+    # debug OFF par défaut — activer via DEBUG=true dans .env uniquement en développement
+    # raison : expose stack traces + info-leak en cas d'accès accidentel prod
+    debug: bool = False
 
     # DeepSeek API
     deepseek_api_key: str = ""
@@ -46,6 +47,39 @@ class Settings(BaseSettings):
 
     # Langue TTS ivoirienne par défaut
     default_ivorian_language: str = "bam"
+
+    # ========== ASR Quality Gate ==========
+    # Langue cible pour le gate ASR (filtre blocklist par langue).
+    asr_language: str = "dyu"
+
+    # Sources de vocabulaire à charger dans VocabularyRegistry.
+    # Chaque entrée : {name, path (relatif à wouri-api/), schema (clé dans _EXTRACTORS)}.
+    # Override via .env en JSON : ASR_VOCAB_SOURCES='[{"name":"...","path":"...","schema":"..."}]'
+    asr_vocab_sources: list[dict] = [
+        {
+            "name": "koumankan",
+            "path": "data/hf_datasets/koumankan_dyu_fr.json",
+            "schema": "list_dict_translation_dyu",
+        },
+        {
+            "name": "findora",
+            "path": "data/hf_datasets/findora_fr_dioula.json",
+            "schema": "list_dict_flat_dioula",
+        },
+        {
+            "name": "ivr",
+            "path": "dictionnaires/corpus_ivr.json",
+            "schema": "ivr_entries_reponse_bambara",
+        },
+        {
+            "name": "nlu",
+            "path": "dictionnaires/nlu_concepts.json",
+            "schema": "nlu_concepts_keywords",
+        },
+    ]
+
+    # Blocklist d'hallucinations ASR (fichier JSON éditable).
+    asr_hallucinations_path: str = "data/asr_hallucinations_dyu.json"
 
     @property
     def is_production(self) -> bool:
