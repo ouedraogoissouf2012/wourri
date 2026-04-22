@@ -3,7 +3,7 @@ WOURI - Router TTS (Text-to-Speech)
 Support multi-langues ivoiriennes
 """
 import asyncio
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from app.services.tts_french import synthesize_french, get_available_voices
 from app.services.tts_bambara import synthesize_bambara, synthesize_bambara_text, translate_to_bambara
 from app.services.tts_ivoirian import (
@@ -15,33 +15,34 @@ from app.services.tts_ivoirian import (
     IVORIAN_LANGUAGES
 )
 from app.models.schemas import TTSRequest, TTSResponse, TranslateRequest, TranslateResponse, Language
-from app.security import require_api_key
+from app.security import require_api_key, limiter
 
 router = APIRouter(prefix="/api/tts", tags=["TTS"])
 
 
 @router.post("/", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
-async def text_to_speech(request: TTSRequest):
+@limiter.limit("10/minute")
+async def text_to_speech(request: Request, body: TTSRequest):
     """
     Convertit du texte en audio
 
     - **text**: Texte à convertir
     - **language**: Langue (french ou dioula)
     """
-    if not request.text:
+    if not body.text:
         raise HTTPException(status_code=400, detail="Le texte est requis")
 
     audio_url = None
-    output_text = request.text
+    output_text = body.text
 
-    if request.language == Language.DIOULA:
+    if body.language == Language.DIOULA:
         # Traduire en Bambara et générer l'audio
-        audio_url, bambara_text = await synthesize_bambara(request.text)
+        audio_url, bambara_text = await synthesize_bambara(body.text)
         if bambara_text:
             output_text = bambara_text
     else:
         # Générer l'audio en français
-        audio_url = await synthesize_french(request.text)
+        audio_url = await synthesize_french(body.text)
 
     if not audio_url:
         raise HTTPException(status_code=500, detail="Échec de la génération audio")
@@ -49,12 +50,13 @@ async def text_to_speech(request: TTSRequest):
     return TTSResponse(
         audio_url=audio_url,
         text=output_text,
-        language=request.language.value
+        language=body.language.value
     )
 
 
 @router.post("/french", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
-async def tts_french(text: str):
+@limiter.limit("10/minute")
+async def tts_french(request: Request, text: str):
     """TTS en français uniquement"""
     audio_url = await synthesize_french(text)
 
@@ -65,7 +67,8 @@ async def tts_french(text: str):
 
 
 @router.post("/bambara", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
-async def tts_bambara(text: str, is_french: bool = True):
+@limiter.limit("10/minute")
+async def tts_bambara(request: Request, text: str, is_french: bool = True):
     """
     TTS en Bambara
 
@@ -95,7 +98,8 @@ async def list_voices():
 # ============ TRADUCTION ============
 
 @router.post("/translate", response_model=TranslateResponse, dependencies=[Depends(require_api_key)])
-async def translate(request: TranslateRequest):
+@limiter.limit("10/minute")
+async def translate(request: Request, body: TranslateRequest):
     """
     Traduit du texte vers le Bambara
 
@@ -103,19 +107,19 @@ async def translate(request: TranslateRequest):
     - **source**: Langue source (défaut: fra_Latn)
     - **target**: Langue cible (défaut: bam_Latn)
     """
-    if request.source != "fra_Latn" or request.target != "bam_Latn":
+    if body.source != "fra_Latn" or body.target != "bam_Latn":
         raise HTTPException(
             status_code=400,
             detail="Seule la traduction français->bambara est supportée"
         )
 
     try:
-        translated = translate_to_bambara(request.text)
+        translated = translate_to_bambara(body.text)
         return TranslateResponse(
-            original=request.text,
+            original=body.text,
             translated=translated,
-            source=request.source,
-            target=request.target
+            source=body.source,
+            target=body.target
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur de traduction: {str(e)}")
@@ -149,7 +153,8 @@ async def ivorian_tts_status():
 
 
 @router.post("/ivorian/{language_code}", dependencies=[Depends(require_api_key)])
-async def tts_ivorian_language(language_code: str, text: str):
+@limiter.limit("10/minute")
+async def tts_ivorian_language(request: Request, language_code: str, text: str):
     """
     TTS pour une langue ivoirienne spécifique
 
@@ -192,7 +197,8 @@ async def tts_ivorian_language(language_code: str, text: str):
 
 
 @router.post("/ivorian", dependencies=[Depends(require_api_key)])
-async def tts_ivorian_auto(text: str, language: str = "bam"):
+@limiter.limit("10/minute")
+async def tts_ivorian_auto(request: Request, text: str, language: str = "bam"):
     """
     TTS ivoirien avec détection automatique de langue par alias
 

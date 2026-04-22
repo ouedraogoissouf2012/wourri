@@ -9,10 +9,10 @@ import json
 import logging
 import os
 from datetime import datetime
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from typing import Optional, List
-from app.security import require_api_key
+from app.security import require_api_key, limiter
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/feedback", tags=["Feedback"])
@@ -42,7 +42,8 @@ def _log_feedback(entry: dict):
 
 
 @router.post("/positif", dependencies=[Depends(require_api_key)])
-async def feedback_positif(req: FeedbackRequest):
+@limiter.limit("10/minute")
+async def feedback_positif(request: Request, req: FeedbackRequest):
     """
     Feedback 👍 — l'utilisateur a apprécié la réponse.
     Si source = ivr_fallback : ajouter la réponse au corpus VDB (C3).
@@ -81,7 +82,8 @@ async def feedback_positif(req: FeedbackRequest):
 
 
 @router.post("/negatif", dependencies=[Depends(require_api_key)])
-async def feedback_negatif(req: FeedbackRequest):
+@limiter.limit("10/minute")
+async def feedback_negatif(request: Request, req: FeedbackRequest):
     """
     Feedback 👎 — l'utilisateur n'a pas apprécié la réponse.
     Logue dans feedback.jsonl (général) + feedback_negatif.jsonl (dédié corpus).

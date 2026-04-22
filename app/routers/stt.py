@@ -3,11 +3,11 @@ WOURI - Routes Speech-to-Text (Whisper)
 """
 import logging
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
 from app.services import stt_whisper
 from app.services.deepseek import correct_stt_transcription
-from app.security import require_api_key
+from app.security import require_api_key, limiter
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,9 @@ router = APIRouter(prefix="/api/stt", tags=["Speech-to-Text"])
 
 
 @router.post("/transcribe", dependencies=[Depends(require_api_key)])
+@limiter.limit("10/minute")
 async def transcribe_audio(
+    request: Request,
     audio: UploadFile = File(...),
     language: str = Form(default="fr")
 ):
