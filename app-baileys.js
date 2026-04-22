@@ -17,9 +17,21 @@ const QRCode = require('qrcode');
 // Configuration
 const PORT = process.env.PORT || 3001;
 const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
+const WOURI_API_KEY = process.env.WOURI_API_KEY || '';
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
 const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
 const USER_PREFS_FILE = path.join(__dirname, 'user_preferences.json');
+
+// [P0-02a] Helper : header X-API-Key pour appels backend Wourri
+// Si WOURI_API_KEY vide, retourne objet vide (mode dev backend avec auth desactivee)
+function authHeaders() {
+    return WOURI_API_KEY ? { 'X-API-Key': WOURI_API_KEY } : {};
+}
+
+// Avertissement demarrage si API_KEY manquante en production
+if (process.env.NODE_ENV === 'production' && !WOURI_API_KEY) {
+    console.warn('[SECURITY] WOURI_API_KEY non definie en production — les appels backend echoueront si API_SECRET_KEY y est configuree');
+}
 
 // Creer le dossier temporaire pour les audios
 if (!fs.existsSync(TEMP_AUDIO_FOLDER)) {
@@ -295,7 +307,8 @@ async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
         console.log(`[STT] Appel API: ${WOURI_API_URL}/api/stt/transcribe`);
         const response = await axios.post(`${WOURI_API_URL}/api/stt/transcribe`, formData, {
             headers: {
-                ...formData.getHeaders()
+                ...formData.getHeaders(),
+                ...authHeaders()
             },
             timeout: 180000
         });
@@ -330,7 +343,8 @@ async function transcribeAudioBambara(audioBuffer, filename = 'audio.ogg') {
         console.log(`[ASR-BAMBARA] Appel API: ${WOURI_API_URL}/api/asr/transcribe-and-translate`);
         const response = await axios.post(`${WOURI_API_URL}/api/asr/transcribe-and-translate`, formData, {
             headers: {
-                ...formData.getHeaders()
+                ...formData.getHeaders(),
+                ...authHeaders()
             },
             timeout: 180000
         });
@@ -690,7 +704,7 @@ async function connectWhatsApp() {
                                 intent: fb.intent || '',
                                 cultures: fb.cultures || [],
                                 source: fb.source || 'unknown'
-                            }, { timeout: 10000 });
+                            }, { timeout: 10000, headers: authHeaders() });
                             console.log(`[FEEDBACK] ${endpoint} enregistre pour intent=${fb.intent}`);
                         } catch (fbErr) {
                             console.log('[FEEDBACK] Erreur appel API:', fbErr.message);
@@ -745,7 +759,7 @@ async function connectWhatsApp() {
                             include_audio: true,
                             user_id: userNumber,           // Pour l'historique de conversation
                             bambara_text: bambaraText      // Pour le NLU preprocessing (si message vocal bambara)
-                        }, { timeout: 180000 });
+                        }, { timeout: 180000, headers: authHeaders() });
                         data = response.data;
                     } finally {
                         keepPresence = false;
