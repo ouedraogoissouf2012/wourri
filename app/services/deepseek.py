@@ -6,6 +6,7 @@ import httpx
 
 logger = logging.getLogger(__name__)
 from app.config import get_settings
+from app.core.pii_utils import anonymize_user_id
 from app.models.schemas import Language
 from app.services.conversation_history import get_history_for_deepseek, add_message
 
@@ -99,7 +100,7 @@ LANGUE: Réponds en français clair et accessible.
         history = get_history_for_deepseek(user_id, max_messages=6)
         if history:
             messages.extend(history)
-            logger.info(f"[DeepSeek] Historique chargé: {len(history)} messages pour {user_id[:15]}...")
+            logger.info(f"[DeepSeek] Historique chargé: {len(history)} messages pour {anonymize_user_id(user_id)}")
 
     # Ajouter le message actuel
     messages.append({"role": "user", "content": message})

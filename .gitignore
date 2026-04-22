@@ -70,3 +70,6 @@ export_*.py
 
 # Exceptions : outils de validation dans tools/
 !tools/test_tts_batch.py
+
+# Exceptions : tests organisés dans tests/
+!tests/**/test_*.py

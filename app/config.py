@@ -48,6 +48,13 @@ class Settings(BaseSettings):
     # Langue TTS ivoirienne par défaut
     default_ivorian_language: str = "bam"
 
+    # ========== Sécurité PII (P0-05) ==========
+    # Salt pour anonymisation SHA-256 des user_id dans les logs
+    # Générer une valeur aléatoire stable en prod :
+    #   python -c "import secrets; print(secrets.token_hex(32))"
+    # Laisser vide en dev (warn sera émis au premier appel)
+    pii_salt: str = ""
+
     # ========== ASR Quality Gate ==========
     # Langue cible pour le gate ASR (filtre blocklist par langue).
     asr_language: str = "dyu"

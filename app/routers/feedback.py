@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from app.security import require_api_key, limiter
+from app.core.pii_utils import anonymize_user_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/feedback", tags=["Feedback"])
@@ -51,7 +52,7 @@ async def feedback_positif(request: Request, req: FeedbackRequest):
     """
     entry = {
         "ts": datetime.utcnow().isoformat(),
-        "user": req.user_id[:8] + "***",
+        "user": anonymize_user_id(req.user_id),
         "vote": "positif",
         "intent": req.intent,
         "cultures": req.cultures,
@@ -95,7 +96,7 @@ async def feedback_negatif(request: Request, req: FeedbackRequest):
     # Log général
     entry = {
         "ts": ts,
-        "user": req.user_id[:8] + "***",
+        "user": anonymize_user_id(req.user_id),
         "vote": "negatif",
         "intent": req.intent,
         "cultures": req.cultures,
@@ -120,7 +121,7 @@ async def feedback_negatif(request: Request, req: FeedbackRequest):
 
     negatif_entry = {
         "ts": ts,
-        "user": req.user_id[:8] + "***",
+        "user": anonymize_user_id(req.user_id),
         "intent": req.intent,
         "cultures": req.cultures,
         "source": req.source,
