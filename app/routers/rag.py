@@ -1,11 +1,12 @@
 """
 WOURI - Routes RAG (Base de connaissances agricoles)
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
 from app.services import rag_knowledge
+from app.security import require_api_key
 
 router = APIRouter(prefix="/api/rag", tags=["RAG - Connaissances"])
 
@@ -20,7 +21,7 @@ class DocumentInput(BaseModel):
     metadata: Optional[dict] = None
 
 
-@router.post("/search")
+@router.post("/search", dependencies=[Depends(require_api_key)])
 async def search_knowledge(query: SearchQuery):
     """
     Recherche dans la base de connaissances agricoles.
@@ -44,7 +45,7 @@ async def search_knowledge(query: SearchQuery):
     })
 
 
-@router.post("/add")
+@router.post("/add", dependencies=[Depends(require_api_key)])
 async def add_document(doc: DocumentInput):
     """
     Ajoute un document a la base de connaissances.
@@ -70,7 +71,7 @@ async def add_document(doc: DocumentInput):
     })
 
 
-@router.post("/init")
+@router.post("/init", dependencies=[Depends(require_api_key)])
 async def init_knowledge_base():
     """
     Initialise la base avec des connaissances agricoles par defaut.
@@ -96,7 +97,7 @@ async def get_rag_status():
     return rag_knowledge.check_rag_status()
 
 
-@router.get("/documents")
+@router.get("/documents", dependencies=[Depends(require_api_key)])
 async def list_documents():
     """Liste tous les documents de la base"""
     docs = [

@@ -3,7 +3,7 @@ WOURI - Router TTS (Text-to-Speech)
 Support multi-langues ivoiriennes
 """
 import asyncio
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.services.tts_french import synthesize_french, get_available_voices
 from app.services.tts_bambara import synthesize_bambara, synthesize_bambara_text, translate_to_bambara
 from app.services.tts_ivoirian import (
@@ -15,11 +15,12 @@ from app.services.tts_ivoirian import (
     IVORIAN_LANGUAGES
 )
 from app.models.schemas import TTSRequest, TTSResponse, TranslateRequest, TranslateResponse, Language
+from app.security import require_api_key
 
 router = APIRouter(prefix="/api/tts", tags=["TTS"])
 
 
-@router.post("/", response_model=TTSResponse)
+@router.post("/", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
 async def text_to_speech(request: TTSRequest):
     """
     Convertit du texte en audio
@@ -52,7 +53,7 @@ async def text_to_speech(request: TTSRequest):
     )
 
 
-@router.post("/french", response_model=TTSResponse)
+@router.post("/french", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
 async def tts_french(text: str):
     """TTS en français uniquement"""
     audio_url = await synthesize_french(text)
@@ -63,7 +64,7 @@ async def tts_french(text: str):
     return TTSResponse(audio_url=audio_url, text=text, language="french")
 
 
-@router.post("/bambara", response_model=TTSResponse)
+@router.post("/bambara", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
 async def tts_bambara(text: str, is_french: bool = True):
     """
     TTS en Bambara
@@ -93,7 +94,7 @@ async def list_voices():
 
 # ============ TRADUCTION ============
 
-@router.post("/translate", response_model=TranslateResponse)
+@router.post("/translate", response_model=TranslateResponse, dependencies=[Depends(require_api_key)])
 async def translate(request: TranslateRequest):
     """
     Traduit du texte vers le Bambara
@@ -147,7 +148,7 @@ async def ivorian_tts_status():
     return check_models_status()
 
 
-@router.post("/ivorian/{language_code}")
+@router.post("/ivorian/{language_code}", dependencies=[Depends(require_api_key)])
 async def tts_ivorian_language(language_code: str, text: str):
     """
     TTS pour une langue ivoirienne spécifique
@@ -190,7 +191,7 @@ async def tts_ivorian_language(language_code: str, text: str):
     )
 
 
-@router.post("/ivorian")
+@router.post("/ivorian", dependencies=[Depends(require_api_key)])
 async def tts_ivorian_auto(text: str, language: str = "bam"):
     """
     TTS ivoirien avec détection automatique de langue par alias

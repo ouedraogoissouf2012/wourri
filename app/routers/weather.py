@@ -1,15 +1,16 @@
 """
 WOURI - Router Météo
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.services.weather import get_weather, get_all_cities_weather
 from app.data.cities import get_all_cities, get_city, search_cities
 from app.models.schemas import WeatherData, CityInfo
+from app.security import require_api_key
 
 router = APIRouter(prefix="/api/weather", tags=["Météo"])
 
 
-@router.get("/{city_name}", response_model=WeatherData)
+@router.get("/{city_name}", response_model=WeatherData, dependencies=[Depends(require_api_key)])
 async def weather_by_city(city_name: str):
     """
     Récupère la météo d'une ville de Côte d'Ivoire
@@ -27,7 +28,7 @@ async def weather_by_city(city_name: str):
     return weather
 
 
-@router.get("/", response_model=list[WeatherData])
+@router.get("/", response_model=list[WeatherData], dependencies=[Depends(require_api_key)])
 async def weather_all():
     """Récupère la météo des principales villes"""
     return await get_all_cities_weather()
