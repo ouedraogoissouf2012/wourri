@@ -217,7 +217,23 @@
 **Dépendances** : aucune
 **Exécution** : Claude (investigation) + Ruben (confirmation intention)
 **Livrable** : état clarifié dans MEMORY.md + éventuellement tag de commit
-**Statut** : à faire
+**Statut** : ✅ fait 2026-04-23 (issue #100, PR à venir)
+
+**Résolution** : investigation complète effectuée le 2026-04-23. Preuves accumulées :
+- `app/services/agent/` contient uniquement un `__pycache__/` hérité (agent_service.cpython-312.pyc, tools.cpython-312.pyc). Les fichiers `.py` correspondants ont existé localement puis ont été supprimés.
+- `git log --all -- app/services/agent/` retourne **vide** → les fichiers n'ont **jamais été committés** dans aucune branche.
+- Aucun import `from app.services.agent` dans le code actuel.
+- Aucune route `/api/chat/agent` dans `app/routers/chat.py`.
+- Fichiers `app/routers/debug.py` et `templates/agent_debug.html` cités dans MEMORY.md : **n'existent pas**.
+
+**Verdict** : le mode agentic était un **prototype local** du 2026-03-10, testé localement puis abandonné, **jamais versionné en production**. MEMORY.md reflétait un état qui n'a jamais existé en dehors du poste de développement.
+
+**Actions prises** :
+- Suppression locale de `app/services/agent/` (dossier non-tracké, juste nettoyage disque).
+- Correction `MEMORY.md` : retrait des 5 lignes listant des fichiers inexistants (119-123), remplacement de la section "Mode Agentic (implémenté 2026-03-10)" par une section honnête "Mode Agentic — prototype local NON implémenté (clarifié 2026-04-23)".
+- Les 3 fichiers `finetune/*.py` cités dans MEMORY.md existent réellement (vérifié), ils sont conservés.
+
+**Décision future** : si un mode agentic devient utile, ADR dédié + redémarrage depuis zéro avec scope validé et tests.
 
 ---
 
