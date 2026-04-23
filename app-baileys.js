@@ -4,6 +4,9 @@
  * Demande ville et langue preferee avant de repondre
  */
 
+// Charger les variables d'environnement depuis .env AVANT toute lecture de process.env
+require('dotenv').config();
+
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, downloadMediaMessage, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const axios = require('axios');
