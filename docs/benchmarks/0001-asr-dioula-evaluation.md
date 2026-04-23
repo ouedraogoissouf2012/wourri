@@ -23,7 +23,7 @@ dioula CI). Décider sur chiffres, pas sur papers.
 | M1 | Omnilingual ASR CTC 300M | 300M | Apache 2.0 | `facebook/omnilingual-asr-ctc-300m` |
 | M2 | Omnilingual ASR CTC 1B | 1B | Apache 2.0 | `facebook/omnilingual-asr-ctc-1b` |
 | M3 | Omnilingual ASR LLM 1.2B | 1.2B | Apache 2.0 | `facebook/omniasr-llm-1_2b` |
-| M4 | Djelia / sudoping01 bambara-asr-v2 | ~1.5B (Whisper-large-v2 fine-tuné) | Apache 2.0 | `sudoping01/bambara-asr-v2` |
+| M4 | Bambara-ASR-v2 (sudoping01 / Djelia MALIBA-AI) | ~1.5B (Whisper-large-v2 fine-tuné) | Apache 2.0 | `sudoping01/bambara-asr-v2` |
 | M5 | RobotsMali Soloba-ctc-0.6B-v3 | 0.6B | CC-BY-4.0 | `RobotsMali/soloba-ctc-0.6b-v3` |
 | M6 | NeMo Soloni TDT (baseline actuel) | 114M | CC-BY-4.0 | `RobotsMali/soloni-114m-tdt-ctc-v0` |
 
@@ -32,6 +32,13 @@ comparaison (si Omnilingual n'apporte rien vs un modèle bambara mature, la déc
 
 **Omnilingual 7B écarté** : nécessite A100 24 GB → hors budget Colab gratuit. Réévaluer si
 M1/M2/M3 donnent des résultats insuffisants.
+
+**Note sur M4 (Bambara-ASR-v2)** : ce modèle présente une capacité de
+**code-switching bambara-français natif**, testée et documentée par Djelia/MALIBA-AI.
+Critique pour le cas d'usage Wourri où les utilisateurs mélangent fréquemment les
+deux langues dans un même vocal. À surveiller particulièrement dans l'évaluation
+humaine (métriques Fidélité et Utilisabilité NLU). Source :
+[huggingface.co/sudoping01/bambara-asr-v2](https://huggingface.co/sudoping01/bambara-asr-v2).
 
 ---
 
@@ -181,7 +188,7 @@ WER que la baseline NeMo Soloni actuelle.
 | M1 Omnilingual 300M | ? | ? | ? | ? | ? | ? | ? | ? |
 | M2 Omnilingual 1B | ? | ? | ? | ? | ? | ? | ? | ? |
 | M3 Omnilingual LLM 1.2B | ? | ? | ? | ? | ? | ? | ? | ? |
-| M4 Djelia bambara-asr-v2 | ? | ? | ? | ? | ? | ? | ? | ? |
+| M4 Bambara-ASR-v2 (sudoping01) | ? | ? | ? | ? | ? | ? | ? | ? |
 | M5 RobotsMali Soloba v3 | ? | ? | ? | ? | ? | ? | ? | ? |
 | M6 NeMo Soloni (baseline) | ? | ? | ? | ? | ? | ? | ? | ? |
 
