@@ -254,7 +254,24 @@ Trancher : quelle version est la source de vérité ? Renommer ou supprimer les 
 **Dépendances** : aucune
 **Exécution** : Ruben (décision) + Claude (exécution nettoyage)
 **Livrable** : un seul `corpus_ivr.json` à jour, autres archivés ou supprimés
-**Statut** : à faire
+**Statut** : ✅ fait 2026-04-23 (issue #101, PR à venir)
+
+**Résolution** : investigation complète des 4 fichiers le 2026-04-23.
+
+État réel découvert :
+- `corpus_ivr.json` (v2.3, 162 entrées) — **source de vérité actuelle**, référencée par `vdb_service.py`, `config.py`, et 5+ outils
+- `corpus_ivr_v2.1_backup.json` (v2.1, 162 entrées) — backup figé, **redondant avec git history**
+- `corpus_ivr_v3_draft.json` (v3, 38 entrées partielles) — draft incomplet abandonné (issue #49)
+- `corpus_ivr_v3_full_draft.json` (v3, 162 entrées réécrites SOV naturel, validation 84,9 %) — candidat sérieux pour devenir prod
+
+**Décision tranchée** : `corpus_ivr.json` (v2.3) reste la source de vérité. Les 3 autres fichiers sont **archivés** dans `dictionnaires/archive/` avec un `README.md` explicatif. Aucun supprimé (préservation des heures de travail dioula CI dans v3_full).
+
+**Question hors scope ouverte** : la promotion de `v3_full_draft` → `corpus_ivr.json` (v2.4 ou v3.0) mérite **un ADR dédié futur** car nécessite tests de régression complets sur le pipeline ASR→NLU→IVR→TTS. Critères pressentis : validation ≥ 95 % (aujourd'hui 84,9 %), évaluation humaine native, tag de release dédié.
+
+**Actions prises** :
+- `git mv` des 3 fichiers vers `dictionnaires/archive/` (préserve l'historique git via renommage)
+- Création de `dictionnaires/archive/README.md` (statut détaillé de chaque fichier + procédure de promotion future)
+- MEMORY.md mis à jour (ligne corpus_ivr_v2.1_backup → mention de l'archive complète)
 
 ---
 
