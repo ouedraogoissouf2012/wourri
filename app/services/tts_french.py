@@ -3,6 +3,7 @@ WOURI - TTS Français (Piper TTS)
 100% GRATUIT - Voix locale haute qualité
 Conversion en OGG Opus pour compatibilité WhatsApp
 """
+import asyncio
 import uuid
 import os
 import re
@@ -82,7 +83,8 @@ async def synthesize_french(text: str) -> str | None:
         os.makedirs(audio_dir, exist_ok=True)
 
         # Générer l'audio avec Piper TTS (chemins absolus obligatoires)
-        piper_process = subprocess.run(
+        piper_process = await asyncio.to_thread(
+            subprocess.run,
             [PIPER_PATH, '--model', PIPER_MODEL, '--output_file', wav_filepath],
             input=clean.encode('utf-8'),
             capture_output=True,
@@ -94,16 +96,21 @@ async def synthesize_french(text: str) -> str | None:
         if os.path.exists(wav_filepath) and os.path.getsize(wav_filepath) > 0:
             try:
                 # Conversion WAV -> OGG Opus (format WhatsApp)
-                result = subprocess.run([
-                    FFMPEG_PATH,
-                    '-i', wav_filepath,
-                    '-c:a', 'libopus',
-                    '-b:a', '64k',
-                    '-ar', '48000',
-                    '-ac', '1',
-                    '-y',
-                    ogg_filepath
-                ], capture_output=True, timeout=30)
+                result = await asyncio.to_thread(
+                    subprocess.run,
+                    [
+                        FFMPEG_PATH,
+                        '-i', wav_filepath,
+                        '-c:a', 'libopus',
+                        '-b:a', '64k',
+                        '-ar', '48000',
+                        '-ac', '1',
+                        '-y',
+                        ogg_filepath
+                    ],
+                    capture_output=True,
+                    timeout=30,
+                )
 
                 # Supprimer le fichier WAV temporaire
                 os.remove(wav_filepath)
