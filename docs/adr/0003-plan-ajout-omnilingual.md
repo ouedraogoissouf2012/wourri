@@ -1,9 +1,9 @@
 # ADR-0003 — Plan d'ajout d'Omnilingual à la chain ASR
 
-**Statut** : proposé (attend validation Ruben)
+**Statut** : accepté
 **Date** : 2026-04-22 (révisé après exploration réelle)
 **Auteur** : Claude (assistant)
-**Valideur** : Ruben
+**Valideur** : Ruben (validé le 2026-04-23)
 **Exécute** : [ADR-0002](0002-ajout-provider-omnilingual.md)
 **Remplace** : version initiale "Plan migration ASR → Omnilingual" (mal cadrée)
 
@@ -227,3 +227,4 @@ Supprimer le code mort identifié dans ADR-0002 (dupliquait le normalizer exista
 
 - **2026-04-22 (première rédaction)** : plan de migration complète avec feature flag + phases lourdes. Cadrage incorrect.
 - **2026-04-22 (révision)** : après exploration réelle du projet, reconnaissance de l'architecture multi-provider existante. Plan recadré en "ajout de provider". Phases allégées, suppression de la notion de "migration complète". Statut proposé, attend validation Ruben.
+- **2026-04-23 (accepté)** : Ruben valide le plan en chat. Statut basculé à `accepté`. Exécution effective conditionnée à la disponibilité d'environnement Colab/GPU et à la stabilité du benchmark.
