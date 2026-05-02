@@ -10,6 +10,7 @@ Modèles utilisés:
 - TTS: facebook/mms-tts-dyu (Dioula)
 - Traduction: facebook/nllb-200-distilled-600M (dyu_Latn)
 """
+import asyncio
 import uuid
 import os
 import subprocess
@@ -536,13 +537,13 @@ async def synthesize_dioula(french_text: str) -> tuple[str | None, str | None]:
         return None, None
 
     try:
-        dioula_text = translate_to_dioula(french_text)
+        dioula_text = await asyncio.to_thread(translate_to_dioula, french_text)
         try:
             logger.info(f"Traduction Dioula: {french_text[:50]}... -> {dioula_text[:50]}...")
         except UnicodeEncodeError:
             logger.info("Traduction Dioula effectuée")
 
-        audio_url = synthesize_dioula_text(dioula_text)
+        audio_url = await asyncio.to_thread(synthesize_dioula_text, dioula_text)
         return audio_url, dioula_text
 
     except Exception as e:
