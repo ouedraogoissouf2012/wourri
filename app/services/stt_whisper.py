@@ -5,6 +5,7 @@ Utilise CTranslate2 pour des performances 4x plus rapides
 NOTE: Necessite faster-whisper
 Pour installer: pip install faster-whisper
 """
+import asyncio
 import logging
 import os
 
@@ -859,7 +860,7 @@ async def transcribe_audio_bytes(audio_bytes: bytes, filename: str = "audio.wav"
             f.write(audio_bytes)
         logger.info(f"[STT DEBUG] Audio sauvegarde: {debug_path} ({len(audio_bytes)} bytes)")
 
-        result = transcribe_audio(temp_path, language)
+        result = await asyncio.to_thread(transcribe_audio, temp_path, language)
 
         # DEBUG: Log le resultat
         if result:
