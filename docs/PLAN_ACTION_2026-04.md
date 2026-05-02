@@ -168,7 +168,22 @@
 **Dépendances** : aucune
 **Exécution** : Claude (ADR) + Ruben (validation)
 **Livrable** : `docs/adr/0005-afrolid-language-detection.md`
-**Statut** : à faire
+**Statut** : ✅ fait 2026-04-23 (issue #98, PR à venir)
+
+**Résolution** : ADR-0005 rédigé le 2026-04-23 avec investigation pipeline actuel + comparaison 5 options (AfroLID, FastText, cld3, langdetect, status quo).
+
+**Décision tranchée** : **AfroLID** (UBC-NLP, Apache 2.0 vérifié, 517 langues africaines). Seule option qui coche les 3 cases vitales : bambara natif + 50+ langues afri. + licence commerciale permissive.
+
+**Use cases documentés** :
+1. Validation post-ASR (priorité) — corrige Whisper si l'audio était en bambara mal détecté → remplace l'heuristique hardcodée `is_likely_dioula_input`
+2. Routage NLU sur texte WhatsApp libre (secondaire) — gère les users qui écrivent dans une langue ≠ leur déclaration
+3. Détection code-switching (nice to have) — pour pipelines NLU bilingues futurs
+
+**Critères de succès chiffrés** : précision ≥ 90 % dioula CI, latence < 50 ms, RAM < 500 MB. À valider en POC bloquant Phase B d'implémentation.
+
+**Implémentation différée** : déclenchée après Phase 4 d'[ADR-0003](adr/0003-plan-ajout-omnilingual.md) (Omnilingual intégré + benchmarké). Effort estimé 4-5 jours dont 1 jour POC bloquant.
+
+**Statut ADR-0005** : proposé, en attente validation Ruben pour bascule en `accepté`.
 
 ---
 
