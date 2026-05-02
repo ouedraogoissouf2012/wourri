@@ -9,6 +9,7 @@ Traduction déléguée au TranslationService (Strategy Pattern):
   1. Dictionnaire (11k+ mots Bamadaba + phrases manuelles)
   2. NLLB-200 (fallback IA)
 """
+import asyncio
 import uuid
 import os
 import re
@@ -570,14 +571,14 @@ async def synthesize_bambara(french_text: str) -> tuple[str | None, str | None]:
         return None, None
 
     try:
-        bambara_text = translate_to_bambara(french_text)
+        bambara_text = await asyncio.to_thread(translate_to_bambara, french_text)
         # Utiliser encode/decode pour éviter les erreurs d'encodage Windows
         try:
             logger.info(f"Traduction: {french_text} -> {bambara_text}")
         except UnicodeEncodeError:
             logger.info(f"Traduction effectuee (caracteres speciaux Bambara)")
 
-        audio_url = synthesize_bambara_text(bambara_text)
+        audio_url = await asyncio.to_thread(synthesize_bambara_text, bambara_text)
         return audio_url, bambara_text
 
     except Exception as e:
