@@ -1,9 +1,9 @@
 # ADR-0005 — Détection de langue textuelle via AfroLID
 
-**Statut** : proposé (en attente validation Ruben)
+**Statut** : accepté
 **Date** : 2026-04-23
 **Auteur** : Claude (assistant)
-**Valideur** : Ruben
+**Valideur** : Ruben (validé le 2026-04-23)
 **Issue source** : [#98](https://github.com/ouedraogoissouf2012/wourri/issues/98) — [P1-03] du [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md)
 
 ---
@@ -260,3 +260,4 @@ Si un critère n'est pas atteint → ré-ouvrir cet ADR pour ajustement (ex : pa
 ## Historique
 
 - **2026-04-23 (rédaction)** — investigation pipeline actuel, comparaison 5 options, choix AfroLID. Statut : proposé, en attente validation Ruben.
+- **2026-04-23 (accepté)** — Ruben valide la décision AfroLID après explications pédagogiques. Statut basculé à `accepté`. Implémentation différée post Phase 4 ADR-0003.
