@@ -13,6 +13,7 @@ Langues supportées:
 - Dan/Yacouba (dnj) - NOUVEAU
 - Wobé (wob) - NOUVEAU
 """
+import asyncio
 import uuid
 import os
 import subprocess
@@ -215,7 +216,7 @@ async def synthesize_ivorian(text: str, language: str = "bam") -> Tuple[Optional
     if not resolved_code:
         return None, language
 
-    audio_url = synthesize_ivorian_text(text, resolved_code)
+    audio_url = await asyncio.to_thread(synthesize_ivorian_text, text, resolved_code)
     lang_name = IVORIAN_LANGUAGES[resolved_code][0]
 
     return audio_url, lang_name
