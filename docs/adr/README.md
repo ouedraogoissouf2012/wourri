@@ -14,6 +14,7 @@ du projet. Chaque décision passe par cet index et par le workflow du skill
 | [ADR-0001](0001-choix-stockage-donnees.md) | Choix du stockage de données | **accepté** | 2026-04-21 | PostgreSQL + pgvector remplace ChromaDB. Migration planifiée ADR futur. |
 | [ADR-0002](0002-ajout-provider-omnilingual.md) | Ajout d'un provider Omnilingual ASR | **accepté** | 2026-04-22 | Meta Omnilingual ASR ajouté à la chain ASR existante (pas remplacement). |
 | [ADR-0003](0003-plan-ajout-omnilingual.md) | Plan d'ajout Omnilingual | **accepté** | 2026-04-22 | 5 phases : env → provider → benchmark → intégration → cleanup. |
+| [ADR-0004](0004-corpus-bambara-afrivoices-nextvoices.md) | Intégration corpus AfVoices/ANV + stratégie multi-variantes Manding | **proposé** | 2026-04-23 | AfVoices (CC-BY-4.0, 423h bambara Mali) intégré en bam_ML séparé. Stratégie multi-modèles isolés par variante (dyu_CI / dyu_ML / bam_ML) pour éviter pollution croisée. Implémentation différée. |
 | [ADR-0005](0005-afrolid-language-detection.md) | Détection de langue textuelle via AfroLID | **accepté** | 2026-04-23 | AfroLID (UBC-NLP, Apache 2.0, 517 langues africaines) pour remplacer l'heuristique hardcodée `is_likely_dioula_input`. Implémentation différée P2-P3. |
 | [ADR-0010](0010-migration-monorepo.md) | Migration vers monorepo | **proposé** | 2026-04-23 | Structure repo actuelle (3 branches orphelines) → monorepo standard avec sous-dossiers. Exécution planifiée après stabilisation Sprint 2. |
 
@@ -21,7 +22,6 @@ du projet. Chaque décision passe par cet index et par le workflow du skill
 
 | ID | Titre | Priorité | Déclencheur |
 |---|---|---|---|
-| ADR-0004 | Intégration corpus African Next Voices + AfVoices | P1 | [P1-01] |
 | ADR-0006 | Migration Baileys → WhatsApp Cloud API | P2 | [P2-07] |
 | ADR-0007 | Choix LLM conversationnel (souveraineté DeepSeek) | P3 | [P3-05] |
 | ADR-0008 | Plan migration ChromaDB → pgvector | P2-P3 | après ADR-0001 |
