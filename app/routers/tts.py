@@ -114,7 +114,7 @@ async def translate(request: Request, body: TranslateRequest):
         )
 
     try:
-        translated = translate_to_bambara(body.text)
+        translated = await asyncio.to_thread(translate_to_bambara, body.text)
         return TranslateResponse(
             original=body.text,
             translated=translated,
