@@ -5,6 +5,7 @@ Assistant agricole intelligent pour la Côte d'Ivoire
 import logging
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -162,6 +163,17 @@ app = FastAPI(
 # Rate limiting — 10 req/min par IP
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# CORS — permissif uniquement en dev (test interface locale showcase.html)
+# En production, restreindre via une allow-list explicite (ADR-0011 futur).
+if not settings.is_production:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # Monter les fichiers statiques
 app.mount("/static", StaticFiles(directory="static"), name="static")
