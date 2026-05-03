@@ -138,7 +138,28 @@
 **Dépendances** : ADR-0003 validé (ce qui est le cas)
 **Exécution** : Claude (ADR) + Ruben (validation)
 **Livrable** : `docs/adr/0004-corpus-bambara-afrivoices-nextvoices.md`
-**Statut** : à faire
+**Statut** : ✅ fait 2026-04-23 (issue #96, PR à venir)
+
+**Résolution** : ADR-0004 rédigé le 2026-04-23 avec scope **élargi** suite à la précision de Ruben "il faut éviter les nuances avec dioula CI".
+
+**Découvertes clés** :
+- AfVoices vérifié : **CC-BY-4.0** (commercial OK avec attribution), 253k phrases human-corrected, 423h audio bambara Sud Mali
+- African Next Voices = programme Gates Foundation distribué langue-par-langue ; AfVoices est sa portion bambara
+- Pipeline `prepare_dioula_dataset.py` actuel n'intègre PAS encore ces corpus
+
+**Décision tranchée** : **Option A — Multi-modèles isolés par variante Manding** (3 modèles distincts : dyu_CI, dyu_ML, bam_ML) pour éviter pollution croisée. Stratégie d'isolation 3 axes :
+1. Tagging strict des corpus (champ `variant: "dyu_CI" | "dyu_ML" | "bam_ML"` obligatoire)
+2. Fine-tune isolé par variante (jamais de mélange dans le même run)
+3. Évaluation séparée (WER/CER calculés indépendamment, jamais moyennés)
+
+**Plan en 3 phases différé** :
+- Phase A : POC dyu_CI strict (CV dyu + corpus_ivr uniquement, AUCUN AfVoices)
+- Phase B : intégration bam_ML via AfVoices (sample 10k puis full 64GB)
+- Phase C : anticipation dyu_ML (corpus à identifier en P2/P3)
+
+**Garde-fou** : à chaque release d'un nouveau modèle (toute variante), re-tester systématiquement les autres pour s'assurer aucune régression. Rollback obligatoire si > 5% WER.
+
+**Statut ADR-0004** : proposé, en attente validation Ruben pour bascule en `accepté`.
 
 ---
 
