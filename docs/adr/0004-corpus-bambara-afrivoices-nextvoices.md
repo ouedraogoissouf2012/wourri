@@ -1,9 +1,9 @@
 # ADR-0004 — Intégration corpus AfVoices / African Next Voices avec stratégie multi-variantes Manding
 
-**Statut** : proposé (en attente validation Ruben)
+**Statut** : accepté
 **Date** : 2026-04-23
 **Auteur** : Claude (assistant)
-**Valideur** : Ruben
+**Valideur** : Ruben (validé le 2026-04-23)
 **Issue source** : [#96](https://github.com/ouedraogoissouf2012/wourri/issues/96) — [P1-01] du [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md)
 **ADRs liés** : [ADR-0002](0002-ajout-provider-omnilingual.md) (Omnilingual ASR), [ADR-0003](0003-plan-ajout-omnilingual.md) (plan ajout Omnilingual), [ADR-0005](0005-afrolid-language-detection.md) (AfroLID)
 
@@ -396,3 +396,4 @@ L'implémentation effective est **hors scope de cet ADR**. Cet ADR documente la 
 
 - **2026-04-23 (rédaction initiale)** — investigation AfVoices/ANV, identification des limites de l'option mélange, conception stratégie multi-modèles isolés. Statut : proposé.
 - **2026-04-23 (révision suite remarque Ruben)** — élargissement scope pour anticiper dyu_ML et bam_ML, intégration de la stratégie d'isolation des nuances entre variantes Manding (tagging strict + fine-tune isolé + évaluation séparée).
+- **2026-04-23 (accepté)** — Ruben valide le scope élargi multi-variantes Manding. Statut basculé à `accepté`. Implémentation différée post Phase 4 ADR-0003 (Omnilingual stabilisé).
