@@ -181,7 +181,7 @@ async def tts_ivorian_language(request: Request, language_code: str, text: str):
         )
 
     # Générer l'audio
-    audio_url = synthesize_ivorian_text(text, resolved)
+    audio_url = await asyncio.to_thread(synthesize_ivorian_text, text, resolved)
 
     if not audio_url:
         raise HTTPException(
