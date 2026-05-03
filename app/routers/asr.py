@@ -2,6 +2,7 @@
 WOURI - Router ASR (Automatic Speech Recognition)
 Reconnaissance vocale pour langues ivoiriennes via MMS-1B-ALL + NLLB-200
 """
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 import re
 from app.services.asr import get_asr_chain, get_generic_asr_chain
@@ -158,7 +159,7 @@ async def transcribe_and_translate(
     if language == "bam":
         try:
             logger.info("[ASR] Traduction Bambara -> Francais...")
-            french_translation = translate_to_french(transcription)
+            french_translation = await asyncio.to_thread(translate_to_french, transcription)
             logger.info("[ASR] Traduction: '%s'", french_translation)
             translation_available = True
         except Exception as e:
