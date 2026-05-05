@@ -58,9 +58,12 @@ whatsapp-server/
 ├── temp_audio/            # Audios téléchargés temporairement (gitignored)
 ├── user_preferences.json  # Préférences users (gitignored)
 ├── README.md              # Documentation utilisateur
-├── CLAUDE.md              # Ce fichier
-└── _archive_legacy/       # Fichiers historiques École Notification (NE PAS RÉUTILISER)
+└── CLAUDE.md              # Ce fichier
 ```
+
+> **Note historique** : 13 fichiers hérités du projet "École Notification"
+> Spring Boot ont été supprimés du repo en 2026-05-05 (PR [#115](https://github.com/ouedraogoissouf2012/wourri/pull/115)).
+> L'historique reste disponible via `git log` si besoin de référence.
 
 ## Endpoints exposés
 

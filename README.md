@@ -220,7 +220,6 @@ pour éviter une réécriture lors de la migration.
 - ADRs structurants : `../wouri-api/docs/adr/`
 - Documentation interne Claude : [`CLAUDE.md`](CLAUDE.md)
 - Issue Phase 1 : [#114](https://github.com/ouedraogoissouf2012/wourri/issues/114)
-- Fichiers historiques (École Notification) : [`_archive_legacy/`](_archive_legacy/)
 - Baileys docs : <https://github.com/WhiskeySockets/Baileys>
 
 ---
