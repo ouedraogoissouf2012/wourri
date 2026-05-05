@@ -1,164 +1,182 @@
-# CLAUDE.md
+# CLAUDE.md — `whatsapp-server/` (Wourri)
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guide pour Claude Code (claude.ai/code) lors de modifications de ce dossier.
 
-## WhatsApp Server Overview
+## Vue d'ensemble
 
-This is the **Node.js WhatsApp server component** of the larger Spring Boot notification service. It provides a local WhatsApp Web integration using `whatsapp-web.js` that allows the main Spring Boot application to send WhatsApp messages without relying on the Facebook Graph API during development.
+Ce dossier est le **serveur WhatsApp de Wourri**, un bot agricole bambara/dioula
+pour la Côte d'Ivoire et le Mali.
 
-## Common Development Commands
+- **Technologie** : Node.js + Express + [@whiskeysockets/baileys](https://github.com/WhiskeySockets/Baileys) (lib non-officielle WhatsApp Web)
+- **Rôle** : passerelle entre les utilisateurs WhatsApp et l'API Wourri (FastAPI Python, voisin)
+- **Fichier prod actif** : [`app-baileys.js`](app-baileys.js) (1155 lignes, à refactorer en phase ultérieure)
+- **Port par défaut** : `3001` (override possible via `.env` `PORT=...`)
 
-### Running the WhatsApp Server
-- `npm start` - Start the WhatsApp server on port 3000
-- `node whatsapp-server.js` - Alternative start command
-- `start-whatsapp.bat` - Windows batch script to start server with proper directory navigation
+## Décision projet — pourquoi Baileys et pas WhatsApp Cloud API officielle
 
-### Package Management
-- `npm install` - Install dependencies after cloning
-- `npm list` - View installed packages
-- `npm update` - Update dependencies
-- `npm audit` - Check for security vulnerabilities
+Validé par Ruben le **2026-05-05** :
 
-### Testing and Monitoring
-- `node test-whatsapp.js --test` - Run comprehensive connection and message tests
-- `node test-whatsapp.js --monitor` - Start continuous monitoring (30s intervals)
-- `node test-whatsapp.js --monitor --interval 60` - Custom monitoring interval
-- `health-check.bat` - Windows script for daily health verification
-- `monitor.bat` - Interactive monitoring menu for Windows
+- **Maintenant** : Baileys (lib non-officielle, gratuite, fonctionne)
+- **Plus tard** : migration vers WhatsApp Cloud API officielle Meta quand le budget le permettra (compte Business vérifié, BSP, conformité)
 
-### Maintenance Commands
-- `npx kill-port 3000` - Stop server running on port 3000
-- `cleanup.bat` - Clean WhatsApp sessions and restart server
-- Remove sessions manually: `rmdir /s /q .wwebjs_auth .wwebjs_cache` (Windows)
+Mission immédiate : **rendre Baileys production-ready, robuste, sans problème**.
+Risque connu : Baileys peut entraîner un ban du compte business à grande échelle.
+À chaque feature WhatsApp future, penser **rétrocompatibilité Cloud API** pour
+éviter une réécriture lors de la migration éventuelle.
+
+## Démarrage
+
+```bash
+# 1. Installation
+npm install
+
+# 2. Configurer les variables d'environnement
+cp .env.example .env
+# Éditer .env :
+#   PORT=3001
+#   WOURI_API_URL=http://localhost:8000
+#   WOURI_API_KEY=<clé secrète backend>
+#   NODE_ENV=development
+
+# 3. Démarrage
+npm start
+# → Affiche un QR code à scanner avec WhatsApp mobile (Paramètres → Appareils liés)
+
+# 4. Production
+NODE_ENV=production npm run production
+```
 
 ## Architecture
 
-### Core Dependencies
-- **express** (^4.18.2) - REST API server framework
-- **whatsapp-web.js** (^1.22.2) - WhatsApp Web integration library
-- **qrcode-terminal** (^0.12.0) - QR code display in terminal
-- **cors** (^2.8.5) - Cross-origin resource sharing support
-
-### Authentication Flow
-The server uses WhatsApp Web's session-based authentication:
-1. On first run, generates QR code displayed in terminal
-2. User scans QR code with WhatsApp mobile app
-3. Creates persistent session in `.wwebjs_auth/` directory
-4. Subsequent runs reuse saved session (no QR scan needed)
-
-### API Endpoints
-- `GET /status` - Returns connection status and QR code requirement
-- `GET /qr` - Returns current QR code data if authentication needed
-- `GET /qr-page` - Web interface for QR code scanning with visual interface
-- `POST /send-message` - Send WhatsApp message (requires `number` and `message` in body)
-
-### Session Management
-- **Session Storage**: `.wwebjs_auth/ecole-notification/` - Persistent WhatsApp session data (configurable via LocalAuth name parameter)
-- **Cache Directory**: `.wwebjs_cache/` - Temporary browser cache files
-- **Session Name**: "ecole-notification" - Configured in LocalAuth strategy
-
-## Integration with Main Application
-
-This WhatsApp server is designed to work alongside the Spring Boot notification service:
-
-### Communication Pattern
-- Spring Boot app (`http://localhost:8080`) makes HTTP requests to this server (`http://localhost:3000`)
-- WhatsAppService in Spring Boot uses WebClient to call `/send-message` endpoint
-- Async processing in Spring Boot handles message queuing and retry logic
-
-### Message Flow
-1. Spring Boot receives notification request via REST API
-2. WhatsAppService formats message and calls `POST /send-message`
-3. WhatsApp server validates connection status
-4. If connected, sends message via WhatsApp Web protocol
-5. Returns success/failure response to Spring Boot
-6. Spring Boot updates notification delivery status in database
-
-## Development Workflow
-
-### Initial Setup
-1. Run `npm install` to install dependencies
-2. Start server with `npm start`
-3. Scan displayed QR code with WhatsApp mobile app
-4. Server will show "✅ WhatsApp connecté et prêt !" when ready
-
-### Testing Message Sending
-```bash
-# Manual API test
-curl -X POST http://localhost:3000/send-message \
-  -H "Content-Type: application/json" \
-  -d '{"number": "22544210112", "message": "Test message"}'
-
-# Automated test with monitoring
-node test-whatsapp.js --test
+```
+whatsapp-server/
+├── app-baileys.js         # Serveur principal (Baileys + onboarding 4 étapes)
+├── package.json           # Dépendances figées (versions exactes, pas de ^)
+├── .env                   # Secrets (gitignored)
+├── .gitignore
+├── auth_baileys/          # Session WhatsApp persistante (gitignored)
+├── temp_audio/            # Audios téléchargés temporairement (gitignored)
+├── user_preferences.json  # Préférences users (gitignored)
+├── README.md              # Documentation utilisateur
+└── CLAUDE.md              # Ce fichier
 ```
 
-### Troubleshooting Common Issues
-- **QR code doesn't appear**: Delete `.wwebjs_auth/` and `.wwebjs_cache/` directories, restart server
-- **Port already in use**: Run `npx kill-port 3000` or use `cleanup.bat`
-- **Connection lost**: Server auto-reconnects after 5 seconds; check logs for errors
-- **Session expires**: WhatsApp sessions expire after ~2 weeks of inactivity - re-scan QR code
-- **Protocol errors**: Clean sessions with `cleanup.bat` and restart
-- **QR code access**: Use http://localhost:3000/qr-page for visual QR interface
+> **Note historique** : 13 fichiers hérités du projet "École Notification"
+> Spring Boot ont été supprimés du repo en 2026-05-05 (PR [#115](https://github.com/ouedraogoissouf2012/wourri/pull/115)).
+> L'historique reste disponible via `git log` si besoin de référence.
 
-## Key Design Considerations
+## Endpoints exposés
 
-### Error Handling
-- Returns appropriate HTTP status codes (400, 503, 500)
-- Includes detailed error messages for debugging
-- Validates required request parameters before processing
+| Méthode | Route | Description |
+|---|---|---|
+| GET | `/` | Statut général + nombre d'utilisateurs |
+| GET | `/status` | Statut connexion + QR code si nécessaire |
+| GET | `/users` | Liste anonymisée des utilisateurs (numéros tronqués) |
+| GET | `/qr` | QR code data brut (JSON) |
+| GET | `/qr-page` | Page HTML avec QR code visuel auto-refresh 5s |
+| POST | `/logout` | Déconnexion + suppression `auth_baileys/` |
 
-### Number Formatting
-- Accepts numbers with or without WhatsApp chat ID suffix
-- Automatically formats phone numbers to `number@c.us` format
-- Supports international number formats
+## Pipeline de traitement d'un message entrant
 
-### Logging
-- Console logging for all major events (connection, messages, errors)
-- Message preview logging (first 50 characters) for debugging
-- Emojis used for visual status indication in logs
+1. **Filtrage** : ignorer messages auto, groupes, statuts
+2. **Onboarding** (étapes `NEW` → `WAITING_CITY` → `WAITING_LANGUAGE` → `COMPLETE`)
+3. **Détection commande** : "changer ville", "changer langue", "réinitialiser"
+4. **Si vocal** : téléchargement → transcription via API backend
+   - Si user en mode `dioula` ou `both` → `/api/asr/transcribe-and-translate` (MMS Bambara)
+   - Si user en mode `french` → `/api/stt/transcribe` (Whisper français)
+5. **Appel backend** : `POST /api/chat/` avec `{message, city, language, bambara_text, user_id, include_audio: true}`
+6. **Envoi réponse** selon langue + type d'entrée :
+   - `french` + entrée vocale → audio FR
+   - `french` + entrée texte → texte FR
+   - `dioula` → audio dioula uniquement (pas de texte)
+   - `both` + entrée vocale → texte FR + audio dioula
+   - `both` + entrée texte → texte FR + audio dioula
+7. **Feedback C4** (uniquement dioula/both) : prompt 👍/👎 → `POST /api/feedback/{positif|negatif}`
 
-## Security Notes
+## Authentification backend
 
-### Port Exposure
-- Server runs on localhost:3000 (not exposed externally by default)
-- Only accepts requests from same machine (suitable for development)
-- CORS enabled for local Spring Boot integration
+Le serveur signe ses appels à `wouri-api` (port 8000) avec un header `X-API-Key` :
 
-### Session Security
-- WhatsApp session data stored locally in `.wwebjs_auth/`
-- No sensitive credentials stored in code
-- Relies on WhatsApp Web's built-in security model
+```js
+function authHeaders() {
+    return WOURI_API_KEY ? { 'X-API-Key': WOURI_API_KEY } : {};
+}
+```
 
-## Important Configuration
+Si `NODE_ENV=production` et `WOURI_API_KEY` vide → warning au démarrage.
 
-### Key Files and Scripts
-- **Main server**: `whatsapp-server.js` - Core Express server with WhatsApp integration
-- **Test suite**: `test-whatsapp.js` - Comprehensive testing and monitoring utilities
-- **Windows utilities**: `*.bat` files for automated maintenance (cleanup, monitoring, health checks)
-- **Session storage**: `.wwebjs_auth/ecole-notification/` - Persistent WhatsApp sessions
-- **Comprehensive guide**: `GUIDE-COMPLET.md` - Detailed French documentation for setup/maintenance
+## Gestion de la session
 
-### Environment Configuration
-- **Default port**: 3000 (configurable in `whatsapp-server.js` line 7)
-- **Session name**: "ecole-notification" (configurable in LocalAuth strategy)
-- **Test number**: 22544210112 (configurable in `test-whatsapp.js` line 64)
-- **Puppeteer args**: Optimized for headless operation with performance flags
+- **Persistance** : `useMultiFileAuthState('./auth_baileys')` — sauvegarde
+  automatique des credentials à chaque update via `creds.update`
+- **Reconnexion** : automatique 3 secondes après une déconnexion non-volontaire
+- **Logout** : supprimer `auth_baileys/` pour forcer un nouveau scan QR
+- **Graceful shutdown** : SIGINT/SIGTERM sauvegardent `user_preferences.json`
+  de manière synchrone avant exit
 
-### Operational URLs
-- **QR Code Interface**: http://localhost:3000/qr-page (visual QR scanning)
-- **Status API**: http://localhost:3000/status
-- **QR Data API**: http://localhost:3000/qr
+## Connaître l'écosystème Wourri
 
-## Important Notes
+- API backend : `../wouri-api/` (FastAPI Python, port 8000)
+- ADRs structurants : `../wouri-api/docs/adr/`
+- Vision projet : `../wouri-api/docs/vision.md`
+- Plan d'action : `../wouri-api/docs/PLAN_ACTION_2026-04.md`
 
-### Documentation Consistency
-- The actual implemented endpoints are `/status`, `/qr`, `/qr-page`, and `/send-message`
-- The README.md mentions different endpoints that may be from an earlier design
-- Always refer to the actual code implementation in `whatsapp-server.js` for current API endpoints
-- For comprehensive operational procedures, reference `GUIDE-COMPLET.md`
+## Règles de travail
 
-### WhatsApp Web Version Management
-- Server uses remote web version cache for stability
-- Version URL: https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html
-- Automatic reconnection logic handles temporary disconnections
+### Plan-and-confirm strict
+
+Toute modification non-triviale (refactor, ajout endpoint, changement deps)
+passe par un plan validé explicitement avant code.
+
+### Pas de raccourci
+
+- ❌ Ne pas réintroduire `whatsapp-web.js` (remplacé par Baileys)
+- ❌ Ne pas changer le port sans mettre à jour `.env.example` + ce CLAUDE.md
+- ❌ Ne pas ajouter de fonctionnalité incompatible WhatsApp Cloud API
+  (pour préserver la voie de migration future)
+
+### Tests
+
+- Tests unitaires Node : à créer dans une phase dédiée (Phase Tests, hors scope Phase 1)
+- Tests manuels : envoyer un message à WhatsApp lié et vérifier les logs
+
+### Dette technique connue
+
+- **God file** : `app-baileys.js` 1155 lignes — à décomposer (Phase Modularisation)
+- **Logging non structuré** : `console.log` partout — à migrer vers pino JSON
+  (Phase Observabilité)
+- **Pas de healthcheck étendu** : `/status` minimal
+- **Reconnexion simpliste** : `setTimeout 3000ms` sans backoff exponentiel
+- **CORS permissif** : `app.use(cors())` sans restriction
+- **Pas de rate limiting**
+- **Pas de queue de messages** : si l'API backend est down, messages perdus
+- **Nested folder pourri** : `whatsapp-server/whatsapp-server/` (issue P2-04, séparée)
+
+Ces points seront traités dans des phases dédiées :
+1. ✅ **Cleanup + Foundation** (cette phase, en cours)
+2. Robustesse : reconnexion exponentielle + circuit breaker + queue
+3. Observabilité : pino JSON + healthcheck étendu + metrics
+4. Sécurité : CORS strict + validation inputs + rate limiting
+5. Tests : unit + integration + CI GitHub Actions
+6. Déploiement : Dockerfile + PM2/systemd + runbook
+7. Modularisation : décomposer `app-baileys.js`
+
+## Variables d'environnement attendues
+
+| Variable | Défaut | Obligatoire | Description |
+|---|---|---|---|
+| `PORT` | `3001` | non | Port d'écoute Express |
+| `WOURI_API_URL` | `http://localhost:8000` | non | URL de l'API backend |
+| `WOURI_API_KEY` | (vide) | **oui en prod** | Clé partagée avec backend (header `X-API-Key`) |
+| `NODE_ENV` | `development` | non | `production` active certains warnings sécurité |
+
+## Troubleshooting
+
+| Problème | Solution |
+|---|---|
+| QR code n'apparaît pas | Supprimer `auth_baileys/` puis redémarrer |
+| Port déjà utilisé | `npx kill-port 3001` (ou modifier `.env` `PORT=...`) |
+| Connexion perdue | Auto-reconnexion 3s après déconnexion. Vérifier les logs |
+| Session expirée (~2 semaines inactivité) | Re-scan QR via `/qr-page` |
+| Backend `wouri-api` down | Messages échoués (pas de queue actuellement, à corriger Phase Robustesse) |
+| `WOURI_API_KEY non definie en production` | Définir `WOURI_API_KEY` dans `.env` |

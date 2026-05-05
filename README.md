@@ -1,459 +1,229 @@
-# WhatsApp Server - WOURI
+# WOURI WhatsApp Server
 
-## Bot WhatsApp Bilingue - Node.js Baileys
+Serveur Node.js qui connecte les utilisateurs WhatsApp à l'assistant agricole
+**Wourri** (bambara/dioula) via [Baileys](https://github.com/WhiskeySockets/Baileys).
 
-**Version:** 1.0.0
-**Langage:** Node.js 16+
-**Framework:** Express + Baileys
-
----
-
-## Description
-
-WhatsApp Server est le composant de messagerie du projet WOURI. Il permet aux agriculteurs ivoiriens d'interagir avec l'assistant IA via WhatsApp, en recevant des réponses bilingues (Français + Dioula) avec support audio.
+- **Stack** : Node.js 16+ · Express · @whiskeysockets/baileys · Pino · Axios
+- **Rôle** : passerelle WhatsApp ↔ API Wourri (FastAPI Python)
+- **Port** : 3001 (configurable via `.env`)
 
 ---
 
-## Architecture
+## Démarrage rapide (5 minutes)
 
-```
-whatsapp-server/
-├── app-baileys.js          # Serveur principal (UTILISE)
-├── app.js                   # Ancienne version (non utilisée)
-├── whatsapp-server.js       # Version alternative
-├── whatsapp-server-simple.js
-├── test-whatsapp.js         # Tests
-├── package.json             # Dépendances Node.js
-├── auth_baileys/            # Credentials WhatsApp (auto-généré)
-└── temp_audio/              # Fichiers audio temporaires
-```
+### Prérequis
 
----
+- Node.js 16 ou plus récent (`node --version`)
+- Un téléphone WhatsApp pour scanner le QR code
+- L'API Wourri (`wouri-api`) accessible (par défaut `http://localhost:8000`)
 
-## Installation
-
-### 1. Prérequis
+### Installation
 
 ```bash
-node --version  # >= 16.0.0
-npm --version
-```
-
-### 2. Installer les dépendances
-
-```bash
-cd whatsapp-server
+# 1. Installer les dépendances
 npm install
-```
 
-### 3. Dépendances principales
+# 2. Créer .env
+cp .env.example .env
+# Éditer .env :
+#   PORT=3001                                 # Port d'écoute Express
+#   WOURI_API_URL=http://localhost:8000       # URL de l'API Wourri
+#   WOURI_API_KEY=<clé-partagée-avec-backend> # Header X-API-Key
+#   NODE_ENV=development
 
-| Package | Version | Usage |
-|---------|---------|-------|
-| @whiskeysockets/baileys | ^7.0.0 | API WhatsApp non-officielle |
-| axios | ^1.13.2 | Requêtes HTTP vers WOURI API |
-| express | ^4.18.2 | Serveur HTTP/API |
-| form-data | ^4.0.5 | Upload fichiers audio |
-| qrcode-terminal | ^0.12.0 | QR code dans terminal |
-| qrcode | ^1.5.4 | QR code en image |
-| pino | ^10.2.1 | Logging |
-| cors | ^2.8.5 | Cross-Origin |
-
----
-
-## Démarrage
-
-```bash
-# Mode développement
+# 3. Démarrer
 npm start
-
-# Ou directement
-node app-baileys.js
 ```
 
-**URLs:**
-- Serveur: http://localhost:3001
-- Page QR Code: http://localhost:3001/qr-page
-- Status: http://localhost:3001/status
+À la première exécution, un QR code apparaît dans le terminal.
+**Scanner avec WhatsApp** sur votre téléphone :
+1. Ouvrir WhatsApp → Paramètres
+2. Appareils liés → Lier un appareil
+3. Scanner le QR code affiché
 
----
+Une fois connecté, le serveur affiche :
+```
+========================================
+   WOURI CONNECTE A WHATSAPP!
+   Systeme d'onboarding actif
+========================================
+```
 
-## Connexion WhatsApp
-
-### Première connexion
-
-1. Démarrer le serveur: `npm start`
-2. Ouvrir http://localhost:3001/qr-page dans un navigateur
-3. Scanner le QR code avec WhatsApp (Paramètres > Appareils liés)
-4. Attendre le message "WOURI CONNECTE A WHATSAPP!"
-
-### Reconnexion automatique
-
-Les credentials sont sauvegardés dans `auth_baileys/`. Après la première connexion, le serveur se reconnecte automatiquement.
-
-### Déconnexion
+### Production
 
 ```bash
-# Via API
-curl -X POST http://localhost:3001/logout
-
-# Ou supprimer le dossier auth_baileys/
-rm -rf auth_baileys/
+NODE_ENV=production npm run production
 ```
+
+En production, `WOURI_API_KEY` est **obligatoire** (warning au démarrage sinon).
 
 ---
 
-## Fonctionnalités
+## Endpoints HTTP
 
-### 1. Réception de messages
-
-| Type | Support | Description |
-|------|---------|-------------|
-| Texte | ✅ Actif | Messages texte standard |
-| Audio/Vocal | ✅ Actif | Notes vocales → Transcription STT |
-| Images | ❌ Non | Non supporté |
-| Documents | ❌ Non | Non supporté |
-| Groupes | ❌ Ignoré | Messages de groupe ignorés |
-
-### 2. Envoi de réponses
-
-| Type | Format | Description |
-|------|--------|-------------|
-| Texte Français | 🇫🇷 | Réponse principale |
-| Texte Dioula | 🇲🇱 | Traduction Bambara |
-| Audio vocal | OGG Opus | Synthèse vocale Bambara |
-
-### 3. Anti-détection
-
-Le bot simule un comportement humain:
-
-| Fonctionnalité | Description |
-|----------------|-------------|
-| Marquer comme lu | Coches bleues après réception |
-| "En train d'écrire..." | Indicateur de frappe |
-| "Enregistrement..." | Avant envoi d'audio |
-| Délais aléatoires | 0.5-3s entre actions |
-
-### 4. Gestion des langues
-
-Par défaut, le bot répond en mode bilingue (Français + Dioula).
-
-**Commandes utilisateur:**
-| Commande | Action |
-|----------|--------|
-| "seulement francais" | Mode Français uniquement |
-| "seulement dioula" | Mode Dioula uniquement |
-| "les deux" | Mode bilingue (défaut) |
+| Méthode | Route | Description |
+|---|---|---|
+| GET | `/` | Statut général + nombre d'utilisateurs |
+| GET | `/status` | Statut connexion + QR code data |
+| GET | `/users` | Liste anonymisée des utilisateurs |
+| GET | `/qr` | QR code data (JSON) |
+| GET | `/qr-page` | Page HTML avec QR code visuel (auto-refresh 5s) |
+| POST | `/logout` | Déconnexion + suppression `auth_baileys/` |
 
 ---
 
-## Traitement des messages vocaux
+## Comment ça fonctionne
 
-### Flux de traitement
+### Onboarding utilisateur (4 étapes)
 
-```
-[Utilisateur envoie audio]
-         │
-         ▼
-[Marquer comme lu ✓✓]
-         │
-         ▼
-[Afficher "en train d'écrire..."]
-         │
-         ▼
-[Télécharger l'audio (Buffer)]
-         │
-         ▼
-[Envoyer à WOURI API /api/stt/transcribe]
-         │
-         ▼
-[Whisper transcrit → Texte]
-         │
-         ▼
-[Traiter comme message texte]
-         │
-         ▼
-[Réponse FR + Dioula + Audio]
-```
+1. **Premier message** → bot demande la ville (en dioula + français)
+2. **User répond** → bot demande la langue (1=Français, 2=Dioula, 3=Les deux)
+3. **User répond** → bot enregistre les préférences (`user_preferences.json`)
+4. **Conversation normale** : le bot répond selon la langue choisie
 
-### Gestion des erreurs audio
-
-| Erreur | Message utilisateur |
-|--------|---------------------|
-| Téléchargement échoué | "Je n'ai pas pu recevoir votre message vocal" |
-| Transcription vide | "Je n'ai pas compris, pouvez-vous répéter?" |
-| Erreur API STT | "Essayez d'envoyer un message texte" |
-
----
-
-## API Endpoints
-
-### GET /
-
-Health check du serveur.
-
-**Response:**
-```json
-{
-  "status": "running",
-  "name": "WOURI WhatsApp Server (Baileys)",
-  "connected": true,
-  "mode": "bilingue"
-}
-```
-
-### GET /status
-
-Status détaillé de la connexion.
-
-**Response:**
-```json
-{
-  "connected": true,
-  "qrCode": null,
-  "mode": "bilingue (Francais + Dioula)",
-  "users": 5
-}
-```
-
-### GET /qr
-
-Récupérer le QR code brut.
-
-**Response (non connecté):**
-```json
-{
-  "qr": "2@xxx..."
-}
-```
-
-**Response (connecté):**
-```json
-{
-  "message": "Deja connecte"
-}
-```
-
-### GET /qr-page
-
-Page HTML avec QR code visuel et instructions.
-- Rafraîchissement automatique toutes les 5 secondes
-- Interface utilisateur conviviale
-
-### POST /logout
-
-Déconnecte WhatsApp et supprime les credentials.
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Deconnecte"
-}
-```
-
----
-
-## Communication avec WOURI API
-
-### Endpoint utilisé
+### Pipeline de traitement
 
 ```
-POST http://localhost:8000/api/chat/
+Message WhatsApp entrant
+   ↓
+[Filtrage : ignorer groupes, statuts, messages auto]
+   ↓
+[Si vocal] → Téléchargement → API ASR (Bambara MMS si dioula/both, Whisper si français)
+   ↓
+POST /api/chat/ (wouri-api)  avec city, language, bambara_text
+   ↓
+Réception : { response, response_dioula, audio_url, meta }
+   ↓
+Envoi WhatsApp selon langue + type d'entrée :
+   • french + texte    → texte FR
+   • french + vocal    → audio FR
+   • dioula            → audio dioula uniquement
+   • both + texte      → texte FR + audio dioula
+   • both + vocal      → texte FR + audio dioula
+   ↓
+[Si dioula/both] → Prompt feedback 👍/👎 → POST /api/feedback/...
 ```
 
-### Requête envoyée
+### Commandes utilisateur
 
-```json
-{
-  "message": "Comment planter du manioc?",
-  "city": "Abidjan",
-  "language": "both",
-  "include_audio": true
-}
-```
+L'utilisateur peut envoyer ces messages pour ajuster ses préférences :
 
-### Réponse attendue
-
-```json
-{
-  "response": "Pour planter du manioc...",
-  "response_dioula": "Manioc siri ka...",
-  "audio_url": "/static/audio/bm_xxx.ogg",
-  "city": "Abidjan",
-  "language": "both"
-}
-```
-
-### Transcription audio (STT)
-
-```
-POST http://localhost:8000/api/stt/transcribe
-Content-Type: multipart/form-data
-
-audio: <Buffer>
-language: "fr"
-```
+| Commande | Effet |
+|---|---|
+| `changer ville` | Re-demande la ville |
+| `changer langue` | Re-demande la langue |
+| `réinitialiser` (ou `reset`, `recommencer`) | Recommence l'onboarding |
 
 ---
 
 ## Variables d'environnement
 
-| Variable | Défaut | Description |
-|----------|--------|-------------|
-| PORT | 3001 | Port du serveur Express |
-| WOURI_API_URL | http://localhost:8000 | URL de l'API Python |
+| Variable | Défaut | Obligatoire | Description |
+|---|---|---|---|
+| `PORT` | `3001` | non | Port Express |
+| `WOURI_API_URL` | `http://localhost:8000` | non | URL de l'API backend Wourri |
+| `WOURI_API_KEY` | (vide) | **oui en prod** | Clé partagée backend (`X-API-Key`) |
+| `NODE_ENV` | `development` | non | `production` active warnings sécurité |
+
+⚠️ Le fichier `.env` n'est **jamais committé** (`.gitignore`).
+Référer à `.env.example` pour le template (à créer si absent).
 
 ---
 
-## Structure du code
+## Stockage local
 
-### app-baileys.js
-
-```javascript
-// Imports principaux
-const { makeWASocket, downloadMediaMessage } = require('@whiskeysockets/baileys');
-
-// Configuration
-const PORT = 3001;
-const WOURI_API_URL = 'http://localhost:8000';
-
-// État global
-let sock = null;           // Socket WhatsApp
-let isConnected = false;   // État connexion
-let qrCodeData = null;     // QR code actuel
-
-// Préférences utilisateurs
-const userLanguagePrefs = new Map();
-
-// Fonctions principales
-async function connectWhatsApp() { ... }
-async function transcribeAudio(audioBuffer, filename) { ... }
-function detectLanguagePreference(message) { ... }
-function randomDelay(min, max) { ... }
-
-// Événements Baileys
-sock.ev.on('connection.update', ...)  // Connexion/QR
-sock.ev.on('messages.upsert', ...)    // Messages entrants
-sock.ev.on('creds.update', ...)       // Sauvegarde credentials
-
-// Routes Express
-app.get('/', ...)           // Health
-app.get('/status', ...)     // Status détaillé
-app.get('/qr', ...)         // QR brut
-app.get('/qr-page', ...)    // Page QR HTML
-app.post('/logout', ...)    // Déconnexion
-```
+| Fichier/Dossier | Contenu | Gitignored |
+|---|---|---|
+| `auth_baileys/` | Session WhatsApp persistante (multi-fichiers) | ✅ |
+| `temp_audio/` | Audios téléchargés temporairement (pour transcription) | ✅ |
+| `user_preferences.json` | Préférences utilisateurs (city, language, étape onboarding) | ✅ |
+| `node_modules/` | Dépendances npm | ✅ |
+| `.env` | Variables d'environnement (secrets) | ✅ |
 
 ---
 
-## Logs et debugging
+## Troubleshooting
 
-### Préfixes de logs
-
-| Préfixe | Description |
-|---------|-------------|
-| `[MESSAGE]` | Message reçu |
-| `[AUDIO]` | Traitement audio |
-| `[STT]` | Transcription vocale |
-| `[API]` | Appel WOURI API |
-| `[ENVOYE]` | Message envoyé |
-| `[STATUS]` | Changement de statut |
-| `[LANGUE]` | Changement de langue |
-| `[ERREUR]` | Erreur |
-
-### Exemple de sortie
-
-```
-[MESSAGE] De: 22507xxxxxxxx@s.whatsapp.net
-[MESSAGE] Texte: Comment planter du cacao?
-[STATUS] Message marque comme lu
-[STATUS] En train d'ecrire...
-[API] Appel avec langue: both
-[API] Reponse recue
-[ENVOYE] Reponse francais
-[ENVOYE] Traduction dioula
-[ENVOYE] Audio vocal
-```
-
----
-
-## Dossiers générés
-
-| Dossier | Contenu | Peut être supprimé |
-|---------|---------|-------------------|
-| `auth_baileys/` | Credentials WhatsApp | ⚠️ Nécessite rescan QR |
-| `temp_audio/` | Audios temporaires | ✅ Oui |
-| `node_modules/` | Dépendances | ✅ (npm install) |
-
----
-
-## Limitations
-
-### Baileys
-- API non-officielle (peut casser avec mises à jour WhatsApp)
-- Pas de support officiel Meta
-
-### Fonctionnalités non supportées
-- Messages de groupe
-- Réactions aux messages
-- Envoi d'images/documents
-- Appels audio/vidéo
-
-### Recommandations
-- Ne pas utiliser pour du spam
-- Respecter les conditions d'utilisation WhatsApp
-- Usage personnel/éducatif recommandé
-
----
-
-## Dépannage
-
-### QR code ne s'affiche pas
+### Le QR code n'apparaît pas
 
 ```bash
-# Supprimer les anciens credentials
+# Supprimer la session et redémarrer
 rm -rf auth_baileys/
-# Redémarrer
 npm start
 ```
 
-### Erreur "Connection closed"
+### Port déjà utilisé
 
-Le serveur tente une reconnexion automatique. Si persistant:
-1. Vérifier la connexion internet
-2. Supprimer `auth_baileys/` et rescanner
-
-### Audio non reçu
-
-Vérifier que WOURI API est démarré:
 ```bash
-curl http://localhost:8000/health
+npx kill-port 3001
+# ou modifier PORT=... dans .env
 ```
 
-### Transcription échoue
+### Connexion perdue
 
-Vérifier que ffmpeg est installé:
-```bash
-ffmpeg -version
-```
+Le serveur tente une **reconnexion automatique 3 secondes** après une déconnexion non-volontaire.
+Vérifier les logs pour le code de déconnexion :
+
+| Code | Signification | Action |
+|---|---|---|
+| `401` | Logged out (compte délié) | Supprimer `auth_baileys/`, rescanner QR |
+| `408`, `428`, `500-503` | Erreur réseau ou serveur | Reconnexion automatique |
+| `515` | Update WhatsApp Web requis | `npm install` (Baileys auto-fetch latest) |
+
+### Session expirée (~2 semaines inactivité)
+
+Re-scanner via `http://localhost:3001/qr-page`.
+
+### `WOURI_API_KEY non definie en production`
+
+Définir `WOURI_API_KEY` dans `.env` (la même clé que `API_SECRET_KEY` côté backend).
+
+### L'API backend est down
+
+Les messages utilisateur échouent silencieusement (pas de queue actuellement).
+Une queue de messages sera ajoutée dans la **Phase Robustesse** (cf. CLAUDE.md).
 
 ---
 
-## Scripts NPM
+## Dette technique reconnue
 
-```json
-{
-  "start": "node app-baileys.js",
-  "start:old": "node app.js",
-  "dev": "node whatsapp-server.js",
-  "production": "NODE_ENV=production node app-baileys.js"
-}
-```
+Cette version est en **Phase 1 — Cleanup + Foundation** (2026-05-05).
+
+Phases prévues pour atteindre un statut production-ready :
+
+1. ✅ **Cleanup + Foundation** (cette phase) : nettoyage repo, doc à jour, versions figées
+2. ⏳ **Robustesse** : reconnexion exponentielle + queue messages + circuit breaker
+3. ⏳ **Observabilité** : logging structuré pino JSON + healthcheck `/health` étendu + metrics
+4. ⏳ **Sécurité** : CORS strict + validation inputs + rate limiting + rotation secrets
+5. ⏳ **Tests** : unit + integration + CI GitHub Actions
+6. ⏳ **Déploiement** : Dockerfile + PM2/systemd + runbook ops
+7. ⏳ **Modularisation** : décomposer `app-baileys.js` (1155 lignes) en modules
+
+Voir `CLAUDE.md` pour la liste complète des dettes techniques connues.
 
 ---
 
-## Contact
+## Décision projet — Baileys vs WhatsApp Cloud API
 
-**Projet:** WOURI - Assistant Agricole IA
-**GitHub:** https://github.com/ouedraogoissouf2012/wourri
+Validé par le porteur projet le **2026-05-05** :
+- **Maintenant** : Baileys (gratuit, fonctionne, mais lib non-officielle)
+- **Plus tard** : migration vers **WhatsApp Cloud API officielle Meta** quand le budget le permettra
+
+À chaque feature future : **préserver la rétrocompatibilité Cloud API**
+pour éviter une réécriture lors de la migration.
+
+---
+
+## Liens utiles
+
+- API backend : `../wouri-api/` (FastAPI Python)
+- ADRs structurants : `../wouri-api/docs/adr/`
+- Documentation interne Claude : [`CLAUDE.md`](CLAUDE.md)
+- Issue Phase 1 : [#114](https://github.com/ouedraogoissouf2012/wourri/issues/114)
+- Baileys docs : <https://github.com/WhiskeySockets/Baileys>
+
+---
+
+## Licence
+
+Privé / Wourri.
