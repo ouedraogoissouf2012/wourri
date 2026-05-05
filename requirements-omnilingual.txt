@@ -1,0 +1,22 @@
+# WOURI - Dépendances Omnilingual ASR (ADR-0002, Phase 2 d'ADR-0003)
+#
+# Install séparé du requirements.txt principal pour éviter de casser
+# le stack PyTorch existant (NeMo, MMS-dyu).
+#
+# Versions FIGÉES après validation Phase 1 sur Colab T4 (2026-05-04).
+# Ne pas modifier sans benchmarker, voir docs/benchmarks/0002-omnilingual-env-setup.md.
+#
+# Procédure d'install (depuis ce dossier wouri-api/) :
+#
+#     pip install -r requirements-omnilingual.txt
+#     pip uninstall -y torch torchaudio torchvision
+#     pip install torch==2.8.0 torchaudio==2.8.0 torchvision==0.23.0
+#
+# IMPORTANT : redémarrer le process Python après install (ABI numpy break).
+
+omnilingual-asr==0.1.0
+fairseq2==0.6
+
+# Le stack torch doit être réinstallé APRÈS omnilingual-asr+fairseq2 pour
+# éviter la cascade torch/torchaudio/torchvision (cf. doc benchmark 0002).
+# Versions cibles documentées ci-dessus, à passer en commande explicite.

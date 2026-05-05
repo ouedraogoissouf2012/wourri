@@ -88,6 +88,16 @@ class Settings(BaseSettings):
     # Blocklist d'hallucinations ASR (fichier JSON éditable).
     asr_hallucinations_path: str = "data/asr_hallucinations_dyu.json"
 
+    # ========== Omnilingual ASR (ADR-0002, ADR-0003) ==========
+    # Provider Omnilingual créé en Phase 2 mais NON activé dans la chain
+    # (sera activé en Phase 4 après benchmark Phase 3).
+    # Voir docs/benchmarks/0002-omnilingual-env-setup.md pour install reproductible.
+    omnilingual_enabled: bool = False
+    # Variante : "300m", "1b", "1.2b", "7b" (cf. MODEL_CARDS dans omnilingual_provider.py)
+    omnilingual_model_size: str = "300m"
+    # Code langue {lang}_{script} parmi les 1672 langues supportées (ex: "dyu_Latn", "bam_Latn")
+    omnilingual_default_lang: str = "dyu_Latn"
+
     @property
     def is_production(self) -> bool:
         return self.env.lower() == "production"
