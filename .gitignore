@@ -14,6 +14,9 @@ auth_baileys/
 # Préférences utilisateurs (contient des données sensibles)
 user_preferences.json
 
+# Queue persistante des messages WhatsApp en attente (Phase 2 Robustesse)
+pending_messages.json
+
 # Fichiers audio temporaires (téléchargés depuis WhatsApp pour transcription)
 temp_audio/
 

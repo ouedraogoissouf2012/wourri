@@ -65,6 +65,7 @@ En production, `WOURI_API_KEY` est **obligatoire** (warning au démarrage sinon)
 |---|---|---|
 | GET | `/` | Statut général + nombre d'utilisateurs |
 | GET | `/status` | Statut connexion + QR code data |
+| GET | `/health` | Healthcheck étendu (WhatsApp + queue + circuit breaker) |
 | GET | `/users` | Liste anonymisée des utilisateurs |
 | GET | `/qr` | QR code data (JSON) |
 | GET | `/qr-page` | Page HTML avec QR code visuel (auto-refresh 5s) |
@@ -137,6 +138,7 @@ Référer à `.env.example` pour le template (à créer si absent).
 | `auth_baileys/` | Session WhatsApp persistante (multi-fichiers) | ✅ |
 | `temp_audio/` | Audios téléchargés temporairement (pour transcription) | ✅ |
 | `user_preferences.json` | Préférences utilisateurs (city, language, étape onboarding) | ✅ |
+| `pending_messages.json` | Queue persistante des messages en attente (Phase 2) | ✅ |
 | `node_modules/` | Dépendances npm | ✅ |
 | `.env` | Variables d'environnement (secrets) | ✅ |
 
@@ -187,17 +189,22 @@ Une queue de messages sera ajoutée dans la **Phase Robustesse** (cf. CLAUDE.md)
 
 ## Dette technique reconnue
 
-Cette version est en **Phase 1 — Cleanup + Foundation** (2026-05-05).
+Phases pour atteindre un statut production-ready :
 
-Phases prévues pour atteindre un statut production-ready :
-
-1. ✅ **Cleanup + Foundation** (cette phase) : nettoyage repo, doc à jour, versions figées
-2. ⏳ **Robustesse** : reconnexion exponentielle + queue messages + circuit breaker
-3. ⏳ **Observabilité** : logging structuré pino JSON + healthcheck `/health` étendu + metrics
-4. ⏳ **Sécurité** : CORS strict + validation inputs + rate limiting + rotation secrets
-5. ⏳ **Tests** : unit + integration + CI GitHub Actions
+1. ✅ **Cleanup + Foundation** (mergé 2026-05-05, PR #115)
+2. ✅ **Robustesse** : reconnexion backoff exponentiel + queue persistante + circuit breaker
+3. ⏳ **Observabilité** : logging structuré pino JSON + healthcheck étendu Kubernetes + metrics
+4. ⏳ **Sécurité** : CORS strict + validation inputs + rate limiting + `npm audit fix`
+5. ⏳ **Tests** : intégration end-to-end + CI GitHub Actions
 6. ⏳ **Déploiement** : Dockerfile + PM2/systemd + runbook ops
-7. ⏳ **Modularisation** : décomposer `app-baileys.js` (1155 lignes) en modules
+7. ⏳ **Modularisation** : décomposer `app-baileys.js` en modules
+
+### Phase 2 livrée — modules `lib/`
+
+- `lib/reconnect.js` : backoff 1s → 2s → 4s → ... → 60s (cap), limite 10 tentatives
+- `lib/message_queue.js` : queue persistante (`pending_messages.json`), idempotent
+- `lib/circuit_breaker.js` : 3 états CLOSED/OPEN/HALF_OPEN, message d'attente utilisateur
+- **63 tests unitaires** dans `tests/` (`node --test`, ~270ms)
 
 Voir `CLAUDE.md` pour la liste complète des dettes techniques connues.
 
