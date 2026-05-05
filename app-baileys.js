@@ -17,6 +17,16 @@ const cors = require('cors');
 const qrcode = require('qrcode-terminal');
 const QRCode = require('qrcode');
 
+// Phase 2 Robustesse — modules locaux (lib/)
+const {
+    computeBackoffDelay,
+    isReconnectable,
+    describeDisconnectReason,
+    MAX_ATTEMPTS,
+} = require('./lib/reconnect');
+const { MessageQueue } = require('./lib/message_queue');
+const { CircuitBreaker, CircuitOpenError } = require('./lib/circuit_breaker');
+
 // Configuration
 const PORT = process.env.PORT || 3001;
 const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
@@ -24,6 +34,7 @@ const WOURI_API_KEY = process.env.WOURI_API_KEY || '';
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
 const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
 const USER_PREFS_FILE = path.join(__dirname, 'user_preferences.json');
+const PENDING_MESSAGES_FILE = path.join(__dirname, 'pending_messages.json');
 
 // [P0-02a] Helper : header X-API-Key pour appels backend Wourri
 // Si WOURI_API_KEY vide, retourne objet vide (mode dev backend avec auth desactivee)
@@ -50,6 +61,25 @@ app.use(express.json());
 let sock = null;
 let qrCodeData = null;
 let isConnected = false;
+
+// Phase 2 Robustesse
+let reconnectAttempt = 0;  // Compteur de tentatives consécutives, reset à 0 après connexion réussie
+
+// Queue persistante des messages reçus (anti-perte si API backend down)
+const messageQueue = new MessageQueue({
+    filePath: PENDING_MESSAGES_FILE,
+    maxAttempts: 5,
+});
+
+// Circuit breaker sur les appels à wouri-api
+// Ouvre si > 50% d'erreurs sur les 10 derniers appels, ré-essaie après 30s
+const apiCircuitBreaker = new CircuitBreaker({
+    name: 'wouri-api',
+    windowSize: 10,
+    failureThreshold: 0.5,
+    openDurationMs: 30000,
+    halfOpenMaxCalls: 1,
+});
 
 // ========================================
 // GESTION DES PREFERENCES UTILISATEURS
@@ -387,6 +417,47 @@ function randomDelay(min, max) {
 // Charger les preferences au demarrage
 loadUserPreferences();
 
+// Phase 2 — Charger la queue persistante au demarrage
+messageQueue.load().then((n) => {
+    if (n > 0) {
+        console.log(`[QUEUE] ${n} message(s) en attente charges depuis ${PENDING_MESSAGES_FILE}`);
+        const dead = messageQueue.getDead();
+        if (dead.length > 0) {
+            console.warn(`[QUEUE] ${dead.length} message(s) "morts" (>${messageQueue.maxAttempts} tentatives) - a inspecter manuellement`);
+        }
+    } else {
+        console.log('[QUEUE] Aucun message en attente');
+    }
+}).catch((err) => {
+    console.error('[QUEUE] Erreur chargement initial :', err.message);
+});
+
+// Phase 2 — Notifier les utilisateurs ayant des messages en attente apres reconnexion WhatsApp
+async function notifyPendingUsers() {
+    const pending = messageQueue.getPending();
+    if (pending.length === 0) return;
+
+    // Dedup par userNumber : un seul message d'excuse par utilisateur
+    const usersToNotify = [...new Set(pending.map((m) => m.userNumber).filter(Boolean))];
+
+    console.log(`[QUEUE] Notification de ${usersToNotify.length} utilisateur(s) ayant des messages en attente`);
+
+    for (const userNumber of usersToNotify) {
+        try {
+            await sock.sendMessage(userNumber, {
+                text: '🌾 Aw ni ce, n nana segin. Aw ka ɲinini ci tugu n ma.\n\n---\n🌾 Je suis de retour. Pose-moi à nouveau ta question.',
+            });
+            // Retirer les messages en attente de cet utilisateur (deja repondus avec excuse)
+            const userMessages = pending.filter((m) => m.userNumber === userNumber);
+            for (const m of userMessages) {
+                await messageQueue.markSuccess(m.id);
+            }
+        } catch (err) {
+            console.error(`[QUEUE] Erreur notification ${userNumber} :`, err.message);
+        }
+    }
+}
+
 // ========================================
 // CONNEXION WHATSAPP
 // ========================================
@@ -424,25 +495,41 @@ async function connectWhatsApp() {
         if (connection === 'close') {
             isConnected = false;
             const statusCode = lastDisconnect?.error?.output?.statusCode;
-            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            const reasonName = describeDisconnectReason(statusCode);
+            const reconnectable = isReconnectable(statusCode);
 
-            console.log('Connexion fermee. Code:', statusCode);
+            console.log(`[RECONNECT] Connexion fermee : ${reasonName} (code=${statusCode})`);
 
-            if (shouldReconnect) {
-                console.log('Reconnexion en cours...');
-                setTimeout(connectWhatsApp, 3000);
-            } else {
-                console.log('Deconnecte. Supprimez le dossier auth_baileys pour vous reconnecter.');
+            if (!reconnectable) {
+                console.log(`[RECONNECT] Raison non-recuperable (${reasonName}). Action manuelle requise :`);
+                console.log('[RECONNECT]   - loggedOut/badSession : supprimez auth_baileys/ puis redemarrez');
+                console.log('[RECONNECT]   - forbidden : compte WhatsApp possiblement banni, contactez Meta');
+                return;
             }
+
+            if (reconnectAttempt >= MAX_ATTEMPTS) {
+                console.error(`[RECONNECT] Limite de ${MAX_ATTEMPTS} tentatives atteinte. Arret automatique.`);
+                console.error('[RECONNECT] Verifiez la connexion reseau et redemarrez le serveur manuellement.');
+                return;
+            }
+
+            const delay = computeBackoffDelay(reconnectAttempt);
+            reconnectAttempt++;
+            console.log(`[RECONNECT] Tentative ${reconnectAttempt}/${MAX_ATTEMPTS} dans ${delay / 1000}s (backoff exponentiel)`);
+            setTimeout(connectWhatsApp, delay);
         }
 
         if (connection === 'open') {
             isConnected = true;
             qrCodeData = null;
+            reconnectAttempt = 0;  // Reset apres connexion reussie
             console.log('\n========================================');
             console.log('   WOURI CONNECTE A WHATSAPP!');
             console.log('   Systeme d\'onboarding actif');
             console.log('========================================\n');
+
+            // Notifier les utilisateurs en attente (queue Phase 2)
+            await notifyPendingUsers();
         }
     });
 
@@ -753,17 +840,57 @@ async function connectWhatsApp() {
                         }
                     }, 5000);
 
+                    // Phase 2 — enregistrer le message dans la queue avant traitement
+                    // Permet de garantir qu'aucun message n'est perdu silencieusement
+                    const queueId = msg.key?.id || `wamsg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                    try {
+                        await messageQueue.add({
+                            id: queueId,
+                            userNumber,
+                            payload: {
+                                messageText,
+                                bambaraText,
+                                isVoiceInput,
+                                city: prefs.city,
+                                language: prefs.language,
+                            },
+                        });
+                    } catch (qErr) {
+                        console.error('[QUEUE] Erreur ajout queue :', qErr.message);
+                    }
+
                     let data;
                     try {
-                        const response = await axios.post(`${WOURI_API_URL}/api/chat/`, {
-                            message: messageText,
-                            city: prefs.city,
-                            language: prefs.language,
-                            include_audio: true,
-                            user_id: userNumber,           // Pour l'historique de conversation
-                            bambara_text: bambaraText      // Pour le NLU preprocessing (si message vocal bambara)
-                        }, { timeout: 180000, headers: authHeaders() });
+                        // Wrap l'appel API dans le circuit breaker (Phase 2)
+                        const response = await apiCircuitBreaker.execute(async () =>
+                            axios.post(`${WOURI_API_URL}/api/chat/`, {
+                                message: messageText,
+                                city: prefs.city,
+                                language: prefs.language,
+                                include_audio: true,
+                                user_id: userNumber,           // Pour l'historique de conversation
+                                bambara_text: bambaraText      // Pour le NLU preprocessing (si message vocal bambara)
+                            }, { timeout: 180000, headers: authHeaders() })
+                        );
                         data = response.data;
+                        // Succes : retirer de la queue
+                        await messageQueue.markSuccess(queueId);
+                    } catch (apiErr) {
+                        // Echec : marquer dans la queue (reste en attente pour observabilité)
+                        await messageQueue.markFailure(queueId, apiErr);
+
+                        // Si circuit ouvert, message d'attente bilingue à l'utilisateur
+                        if (apiErr instanceof CircuitOpenError) {
+                            console.log(`[CIRCUIT] wouri-api en circuit OPEN — message d'attente envoyé`);
+                            keepPresence = false;
+                            clearInterval(presenceInterval);
+                            await sock.sendPresenceUpdate('paused', userNumber);
+                            await sock.sendMessage(userNumber, {
+                                text: '🌾 N bɛ baara la sisan. N bɛna jaabi i ma joona.\n\n---\n🌾 Je rencontre un problème technique temporaire. Je te répondrai dès que possible.',
+                            });
+                            continue;  // Passer au message suivant du batch
+                        }
+                        throw apiErr;  // Re-throw : capturé par le try/catch global du handler
                     } finally {
                         keepPresence = false;
                         clearInterval(presenceInterval);
@@ -1004,6 +1131,20 @@ app.get('/status', (req, res) => {
         connected: isConnected,
         qrCode: qrCodeData,
         users: Object.keys(userPreferences).length
+    });
+});
+
+// Phase 2 — Healthcheck étendu (statut WhatsApp + queue + circuit breaker)
+app.get('/health', (req, res) => {
+    res.json({
+        whatsapp: {
+            connected: isConnected,
+            reconnectAttempt,
+            maxAttempts: MAX_ATTEMPTS,
+        },
+        queue: messageQueue.stats,
+        apiCircuit: apiCircuitBreaker.stats,
+        users: Object.keys(userPreferences).length,
     });
 });
 

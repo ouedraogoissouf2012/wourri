@@ -51,12 +51,21 @@ NODE_ENV=production npm run production
 ```
 whatsapp-server/
 ├── app-baileys.js         # Serveur principal (Baileys + onboarding 4 étapes)
+├── lib/                   # Modules Phase 2 Robustesse
+│   ├── reconnect.js       # Backoff exponentiel + decision logic
+│   ├── message_queue.js   # Queue persistante anti-perte
+│   └── circuit_breaker.js # Circuit breaker pour API backend
+├── tests/                 # Tests unitaires (node:test natif)
+│   ├── reconnect.test.js
+│   ├── message_queue.test.js
+│   └── circuit_breaker.test.js
 ├── package.json           # Dépendances figées (versions exactes, pas de ^)
 ├── .env                   # Secrets (gitignored)
 ├── .gitignore
 ├── auth_baileys/          # Session WhatsApp persistante (gitignored)
 ├── temp_audio/            # Audios téléchargés temporairement (gitignored)
 ├── user_preferences.json  # Préférences users (gitignored)
+├── pending_messages.json  # Queue persistante messages (gitignored)
 ├── README.md              # Documentation utilisateur
 └── CLAUDE.md              # Ce fichier
 ```
@@ -71,6 +80,7 @@ whatsapp-server/
 |---|---|---|
 | GET | `/` | Statut général + nombre d'utilisateurs |
 | GET | `/status` | Statut connexion + QR code si nécessaire |
+| GET | `/health` | **Healthcheck Phase 2** : statut WhatsApp + stats queue + circuit breaker |
 | GET | `/users` | Liste anonymisée des utilisateurs (numéros tronqués) |
 | GET | `/qr` | QR code data brut (JSON) |
 | GET | `/qr-page` | Page HTML avec QR code visuel auto-refresh 5s |
@@ -142,24 +152,57 @@ passe par un plan validé explicitement avant code.
 
 ### Dette technique connue
 
-- **God file** : `app-baileys.js` 1155 lignes — à décomposer (Phase Modularisation)
+- **God file** : `app-baileys.js` ~1230 lignes — à décomposer (Phase Modularisation)
 - **Logging non structuré** : `console.log` partout — à migrer vers pino JSON
   (Phase Observabilité)
-- **Pas de healthcheck étendu** : `/status` minimal
-- **Reconnexion simpliste** : `setTimeout 3000ms` sans backoff exponentiel
+- **Healthcheck `/health` minimal** : pas encore de monitoring Prometheus / metrics
 - **CORS permissif** : `app.use(cors())` sans restriction
 - **Pas de rate limiting**
-- **Pas de queue de messages** : si l'API backend est down, messages perdus
+- **Pas de retry automatique** des messages en queue : au démarrage, on envoie un
+  message d'excuse à l'utilisateur au lieu de retraiter (à améliorer en Phase Modularisation)
 - **Nested folder pourri** : `whatsapp-server/whatsapp-server/` (issue P2-04, séparée)
+- **`npm audit`** : 12 vulnérabilités résiduelles (1 low, 3 moderate, 6 high, 2 critical) — Phase Sécurité
 
-Ces points seront traités dans des phases dédiées :
-1. ✅ **Cleanup + Foundation** (cette phase, en cours)
-2. Robustesse : reconnexion exponentielle + circuit breaker + queue
-3. Observabilité : pino JSON + healthcheck étendu + metrics
-4. Sécurité : CORS strict + validation inputs + rate limiting
-5. Tests : unit + integration + CI GitHub Actions
-6. Déploiement : Dockerfile + PM2/systemd + runbook
-7. Modularisation : décomposer `app-baileys.js`
+Phases prévues / réalisées :
+1. ✅ **Cleanup + Foundation** (mergé 2026-05-05, PR #115)
+2. ✅ **Robustesse** : backoff exponentiel + queue persistante + circuit breaker (cette phase)
+3. ⏳ Observabilité : pino JSON + metrics + healthcheck étendu Kubernetes
+4. ⏳ Sécurité : CORS strict + validation inputs + rate limiting + npm audit fix
+5. ⏳ Tests d'intégration end-to-end + CI GitHub Actions
+6. ⏳ Déploiement : Dockerfile + PM2/systemd + runbook
+7. ⏳ Modularisation : décomposer `app-baileys.js`
+
+## Modules Phase 2 (lib/)
+
+### `lib/reconnect.js`
+Backoff exponentiel pour la reconnexion WhatsApp :
+- Délais : 1s → 2s → 4s → 8s → 16s → 32s → 60s (cap)
+- Limite : 10 tentatives consécutives (évite ban WhatsApp)
+- Distinction codes récupérables vs non-récupérables (`loggedOut`, `badSession` → action humaine)
+
+### `lib/message_queue.js`
+Queue persistante anti-perte pour les messages utilisateurs :
+- Persistence JSON (`pending_messages.json`)
+- Sérialisation des writes (anti-race)
+- Idempotent sur l'id Baileys (pas de duplicate)
+- Limite 5 tentatives, au-delà → "morts" (à inspecter manuellement)
+- Au démarrage : envoie un message d'excuse aux utilisateurs en attente
+
+### `lib/circuit_breaker.js`
+Circuit breaker classique 3 états (CLOSED → OPEN → HALF_OPEN) :
+- Ouvre si > 50% d'erreurs sur les 10 derniers appels
+- Reste OPEN 30s puis tente une sentinelle (HALF_OPEN)
+- Si la sentinelle réussit → CLOSED. Sinon → OPEN (durée doublée)
+- Pendant CIRCUIT OPEN : message d'attente bilingue à l'utilisateur
+
+## Tests
+
+```bash
+# Tous les tests
+node --test tests/circuit_breaker.test.js tests/message_queue.test.js tests/reconnect.test.js
+
+# Total : 63 tests, ~270ms
+```
 
 ## Variables d'environnement attendues
 
