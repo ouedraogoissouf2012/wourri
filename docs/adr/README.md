@@ -16,7 +16,7 @@ du projet. Chaque décision passe par cet index et par le workflow du skill
 | [ADR-0003](0003-plan-ajout-omnilingual.md) | Plan d'ajout Omnilingual | **accepté** | 2026-04-22 | 5 phases : env → provider → benchmark → intégration → cleanup. |
 | [ADR-0004](0004-corpus-bambara-afrivoices-nextvoices.md) | Intégration corpus AfVoices/ANV + stratégie multi-variantes Manding | **accepté** | 2026-04-23 | AfVoices (CC-BY-4.0, 423h bambara Mali) intégré en bam_ML séparé. Stratégie multi-modèles isolés par variante (dyu_CI / dyu_ML / bam_ML) pour éviter pollution croisée. Implémentation différée. |
 | [ADR-0005](0005-afrolid-language-detection.md) | Détection de langue textuelle via AfroLID | **accepté** | 2026-04-23 | AfroLID (UBC-NLP, Apache 2.0, 517 langues africaines) pour remplacer l'heuristique hardcodée `is_likely_dioula_input`. Implémentation différée P2-P3. |
-| [ADR-0008](0008-plan-migration-chromadb-pgvector.md) | Plan migration ChromaDB → PostgreSQL+pgvector | **proposé** | 2026-05-05 | Plan d'exécution en 5 phases (provisionnement → schéma → adapter+double-écriture → validation terrain → bascule). Exécute ADR-0001. |
+| [ADR-0008](0008-plan-migration-chromadb-pgvector.md) | Plan migration ChromaDB → PostgreSQL+pgvector | **accepté** | 2026-05-05 | Plan d'exécution en 5 phases (provisionnement → schéma → adapter+double-écriture → validation terrain → bascule). Exécute ADR-0001. |
 | [ADR-0010](0010-migration-monorepo.md) | Migration vers monorepo | **proposé** | 2026-04-23 | Structure repo actuelle (3 branches orphelines) → monorepo standard avec sous-dossiers. Exécution planifiée après stabilisation Sprint 2. |
 
 ## ADRs à rédiger (roadmap, issus de [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md))

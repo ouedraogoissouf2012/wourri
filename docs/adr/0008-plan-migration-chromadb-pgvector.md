@@ -1,9 +1,9 @@
 # ADR-0008 — Plan de migration ChromaDB → PostgreSQL + pgvector
 
-**Statut** : proposé
+**Statut** : accepté
 **Date** : 2026-05-05
 **Auteur** : Claude (assistant)
-**Valideur** : Ruben (à valider)
+**Valideur** : Ruben (validé le 2026-05-05)
 **Exécute** : [ADR-0001](0001-choix-stockage-donnees.md)
 
 ---
@@ -512,9 +512,12 @@ pgvector seul. Avant cela, le code Chroma reste récupérable via `git revert`.
 
 ## Historique
 
-- **2026-05-05** : ADR-0008 rédigé. Statut : **proposé**, attend validation Ruben.
+- **2026-05-05 (rédaction)** : ADR-0008 rédigé. Statut : **proposé**, attend validation Ruben.
   Reprend le plan évoqué dans ADR-0001 et le structure en 5 phases atomiques
   avec critères de sortie et plan de rollback.
+- **2026-05-05 (acceptation)** : Ruben valide le plan. Statut basculé à **accepté**.
+  Exécution effective différée à un Sprint dédié (à planifier). Phase A peut
+  démarrer dès que l'environnement Postgres+pgvector dev local est provisionné.
 - ADR-0001 mentionnait initialement "ADR-0002 séparé" pour ce plan.
   ADR-0002 ayant servi pour Omnilingual ASR, le plan migration storage
   prend la prochaine référence libre = **0008**.
