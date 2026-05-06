@@ -111,7 +111,7 @@ function loadUserPreferences() {
             logger.info(`[PREFS] ${Object.keys(userPreferences).length} utilisateurs charges`);
         }
     } catch (error) {
-        logger.error('[PREFS] Erreur chargement:', error.message);
+        logger.error(`[PREFS] Erreur chargement: ${error.message}`);
         userPreferences = {};
     }
 }
@@ -131,7 +131,7 @@ function saveUserPreferences() {
     fs.writeFile(USER_PREFS_FILE, snapshot, 'utf8', (err) => {
         _saveInProgress = false;
         if (err) {
-            logger.error('[PREFS] Erreur sauvegarde:', err.message);
+            logger.error(`[PREFS] Erreur sauvegarde: ${err.message}`);
         }
         if (_savePending) {
             _savePending = false;
@@ -361,7 +361,7 @@ async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
         }
         return null;
     } catch (error) {
-        logger.info('[STT] Erreur transcription:', error.message);
+        logger.error(`[STT] Erreur transcription: ${error.message}`);
         return null;
     }
 }
@@ -407,7 +407,7 @@ async function transcribeAudioBambara(audioBuffer, filename = 'audio.ogg') {
         }
         return null;
     } catch (error) {
-        logger.info('[ASR-BAMBARA] Erreur transcription:', error.message);
+        logger.error(`[ASR-BAMBARA] Erreur transcription: ${error.message}`);
         // Fallback vers Whisper français si ASR Bambara echoue
         logger.info('[ASR-BAMBARA] Fallback vers Whisper francais...');
         return await transcribeAudio(audioBuffer, filename);
@@ -537,7 +537,7 @@ messageQueue.load().then((n) => {
         logger.info('[QUEUE] Aucun message en attente');
     }
 }).catch((err) => {
-    logger.error('[QUEUE] Erreur chargement initial :', err.message);
+    logger.error(`[QUEUE] Erreur chargement initial : ${err.message}`);
 });
 
 // Phase 2 — Notifier les utilisateurs ayant des messages en attente apres reconnexion WhatsApp
@@ -573,7 +573,7 @@ async function notifyPendingUsers() {
                 await messageQueue.markSuccess(m.id);
             }
         } catch (err) {
-            logger.error(`[QUEUE] Erreur notification ${userNumber} :`, err.message);
+            logger.error(`[QUEUE] Erreur notification ${userNumber} : ${err.message}`);
         }
     }
 }
@@ -761,7 +761,7 @@ async function connectWhatsApp() {
                     }
 
                 } catch (audioError) {
-                    logger.error('[AUDIO] Erreur:', audioError.message);
+                    logger.error(`[AUDIO] Erreur: ${audioError.message}`);
                     await sock.sendPresenceUpdate('paused', userNumber);
                     await sock.sendMessage(userNumber, { text: MSG.AUDIO_ERROR });
                     continue;
@@ -917,7 +917,7 @@ async function connectWhatsApp() {
                             }, { timeout: 10000, headers: authHeaders() });
                             logger.info(`[FEEDBACK] ${endpoint} enregistre pour intent=${fb.intent}`);
                         } catch (fbErr) {
-                            logger.info('[FEEDBACK] Erreur appel API:', fbErr.message);
+                            logger.warn(`[FEEDBACK] Erreur appel API: ${fbErr.message}`);
                         }
 
                         // Confirmer et reprendre le mode normal
@@ -976,7 +976,7 @@ async function connectWhatsApp() {
                             },
                         });
                     } catch (qErr) {
-                        logger.error('[QUEUE] Erreur ajout queue :', qErr.message);
+                        logger.error(`[QUEUE] Erreur ajout queue : ${qErr.message}`);
                     }
 
                     let data;
@@ -1056,7 +1056,7 @@ async function connectWhatsApp() {
                                     });
                                     logger.info('[ENVOYE] Audio francais (reponse a vocal)');
                                 } catch (audioErr) {
-                                    logger.info('[AUDIO FR] Erreur:', audioErr.message);
+                                    logger.warn(`[AUDIO FR] Erreur: ${audioErr.message}`);
                                     // Fallback: envoyer le texte si audio echoue
                                     if (data.response) {
                                         await sock.sendMessage(userNumber, {
@@ -1105,7 +1105,7 @@ async function connectWhatsApp() {
                                 });
                                 logger.info('[ENVOYE] Audio dioula (reponse a vocal)');
                             } catch (audioErr) {
-                                logger.info('[AUDIO DIOULA] Erreur, fallback texte FR:', audioErr.message);
+                                logger.warn(`[AUDIO DIOULA] Erreur, fallback texte FR: ${audioErr.message}`);
                                 if (data.response) {
                                     await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
                                 }
@@ -1142,7 +1142,7 @@ async function connectWhatsApp() {
                                 });
                                 logger.info('[ENVOYE] Audio dioula (mode both, reponse a vocal)');
                             } catch (audioErr) {
-                                logger.info('[AUDIO DIOULA] Erreur, fallback texte FR:', audioErr.message);
+                                logger.warn(`[AUDIO DIOULA] Erreur, fallback texte FR: ${audioErr.message}`);
                                 if (data.response) {
                                     await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
                                 }
@@ -1177,7 +1177,7 @@ async function connectWhatsApp() {
                 }
 
             } catch (error) {
-                logger.error('[ERREUR]', error.message);
+                logger.error(`[ERREUR] ${error.message}`);
                 await sock.sendPresenceUpdate('paused', userNumber);
                 await randomDelay(500, 1000);
                 await sock.sendMessage(userNumber, {
@@ -1427,7 +1427,7 @@ async function gracefulShutdown(signal) {
         fs.writeFileSync(USER_PREFS_FILE, JSON.stringify(userPreferences, null, 2));
         logger.info(`[SHUTDOWN] Préférences sauvegardées (${Object.keys(userPreferences).length} utilisateurs)`);
     } catch (err) {
-        logger.error('[SHUTDOWN] Erreur sauvegarde:', err.message);
+        logger.error(`[SHUTDOWN] Erreur sauvegarde: ${err.message}`);
     }
     try {
         if (sock) await sock.end();
