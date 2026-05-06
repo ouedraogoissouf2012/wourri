@@ -414,6 +414,109 @@ function randomDelay(min, max) {
     return new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
 }
 
+/**
+ * Génère un audio TTS à partir d'un texte fixe (best-effort).
+ *
+ * Utilisé pour les messages d'indisponibilité audio quand l'utilisateur
+ * a envoyé un vocal. Si l'API TTS est down ou prend trop de temps,
+ * retourne null et le caller doit fallback sur du texte.
+ *
+ * Endpoints utilisés (côté wouri-api) :
+ *   - français : POST /api/tts/?text=...
+ *   - dioula   : POST /api/tts/bambara?text=...&is_french=false
+ *
+ * @param {string} text - Texte à synthétiser
+ * @param {boolean} isFrench - true → Edge-TTS français, false → MMS dioula
+ * @param {number} [timeoutMs=5000] - Timeout court pour ne pas bloquer
+ * @returns {Promise<Buffer|null>} Buffer audio OGG/Opus, ou null si échec
+ */
+async function tryGenerateAudioFromText(text, isFrench, timeoutMs = 5000) {
+    if (!text) return null;
+    const endpoint = isFrench ? '/api/tts/' : '/api/tts/bambara';
+    const params = isFrench ? { text } : { text, is_french: false };
+    try {
+        const ttsResponse = await axios.post(
+            `${WOURI_API_URL}${endpoint}`,
+            null,
+            { params, timeout: timeoutMs, headers: authHeaders() }
+        );
+        const audioUrl = ttsResponse.data?.audio_url;
+        if (!audioUrl) return null;
+        const fullUrl = audioUrl.startsWith('http')
+            ? audioUrl
+            : `${WOURI_API_URL}${audioUrl}`;
+        const audioResp = await axios.get(fullUrl, {
+            responseType: 'arraybuffer',
+            timeout: timeoutMs,
+        });
+        return Buffer.from(audioResp.data);
+    } catch (err) {
+        console.log(
+            `[EXCUSE-AUDIO] Génération ${isFrench ? 'FR' : 'dioula'} échouée (${err.code || (err.message || '').substring(0, 80)}) — fallback texte`
+        );
+        return null;
+    }
+}
+
+// Textes des messages d'indisponibilité (utilisés pour TTS si vocal, sinon texte)
+const EXCUSE_MSG = {
+    // Circuit OPEN : "je rencontre un problème"
+    UNAVAILABLE_FR: "Je rencontre un problème technique temporaire. Je te répondrai dès que possible.",
+    UNAVAILABLE_DIOULA: "N bɛ baara la sisan. N bɛna jaabi i ma joona.",
+    UNAVAILABLE_BILINGUAL:
+        '🌾 N bɛ baara la sisan. N bɛna jaabi i ma joona.\n\n---\n🌾 Je rencontre un problème technique temporaire. Je te répondrai dès que possible.',
+    // Reconnexion WA : "je suis de retour"
+    BACK_FR: "Je suis de retour. Pose-moi à nouveau ta question.",
+    BACK_DIOULA: "N nana segin. I ka ɲinini ci tugu n ma.",
+    BACK_BILINGUAL:
+        '🌾 Aw ni ce, n nana segin. Aw ka ɲinini ci tugu n ma.\n\n---\n🌾 Je suis de retour. Pose-moi à nouveau ta question.',
+};
+
+/**
+ * Envoie un message d'excuse adapté au format du dernier message utilisateur.
+ *
+ * Règle uniforme :
+ *   - Si le dernier message était vocal → tente d'envoyer un audio dans la langue
+ *     (dioula si mode dioula/both, français si mode french)
+ *   - Si écrit OU si génération audio échoue → texte bilingue (fallback)
+ *
+ * @param {string} userNumber - Numéro WhatsApp destinataire
+ * @param {object} options
+ * @param {boolean} options.isVoiceInput - Le dernier message était-il vocal ?
+ * @param {string} options.language - 'french' | 'dioula' | 'both'
+ * @param {'unavailable'|'back'} options.kind - Type de message
+ */
+async function sendExcuseMessage(userNumber, { isVoiceInput, language, kind }) {
+    const isFrench = language === 'french';
+    const audioText = kind === 'back'
+        ? (isFrench ? EXCUSE_MSG.BACK_FR : EXCUSE_MSG.BACK_DIOULA)
+        : (isFrench ? EXCUSE_MSG.UNAVAILABLE_FR : EXCUSE_MSG.UNAVAILABLE_DIOULA);
+    const fallbackText = kind === 'back'
+        ? EXCUSE_MSG.BACK_BILINGUAL
+        : EXCUSE_MSG.UNAVAILABLE_BILINGUAL;
+
+    let audioSent = false;
+    if (isVoiceInput) {
+        try { await sock.sendPresenceUpdate('recording', userNumber); } catch (_) {}
+        const audioBuffer = await tryGenerateAudioFromText(audioText, isFrench);
+        if (audioBuffer) {
+            await sock.sendMessage(userNumber, {
+                audio: audioBuffer,
+                mimetype: 'audio/ogg; codecs=opus',
+                ptt: true,
+            });
+            audioSent = true;
+            console.log(`[EXCUSE] Audio ${isFrench ? 'FR' : 'dioula'} envoyé (${kind})`);
+        }
+        try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
+    }
+
+    if (!audioSent) {
+        await sock.sendMessage(userNumber, { text: fallbackText });
+        console.log(`[EXCUSE] Texte bilingue envoyé (${kind}, isVoice=${isVoiceInput})`);
+    }
+}
+
 // Charger les preferences au demarrage
 loadUserPreferences();
 
@@ -433,19 +536,31 @@ messageQueue.load().then((n) => {
 });
 
 // Phase 2 — Notifier les utilisateurs ayant des messages en attente apres reconnexion WhatsApp
+// Le format (audio/texte) s'adapte au format du DERNIER message reçu de chaque utilisateur.
 async function notifyPendingUsers() {
     const pending = messageQueue.getPending();
     if (pending.length === 0) return;
 
-    // Dedup par userNumber : un seul message d'excuse par utilisateur
-    const usersToNotify = [...new Set(pending.map((m) => m.userNumber).filter(Boolean))];
+    // Pour chaque utilisateur : retenir le DERNIER message reçu (pour adapter le format)
+    const lastMessageByUser = new Map();
+    for (const msg of pending) {
+        if (!msg.userNumber) continue;
+        const existing = lastMessageByUser.get(msg.userNumber);
+        if (!existing || new Date(msg.createdAt) > new Date(existing.createdAt)) {
+            lastMessageByUser.set(msg.userNumber, msg);
+        }
+    }
 
-    console.log(`[QUEUE] Notification de ${usersToNotify.length} utilisateur(s) ayant des messages en attente`);
+    console.log(`[QUEUE] Notification de ${lastMessageByUser.size} utilisateur(s) ayant des messages en attente`);
 
-    for (const userNumber of usersToNotify) {
+    for (const [userNumber, lastMsg] of lastMessageByUser) {
         try {
-            await sock.sendMessage(userNumber, {
-                text: '🌾 Aw ni ce, n nana segin. Aw ka ɲinini ci tugu n ma.\n\n---\n🌾 Je suis de retour. Pose-moi à nouveau ta question.',
+            const isVoiceInput = lastMsg.payload?.isVoiceInput === true;
+            const language = lastMsg.payload?.language || 'french';
+            await sendExcuseMessage(userNumber, {
+                isVoiceInput,
+                language,
+                kind: 'back',
             });
             // Retirer les messages en attente de cet utilisateur (deja repondus avec excuse)
             const userMessages = pending.filter((m) => m.userNumber === userNumber);
@@ -879,14 +994,16 @@ async function connectWhatsApp() {
                         // Echec : marquer dans la queue (reste en attente pour observabilité)
                         await messageQueue.markFailure(queueId, apiErr);
 
-                        // Si circuit ouvert, message d'attente bilingue à l'utilisateur
+                        // Si circuit ouvert, message d'attente adapté au format du dernier message
                         if (apiErr instanceof CircuitOpenError) {
-                            console.log(`[CIRCUIT] wouri-api en circuit OPEN — message d'attente envoyé`);
+                            console.log(`[CIRCUIT] wouri-api en circuit OPEN — message d'attente envoyé (isVoice=${isVoiceInput}, lang=${prefs.language})`);
                             keepPresence = false;
                             clearInterval(presenceInterval);
                             await sock.sendPresenceUpdate('paused', userNumber);
-                            await sock.sendMessage(userNumber, {
-                                text: '🌾 N bɛ baara la sisan. N bɛna jaabi i ma joona.\n\n---\n🌾 Je rencontre un problème technique temporaire. Je te répondrai dès que possible.',
+                            await sendExcuseMessage(userNumber, {
+                                isVoiceInput,
+                                language: prefs.language,
+                                kind: 'unavailable',
                             });
                             continue;  // Passer au message suivant du batch
                         }
@@ -960,123 +1077,76 @@ async function connectWhatsApp() {
                         }
                     }
 
-                    // DIOULA: Audio Dioula uniquement (pas de texte)
+                    // DIOULA — Règle adaptative (issue #118) :
+                    //   Vocal entrant  -> audio dioula
+                    //   Texte entrant  -> texte FR (pas d'audio dioula généré pour rien)
                     else if (prefs.language === 'dioula') {
-                        if (data.audio_url) {
+                        if (isVoiceInput && data.audio_url) {
                             try {
                                 const audioUrl = data.audio_url.startsWith('http')
                                     ? data.audio_url
                                     : `${WOURI_API_URL}${data.audio_url}`;
-
                                 const audioResponse = await axios.get(audioUrl, {
                                     responseType: 'arraybuffer',
                                     timeout: 30000
                                 });
-
                                 await sock.sendPresenceUpdate('recording', userNumber);
                                 await randomDelay(1000, 2000);
                                 await sock.sendPresenceUpdate('paused', userNumber);
-
                                 await sock.sendMessage(userNumber, {
                                     audio: Buffer.from(audioResponse.data),
                                     mimetype: 'audio/ogg; codecs=opus',
                                     ptt: true
                                 });
-                                console.log('[ENVOYE] Audio dioula (pas de texte)');
+                                console.log('[ENVOYE] Audio dioula (reponse a vocal)');
                             } catch (audioErr) {
-                                console.log('[AUDIO DIOULA] Erreur:', audioErr.message);
-                                // Fallback: envoyer le texte dioula si audio echoue
-                                if (data.response_dioula) {
-                                    await sock.sendMessage(userNumber, {
-                                        text: `🇲🇱 ${data.response_dioula}`
-                                    });
-                                }
-                            }
-                        } else if (data.response_dioula) {
-                            // Pas d'audio disponible, envoyer le texte
-                            await sock.sendMessage(userNumber, {
-                                text: `🇲🇱 ${data.response_dioula}`
-                            });
-                            console.log('[ENVOYE] Texte dioula (audio non disponible)');
-                        }
-                    }
-
-                    // LES DEUX: Adapte selon le type d'entree
-                    // - Texte recu -> Texte FR + Audio Dioula
-                    // - Vocal recu -> Audio FR + Audio Dioula (ou juste Audio Dioula)
-                    else if (prefs.language === 'both') {
-                        if (isVoiceInput) {
-                            // Entree vocale -> Reponse audio (Texte FR + Audio Dioula)
-                            // On envoie le texte FR pour qu'il puisse lire aussi
-                            if (data.response) {
-                                await sock.sendMessage(userNumber, {
-                                    text: `🇫🇷 ${data.response}`
-                                });
-                                console.log('[ENVOYE] Texte francais');
-                            }
-
-                            // Audio dioula
-                            if (data.audio_url) {
-                                try {
-                                    await randomDelay(500, 1000);
-                                    const audioUrl = data.audio_url.startsWith('http')
-                                        ? data.audio_url
-                                        : `${WOURI_API_URL}${data.audio_url}`;
-
-                                    const audioResponse = await axios.get(audioUrl, {
-                                        responseType: 'arraybuffer',
-                                        timeout: 30000
-                                    });
-
-                                    await sock.sendPresenceUpdate('recording', userNumber);
-                                    await randomDelay(1000, 2000);
-                                    await sock.sendPresenceUpdate('paused', userNumber);
-
-                                    await sock.sendMessage(userNumber, {
-                                        audio: Buffer.from(audioResponse.data),
-                                        mimetype: 'audio/ogg; codecs=opus',
-                                        ptt: true
-                                    });
-                                    console.log('[ENVOYE] Audio dioula (reponse a vocal)');
-                                } catch (audioErr) {
-                                    console.log('[AUDIO DIOULA] Erreur:', audioErr.message);
+                                console.log('[AUDIO DIOULA] Erreur, fallback texte FR:', audioErr.message);
+                                if (data.response) {
+                                    await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
                                 }
                             }
                         } else {
-                            // Entree texte -> Texte FR + Audio Dioula
+                            // Entrée texte (ou audio_url manquant) -> texte FR
                             if (data.response) {
-                                await sock.sendMessage(userNumber, {
-                                    text: `🇫🇷 ${data.response}`
-                                });
-                                console.log('[ENVOYE] Texte francais (reponse a texte)');
+                                await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
+                                console.log('[ENVOYE] Texte FR (mode dioula, entree texte ou audio indispo)');
                             }
+                        }
+                    }
 
-                            // Audio dioula
-                            if (data.audio_url) {
-                                try {
-                                    await randomDelay(500, 1000);
-                                    const audioUrl = data.audio_url.startsWith('http')
-                                        ? data.audio_url
-                                        : `${WOURI_API_URL}${data.audio_url}`;
-
-                                    const audioResponse = await axios.get(audioUrl, {
-                                        responseType: 'arraybuffer',
-                                        timeout: 30000
-                                    });
-
-                                    await sock.sendPresenceUpdate('recording', userNumber);
-                                    await randomDelay(1000, 2000);
-                                    await sock.sendPresenceUpdate('paused', userNumber);
-
-                                    await sock.sendMessage(userNumber, {
-                                        audio: Buffer.from(audioResponse.data),
-                                        mimetype: 'audio/ogg; codecs=opus',
-                                        ptt: true
-                                    });
-                                    console.log('[ENVOYE] Audio dioula');
-                                } catch (audioErr) {
-                                    console.log('[AUDIO DIOULA] Erreur:', audioErr.message);
+                    // BOTH — Règle adaptative Hypothèse A (issue #118, validée Ruben) :
+                    //   Vocal entrant  -> audio dioula seul (langue locale)
+                    //   Texte entrant  -> texte FR seul
+                    else if (prefs.language === 'both') {
+                        if (isVoiceInput && data.audio_url) {
+                            try {
+                                const audioUrl = data.audio_url.startsWith('http')
+                                    ? data.audio_url
+                                    : `${WOURI_API_URL}${data.audio_url}`;
+                                const audioResponse = await axios.get(audioUrl, {
+                                    responseType: 'arraybuffer',
+                                    timeout: 30000
+                                });
+                                await sock.sendPresenceUpdate('recording', userNumber);
+                                await randomDelay(1000, 2000);
+                                await sock.sendPresenceUpdate('paused', userNumber);
+                                await sock.sendMessage(userNumber, {
+                                    audio: Buffer.from(audioResponse.data),
+                                    mimetype: 'audio/ogg; codecs=opus',
+                                    ptt: true
+                                });
+                                console.log('[ENVOYE] Audio dioula (mode both, reponse a vocal)');
+                            } catch (audioErr) {
+                                console.log('[AUDIO DIOULA] Erreur, fallback texte FR:', audioErr.message);
+                                if (data.response) {
+                                    await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
                                 }
+                            }
+                        } else {
+                            // Entrée texte (ou audio_url manquant) -> texte FR seul
+                            if (data.response) {
+                                await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
+                                console.log('[ENVOYE] Texte FR (mode both, entree texte)');
                             }
                         }
                     }
