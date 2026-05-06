@@ -478,48 +478,99 @@ const EXCUSE_MSG = {
 };
 
 /**
- * Envoie un message d'excuse adapté au format du dernier message utilisateur.
+ * Envoie un message d'excuse selon la langue choisie par l'utilisateur.
  *
- * Règle uniforme :
- *   - Si le dernier message était vocal → tente d'envoyer un audio dans la langue
- *     (dioula si mode dioula/both, français si mode french)
- *   - Si écrit OU si génération audio échoue → texte bilingue (fallback)
+ * Règle (révisée 2026-05-06, remplace la règle "selon format d'entrée" de PR #119) :
+ *   - Mode `french` : selon isVoiceInput (audio FR si vocal, texte FR si écrit)
+ *   - Mode `dioula` : TOUJOURS tenter audio dioula, fallback texte bilingue
+ *   - Mode `both`   : TOUJOURS texte FR + tenter audio dioula
+ *
+ * Justification UX : les agriculteurs dioula sont souvent peu alphabétisés.
+ * Leur envoyer du texte dioula leur sert peu — l'audio est critique pour
+ * qu'ils accèdent au contenu. Le mode `both` envoie texte FR en bonus pour
+ * les bilingues.
+ *
+ * Si l'API TTS est down (cas circuit OPEN) → fallback texte bilingue garanti.
  *
  * @param {string} userNumber - Numéro WhatsApp destinataire
  * @param {object} options
- * @param {boolean} options.isVoiceInput - Le dernier message était-il vocal ?
  * @param {string} options.language - 'french' | 'dioula' | 'both'
  * @param {'unavailable'|'back'} options.kind - Type de message
+ * @param {boolean} [options.isVoiceInput] - Utilisé uniquement pour mode `french`
  */
-async function sendExcuseMessage(userNumber, { isVoiceInput, language, kind }) {
-    const isFrench = language === 'french';
-    const audioText = kind === 'back'
-        ? (isFrench ? EXCUSE_MSG.BACK_FR : EXCUSE_MSG.BACK_DIOULA)
-        : (isFrench ? EXCUSE_MSG.UNAVAILABLE_FR : EXCUSE_MSG.UNAVAILABLE_DIOULA);
+async function sendExcuseMessage(userNumber, { language, kind, isVoiceInput = false }) {
     const fallbackText = kind === 'back'
         ? EXCUSE_MSG.BACK_BILINGUAL
         : EXCUSE_MSG.UNAVAILABLE_BILINGUAL;
 
-    let audioSent = false;
-    if (isVoiceInput) {
+    // ---- Mode FRENCH : selon format d'entrée ----
+    if (language === 'french') {
+        if (!isVoiceInput) {
+            // Texte entrant -> texte FR seul
+            const textFr = kind === 'back' ? EXCUSE_MSG.BACK_FR : EXCUSE_MSG.UNAVAILABLE_FR;
+            await sock.sendMessage(userNumber, { text: `🇫🇷 ${textFr}` });
+            logger.info(`[EXCUSE] Texte FR envoyé (mode french, ecrit, ${kind})`);
+            return;
+        }
+        // Vocal entrant -> audio FR avec fallback texte
         try { await sock.sendPresenceUpdate('recording', userNumber); } catch (_) {}
-        const audioBuffer = await tryGenerateAudioFromText(audioText, isFrench);
+        const audioText = kind === 'back' ? EXCUSE_MSG.BACK_FR : EXCUSE_MSG.UNAVAILABLE_FR;
+        const audioBuffer = await tryGenerateAudioFromText(audioText, true);
+        try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
         if (audioBuffer) {
             await sock.sendMessage(userNumber, {
                 audio: audioBuffer,
                 mimetype: 'audio/ogg; codecs=opus',
                 ptt: true,
             });
-            audioSent = true;
-            logger.info(`[EXCUSE] Audio ${isFrench ? 'FR' : 'dioula'} envoyé (${kind})`);
+            logger.info(`[EXCUSE] Audio FR envoyé (mode french, vocal, ${kind})`);
+            return;
         }
-        try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
+        await sock.sendMessage(userNumber, { text: fallbackText });
+        logger.info(`[EXCUSE] Texte bilingue (mode french, audio FR indispo, ${kind})`);
+        return;
     }
 
-    if (!audioSent) {
-        await sock.sendMessage(userNumber, { text: fallbackText });
-        logger.info(`[EXCUSE] Texte bilingue envoyé (${kind}, isVoice=${isVoiceInput})`);
+    // ---- Mode BOTH : texte FR + tenter audio dioula ----
+    if (language === 'both') {
+        const textFr = kind === 'back' ? EXCUSE_MSG.BACK_FR : EXCUSE_MSG.UNAVAILABLE_FR;
+        await sock.sendMessage(userNumber, { text: `🇫🇷 ${textFr}` });
+        logger.info(`[EXCUSE] Texte FR envoyé (mode both, ${kind})`);
+
+        try { await sock.sendPresenceUpdate('recording', userNumber); } catch (_) {}
+        const audioText = kind === 'back' ? EXCUSE_MSG.BACK_DIOULA : EXCUSE_MSG.UNAVAILABLE_DIOULA;
+        const audioBuffer = await tryGenerateAudioFromText(audioText, false);
+        try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
+        if (audioBuffer) {
+            await sock.sendMessage(userNumber, {
+                audio: audioBuffer,
+                mimetype: 'audio/ogg; codecs=opus',
+                ptt: true,
+            });
+            logger.info(`[EXCUSE] Audio dioula envoyé (mode both, ${kind})`);
+        } else {
+            logger.info(`[EXCUSE] Audio dioula indispo (mode both, ${kind}) — texte FR seulement`);
+        }
+        return;
     }
+
+    // ---- Mode DIOULA : audio dioula prioritaire, fallback texte bilingue ----
+    try { await sock.sendPresenceUpdate('recording', userNumber); } catch (_) {}
+    const audioText = kind === 'back' ? EXCUSE_MSG.BACK_DIOULA : EXCUSE_MSG.UNAVAILABLE_DIOULA;
+    const audioBuffer = await tryGenerateAudioFromText(audioText, false);
+    try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
+    if (audioBuffer) {
+        await sock.sendMessage(userNumber, {
+            audio: audioBuffer,
+            mimetype: 'audio/ogg; codecs=opus',
+            ptt: true,
+        });
+        logger.info(`[EXCUSE] Audio dioula envoyé (mode dioula, ${kind})`);
+        return;
+    }
+    // Fallback : texte bilingue (audio TTS dioula indispo, probablement API down)
+    await sock.sendMessage(userNumber, { text: fallbackText });
+    logger.info(`[EXCUSE] Texte bilingue (mode dioula, audio dioula indispo, ${kind})`);
 }
 
 // Charger les preferences au demarrage
@@ -1082,11 +1133,13 @@ async function connectWhatsApp() {
                         }
                     }
 
-                    // DIOULA — Règle adaptative (issue #118) :
-                    //   Vocal entrant  -> audio dioula
-                    //   Texte entrant  -> texte FR (pas d'audio dioula généré pour rien)
+                    // DIOULA — Règle "selon langue choisie" (révisée 2026-05-06) :
+                    //   TOUJOURS audio dioula (peu importe vocal/écrit en entrée).
+                    //   Justification UX : agriculteurs dioula peu alphabétisés, l'audio
+                    //   est critique pour qu'ils accèdent au contenu. Le texte dioula leur
+                    //   sert peu. Fallback texte FR seulement si audio indispo (API TTS down).
                     else if (prefs.language === 'dioula') {
-                        if (isVoiceInput && data.audio_url) {
+                        if (data.audio_url) {
                             try {
                                 const audioUrl = data.audio_url.startsWith('http')
                                     ? data.audio_url
@@ -1103,28 +1156,35 @@ async function connectWhatsApp() {
                                     mimetype: 'audio/ogg; codecs=opus',
                                     ptt: true
                                 });
-                                logger.info('[ENVOYE] Audio dioula (reponse a vocal)');
+                                logger.info('[ENVOYE] Audio dioula (mode dioula)');
                             } catch (audioErr) {
                                 logger.warn(`[AUDIO DIOULA] Erreur, fallback texte FR: ${audioErr.message}`);
                                 if (data.response) {
                                     await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
                                 }
                             }
-                        } else {
-                            // Entrée texte (ou audio_url manquant) -> texte FR
-                            if (data.response) {
-                                await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
-                                logger.info('[ENVOYE] Texte FR (mode dioula, entree texte ou audio indispo)');
-                            }
+                        } else if (data.response) {
+                            // Pas d'audio_url disponible -> fallback texte FR
+                            await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
+                            logger.info('[ENVOYE] Texte FR (mode dioula, audio_url indispo)');
                         }
                     }
 
-                    // BOTH — Règle adaptative Hypothèse A (issue #118, validée Ruben) :
-                    //   Vocal entrant  -> audio dioula seul (langue locale)
-                    //   Texte entrant  -> texte FR seul
+                    // BOTH — Règle "selon langue choisie" (révisée 2026-05-06) :
+                    //   TOUJOURS texte FR + audio dioula (combo, le meilleur des deux).
+                    //   Permet aux bilingues de profiter des deux formats sans avoir à
+                    //   choisir entre lire et écouter.
                     else if (prefs.language === 'both') {
-                        if (isVoiceInput && data.audio_url) {
+                        // 1. Toujours envoyer le texte FR
+                        if (data.response) {
+                            await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
+                            logger.info('[ENVOYE] Texte FR (mode both)');
+                        }
+
+                        // 2. Toujours envoyer l'audio dioula si disponible
+                        if (data.audio_url) {
                             try {
+                                await randomDelay(500, 1000);
                                 const audioUrl = data.audio_url.startsWith('http')
                                     ? data.audio_url
                                     : `${WOURI_API_URL}${data.audio_url}`;
@@ -1140,18 +1200,9 @@ async function connectWhatsApp() {
                                     mimetype: 'audio/ogg; codecs=opus',
                                     ptt: true
                                 });
-                                logger.info('[ENVOYE] Audio dioula (mode both, reponse a vocal)');
+                                logger.info('[ENVOYE] Audio dioula (mode both)');
                             } catch (audioErr) {
-                                logger.warn(`[AUDIO DIOULA] Erreur, fallback texte FR: ${audioErr.message}`);
-                                if (data.response) {
-                                    await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
-                                }
-                            }
-                        } else {
-                            // Entrée texte (ou audio_url manquant) -> texte FR seul
-                            if (data.response) {
-                                await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
-                                logger.info('[ENVOYE] Texte FR (mode both, entree texte)');
+                                logger.warn(`[AUDIO DIOULA] Erreur (mode both, texte FR déjà envoyé): ${audioErr.message}`);
                             }
                         }
                     }
@@ -1180,8 +1231,12 @@ async function connectWhatsApp() {
                 logger.error(`[ERREUR] ${error.message}`);
                 await sock.sendPresenceUpdate('paused', userNumber);
                 await randomDelay(500, 1000);
-                await sock.sendMessage(userNumber, {
-                    text: "⚠️ Fɛɛrɛ dɔ kɛra. I ka a lasɔgɔ tugu.\n\n---\nProblème technique. Réessayez dans quelques instants."
+                // Règle "selon langue choisie" (révisée 2026-05-06) : message d'excuse adapté
+                // au mode utilisateur, plus le texte bilingue fixe.
+                await sendExcuseMessage(userNumber, {
+                    language: prefs.language || 'french',
+                    kind: 'unavailable',
+                    isVoiceInput,
                 });
             }
         }
