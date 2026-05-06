@@ -27,6 +27,9 @@ const {
 const { MessageQueue } = require('./lib/message_queue');
 const { CircuitBreaker, CircuitOpenError } = require('./lib/circuit_breaker');
 
+// Phase 3 Observabilité — logger structuré pino JSON
+const { logger } = require('./lib/logger');
+
 // Configuration
 const PORT = process.env.PORT || 3001;
 const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
@@ -44,7 +47,7 @@ function authHeaders() {
 
 // Avertissement demarrage si API_KEY manquante en production
 if (process.env.NODE_ENV === 'production' && !WOURI_API_KEY) {
-    console.warn('[SECURITY] WOURI_API_KEY non definie en production — les appels backend echoueront si API_SECRET_KEY y est configuree');
+    logger.warn('[SECURITY] WOURI_API_KEY non definie en production — les appels backend echoueront si API_SECRET_KEY y est configuree');
 }
 
 // Creer le dossier temporaire pour les audios
@@ -69,6 +72,7 @@ let reconnectAttempt = 0;  // Compteur de tentatives consécutives, reset à 0 a
 const messageQueue = new MessageQueue({
     filePath: PENDING_MESSAGES_FILE,
     maxAttempts: 5,
+    logger,  // Phase 3 : logger pino structuré
 });
 
 // Circuit breaker sur les appels à wouri-api
@@ -79,6 +83,7 @@ const apiCircuitBreaker = new CircuitBreaker({
     failureThreshold: 0.5,
     openDurationMs: 30000,
     halfOpenMaxCalls: 1,
+    logger,  // Phase 3 : logger pino structuré
 });
 
 // ========================================
@@ -103,10 +108,10 @@ function loadUserPreferences() {
         if (fs.existsSync(USER_PREFS_FILE)) {
             const data = fs.readFileSync(USER_PREFS_FILE, 'utf8');
             userPreferences = JSON.parse(data);
-            console.log(`[PREFS] ${Object.keys(userPreferences).length} utilisateurs charges`);
+            logger.info(`[PREFS] ${Object.keys(userPreferences).length} utilisateurs charges`);
         }
     } catch (error) {
-        console.error('[PREFS] Erreur chargement:', error.message);
+        logger.error('[PREFS] Erreur chargement:', error.message);
         userPreferences = {};
     }
 }
@@ -126,7 +131,7 @@ function saveUserPreferences() {
     fs.writeFile(USER_PREFS_FILE, snapshot, 'utf8', (err) => {
         _saveInProgress = false;
         if (err) {
-            console.error('[PREFS] Erreur sauvegarde:', err.message);
+            logger.error('[PREFS] Erreur sauvegarde:', err.message);
         }
         if (_savePending) {
             _savePending = false;
@@ -337,7 +342,7 @@ async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
         });
         formData.append('language', 'fr');
 
-        console.log(`[STT] Appel API: ${WOURI_API_URL}/api/stt/transcribe`);
+        logger.info(`[STT] Appel API: ${WOURI_API_URL}/api/stt/transcribe`);
         const response = await axios.post(`${WOURI_API_URL}/api/stt/transcribe`, formData, {
             headers: {
                 ...formData.getHeaders(),
@@ -345,7 +350,7 @@ async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
             },
             timeout: 180000
         });
-        console.log(`[STT] Reponse API recue: ${response.status}`);
+        logger.info(`[STT] Reponse API recue: ${response.status}`);
 
         if (response.data && response.data.text) {
             return {
@@ -356,7 +361,7 @@ async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
         }
         return null;
     } catch (error) {
-        console.log('[STT] Erreur transcription:', error.message);
+        logger.info('[STT] Erreur transcription:', error.message);
         return null;
     }
 }
@@ -373,7 +378,7 @@ async function transcribeAudioBambara(audioBuffer, filename = 'audio.ogg') {
         });
         formData.append('language', 'bam');  // Bambara/Dioula
 
-        console.log(`[ASR-BAMBARA] Appel API: ${WOURI_API_URL}/api/asr/transcribe-and-translate`);
+        logger.info(`[ASR-BAMBARA] Appel API: ${WOURI_API_URL}/api/asr/transcribe-and-translate`);
         const response = await axios.post(`${WOURI_API_URL}/api/asr/transcribe-and-translate`, formData, {
             headers: {
                 ...formData.getHeaders(),
@@ -381,17 +386,17 @@ async function transcribeAudioBambara(audioBuffer, filename = 'audio.ogg') {
             },
             timeout: 180000
         });
-        console.log(`[ASR-BAMBARA] Reponse API recue: ${response.status}`);
+        logger.info(`[ASR-BAMBARA] Reponse API recue: ${response.status}`);
 
         if (response.data) {
             const transcription = response.data.transcription || '';
             const frenchTranslation = response.data.french_translation || '';
             const nluMessage = response.data.nlu_message || '';
 
-            console.log(`[ASR-BAMBARA] Transcription Bambara: "${transcription}"`);
-            console.log(`[ASR-BAMBARA] Traduction Francais: "${frenchTranslation}"`);
+            logger.info(`[ASR-BAMBARA] Transcription Bambara: "${transcription}"`);
+            logger.info(`[ASR-BAMBARA] Traduction Francais: "${frenchTranslation}"`);
             if (nluMessage) {
-                console.log(`[ASR-BAMBARA] Message NLU (prioritaire): "${nluMessage}"`);
+                logger.info(`[ASR-BAMBARA] Message NLU (prioritaire): "${nluMessage}"`);
             }
 
             return {
@@ -402,9 +407,9 @@ async function transcribeAudioBambara(audioBuffer, filename = 'audio.ogg') {
         }
         return null;
     } catch (error) {
-        console.log('[ASR-BAMBARA] Erreur transcription:', error.message);
+        logger.info('[ASR-BAMBARA] Erreur transcription:', error.message);
         // Fallback vers Whisper français si ASR Bambara echoue
-        console.log('[ASR-BAMBARA] Fallback vers Whisper francais...');
+        logger.info('[ASR-BAMBARA] Fallback vers Whisper francais...');
         return await transcribeAudio(audioBuffer, filename);
     }
 }
@@ -451,7 +456,7 @@ async function tryGenerateAudioFromText(text, isFrench, timeoutMs = 5000) {
         });
         return Buffer.from(audioResp.data);
     } catch (err) {
-        console.log(
+        logger.info(
             `[EXCUSE-AUDIO] Génération ${isFrench ? 'FR' : 'dioula'} échouée (${err.code || (err.message || '').substring(0, 80)}) — fallback texte`
         );
         return null;
@@ -506,14 +511,14 @@ async function sendExcuseMessage(userNumber, { isVoiceInput, language, kind }) {
                 ptt: true,
             });
             audioSent = true;
-            console.log(`[EXCUSE] Audio ${isFrench ? 'FR' : 'dioula'} envoyé (${kind})`);
+            logger.info(`[EXCUSE] Audio ${isFrench ? 'FR' : 'dioula'} envoyé (${kind})`);
         }
         try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
     }
 
     if (!audioSent) {
         await sock.sendMessage(userNumber, { text: fallbackText });
-        console.log(`[EXCUSE] Texte bilingue envoyé (${kind}, isVoice=${isVoiceInput})`);
+        logger.info(`[EXCUSE] Texte bilingue envoyé (${kind}, isVoice=${isVoiceInput})`);
     }
 }
 
@@ -523,16 +528,16 @@ loadUserPreferences();
 // Phase 2 — Charger la queue persistante au demarrage
 messageQueue.load().then((n) => {
     if (n > 0) {
-        console.log(`[QUEUE] ${n} message(s) en attente charges depuis ${PENDING_MESSAGES_FILE}`);
+        logger.info(`[QUEUE] ${n} message(s) en attente charges depuis ${PENDING_MESSAGES_FILE}`);
         const dead = messageQueue.getDead();
         if (dead.length > 0) {
-            console.warn(`[QUEUE] ${dead.length} message(s) "morts" (>${messageQueue.maxAttempts} tentatives) - a inspecter manuellement`);
+            logger.warn(`[QUEUE] ${dead.length} message(s) "morts" (>${messageQueue.maxAttempts} tentatives) - a inspecter manuellement`);
         }
     } else {
-        console.log('[QUEUE] Aucun message en attente');
+        logger.info('[QUEUE] Aucun message en attente');
     }
 }).catch((err) => {
-    console.error('[QUEUE] Erreur chargement initial :', err.message);
+    logger.error('[QUEUE] Erreur chargement initial :', err.message);
 });
 
 // Phase 2 — Notifier les utilisateurs ayant des messages en attente apres reconnexion WhatsApp
@@ -551,7 +556,7 @@ async function notifyPendingUsers() {
         }
     }
 
-    console.log(`[QUEUE] Notification de ${lastMessageByUser.size} utilisateur(s) ayant des messages en attente`);
+    logger.info(`[QUEUE] Notification de ${lastMessageByUser.size} utilisateur(s) ayant des messages en attente`);
 
     for (const [userNumber, lastMsg] of lastMessageByUser) {
         try {
@@ -568,7 +573,7 @@ async function notifyPendingUsers() {
                 await messageQueue.markSuccess(m.id);
             }
         } catch (err) {
-            console.error(`[QUEUE] Erreur notification ${userNumber} :`, err.message);
+            logger.error(`[QUEUE] Erreur notification ${userNumber} :`, err.message);
         }
     }
 }
@@ -586,7 +591,7 @@ async function connectWhatsApp() {
 
     // Récupérer la dernière version WhatsApp Web compatible
     const { version, isLatest } = await fetchLatestBaileysVersion();
-    console.log(`[BAILEYS] Version WhatsApp Web: ${version.join('.')} (latest: ${isLatest})`);
+    logger.info(`[BAILEYS] Version WhatsApp Web: ${version.join('.')} (latest: ${isLatest})`);
 
     sock = makeWASocket({
         version,
@@ -601,9 +606,9 @@ async function connectWhatsApp() {
 
         if (qr) {
             qrCodeData = qr;
-            console.log('\n========================================');
-            console.log('   SCANNEZ CE QR CODE AVEC WHATSAPP');
-            console.log('========================================\n');
+            logger.info('\n========================================');
+            logger.info('   SCANNEZ CE QR CODE AVEC WHATSAPP');
+            logger.info('========================================\n');
             qrcode.generate(qr, { small: true });
         }
 
@@ -613,24 +618,24 @@ async function connectWhatsApp() {
             const reasonName = describeDisconnectReason(statusCode);
             const reconnectable = isReconnectable(statusCode);
 
-            console.log(`[RECONNECT] Connexion fermee : ${reasonName} (code=${statusCode})`);
+            logger.info(`[RECONNECT] Connexion fermee : ${reasonName} (code=${statusCode})`);
 
             if (!reconnectable) {
-                console.log(`[RECONNECT] Raison non-recuperable (${reasonName}). Action manuelle requise :`);
-                console.log('[RECONNECT]   - loggedOut/badSession : supprimez auth_baileys/ puis redemarrez');
-                console.log('[RECONNECT]   - forbidden : compte WhatsApp possiblement banni, contactez Meta');
+                logger.info(`[RECONNECT] Raison non-recuperable (${reasonName}). Action manuelle requise :`);
+                logger.info('[RECONNECT]   - loggedOut/badSession : supprimez auth_baileys/ puis redemarrez');
+                logger.info('[RECONNECT]   - forbidden : compte WhatsApp possiblement banni, contactez Meta');
                 return;
             }
 
             if (reconnectAttempt >= MAX_ATTEMPTS) {
-                console.error(`[RECONNECT] Limite de ${MAX_ATTEMPTS} tentatives atteinte. Arret automatique.`);
-                console.error('[RECONNECT] Verifiez la connexion reseau et redemarrez le serveur manuellement.');
+                logger.error(`[RECONNECT] Limite de ${MAX_ATTEMPTS} tentatives atteinte. Arret automatique.`);
+                logger.error('[RECONNECT] Verifiez la connexion reseau et redemarrez le serveur manuellement.');
                 return;
             }
 
             const delay = computeBackoffDelay(reconnectAttempt);
             reconnectAttempt++;
-            console.log(`[RECONNECT] Tentative ${reconnectAttempt}/${MAX_ATTEMPTS} dans ${delay / 1000}s (backoff exponentiel)`);
+            logger.info(`[RECONNECT] Tentative ${reconnectAttempt}/${MAX_ATTEMPTS} dans ${delay / 1000}s (backoff exponentiel)`);
             setTimeout(connectWhatsApp, delay);
         }
 
@@ -638,10 +643,10 @@ async function connectWhatsApp() {
             isConnected = true;
             qrCodeData = null;
             reconnectAttempt = 0;  // Reset apres connexion reussie
-            console.log('\n========================================');
-            console.log('   WOURI CONNECTE A WHATSAPP!');
-            console.log('   Systeme d\'onboarding actif');
-            console.log('========================================\n');
+            logger.info('\n========================================');
+            logger.info('   WOURI CONNECTE A WHATSAPP!');
+            logger.info('   Systeme d\'onboarding actif');
+            logger.info('========================================\n');
 
             // Notifier les utilisateurs en attente (queue Phase 2)
             await notifyPendingUsers();
@@ -683,10 +688,10 @@ async function connectWhatsApp() {
             let bambaraText = null;   // Transcription bambara brute (pour NLU preprocessing)
 
             if (isAudioMessage) {
-                console.log(`\n[AUDIO] Message vocal recu de: ${userNumber}`);
+                logger.info(`\n[AUDIO] Message vocal recu de: ${userNumber}`);
 
                 if (!audioMsg?.mediaKey || !audioMsg?.url) {
-                    console.log('[AUDIO] Message sans cle media valide - ignore');
+                    logger.info('[AUDIO] Message sans cle media valide - ignore');
                     continue;
                 }
 
@@ -711,7 +716,7 @@ async function connectWhatsApp() {
                         continue;
                     }
 
-                    console.log(`[AUDIO] Telecharge: ${audioBuffer.length} bytes`);
+                    logger.info(`[AUDIO] Telecharge: ${audioBuffer.length} bytes`);
 
                     // Choisir le moteur de transcription selon la langue de l'utilisateur
                     // - Si langue = dioula ou both -> utiliser ASR Bambara (MMS)
@@ -721,10 +726,10 @@ async function connectWhatsApp() {
                     const userLanguage = prefs.language || 'french';
 
                     if (userLanguage === 'dioula' || userLanguage === 'both') {
-                        console.log(`[AUDIO] Utilisateur en mode ${userLanguage} -> ASR Bambara`);
+                        logger.info(`[AUDIO] Utilisateur en mode ${userLanguage} -> ASR Bambara`);
                         transcriptionResult = await transcribeAudioBambara(audioBuffer, 'voice_message.ogg');
                     } else {
-                        console.log(`[AUDIO] Utilisateur en mode ${userLanguage} -> Whisper francais`);
+                        logger.info(`[AUDIO] Utilisateur en mode ${userLanguage} -> Whisper francais`);
                         transcriptionResult = await transcribeAudio(audioBuffer, 'voice_message.ogg');
                     }
 
@@ -738,14 +743,14 @@ async function connectWhatsApp() {
                     const likelyDioulaInput = transcriptionResult.likely_dioula_input || false;
                     const isBambaraTranscription = transcriptionResult.is_bambara || false;
 
-                    console.log(`[STT] Transcription: "${transcribedText}"`);
+                    logger.info(`[STT] Transcription: "${transcribedText}"`);
                     if (isBambaraTranscription) {
-                        console.log(`[STT] Transcription Bambara reussie!`);
+                        logger.info(`[STT] Transcription Bambara reussie!`);
                         if (transcriptionResult.bambara_text) {
-                            console.log(`[STT] Texte Bambara original: "${transcriptionResult.bambara_text}"`);
+                            logger.info(`[STT] Texte Bambara original: "${transcriptionResult.bambara_text}"`);
                         }
                     } else if (likelyDioulaInput) {
-                        console.log(`[STT] ATTENTION: Audio probablement en Dioula - transcription peut etre incorrecte`);
+                        logger.info(`[STT] ATTENTION: Audio probablement en Dioula - transcription peut etre incorrecte`);
                     }
 
                     messageText = transcribedText;
@@ -756,7 +761,7 @@ async function connectWhatsApp() {
                     }
 
                 } catch (audioError) {
-                    console.error('[AUDIO] Erreur:', audioError.message);
+                    logger.error('[AUDIO] Erreur:', audioError.message);
                     await sock.sendPresenceUpdate('paused', userNumber);
                     await sock.sendMessage(userNumber, { text: MSG.AUDIO_ERROR });
                     continue;
@@ -765,9 +770,9 @@ async function connectWhatsApp() {
 
             if (!messageText) continue;
 
-            console.log(`\n[MESSAGE] De: ${userNumber}`);
-            console.log(`[MESSAGE] Texte: ${messageText}`);
-            console.log(`[MESSAGE] Etape: ${prefs.step}`);
+            logger.info(`\n[MESSAGE] De: ${userNumber}`);
+            logger.info(`[MESSAGE] Texte: ${messageText}`);
+            logger.info(`[MESSAGE] Etape: ${prefs.step}`);
 
             try {
                 await sock.readMessages([msg.key]);
@@ -888,7 +893,7 @@ async function connectWhatsApp() {
                     // Si l'utilisateur envoie un nouveau vocal pendant le feedback
                     // → ignorer le feedback en cours, traiter directement la nouvelle question
                     if (isAudioMessage || isVoiceInput) {
-                        console.log('[FEEDBACK] Nouveau vocal recu → feedback annulé, traitement direct');
+                        logger.info('[FEEDBACK] Nouveau vocal recu → feedback annulé, traitement direct');
                         prefs.step = STEPS.COMPLETE;
                         prefs.pendingFeedback = null;
                         saveUserPreferences();
@@ -910,9 +915,9 @@ async function connectWhatsApp() {
                                 cultures: fb.cultures || [],
                                 source: fb.source || 'unknown'
                             }, { timeout: 10000, headers: authHeaders() });
-                            console.log(`[FEEDBACK] ${endpoint} enregistre pour intent=${fb.intent}`);
+                            logger.info(`[FEEDBACK] ${endpoint} enregistre pour intent=${fb.intent}`);
                         } catch (fbErr) {
-                            console.log('[FEEDBACK] Erreur appel API:', fbErr.message);
+                            logger.info('[FEEDBACK] Erreur appel API:', fbErr.message);
                         }
 
                         // Confirmer et reprendre le mode normal
@@ -937,7 +942,7 @@ async function connectWhatsApp() {
                 // TRAITEMENT DES QUESTIONS (ONBOARDING COMPLETE)
                 // ========================================
                 if (prefs.step === STEPS.COMPLETE) {
-                    console.log(`[API] Appel avec ville: ${prefs.city}, langue: ${prefs.language}, voiceInput: ${isVoiceInput}`);
+                    logger.info(`[API] Appel avec ville: ${prefs.city}, langue: ${prefs.language}, voiceInput: ${isVoiceInput}`);
 
                     // Determiner le type de presence selon le contexte
                     // - Si entree vocale OU langue dioula/both -> reponse audio probable -> 'recording'
@@ -971,7 +976,7 @@ async function connectWhatsApp() {
                             },
                         });
                     } catch (qErr) {
-                        console.error('[QUEUE] Erreur ajout queue :', qErr.message);
+                        logger.error('[QUEUE] Erreur ajout queue :', qErr.message);
                     }
 
                     let data;
@@ -996,7 +1001,7 @@ async function connectWhatsApp() {
 
                         // Si circuit ouvert, message d'attente adapté au format du dernier message
                         if (apiErr instanceof CircuitOpenError) {
-                            console.log(`[CIRCUIT] wouri-api en circuit OPEN — message d'attente envoyé (isVoice=${isVoiceInput}, lang=${prefs.language})`);
+                            logger.info(`[CIRCUIT] wouri-api en circuit OPEN — message d'attente envoyé (isVoice=${isVoiceInput}, lang=${prefs.language})`);
                             keepPresence = false;
                             clearInterval(presenceInterval);
                             await sock.sendPresenceUpdate('paused', userNumber);
@@ -1013,7 +1018,7 @@ async function connectWhatsApp() {
                         clearInterval(presenceInterval);
                     }
 
-                    console.log(`[API] Reponse recue`);
+                    logger.info(`[API] Reponse recue`);
                     await sock.sendPresenceUpdate('paused', userNumber);
                     await randomDelay(300, 800);
 
@@ -1049,9 +1054,9 @@ async function connectWhatsApp() {
                                         mimetype: 'audio/ogg; codecs=opus',
                                         ptt: true
                                     });
-                                    console.log('[ENVOYE] Audio francais (reponse a vocal)');
+                                    logger.info('[ENVOYE] Audio francais (reponse a vocal)');
                                 } catch (audioErr) {
-                                    console.log('[AUDIO FR] Erreur:', audioErr.message);
+                                    logger.info('[AUDIO FR] Erreur:', audioErr.message);
                                     // Fallback: envoyer le texte si audio echoue
                                     if (data.response) {
                                         await sock.sendMessage(userNumber, {
@@ -1064,7 +1069,7 @@ async function connectWhatsApp() {
                                 await sock.sendMessage(userNumber, {
                                     text: `🇫🇷 ${data.response}`
                                 });
-                                console.log('[ENVOYE] Texte francais (audio non disponible)');
+                                logger.info('[ENVOYE] Texte francais (audio non disponible)');
                             }
                         } else {
                             // Entree texte -> Reponse texte francais
@@ -1072,7 +1077,7 @@ async function connectWhatsApp() {
                                 await sock.sendMessage(userNumber, {
                                     text: `🇫🇷 ${data.response}`
                                 });
-                                console.log('[ENVOYE] Texte francais (reponse a texte)');
+                                logger.info('[ENVOYE] Texte francais (reponse a texte)');
                             }
                         }
                     }
@@ -1098,9 +1103,9 @@ async function connectWhatsApp() {
                                     mimetype: 'audio/ogg; codecs=opus',
                                     ptt: true
                                 });
-                                console.log('[ENVOYE] Audio dioula (reponse a vocal)');
+                                logger.info('[ENVOYE] Audio dioula (reponse a vocal)');
                             } catch (audioErr) {
-                                console.log('[AUDIO DIOULA] Erreur, fallback texte FR:', audioErr.message);
+                                logger.info('[AUDIO DIOULA] Erreur, fallback texte FR:', audioErr.message);
                                 if (data.response) {
                                     await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
                                 }
@@ -1109,7 +1114,7 @@ async function connectWhatsApp() {
                             // Entrée texte (ou audio_url manquant) -> texte FR
                             if (data.response) {
                                 await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
-                                console.log('[ENVOYE] Texte FR (mode dioula, entree texte ou audio indispo)');
+                                logger.info('[ENVOYE] Texte FR (mode dioula, entree texte ou audio indispo)');
                             }
                         }
                     }
@@ -1135,9 +1140,9 @@ async function connectWhatsApp() {
                                     mimetype: 'audio/ogg; codecs=opus',
                                     ptt: true
                                 });
-                                console.log('[ENVOYE] Audio dioula (mode both, reponse a vocal)');
+                                logger.info('[ENVOYE] Audio dioula (mode both, reponse a vocal)');
                             } catch (audioErr) {
-                                console.log('[AUDIO DIOULA] Erreur, fallback texte FR:', audioErr.message);
+                                logger.info('[AUDIO DIOULA] Erreur, fallback texte FR:', audioErr.message);
                                 if (data.response) {
                                     await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
                                 }
@@ -1146,7 +1151,7 @@ async function connectWhatsApp() {
                             // Entrée texte (ou audio_url manquant) -> texte FR seul
                             if (data.response) {
                                 await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
-                                console.log('[ENVOYE] Texte FR (mode both, entree texte)');
+                                logger.info('[ENVOYE] Texte FR (mode both, entree texte)');
                             }
                         }
                     }
@@ -1172,7 +1177,7 @@ async function connectWhatsApp() {
                 }
 
             } catch (error) {
-                console.error('[ERREUR]', error.message);
+                logger.error('[ERREUR]', error.message);
                 await sock.sendPresenceUpdate('paused', userNumber);
                 await randomDelay(500, 1000);
                 await sock.sendMessage(userNumber, {
@@ -1204,9 +1209,77 @@ app.get('/status', (req, res) => {
     });
 });
 
-// Phase 2 — Healthcheck étendu (statut WhatsApp + queue + circuit breaker)
-app.get('/health', (req, res) => {
-    res.json({
+// ========================================
+// HEALTHCHECK & READINESS (Phase 3 Observabilité)
+// ========================================
+
+// Timestamp démarrage process pour calculer l'uptime
+const PROCESS_STARTED_AT = Date.now();
+
+// Charge la version applicative depuis package.json (single source of truth)
+const APP_VERSION = (() => {
+    try { return require('./package.json').version || 'unknown'; } catch (_) { return 'unknown'; }
+})();
+
+/**
+ * Calcule le statut global du serveur Wourri WhatsApp.
+ *
+ * - unhealthy : WhatsApp déconnecté OU circuit OPEN OU messages morts dans la queue
+ * - degraded  : reconnexion en cours OU pile de messages en attente > 10
+ * - ok        : tout va bien
+ *
+ * @returns {{status: 'ok'|'degraded'|'unhealthy', reasons: string[]}}
+ */
+function computeHealthStatus() {
+    const reasons = [];
+    let unhealthy = false;
+    let degraded = false;
+
+    if (!isConnected) {
+        reasons.push('whatsapp_disconnected');
+        unhealthy = true;
+    }
+    const circuitState = apiCircuitBreaker.state;
+    if (circuitState === 'OPEN') {
+        reasons.push('api_circuit_open');
+        unhealthy = true;
+    }
+    const qstats = messageQueue.stats;
+    if (qstats.dead > 0) {
+        reasons.push(`queue_dead_messages=${qstats.dead}`);
+        unhealthy = true;
+    }
+
+    if (reconnectAttempt > 0) {
+        reasons.push(`reconnect_in_progress=${reconnectAttempt}`);
+        degraded = true;
+    }
+    if (qstats.pending > 10) {
+        reasons.push(`queue_pending_high=${qstats.pending}`);
+        degraded = true;
+    }
+    if (circuitState === 'HALF_OPEN') {
+        reasons.push('api_circuit_half_open');
+        degraded = true;
+    }
+
+    let status = 'ok';
+    if (unhealthy) status = 'unhealthy';
+    else if (degraded) status = 'degraded';
+
+    return { status, reasons };
+}
+
+/**
+ * Construit le payload complet de /health avec toutes les stats.
+ */
+function buildHealthPayload() {
+    const { status, reasons } = computeHealthStatus();
+    return {
+        status,
+        reasons,
+        version: APP_VERSION,
+        uptime_seconds: Math.floor((Date.now() - PROCESS_STARTED_AT) / 1000),
         whatsapp: {
             connected: isConnected,
             reconnectAttempt,
@@ -1215,6 +1288,22 @@ app.get('/health', (req, res) => {
         queue: messageQueue.stats,
         apiCircuit: apiCircuitBreaker.stats,
         users: Object.keys(userPreferences).length,
+    };
+}
+
+// /health : healthcheck riche, toujours 200 (le statut est dans le body)
+app.get('/health', (req, res) => {
+    res.json(buildHealthPayload());
+});
+
+// /ready : Kubernetes readiness probe — 200 si prêt, 503 sinon
+app.get('/ready', (req, res) => {
+    const payload = buildHealthPayload();
+    const ready = payload.status === 'ok';
+    res.status(ready ? 200 : 503).json({
+        status: payload.status,
+        ready,
+        reasons: payload.reasons,
     });
 });
 
@@ -1332,13 +1421,13 @@ app.post('/logout', async (req, res) => {
 // ========================================
 
 async function gracefulShutdown(signal) {
-    console.log(`\n[SHUTDOWN] Signal ${signal} recu — sauvegarde des préférences...`);
+    logger.info(`\n[SHUTDOWN] Signal ${signal} recu — sauvegarde des préférences...`);
     try {
         // Ecriture synchrone bloquante au shutdown (pas de race condition possible ici)
         fs.writeFileSync(USER_PREFS_FILE, JSON.stringify(userPreferences, null, 2));
-        console.log(`[SHUTDOWN] Préférences sauvegardées (${Object.keys(userPreferences).length} utilisateurs)`);
+        logger.info(`[SHUTDOWN] Préférences sauvegardées (${Object.keys(userPreferences).length} utilisateurs)`);
     } catch (err) {
-        console.error('[SHUTDOWN] Erreur sauvegarde:', err.message);
+        logger.error('[SHUTDOWN] Erreur sauvegarde:', err.message);
     }
     try {
         if (sock) await sock.end();
@@ -1354,13 +1443,13 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 // ========================================
 
 app.listen(PORT, () => {
-    console.log('\n========================================');
-    console.log('   WOURI WhatsApp Server');
-    console.log('========================================');
-    console.log(`API: http://localhost:${PORT}`);
-    console.log(`WOURI API: ${WOURI_API_URL}`);
-    console.log(`Utilisateurs: ${Object.keys(userPreferences).length}`);
-    console.log('========================================\n');
+    logger.info('\n========================================');
+    logger.info('   WOURI WhatsApp Server');
+    logger.info('========================================');
+    logger.info(`API: http://localhost:${PORT}`);
+    logger.info(`WOURI API: ${WOURI_API_URL}`);
+    logger.info(`Utilisateurs: ${Object.keys(userPreferences).length}`);
+    logger.info('========================================\n');
 
     connectWhatsApp();
 });

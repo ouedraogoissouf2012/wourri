@@ -80,11 +80,22 @@ whatsapp-server/
 |---|---|---|
 | GET | `/` | Statut général + nombre d'utilisateurs |
 | GET | `/status` | Statut connexion + QR code si nécessaire |
-| GET | `/health` | **Healthcheck Phase 2** : statut WhatsApp + stats queue + circuit breaker |
+| GET | `/health` | Healthcheck enrichi : `status` + `reasons` + uptime + queue + circuit + version |
+| GET | `/ready` | Kubernetes readiness probe : 200 si `status=ok`, 503 sinon |
 | GET | `/users` | Liste anonymisée des utilisateurs (numéros tronqués) |
 | GET | `/qr` | QR code data brut (JSON) |
 | GET | `/qr-page` | Page HTML avec QR code visuel auto-refresh 5s |
 | POST | `/logout` | Déconnexion + suppression `auth_baileys/` |
+
+### Statut global `/health`
+
+| Statut | Conditions |
+|---|---|
+| `unhealthy` | WhatsApp déconnecté OU circuit OPEN OU `queue.dead > 0` |
+| `degraded` | Reconnexion en cours OU `queue.pending > 10` OU circuit HALF_OPEN |
+| `ok` | Sinon |
+
+Le champ `reasons[]` liste les causes (ex: `["api_circuit_open", "queue_pending_high=15"]`).
 
 ## Pipeline de traitement d'un message entrant
 
@@ -153,10 +164,8 @@ passe par un plan validé explicitement avant code.
 
 ### Dette technique connue
 
-- **God file** : `app-baileys.js` ~1230 lignes — à décomposer (Phase Modularisation)
-- **Logging non structuré** : `console.log` partout — à migrer vers pino JSON
-  (Phase Observabilité)
-- **Healthcheck `/health` minimal** : pas encore de monitoring Prometheus / metrics
+- **God file** : `app-baileys.js` ~1300 lignes — à décomposer (Phase Modularisation)
+- **Pas de metrics Prometheus** : `/health` riche mais pas de `/metrics` scrape format
 - **CORS permissif** : `app.use(cors())` sans restriction
 - **Pas de rate limiting**
 - **Pas de retry automatique** des messages en queue : au démarrage, on envoie un
@@ -166,12 +175,56 @@ passe par un plan validé explicitement avant code.
 
 Phases prévues / réalisées :
 1. ✅ **Cleanup + Foundation** (mergé 2026-05-05, PR #115)
-2. ✅ **Robustesse** : backoff exponentiel + queue persistante + circuit breaker (cette phase)
-3. ⏳ Observabilité : pino JSON + metrics + healthcheck étendu Kubernetes
-4. ⏳ Sécurité : CORS strict + validation inputs + rate limiting + npm audit fix
-5. ⏳ Tests d'intégration end-to-end + CI GitHub Actions
-6. ⏳ Déploiement : Dockerfile + PM2/systemd + runbook
-7. ⏳ Modularisation : décomposer `app-baileys.js`
+2. ✅ **Robustesse** : backoff exponentiel + queue persistante + circuit breaker (PR #117)
+3. ✅ **UX Format adaptatif** : vocal→audio langue / écrit→texte FR (PR #119)
+4. ✅ **Observabilité** : pino JSON + `/health` enrichi + `/ready` (cette phase)
+5. ⏳ Sécurité : CORS strict + validation inputs + rate limiting + npm audit fix
+6. ⏳ Tests d'intégration end-to-end + CI GitHub Actions
+7. ⏳ Déploiement : Dockerfile + PM2/systemd + runbook
+8. ⏳ Modularisation : décomposer `app-baileys.js`
+
+## Logging structuré (Phase 3)
+
+### Configuration
+
+Variables d'environnement :
+- `LOG_LEVEL` : `trace | debug | info | warn | error | fatal | silent` (default `info`)
+- `NODE_ENV=production` : force JSON pur (sinon pino-pretty si dispo)
+
+### Usage dans le code
+
+```js
+const { logger } = require('./lib/logger');
+
+// Simple message
+logger.info('Démarrage serveur');
+
+// Avec contexte structuré (préféré pour les events critiques)
+logger.info({ userNumber, queueId }, '[QUEUE] Message ajouté');
+
+// Erreur avec serialiser pino natif
+logger.error({ err }, 'Erreur traitement message');
+
+// Child logger (hérite du contexte)
+const queueLogger = logger.child({ component: 'queue' });
+queueLogger.info('event');  // contient component=queue
+```
+
+### Format de sortie (JSON ligne par ligne)
+
+```json
+{"level":30,"time":"2026-05-06T00:25:30.123Z","service":"wouri-whatsapp","userNumber":"u1","queueId":"m1","msg":"[QUEUE] Message ajouté"}
+```
+
+Parsable par Loki, Datadog, Elastic, CloudWatch, etc.
+
+### En dev
+
+Si `pino-pretty` est installé (devDependency optionnelle), l'output est colorisé et lisible.
+
+```bash
+npm install --save-dev pino-pretty
+```
 
 ## Modules Phase 2 (lib/)
 

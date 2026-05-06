@@ -65,7 +65,8 @@ En production, `WOURI_API_KEY` est **obligatoire** (warning au démarrage sinon)
 |---|---|---|
 | GET | `/` | Statut général + nombre d'utilisateurs |
 | GET | `/status` | Statut connexion + QR code data |
-| GET | `/health` | Healthcheck étendu (WhatsApp + queue + circuit breaker) |
+| GET | `/health` | Healthcheck enrichi : `status` + uptime + queue + circuit |
+| GET | `/ready` | Kubernetes readiness probe (200 ok / 503 sinon) |
 | GET | `/users` | Liste anonymisée des utilisateurs |
 | GET | `/qr` | QR code data (JSON) |
 | GET | `/qr-page` | Page HTML avec QR code visuel (auto-refresh 5s) |
@@ -124,7 +125,8 @@ L'utilisateur peut envoyer ces messages pour ajuster ses préférences :
 | `PORT` | `3001` | non | Port Express |
 | `WOURI_API_URL` | `http://localhost:8000` | non | URL de l'API backend Wourri |
 | `WOURI_API_KEY` | (vide) | **oui en prod** | Clé partagée backend (`X-API-Key`) |
-| `NODE_ENV` | `development` | non | `production` active warnings sécurité |
+| `NODE_ENV` | `development` | non | `production` active warnings sécurité + force JSON logs |
+| `LOG_LEVEL` | `info` | non | Niveau pino : `trace`/`debug`/`info`/`warn`/`error`/`fatal`/`silent` |
 
 ⚠️ Le fichier `.env` n'est **jamais committé** (`.gitignore`).
 Référer à `.env.example` pour le template (à créer si absent).
