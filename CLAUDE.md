@@ -95,12 +95,13 @@ whatsapp-server/
    - Si user en mode `dioula` ou `both` → `/api/asr/transcribe-and-translate` (MMS Bambara)
    - Si user en mode `french` → `/api/stt/transcribe` (Whisper français)
 5. **Appel backend** : `POST /api/chat/` avec `{message, city, language, bambara_text, user_id, include_audio: true}`
-6. **Envoi réponse** selon langue + type d'entrée :
+6. **Envoi réponse — règle adaptative** (issue #118, validée 2026-05-05) :
    - `french` + entrée vocale → audio FR
    - `french` + entrée texte → texte FR
-   - `dioula` → audio dioula uniquement (pas de texte)
-   - `both` + entrée vocale → texte FR + audio dioula
-   - `both` + entrée texte → texte FR + audio dioula
+   - `dioula` + entrée vocale → audio dioula
+   - `dioula` + entrée texte → **texte FR** (pas de TTS dioula généré pour rien)
+   - `both` + entrée vocale → audio dioula seul (langue locale)
+   - `both` + entrée texte → texte FR seul
 7. **Feedback C4** (uniquement dioula/both) : prompt 👍/👎 → `POST /api/feedback/{positif|negatif}`
 
 ## Authentification backend
