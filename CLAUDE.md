@@ -106,13 +106,18 @@ Le champ `reasons[]` liste les causes (ex: `["api_circuit_open", "queue_pending_
    - Si user en mode `dioula` ou `both` → `/api/asr/transcribe-and-translate` (MMS Bambara)
    - Si user en mode `french` → `/api/stt/transcribe` (Whisper français)
 5. **Appel backend** : `POST /api/chat/` avec `{message, city, language, bambara_text, user_id, include_audio: true}`
-6. **Envoi réponse — règle adaptative** (issue #118, validée 2026-05-05) :
+6. **Envoi réponse — règle "selon langue choisie"** (révisée 2026-05-06) :
    - `french` + entrée vocale → audio FR
    - `french` + entrée texte → texte FR
-   - `dioula` + entrée vocale → audio dioula
-   - `dioula` + entrée texte → **texte FR** (pas de TTS dioula généré pour rien)
-   - `both` + entrée vocale → audio dioula seul (langue locale)
-   - `both` + entrée texte → texte FR seul
+   - `dioula` (vocal ou écrit) → **TOUJOURS audio dioula** (fallback texte FR si TTS API down)
+   - `both` (vocal ou écrit) → **texte FR + audio dioula** (combo, le meilleur des deux)
+
+   **Justification UX** : les agriculteurs dioula sont souvent peu alphabétisés.
+   L'audio est critique pour qu'ils accèdent au contenu. Le mode `both` envoie
+   texte FR en bonus pour les bilingues qui veulent lire ET écouter.
+
+   **Cette règle remplace la règle "selon format d'entrée" de PR #119** (qui supposait
+   à tort qu'écrire = savoir lire). Tracé dans `memory/project_whatsapp_strategy_2026-05.md`.
 7. **Feedback C4** (uniquement dioula/both) : prompt 👍/👎 → `POST /api/feedback/{positif|negatif}`
 
 ## Authentification backend
