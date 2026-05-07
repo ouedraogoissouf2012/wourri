@@ -479,8 +479,13 @@ function randomDelay(min, max) {
  * retourne null et le caller doit fallback sur du texte.
  *
  * Endpoints utilisés (côté wouri-api) :
- *   - français : POST /api/tts/?text=...
+ *   - français : POST /api/tts/french?text=...
  *   - dioula   : POST /api/tts/bambara?text=...&is_french=false
+ *
+ * Note : on utilise /api/tts/french (et non /api/tts/) car ce dernier attend
+ * un body JSON Pydantic TTSRequest, alors que /api/tts/french accepte le
+ * texte en query param — cohérent avec /api/tts/bambara. Sans ça, l'appel
+ * échoue en 422 (cas reproduit lors du warmup audio_cache).
  *
  * @param {string} text - Texte à synthétiser
  * @param {boolean} isFrench - true → Edge-TTS français, false → MMS dioula
@@ -489,7 +494,7 @@ function randomDelay(min, max) {
  */
 async function tryGenerateAudioFromText(text, isFrench, timeoutMs = 5000) {
     if (!text) return null;
-    const endpoint = isFrench ? '/api/tts/' : '/api/tts/bambara';
+    const endpoint = isFrench ? '/api/tts/french' : '/api/tts/bambara';
     const params = isFrench ? { text } : { text, is_french: false };
     try {
         const ttsResponse = await axios.post(
@@ -571,7 +576,7 @@ async function getExcuseAudio({ kind, isFrench }) {
     const fresh = await tryGenerateAudioFromText(text, isFrench);
     if (fresh) {
         audioCache.save(key, fresh).catch((err) =>
-            logger.warn({ err: err.message, key }, '[EXCUSE-AUDIO] Save cache fail (non-bloquant)')
+            logger.warn({ err, key }, '[EXCUSE-AUDIO] Save cache fail (non-bloquant)')
         );
         return fresh;
     }
@@ -854,7 +859,7 @@ async function connectWhatsApp() {
                     const stats = await audioCache.warmup(buildExcuseCacheEntries());
                     logger.info({ ...stats }, '[AUDIO-CACHE] Warmup termine');
                 } catch (err) {
-                    logger.warn({ err: err.message }, '[AUDIO-CACHE] Warmup erreur');
+                    logger.warn({ err }, '[AUDIO-CACHE] Warmup erreur');
                 }
             }).catch(() => {});
 

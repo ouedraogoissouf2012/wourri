@@ -7,6 +7,7 @@
 const { test, describe, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
 const fs = require("node:fs");
+const fsPromises = require("node:fs/promises");
 const path = require("node:path");
 const os = require("node:os");
 const { AudioCache } = require("../lib/audio_cache");
@@ -222,6 +223,147 @@ describe("AudioCache — warmup", () => {
         // L'entrée pré-existante n'a pas été écrasée
         const a = await cache.get("a");
         assert.strictEqual(a.toString("utf-8"), "pre-existing");
+    });
+});
+
+describe("AudioCache — validation de clé (anti path traversal)", () => {
+    let tmpDir;
+    let cacheDir;
+
+    beforeEach(() => {
+        tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "audio-cache-test-"));
+        cacheDir = path.join(tmpDir, "audio_cache");
+    });
+
+    afterEach(() => {
+        try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) {}
+    });
+
+    test("save() rejette une clé avec '../'", async () => {
+        const cache = new AudioCache({
+            cacheDir,
+            generateAudio: async () => null,
+            logger: silentLogger,
+        });
+        await assert.rejects(
+            cache.save("../../etc/passwd", Buffer.from("x")),
+            /clé invalide/
+        );
+    });
+
+    test("save() rejette une clé avec '/'", async () => {
+        const cache = new AudioCache({
+            cacheDir,
+            generateAudio: async () => null,
+            logger: silentLogger,
+        });
+        await assert.rejects(
+            cache.save("foo/bar", Buffer.from("x")),
+            /clé invalide/
+        );
+    });
+
+    test("save() rejette une clé vide", async () => {
+        const cache = new AudioCache({
+            cacheDir,
+            generateAudio: async () => null,
+            logger: silentLogger,
+        });
+        await assert.rejects(
+            cache.save("", Buffer.from("x")),
+            /clé invalide/
+        );
+    });
+
+    test("save() rejette une clé non-string", async () => {
+        const cache = new AudioCache({
+            cacheDir,
+            generateAudio: async () => null,
+            logger: silentLogger,
+        });
+        await assert.rejects(
+            cache.save(42, Buffer.from("x")),
+            /clé invalide/
+        );
+    });
+
+    test("get() rejette une clé invalide (fail-fast)", async () => {
+        const cache = new AudioCache({
+            cacheDir,
+            generateAudio: async () => null,
+            logger: silentLogger,
+        });
+        await assert.rejects(
+            cache.get("../escape"),
+            /clé invalide/
+        );
+    });
+
+    test("save() accepte les clés valides standards (alphanumeric + _-)", async () => {
+        const cache = new AudioCache({
+            cacheDir,
+            generateAudio: async () => null,
+            logger: silentLogger,
+        });
+        // Aucun rejet sur les keys conformes
+        await cache.save("unavailable_dioula", Buffer.from("a"));
+        await cache.save("back-french", Buffer.from("b"));
+        await cache.save("UPPER_lower-123", Buffer.from("c"));
+        assert.ok(await cache.get("unavailable_dioula"));
+        assert.ok(await cache.get("back-french"));
+        assert.ok(await cache.get("UPPER_lower-123"));
+    });
+});
+
+describe("AudioCache — atomic save", () => {
+    let tmpDir;
+    let cacheDir;
+
+    beforeEach(() => {
+        tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "audio-cache-test-"));
+        cacheDir = path.join(tmpDir, "audio_cache");
+    });
+
+    afterEach(() => {
+        try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) {}
+    });
+
+    test("save() ne laisse pas de fichier .tmp après succès", async () => {
+        const cache = new AudioCache({
+            cacheDir,
+            generateAudio: async () => null,
+            logger: silentLogger,
+        });
+        await cache.save("k", Buffer.from("data"));
+        const files = fs.readdirSync(cacheDir);
+        assert.ok(files.includes("k.ogg"));
+        assert.ok(!files.some((f) => f.endsWith(".tmp")), `tmp file leaked: ${files}`);
+    });
+
+    test("save() nettoie le .tmp si rename échoue", async () => {
+        let renameCalls = 0;
+        const fakeFs = {
+            mkdir: fsPromises.mkdir,
+            writeFile: fsPromises.writeFile,
+            unlink: fsPromises.unlink,
+            rename: async () => {
+                renameCalls++;
+                throw new Error("rename failed");
+            },
+        };
+        const cache = new AudioCache({
+            cacheDir,
+            generateAudio: async () => null,
+            logger: silentLogger,
+            fs: fakeFs,
+        });
+        await assert.rejects(cache.save("k", Buffer.from("data")), /rename failed/);
+        assert.strictEqual(renameCalls, 1);
+        // Le .tmp ne doit pas rester orphelin
+        if (fs.existsSync(cacheDir)) {
+            const files = fs.readdirSync(cacheDir);
+            assert.ok(!files.some((f) => f.endsWith(".tmp")), `tmp file leaked after rename failure: ${files}`);
+        }
     });
 });
 
