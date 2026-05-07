@@ -403,7 +403,12 @@ async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
         }
         return null;
     } catch (error) {
-        logger.error(`[STT] Erreur transcription: ${error.message}`);
+        // Format détaillé : axios v1.x + erreurs HTTP/réseau peuvent laisser
+        // error.message vide ou égal à 'Error'. Le vrai motif est dans
+        // error.code (ECONNREFUSED, ETIMEDOUT) ou error.response.status (401, 422...).
+        const errCode = error.code || error.response?.status || 'UNKNOWN';
+        const errMsg = error.message || error.toString() || 'erreur sans message';
+        logger.error(`[STT] Erreur transcription: ${errCode} - ${errMsg}`);
         return null;
     }
 }
@@ -449,7 +454,10 @@ async function transcribeAudioBambara(audioBuffer, filename = 'audio.ogg') {
         }
         return null;
     } catch (error) {
-        logger.error(`[ASR-BAMBARA] Erreur transcription: ${error.message}`);
+        // Format détaillé (cf. transcribeAudio plus haut)
+        const errCode = error.code || error.response?.status || 'UNKNOWN';
+        const errMsg = error.message || error.toString() || 'erreur sans message';
+        logger.error(`[ASR-BAMBARA] Erreur transcription: ${errCode} - ${errMsg}`);
         // Fallback vers Whisper français si ASR Bambara echoue
         logger.info('[ASR-BAMBARA] Fallback vers Whisper francais...');
         return await transcribeAudio(audioBuffer, filename);
