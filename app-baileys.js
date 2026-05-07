@@ -881,7 +881,24 @@ async function connectWhatsApp() {
 
                     if (!transcriptionResult || !transcriptionResult.text || transcriptionResult.text.trim() === '') {
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: pickMsg(MSG.AUDIO_FAILED, prefs.language) });
+
+                        // Distinguer la cause de l'échec de transcription :
+                        //   - API down → message d'indisponibilité (cohérent avec les autres erreurs API)
+                        //   - API up mais transcription vide → vrai cas "audio incompréhensible"
+                        //
+                        // Sans cette distinction, MSG.AUDIO_FAILED ("je n'ai pas compris ton vocal")
+                        // est trompeur quand le vrai problème est que l'API est down.
+                        if (!(await isApiHealthy())) {
+                            logger.info(`[AUDIO] API indisponible -> message d'indisponibilite (mode=${prefs.language})`);
+                            await sendExcuseMessage(userNumber, {
+                                language: prefs.language,
+                                kind: 'unavailable',
+                                isVoiceInput: true,
+                            });
+                        } else {
+                            // API up mais transcription a vraiment échoué -> vrai "audio non compris"
+                            await sock.sendMessage(userNumber, { text: pickMsg(MSG.AUDIO_FAILED, prefs.language) });
+                        }
                         continue;
                     }
 
