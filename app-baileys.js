@@ -283,6 +283,13 @@ function extractCity(text) {
 // ========================================
 // MESSAGES BILINGUES — Dioula CI + Français
 // Syntaxe CI v1.9 : Aw ye / aw ta / caman / filɛ
+//
+// Format des messages post-onboarding (CHANGE_*, RESET, AUDIO_*) :
+//   - { bilingual, french, dioula } : 3 variantes pour adapter selon prefs.language
+//   - mode 'both' / langue inconnue → bilingual
+//
+// Messages d'onboarding initial (WELCOME, ASK_CITY, CITY_OK, LANGUAGE_UNKNOWN,
+// PREFS_SAVED) restent bilingue (utilisateur n'a pas encore choisi sa langue).
 // ========================================
 const MSG = {
     WELCOME:
@@ -300,21 +307,51 @@ const MSG = {
     PREFS_SAVED: (city, lang) =>
         `✅ *Dɔ sɔrɔla !*\n📍 Dugu : ${city}\n🗣️ Kuma : ${lang}\n\n💡 Aw b'a fɛ ka yɛlɛma : "changer ville" wala "changer langue"\n\nAw ka ɲinini ci sɛnnɛ koo la ! 🌱\n\n---\n✅ *Préférences enregistrées !*\n💡 Pour changer : dites "changer ville" ou "changer langue"`,
 
-    CHANGE_CITY:
-        `📍 Dugu wɛrɛ tɔgɔ ci.\n\n---\nDans quelle ville êtes-vous maintenant ?`,
+    CHANGE_CITY: {
+        bilingual: `📍 Dugu wɛrɛ tɔgɔ ci.\n\n---\nDans quelle ville êtes-vous maintenant ?`,
+        french: `📍 Dans quelle ville êtes-vous maintenant ?`,
+        dioula: `📍 Dugu wɛrɛ tɔgɔ ci.`,
+    },
 
-    CHANGE_LANGUAGE:
-        `🗣️ Kuma jaki la ?\n\n1️⃣ Faransi\n2️⃣ Dioula\n3️⃣ Fila fila\n\n---\nQuelle langue préférée ? (1, 2 ou 3)`,
+    CHANGE_LANGUAGE: {
+        bilingual: `🗣️ Kuma jaki la ?\n\n1️⃣ Faransi\n2️⃣ Dioula\n3️⃣ Fila fila\n\n---\nQuelle langue préférée ? (1, 2 ou 3)`,
+        french: `🗣️ Quelle langue préférée ?\n\n1️⃣ Français\n2️⃣ Dioula\n3️⃣ Les deux\n\n(Répondez 1, 2 ou 3)`,
+        dioula: `🗣️ Kuma jaki la ?\n\n1️⃣ Faransi\n2️⃣ Dioula\n3️⃣ Fila fila\n\n(1, 2 wala 3 ci)`,
+    },
 
-    RESET:
-        `🔄 Dɔ bɛɛ kɛra kura. Kumakan dɔ ci.\n\n---\nPréférences réinitialisées. Envoyez un message pour recommencer.`,
+    RESET: {
+        bilingual: `🔄 Dɔ bɛɛ kɛra kura. Kumakan dɔ ci.\n\n---\nPréférences réinitialisées. Envoyez un message pour recommencer.`,
+        french: `🔄 Préférences réinitialisées. Envoyez un message pour recommencer.`,
+        dioula: `🔄 Dɔ bɛɛ kɛra kura. Kumakan dɔ ci.`,
+    },
 
-    AUDIO_FAILED:
-        `🎤 N ma i ka kumakan faamu. I ka a lasɔgɔ tugu.\n\n---\nJe n'ai pas compris votre message vocal. Pouvez-vous répéter ?`,
+    AUDIO_FAILED: {
+        bilingual: `🎤 N ma i ka kumakan faamu. I ka a lasɔgɔ tugu.\n\n---\nJe n'ai pas compris votre message vocal. Pouvez-vous répéter ?`,
+        french: `🎤 Je n'ai pas compris votre message vocal. Pouvez-vous répéter ?`,
+        dioula: `🎤 N ma i ka kumakan faamu. I ka a lasɔgɔ tugu.`,
+    },
 
-    AUDIO_ERROR:
-        `⚠️ Kumakan in ma se ka bɔ. I ka sɛbɛn fɛ ɲinini ci.\n\n---\nImpossible de traiter ce message vocal. Écrivez votre question.`,
+    AUDIO_ERROR: {
+        bilingual: `⚠️ Kumakan in ma se ka bɔ. I ka sɛbɛn fɛ ɲinini ci.\n\n---\nImpossible de traiter ce message vocal. Écrivez votre question.`,
+        french: `⚠️ Impossible de traiter ce message vocal. Écrivez votre question.`,
+        dioula: `⚠️ Kumakan in ma se ka bɔ. I ka sɛbɛn fɛ ɲinini ci.`,
+    },
 };
+
+/**
+ * Retourne la variante de message adaptée à la langue de l'utilisateur.
+ *
+ * @param {string|object} msg - String fixe OU objet {bilingual, french, dioula}
+ * @param {string} [language] - 'french' | 'dioula' | 'both' | undefined
+ * @returns {string} Le texte adapté (mode 'both' ou inconnu → bilingual)
+ */
+function pickMsg(msg, language) {
+    if (typeof msg === 'string') return msg;
+    if (!msg || typeof msg !== 'object') return '';
+    if (language === 'french' && msg.french) return msg.french;
+    if (language === 'dioula' && msg.dioula) return msg.dioula;
+    return msg.bilingual || msg.french || msg.dioula || '';
+}
 
 // Detecter commande de changement
 function detectChangeCommand(text) {
@@ -596,11 +633,45 @@ messageQueue.load().then((n) => {
     logger.error(`[QUEUE] Erreur chargement initial : ${err.message}`);
 });
 
+/**
+ * Vérifie si l'API backend wouri-api est joignable.
+ *
+ * Évite d'envoyer "Je suis de retour" alors que seule la connexion WhatsApp
+ * a redémarré (l'API peut être encore down). Test rapide avec timeout court
+ * pour ne pas bloquer la reprise de service.
+ *
+ * @returns {Promise<boolean>}
+ */
+async function isApiHealthy() {
+    try {
+        await axios.get(`${WOURI_API_URL}/health`, {
+            timeout: 3000,
+            headers: authHeaders(),
+        });
+        return true;
+    } catch (err) {
+        const code = err.code || err.response?.status || 'UNKNOWN';
+        logger.info(`[HEALTHCHECK] wouri-api indisponible (${code})`);
+        return false;
+    }
+}
+
 // Phase 2 — Notifier les utilisateurs ayant des messages en attente apres reconnexion WhatsApp
 // Le format (audio/texte) s'adapte au format du DERNIER message reçu de chaque utilisateur.
+//
+// IMPORTANT (correction 2026-05-07) : on vérifie d'abord que l'API backend est UP.
+// Sinon on envoie "Je suis de retour" alors que seul WhatsApp a reconnecté
+// (l'API peut être encore down). Les messages restent en queue, on retentera à la
+// prochaine reconnexion WhatsApp.
 async function notifyPendingUsers() {
     const pending = messageQueue.getPending();
     if (pending.length === 0) return;
+
+    // Healthcheck API : ne pas mentir à l'utilisateur sur le retour du service
+    if (!(await isApiHealthy())) {
+        logger.info(`[QUEUE] API encore indisponible, ${pending.length} message(s) restent en queue (pas de notification "back")`);
+        return;
+    }
 
     // Pour chaque utilisateur : retenir le DERNIER message reçu (pour adapter le format)
     const lastMessageByUser = new Map();
@@ -779,7 +850,7 @@ async function connectWhatsApp() {
 
                     if (!audioBuffer) {
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: MSG.AUDIO_ERROR });
+                        await sock.sendMessage(userNumber, { text: pickMsg(MSG.AUDIO_ERROR, prefs.language) });
                         continue;
                     }
 
@@ -802,7 +873,7 @@ async function connectWhatsApp() {
 
                     if (!transcriptionResult || !transcriptionResult.text || transcriptionResult.text.trim() === '') {
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: MSG.AUDIO_FAILED });
+                        await sock.sendMessage(userNumber, { text: pickMsg(MSG.AUDIO_FAILED, prefs.language) });
                         continue;
                     }
 
@@ -830,7 +901,7 @@ async function connectWhatsApp() {
                 } catch (audioError) {
                     logger.error(`[AUDIO] Erreur: ${audioError.message}`);
                     await sock.sendPresenceUpdate('paused', userNumber);
-                    await sock.sendMessage(userNumber, { text: MSG.AUDIO_ERROR });
+                    await sock.sendMessage(userNumber, { text: pickMsg(MSG.AUDIO_ERROR, prefs.language) });
                     continue;
                 }
             }
@@ -855,14 +926,14 @@ async function connectWhatsApp() {
                         prefs.step = STEPS.WAITING_CITY;
                         saveUserPreferences();
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: MSG.CHANGE_CITY });
+                        await sock.sendMessage(userNumber, { text: pickMsg(MSG.CHANGE_CITY, prefs.language) });
                         continue;
                     }
                     if (changeCommand === 'language') {
                         prefs.step = STEPS.WAITING_LANGUAGE;
                         saveUserPreferences();
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: MSG.CHANGE_LANGUAGE });
+                        await sock.sendMessage(userNumber, { text: pickMsg(MSG.CHANGE_LANGUAGE, prefs.language) });
                         continue;
                     }
                     if (changeCommand === 'reset') {
@@ -872,7 +943,7 @@ async function connectWhatsApp() {
                         prefs.pendingQuestion = null;
                         saveUserPreferences();
                         await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: MSG.RESET });
+                        await sock.sendMessage(userNumber, { text: pickMsg(MSG.RESET, prefs.language) });
                         continue;
                     }
                 }
