@@ -20,6 +20,9 @@ pending_messages.json
 # Fichiers audio temporaires (téléchargés depuis WhatsApp pour transcription)
 temp_audio/
 
+# Cache local des audios d'excuse pré-générés (regénérables au démarrage)
+audio_cache/
+
 # Logs et fichiers temporaires
 *.log
 debug.log

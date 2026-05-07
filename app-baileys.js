@@ -26,6 +26,7 @@ const {
 } = require('./lib/reconnect');
 const { MessageQueue } = require('./lib/message_queue');
 const { CircuitBreaker, CircuitOpenError } = require('./lib/circuit_breaker');
+const { AudioCache } = require('./lib/audio_cache');
 
 // Phase 3 Observabilité — logger structuré pino JSON
 const { logger } = require('./lib/logger');
@@ -36,6 +37,7 @@ const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
 const WOURI_API_KEY = process.env.WOURI_API_KEY || '';
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
 const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
+const AUDIO_CACHE_FOLDER = path.join(__dirname, 'audio_cache');
 const USER_PREFS_FILE = path.join(__dirname, 'user_preferences.json');
 const PENDING_MESSAGES_FILE = path.join(__dirname, 'pending_messages.json');
 
@@ -527,6 +529,55 @@ const EXCUSE_MSG = {
         '🌾 Aw ni ce, n nana segin. Aw ka ɲinini ci tugu n ma.\n\n---\n🌾 Je suis de retour. Pose-moi à nouveau ta question.',
 };
 
+// Cache disque des 4 audios d'excuse fixes (kind × langue).
+// Permet d'envoyer un audio dioula même quand l'API TTS est down, en
+// rejouant un fichier pré-généré quand l'API était UP.
+const audioCache = new AudioCache({
+    cacheDir: AUDIO_CACHE_FOLDER,
+    generateAudio: tryGenerateAudioFromText,
+    logger,
+});
+
+/** Liste des 4 entrées d'excuse à pré-générer au démarrage. */
+function buildExcuseCacheEntries() {
+    return [
+        { key: 'unavailable_dioula', text: EXCUSE_MSG.UNAVAILABLE_DIOULA, isFrench: false },
+        { key: 'unavailable_french', text: EXCUSE_MSG.UNAVAILABLE_FR, isFrench: true },
+        { key: 'back_dioula', text: EXCUSE_MSG.BACK_DIOULA, isFrench: false },
+        { key: 'back_french', text: EXCUSE_MSG.BACK_FR, isFrench: true },
+    ];
+}
+
+/**
+ * Récupère l'audio d'excuse pour {kind, isFrench}.
+ *
+ * Stratégie : cache disque d'abord (rapide, fonctionne même si API down).
+ * Cache miss → tentative online via tryGenerateAudioFromText. En cas de
+ * succès online, on remplit le cache pour la prochaine fois (best-effort,
+ * non-bloquant).
+ *
+ * @returns {Promise<Buffer|null>} Buffer audio OGG/Opus, ou null si échec total
+ */
+async function getExcuseAudio({ kind, isFrench }) {
+    const key = `${kind === 'back' ? 'back' : 'unavailable'}_${isFrench ? 'french' : 'dioula'}`;
+    const cached = await audioCache.get(key);
+    if (cached) {
+        logger.info({ key, bytes: cached.length }, '[EXCUSE-AUDIO] Cache hit');
+        return cached;
+    }
+    const text = isFrench
+        ? (kind === 'back' ? EXCUSE_MSG.BACK_FR : EXCUSE_MSG.UNAVAILABLE_FR)
+        : (kind === 'back' ? EXCUSE_MSG.BACK_DIOULA : EXCUSE_MSG.UNAVAILABLE_DIOULA);
+    const fresh = await tryGenerateAudioFromText(text, isFrench);
+    if (fresh) {
+        audioCache.save(key, fresh).catch((err) =>
+            logger.warn({ err: err.message, key }, '[EXCUSE-AUDIO] Save cache fail (non-bloquant)')
+        );
+        return fresh;
+    }
+    return null;
+}
+
 /**
  * Envoie un message d'excuse selon la langue choisie par l'utilisateur.
  *
@@ -564,8 +615,7 @@ async function sendExcuseMessage(userNumber, { language, kind, isVoiceInput = fa
         }
         // Vocal entrant -> audio FR avec fallback texte
         try { await sock.sendPresenceUpdate('recording', userNumber); } catch (_) {}
-        const audioText = kind === 'back' ? EXCUSE_MSG.BACK_FR : EXCUSE_MSG.UNAVAILABLE_FR;
-        const audioBuffer = await tryGenerateAudioFromText(audioText, true);
+        const audioBuffer = await getExcuseAudio({ kind, isFrench: true });
         try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
         if (audioBuffer) {
             await sock.sendMessage(userNumber, {
@@ -588,8 +638,7 @@ async function sendExcuseMessage(userNumber, { language, kind, isVoiceInput = fa
         logger.info(`[EXCUSE] Texte FR envoyé (mode both, ${kind})`);
 
         try { await sock.sendPresenceUpdate('recording', userNumber); } catch (_) {}
-        const audioText = kind === 'back' ? EXCUSE_MSG.BACK_DIOULA : EXCUSE_MSG.UNAVAILABLE_DIOULA;
-        const audioBuffer = await tryGenerateAudioFromText(audioText, false);
+        const audioBuffer = await getExcuseAudio({ kind, isFrench: false });
         try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
         if (audioBuffer) {
             await sock.sendMessage(userNumber, {
@@ -606,8 +655,7 @@ async function sendExcuseMessage(userNumber, { language, kind, isVoiceInput = fa
 
     // ---- Mode DIOULA : audio dioula prioritaire, fallback texte bilingue ----
     try { await sock.sendPresenceUpdate('recording', userNumber); } catch (_) {}
-    const audioText = kind === 'back' ? EXCUSE_MSG.BACK_DIOULA : EXCUSE_MSG.UNAVAILABLE_DIOULA;
-    const audioBuffer = await tryGenerateAudioFromText(audioText, false);
+    const audioBuffer = await getExcuseAudio({ kind, isFrench: false });
     try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
     if (audioBuffer) {
         await sock.sendMessage(userNumber, {
@@ -793,6 +841,22 @@ async function connectWhatsApp() {
             logger.info('   WOURI CONNECTE A WHATSAPP!');
             logger.info('   Systeme d\'onboarding actif');
             logger.info('========================================\n');
+
+            // Pre-cache des audios d'excuse en arriere-plan (non-bloquant).
+            // Gate sur isApiHealthy pour eviter 4x5s de timeouts si l'API est down :
+            // dans ce cas on garde simplement le cache disque existant (s'il y en a un).
+            isApiHealthy().then(async (apiUp) => {
+                if (!apiUp) {
+                    logger.info('[AUDIO-CACHE] API down — warmup ignore (cache disque utilise au besoin)');
+                    return;
+                }
+                try {
+                    const stats = await audioCache.warmup(buildExcuseCacheEntries());
+                    logger.info({ ...stats }, '[AUDIO-CACHE] Warmup termine');
+                } catch (err) {
+                    logger.warn({ err: err.message }, '[AUDIO-CACHE] Warmup erreur');
+                }
+            }).catch(() => {});
 
             // Notifier les utilisateurs en attente (queue Phase 2)
             await notifyPendingUsers();

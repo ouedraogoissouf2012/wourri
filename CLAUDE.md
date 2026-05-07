@@ -51,19 +51,24 @@ NODE_ENV=production npm run production
 ```
 whatsapp-server/
 ├── app-baileys.js         # Serveur principal (Baileys + onboarding 4 étapes)
-├── lib/                   # Modules Phase 2 Robustesse
-│   ├── reconnect.js       # Backoff exponentiel + decision logic
-│   ├── message_queue.js   # Queue persistante anti-perte
-│   └── circuit_breaker.js # Circuit breaker pour API backend
+├── lib/                   # Modules locaux
+│   ├── reconnect.js       # Backoff exponentiel + decision logic (Phase 2)
+│   ├── message_queue.js   # Queue persistante anti-perte (Phase 2)
+│   ├── circuit_breaker.js # Circuit breaker pour API backend (Phase 2)
+│   ├── logger.js          # Logger structuré pino JSON (Phase 3)
+│   └── audio_cache.js     # Cache disque des audios d'excuse (fallback API down)
 ├── tests/                 # Tests unitaires (node:test natif)
 │   ├── reconnect.test.js
 │   ├── message_queue.test.js
-│   └── circuit_breaker.test.js
+│   ├── circuit_breaker.test.js
+│   ├── logger.test.js
+│   └── audio_cache.test.js
 ├── package.json           # Dépendances figées (versions exactes, pas de ^)
 ├── .env                   # Secrets (gitignored)
 ├── .gitignore
 ├── auth_baileys/          # Session WhatsApp persistante (gitignored)
 ├── temp_audio/            # Audios téléchargés temporairement (gitignored)
+├── audio_cache/           # Cache local audios d'excuse pré-générés (gitignored)
 ├── user_preferences.json  # Préférences users (gitignored)
 ├── pending_messages.json  # Queue persistante messages (gitignored)
 ├── README.md              # Documentation utilisateur
@@ -254,13 +259,28 @@ Circuit breaker classique 3 états (CLOSED → OPEN → HALF_OPEN) :
 - Si la sentinelle réussit → CLOSED. Sinon → OPEN (durée doublée)
 - Pendant CIRCUIT OPEN : message d'attente bilingue à l'utilisateur
 
+### `lib/audio_cache.js`
+Cache disque des audios d'excuse fixes (4 entrées : `unavailable_dioula`,
+`unavailable_french`, `back_dioula`, `back_french`) :
+- **Pourquoi** : quand l'API TTS est down, le mode `dioula` perdait son audio
+  et tombait sur du texte bilingue. Pour des utilisateurs souvent peu
+  alphabétisés, c'est dégradant. Le cache permet de servir un audio
+  pré-généré même en cas d'API down.
+- **Warmup** au démarrage (event `connection.open`, en arrière-plan,
+  gated par `isApiHealthy()` pour ne pas bloquer 4×5s si API down).
+- **Stratégie de lecture** dans `getExcuseAudio` : cache disque d'abord
+  (rapide), fallback online si cache miss, fallback texte bilingue si
+  les deux échouent.
+- Idempotent : warmup ne re-génère pas les entrées déjà en cache disque.
+- Le dossier `audio_cache/` est gitignored (regénérable à chaque démarrage).
+
 ## Tests
 
 ```bash
 # Tous les tests
-node --test tests/circuit_breaker.test.js tests/message_queue.test.js tests/reconnect.test.js
+node --test tests/circuit_breaker.test.js tests/message_queue.test.js tests/reconnect.test.js tests/logger.test.js tests/audio_cache.test.js
 
-# Total : 63 tests, ~270ms
+# Total : 87 tests, ~330ms
 ```
 
 ## Variables d'environnement attendues
