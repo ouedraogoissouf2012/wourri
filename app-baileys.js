@@ -90,6 +90,11 @@ const apiCircuitBreaker = new CircuitBreaker({
 // GESTION DES PREFERENCES UTILISATEURS
 // ========================================
 
+// Langue par défaut si l'utilisateur est introuvable dans user_preferences.json
+// (cas extrêmement rare : entrée corrompue ou supprimée pendant que le serveur
+// tente d'envoyer un message d'excuse). Centralisé ici pour traçabilité.
+const DEFAULT_USER_LANGUAGE = 'french';
+
 // Structure: { "22541540178@s.whatsapp.net": { city: "Bonoua", language: "both", step: "complete", pendingQuestion: null } }
 let userPreferences = {};
 
@@ -612,7 +617,18 @@ async function notifyPendingUsers() {
     for (const [userNumber, lastMsg] of lastMessageByUser) {
         try {
             const isVoiceInput = lastMsg.payload?.isVoiceInput === true;
-            const language = lastMsg.payload?.language || 'french';
+            // Langue ACTUELLE de l'utilisateur (peut avoir changé depuis l'ajout en queue).
+            // Justification : le message "back" dit "Je suis de retour, pose-moi à nouveau
+            // ta question". L'utilisateur va re-poser dans sa langue actuelle, donc on lui
+            // répond dans sa langue actuelle (et non figée au moment de l'ajout en queue).
+            //
+            // Lecture directe de userPreferences[userNumber] au lieu de getUserPrefs()
+            // pour éviter le side effect de création d'entrée par défaut pour un
+            // utilisateur disparu du fichier user_preferences.json.
+            const language =
+                userPreferences[userNumber]?.language
+                || lastMsg.payload?.language
+                || DEFAULT_USER_LANGUAGE;
             await sendExcuseMessage(userNumber, {
                 isVoiceInput,
                 language,
