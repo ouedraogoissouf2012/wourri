@@ -1228,7 +1228,12 @@ async function connectWhatsApp() {
                 }
 
             } catch (error) {
-                logger.error(`[ERREUR] ${error.message}`);
+                // Format détaillé : axios v1.x + erreurs réseau Windows mettent parfois
+                // le vrai motif dans error.code (ECONNREFUSED, ETIMEDOUT...) plutôt que
+                // dans error.message. On expose les deux pour faciliter le diagnostic.
+                const errCode = error.code || error.response?.status || 'UNKNOWN';
+                const errMsg = error.message || error.toString() || 'erreur sans message';
+                logger.error(`[ERREUR] ${errCode} - ${errMsg}`);
                 await sock.sendPresenceUpdate('paused', userNumber);
                 await randomDelay(500, 1000);
                 // Règle "selon langue choisie" (révisée 2026-05-06) : message d'excuse adapté
