@@ -96,39 +96,50 @@ except ImportError:
     logger.info("INFO: faster-whisper non installe - STT desactive")
     logger.info("Pour activer: pip install faster-whisper")
 
-# Cache du modele
-_whisper_model = None
-_model_name = "large-v3-turbo"  # Modèle ultra-rapide et précis (Oct 2024)
+# Modele Faster-Whisper (constante de configuration)
 # Note: "large-v3-turbo" est 6-8x plus rapide que large-v3, précision équivalente à large-v2
+_MODEL_NAME = "large-v3-turbo"
+
+# Migration ADR-0011 Phase 2 : Whisper passe par ModelRegistry (lock thread-safe,
+# unload dispo, comportement uniforme avec NeMo / TTS).
+from app.services.model_registry import registry
+
+
+def _load_whisper():
+    """Loader Faster-Whisper appelé par ModelRegistry.
+
+    Configuration optimisée pour CPU Windows :
+      - compute_type=int8 : quantification pour vitesse CPU et moins de RAM
+      - device=cpu : compatibilité maximale
+      - cpu_threads=4, num_workers=1 : stabilité sur CPU 8 cores
+    """
+    logger.info(f"Chargement du modele Faster-Whisper ({_MODEL_NAME})...")
+    logger.info("(Premier chargement peut prendre 1-2 minutes pour telecharger le modele)")
+    model = WhisperModel(
+        _MODEL_NAME,
+        device="cpu",
+        compute_type="int8",
+        cpu_threads=4,
+        num_workers=1,
+    )
+    logger.info(f"Modele Faster-Whisper ({_MODEL_NAME}) charge!")
+    return model
 
 
 def get_whisper_model(model_name: str = None):
-    """Charge le modele Faster-Whisper (lazy loading)"""
-    global _whisper_model, _model_name
+    """Charge le modele Faster-Whisper (lazy loading via ModelRegistry).
 
+    L'argument `model_name` est conservé pour rétrocompatibilité de l'API
+    publique mais ignoré : le modèle utilisé est `_MODEL_NAME` (constante).
+    """
     if not WHISPER_AVAILABLE:
         return None
-
-    if model_name:
-        _model_name = model_name
-
-    if _whisper_model is None:
-        logger.info(f"Chargement du modele Faster-Whisper ({_model_name})...")
-        logger.info("(Premier chargement peut prendre 1-2 minutes pour telecharger le modele)")
-
-        # Configuration optimisée pour CPU Windows
-        # compute_type: int8 pour CPU (plus rapide et moins de RAM)
-        # device: cpu pour compatibilité maximale
-        _whisper_model = WhisperModel(
-            _model_name,
-            device="cpu",
-            compute_type="int8",  # Quantification int8 pour vitesse CPU
-            cpu_threads=4,        # Utiliser 4 threads CPU
-            num_workers=1         # 1 worker pour la stabilité
+    if model_name and model_name != _MODEL_NAME:
+        logger.warning(
+            "[Whisper] Argument model_name=%r ignoré (modèle figé à %r depuis ADR-0011)",
+            model_name, _MODEL_NAME,
         )
-        logger.info(f"Modele Faster-Whisper ({_model_name}) charge!")
-
-    return _whisper_model
+    return registry.get("whisper", loader=_load_whisper)
 
 
 def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
@@ -179,7 +190,7 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
         )
 
         # Transcrire avec Faster-Whisper
-        logger.info(f"[Faster-Whisper] Transcription avec modele {_model_name}")
+        logger.info(f"[Faster-Whisper] Transcription avec modele {_MODEL_NAME}")
         logger.info(f"[Faster-Whisper] Fichier: {transcribe_path}")
 
         # Configuration optimisée pour vitesse et précision
@@ -883,8 +894,8 @@ def check_whisper_status() -> dict:
     """Verifie le statut de Faster-Whisper"""
     return {
         "whisper_available": WHISPER_AVAILABLE,
-        "model_loaded": _whisper_model is not None,
-        "model_name": _model_name,
+        "model_loaded": registry.is_loaded("whisper"),
+        "model_name": _MODEL_NAME,
         "engine": "faster-whisper (CTranslate2)",
         "supported_languages": ["fr", "en", "bam", "wo", "ff"]  # Langues principales
     }
