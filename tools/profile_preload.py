@@ -121,7 +121,24 @@ def _load_nemo():
     return get_nemo_model()
 
 
+def _load_translation_dict():
+    """Charge le dictionnaire de traduction (sans NLLB).
+
+    Reproduit le comportement de main.py post-ADR-0011 Phase 3 :
+    le TranslationService init charge le dictionnaire (15779 mots BAM->FR
+    + 22010 mots FR->BAM), NLLB reste lazy.
+    """
+    from app.services.translation import get_translation_service
+    return get_translation_service()
+
+
 def _load_nllb():
+    """Charge NLLB-200 (distilled 600M) via preload_nllb().
+
+    Le TranslationService doit déjà avoir été instancié (via
+    `_load_translation_dict`). Ce step est lazy post-Phase 3, à utiliser
+    avec `--skip nllb` pour mesurer le scénario optimisé.
+    """
     from app.services.translation import get_translation_service
     service = get_translation_service()
     service.preload_nllb()
@@ -149,9 +166,12 @@ def _load_vdb():
 
 
 # Liste ordonnée (key, label, loader) — l'ordre matche app/main.py lifespan
+# Post-ADR-0011 Phase 3 : NLLB et Whisper sont skippés en eager.
+# Pour mesurer le scénario post-Phase 3 : `--skip nllb,whisper`.
 STEPS: list[tuple[str, str, Callable[[], object]]] = [
     ("nlu", "NLU JSON", _load_nlu),
     ("nemo", "NeMo Soloni 114M (ASR bambara)", _load_nemo),
+    ("translation_dict", "Translation Dictionnaire (15779 mots BAM->FR)", _load_translation_dict),
     ("nllb", "NLLB-200 distilled 600M (traduction)", _load_nllb),
     ("tts_bam", "TTS Bambara mms-tts-bam (VITS)", _load_tts_bambara),
     ("tts_dyu", "TTS Dioula mms-tts-dyu (VITS)", _load_tts_dioula),
