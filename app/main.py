@@ -64,15 +64,17 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error("[PRELOAD] ASR NeMo Soloni: ERREUR - %s", e)
 
-    # 2. Précharger le TranslationService (dictionnaire + NLLB)
+    # 2. Précharger le TranslationService (dictionnaire seul)
+    # NLLB-200 lazy-load (ADR-0011 Phase 3) : chargement à la 1re traduction
+    # hors-dictionnaire (rare car le dict couvre ~15779 mots BAM->FR +
+    # 22010 mots FR->BAM, ~90% des usages typiques).
+    # Coût accepté : ~5-15s sur la 1re traduction NLLB par démarrage.
     try:
         from app.services.translation import get_translation_service
         logger.info("[PRELOAD] Chargement du TranslationService (dictionnaire)...")
         service = get_translation_service()
         stats = service.get_stats()
         logger.info("[PRELOAD] Dictionnaire: OK (%d mots)", stats['dictionnaire']['total_mots'])
-        logger.info("[PRELOAD] Chargement de NLLB-200 (traduction FR<->BAM)...")
-        service.preload_nllb()
     except Exception as e:
         logger.error("[PRELOAD] TranslationService: ERREUR - %s", e)
 
@@ -94,14 +96,12 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error("[PRELOAD] TTS Dioula: ERREUR - %s", e)
 
-    # 4. Précharger Whisper (STT français)
-    try:
-        from app.services.stt_whisper import get_whisper_model
-        logger.info("[PRELOAD] Chargement de Faster-Whisper (large-v3-turbo)...")
-        get_whisper_model()
-        logger.info("[PRELOAD] Whisper: OK")
-    except Exception as e:
-        logger.error("[PRELOAD] Whisper: ERREUR - %s", e)
+    # 4. Whisper STT français : lazy-load (ADR-0011 Phase 3)
+    # Chargement à la 1re requête vocale FR (mode `french` minoritaire selon
+    # le profil utilisateur cible : agriculteurs dioula majoritairement
+    # peu alphabétisés, modes `dioula`/`both` dominants).
+    # Coût accepté : ~30-60s sur le 1er vocal FR par démarrage.
+    # Timeout côté WhatsApp Baileys = 180s, marge confortable.
 
     # 5. Pré-initialiser la BD vectorielle IVR (Chroma + corpus bambara)
     try:
