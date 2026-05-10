@@ -13,6 +13,7 @@ from contextlib import asynccontextmanager
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 import os
+import psutil
 
 from app.core.logging_config import setup_logging
 from app.config import get_settings
@@ -21,7 +22,12 @@ from app.services.deepseek import check_deepseek_status
 from app.services.tts_bambara import check_models_status
 from app.services.stt_whisper import check_whisper_status
 from app.services.rag_knowledge import check_rag_status
+from app.services.model_registry import registry
 from app.data.cities import get_all_cities
+
+# Process psutil partagé (ADR-0011 Phase 4) pour /health
+# psutil.Process() sans argument = process Python courant
+_psutil_proc = psutil.Process()
 
 settings = get_settings()
 setup_logging(
@@ -208,11 +214,21 @@ async def home(request: Request):
 
 @app.get("/health")
 async def health():
-    """Verifie l'etat de l'application"""
+    """Verifie l'etat de l'application + observabilité modèles ML.
+
+    Le bloc `models` (ADR-0011 Phase 4) permet à un opérateur ou monitoring
+    de visualiser quels modèles sont actuellement chargés en RAM via le
+    `ModelRegistry`, ainsi que l'empreinte mémoire totale du process Python
+    (RSS = mémoire physique résidente, VMS = mémoire virtuelle).
+    """
     deepseek_ok = await check_deepseek_status()
     hf_status = check_models_status()
     whisper_status = check_whisper_status()
     rag_status = check_rag_status()
+
+    # Observabilité ML (ADR-0011 Phase 4)
+    loaded_keys = sorted(registry.list_loaded())
+    mem_info = _psutil_proc.memory_info()
 
     return {
         "status": "ok",
@@ -225,7 +241,17 @@ async def health():
             "tts_bambara": hf_status,
             "stt_whisper": whisper_status,
             "rag_knowledge": rag_status
-        }
+        },
+        "models": {
+            "registry": {
+                "loaded_keys": loaded_keys,
+                "count": len(loaded_keys),
+            },
+            "process": {
+                "rss_mb": round(mem_info.rss / (1024 * 1024), 1),
+                "vms_mb": round(mem_info.vms / (1024 * 1024), 1),
+            },
+        },
     }
 
 

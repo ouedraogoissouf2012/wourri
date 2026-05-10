@@ -31,6 +31,9 @@ pydub>=0.25.1
 
 # Utilities
 python-dotenv==1.0.0
+# psutil : observabilité mémoire (utilisé par /health pour rapporter RSS/VMS
+# du process Python — ADR-0011 Phase 4) et par tools/profile_preload.py
+psutil>=5.9.0
 
 # BD Vectorielle IVR
 chromadb>=0.4.0
