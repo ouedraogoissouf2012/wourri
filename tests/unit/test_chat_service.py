@@ -173,19 +173,21 @@ class TestSearchIVRByConcept:
     def test_no_concepts_returns_none(self):
         assert self.service._search_ivr_by_concept({}) is None
 
-    def test_action_planter_without_culture_defaults_to_mais(self):
-        """ACTION_PLANTER sans culture → essai CULTURE_MAIS."""
+    def test_action_planter_without_culture_returns_none(self):
+        """ACTION_PLANTER sans culture → None (déclenche clarification en amont, Fix #94).
+
+        Fix #94 a supprimé le fallback silencieux ACTION_PLANTER → CULTURE_MAIS.
+        Désormais `_search_ivr_by_concept` retourne directement None quand aucune
+        culture n'est détectée, ce qui déclenche `_clarify_missing_culture` dans
+        le chemin appelant `_try_ivr_concept`.
+
+        Invariant verrouillé : `chercher_reponse_ivr` ne doit PAS être appelé
+        dans ce cas (sinon réintroduction silencieuse d'un fallback).
+        """
         with patch("app.services.vdb_service.chercher_reponse_ivr") as mock_vdb:
-            mock_vdb.return_value = {
-                "id": "mais_saison_001",
-                "reponse_bambara": "Kaba sɛnɛ waati..."
-            }
             result = self.service._search_ivr_by_concept({"ACTION_PLANTER": True})
-            assert result is not None
-            assert "Kaba" in result
-            # Vérifie que CULTURE_MAIS a été passé
-            call_args = mock_vdb.call_args
-            assert "CULTURE_MAIS" in call_args.kwargs.get("cultures", [])
+            assert result is None
+            mock_vdb.assert_not_called()
 
     def test_culture_without_action_uses_conseil_production(self):
         """Culture sans action → CONSEIL_PRODUCTION par défaut."""
