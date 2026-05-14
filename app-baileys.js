@@ -28,6 +28,11 @@ const { MessageQueue } = require('./lib/message_queue');
 const { CircuitBreaker, CircuitOpenError } = require('./lib/circuit_breaker');
 const { AudioCache } = require('./lib/audio_cache');
 
+// Sprint D.1 — extraction god file : modules locaux
+const { extractCity, isValidCity } = require('./lib/city_resolver');
+const { MSG, pickMsg, detectChangeCommand } = require('./lib/i18n');
+const { AsrClient } = require('./lib/asr_client');
+
 // Phase 3 Observabilité — logger structuré pino JSON
 const { logger } = require('./lib/logger');
 
@@ -121,6 +126,13 @@ const apiCircuitBreaker = new CircuitBreaker({
     logger,  // Phase 3 : logger pino structuré
 });
 
+// Sprint D.1 — client ASR/STT (Whisper FR + MMS Bambara avec fallback)
+const asrClient = new AsrClient({
+    apiUrl: WOURI_API_URL,
+    authHeaders,
+    logger,
+});
+
 // ========================================
 // GESTION DES PREFERENCES UTILISATEURS
 // ========================================
@@ -194,310 +206,9 @@ function getUserPrefs(userNumber) {
     return userPreferences[userNumber];
 }
 
-// Liste des villes ivoiriennes connues (pour validation)
-const KNOWN_CITIES = [
-    'abidjan', 'bouake', 'yamoussoukro', 'korhogo', 'san-pedro', 'san pedro',
-    'daloa', 'divo', 'man', 'gagnoa', 'bonoua', 'soubre', 'abengourou',
-    'ferkessedougou', 'ferke', 'odienne', 'seguela', 'bondoukou', 'aboisso',
-    'danane', 'duekoue', 'guiglo', 'tabou', 'sassandra', 'grand-bassam',
-    'jacqueville', 'agboville', 'dabou', 'dimbokro', 'toumodi', 'tiebissou',
-    'katiola', 'boundiali', 'tengrela', 'anyama', 'bingerville', 'bouafle',
-    'issia', 'lakota', 'sinfra', 'vavoua', 'zuenoula', 'beoumi', 'sakassou',
-    'botro', 'daoukro', 'bocanda', 'mbahiakro', 'prikro', 'agnibilekrou',
-    'tanda', 'transua', 'nassian', 'bouna', 'doropo', 'tehini', 'kong'
-];
-
-// Corrections courantes STT pour les noms de villes
-const CITY_CORRECTIONS = {
-    // Man
-    'main': 'man', 'mane': 'man', 'mens': 'man', 'mang': 'man', 'mont': 'man',
-    // Bouake
-    'bouaké': 'bouake', 'bouakais': 'bouake', 'bouakay': 'bouake',
-    // Korhogo
-    'corogo': 'korhogo', 'korogho': 'korhogo', 'korhogho': 'korhogo',
-    // San-Pedro
-    'sampedro': 'san-pedro', 'san pédro': 'san-pedro', 'saint pedro': 'san-pedro',
-    // Yamoussoukro
-    'yamoussokro': 'yamoussoukro', 'yamouso': 'yamoussoukro', 'yamoussou': 'yamoussoukro',
-    // Daloa
-    'dalois': 'daloa', 'dalwa': 'daloa',
-    // Gagnoa
-    'ganyoa': 'gagnoa', 'ganoa': 'gagnoa',
-    // Divo
-    'divos': 'divo', 'divot': 'divo',
-    // Abidjan
-    'abijan': 'abidjan', 'abidjan': 'abidjan',
-    // Bonoua
-    'bonouat': 'bonoua', 'bonois': 'bonoua',
-    // Ferkessedougou
-    'ferké': 'ferkessedougou', 'ferke': 'ferkessedougou',
-    // Grand-Bassam
-    'bassam': 'grand-bassam', 'gran bassam': 'grand-bassam',
-    // Kong
-    'kong': 'kong', 'con': 'kong', 'quand': 'kong'
-};
-
-// Verifier si c'est une ville valide
-function isValidCity(text) {
-    const normalized = text.toLowerCase().trim();
-    // Verifier corrections d'abord
-    for (const [wrong, correct] of Object.entries(CITY_CORRECTIONS)) {
-        if (normalized.includes(wrong)) return true;
-    }
-    return KNOWN_CITIES.some(city =>
-        normalized.includes(city) || city.includes(normalized)
-    );
-}
-
-// Distance de Levenshtein entre deux chaînes
-function levenshtein(a, b) {
-    const m = a.length, n = b.length;
-    const dp = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
-    for (let j = 0; j <= n; j++) dp[0][j] = j;
-    for (let i = 1; i <= m; i++) {
-        for (let j = 1; j <= n; j++) {
-            dp[i][j] = a[i-1] === b[j-1]
-                ? dp[i-1][j-1]
-                : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-        }
-    }
-    return dp[m][n];
-}
-
-// Extraire le nom de la ville du texte
-function extractCity(text) {
-    const normalized = text.toLowerCase().trim();
-
-    // Extraire les mots individuels pour mieux matcher
-    const words = normalized.split(/\s+/);
-
-    // 1. Chercher d'abord dans les corrections STT (mot entier uniquement)
-    for (const word of words) {
-        if (CITY_CORRECTIONS[word]) {
-            const corrected = CITY_CORRECTIONS[word];
-            return corrected.charAt(0).toUpperCase() + corrected.slice(1);
-        }
-    }
-
-    // 2. Chercher dans la phrase complete (pour noms composes comme "san pedro")
-    for (const [wrong, correct] of Object.entries(CITY_CORRECTIONS)) {
-        // Mot entier via regex pour eviter "con" dans "conseil"
-        const pattern = new RegExp('\\b' + wrong.replace(/[-]/g, '\\-') + '\\b');
-        if (pattern.test(normalized)) {
-            return correct.charAt(0).toUpperCase() + correct.slice(1);
-        }
-    }
-
-    // 3. Chercher dans les villes connues (mot entier)
-    for (const city of KNOWN_CITIES) {
-        const pattern = new RegExp('\\b' + city.replace(/[-]/g, '\\-') + '\\b');
-        if (pattern.test(normalized)) {
-            return city.charAt(0).toUpperCase() + city.slice(1);
-        }
-    }
-
-    // 4. Similarite Levenshtein (seuil 0.8) — uniquement pour mots >= 4 chars
-    for (const word of words) {
-        if (word.length >= 4) {
-            for (const city of KNOWN_CITIES) {
-                if (city.length < 4) continue;  // eviter "man", "kon"
-                const maxLen = Math.max(word.length, city.length);
-                const similarity = 1 - levenshtein(word, city) / maxLen;
-                if (similarity >= 0.8) {
-                    return city.charAt(0).toUpperCase() + city.slice(1);
-                }
-            }
-        }
-    }
-
-    // Si pas trouve, retourner le dernier mot significatif (probable nom de ville)
-    const lastWord = words.filter(w => w.length > 3).pop() || text.trim();
-    return lastWord.charAt(0).toUpperCase() + lastWord.slice(1).toLowerCase();
-}
-
-// ========================================
-// MESSAGES BILINGUES — Dioula CI + Français
-// Syntaxe CI v1.9 : Aw ye / aw ta / caman / filɛ
-//
-// Format des messages post-onboarding (CHANGE_*, RESET, AUDIO_*) :
-//   - { bilingual, french, dioula } : 3 variantes pour adapter selon prefs.language
-//   - mode 'both' / langue inconnue → bilingual
-//
-// Messages d'onboarding initial (WELCOME, ASK_CITY, CITY_OK, LANGUAGE_UNKNOWN,
-// PREFS_SAVED) restent bilingue (utilisateur n'a pas encore choisi sa langue).
-// ========================================
-const MSG = {
-    WELCOME:
-        `🌾 *Aw ni tile ! N tɔgɔ ye WOURI ye.*\nSɛnnɛkɛlaw ka dɛmɛbaga — Côte d'Ivoire ni Mali.\n\n📍 Aw bɛ min dugu la ?\n(Aw ka dugu tɔgɔ ci : Abidjan, Bouaké, Divo, Bonoua...)\n\n---\n🌾 *Bienvenue sur WOURI !*\nVotre assistant agricole.\n📍 Dans quelle ville êtes-vous ?`,
-
-    ASK_CITY:
-        `📍 Aw bɛ min dugu la sisan ?\n(Aw ka dugu tɔgɔ ci)\n\n---\nDans quelle ville êtes-vous maintenant ?`,
-
-    CITY_OK: (city) =>
-        `✅ Dugu tɔgɔ : *${city}*\n\n🗣️ Aw bɛ kuma jaki la ?\n\n1️⃣ Faransi\n2️⃣ Dioula\n3️⃣ Fila fila (Faransi + Dioula audio)\n\n(1, 2 wala 3 ci)\n\n---\nVille : *${city}*\n🗣️ Langue préférée ?\n1️⃣ Français  2️⃣ Dioula  3️⃣ Les deux`,
-
-    LANGUAGE_UNKNOWN:
-        `❓ N ma faamu. 1, 2 wala 3 ci.\n\n1️⃣ Faransi\n2️⃣ Dioula\n3️⃣ Fila fila\n\n---\nJe n'ai pas compris. Répondez 1, 2 ou 3.`,
-
-    PREFS_SAVED: (city, lang) =>
-        `✅ *Dɔ sɔrɔla !*\n📍 Dugu : ${city}\n🗣️ Kuma : ${lang}\n\n💡 Aw b'a fɛ ka yɛlɛma : "changer ville" wala "changer langue"\n\nAw ka ɲinini ci sɛnnɛ koo la ! 🌱\n\n---\n✅ *Préférences enregistrées !*\n💡 Pour changer : dites "changer ville" ou "changer langue"`,
-
-    CHANGE_CITY: {
-        bilingual: `📍 Dugu wɛrɛ tɔgɔ ci.\n\n---\nDans quelle ville êtes-vous maintenant ?`,
-        french: `📍 Dans quelle ville êtes-vous maintenant ?`,
-        dioula: `📍 Dugu wɛrɛ tɔgɔ ci.`,
-    },
-
-    CHANGE_LANGUAGE: {
-        bilingual: `🗣️ Kuma jaki la ?\n\n1️⃣ Faransi\n2️⃣ Dioula\n3️⃣ Fila fila\n\n---\nQuelle langue préférée ? (1, 2 ou 3)`,
-        french: `🗣️ Quelle langue préférée ?\n\n1️⃣ Français\n2️⃣ Dioula\n3️⃣ Les deux\n\n(Répondez 1, 2 ou 3)`,
-        dioula: `🗣️ Kuma jaki la ?\n\n1️⃣ Faransi\n2️⃣ Dioula\n3️⃣ Fila fila\n\n(1, 2 wala 3 ci)`,
-    },
-
-    RESET: {
-        bilingual: `🔄 Dɔ bɛɛ kɛra kura. Kumakan dɔ ci.\n\n---\nPréférences réinitialisées. Envoyez un message pour recommencer.`,
-        french: `🔄 Préférences réinitialisées. Envoyez un message pour recommencer.`,
-        dioula: `🔄 Dɔ bɛɛ kɛra kura. Kumakan dɔ ci.`,
-    },
-
-    AUDIO_FAILED: {
-        bilingual: `🎤 N ma i ka kumakan faamu. I ka a lasɔgɔ tugu.\n\n---\nJe n'ai pas compris votre message vocal. Pouvez-vous répéter ?`,
-        french: `🎤 Je n'ai pas compris votre message vocal. Pouvez-vous répéter ?`,
-        dioula: `🎤 N ma i ka kumakan faamu. I ka a lasɔgɔ tugu.`,
-    },
-
-    AUDIO_ERROR: {
-        bilingual: `⚠️ Kumakan in ma se ka bɔ. I ka sɛbɛn fɛ ɲinini ci.\n\n---\nImpossible de traiter ce message vocal. Écrivez votre question.`,
-        french: `⚠️ Impossible de traiter ce message vocal. Écrivez votre question.`,
-        dioula: `⚠️ Kumakan in ma se ka bɔ. I ka sɛbɛn fɛ ɲinini ci.`,
-    },
-};
-
-/**
- * Retourne la variante de message adaptée à la langue de l'utilisateur.
- *
- * @param {string|object} msg - String fixe OU objet {bilingual, french, dioula}
- * @param {string} [language] - 'french' | 'dioula' | 'both' | undefined
- * @returns {string} Le texte adapté (mode 'both' ou inconnu → bilingual)
- */
-function pickMsg(msg, language) {
-    if (typeof msg === 'string') return msg;
-    if (!msg || typeof msg !== 'object') return '';
-    if (language === 'french' && msg.french) return msg.french;
-    if (language === 'dioula' && msg.dioula) return msg.dioula;
-    return msg.bilingual || msg.french || msg.dioula || '';
-}
-
-// Detecter commande de changement
-function detectChangeCommand(text) {
-    const lower = text.toLowerCase();
-    if (lower.includes('changer') && (lower.includes('ville') || lower.includes('localisation'))) {
-        return 'city';
-    }
-    if (lower.includes('changer') && (lower.includes('langue') || lower.includes('language'))) {
-        return 'language';
-    }
-    if (lower.includes('reinitialiser') || lower.includes('reset') || lower.includes('recommencer')) {
-        return 'reset';
-    }
-    return null;
-}
-
 // ========================================
 // FONCTIONS UTILITAIRES
 // ========================================
-
-// Fonction pour transcrire un audio via l'API STT (Whisper - Français)
-// Retourne un objet avec text, likely_dioula_input, etc.
-async function transcribeAudio(audioBuffer, filename = 'audio.ogg') {
-    try {
-        const FormData = require('form-data');
-        const formData = new FormData();
-        formData.append('audio', audioBuffer, {
-            filename: filename,
-            contentType: 'audio/ogg'
-        });
-        formData.append('language', 'fr');
-
-        logger.info(`[STT] Appel API: ${WOURI_API_URL}/api/stt/transcribe`);
-        const response = await axios.post(`${WOURI_API_URL}/api/stt/transcribe`, formData, {
-            headers: {
-                ...formData.getHeaders(),
-                ...authHeaders()
-            },
-            timeout: 180000
-        });
-        logger.info(`[STT] Reponse API recue: ${response.status}`);
-
-        if (response.data && response.data.text) {
-            return {
-                text: response.data.text,
-                likely_dioula_input: response.data.likely_dioula_input || false,
-                language_probability: response.data.language_probability || 0
-            };
-        }
-        return null;
-    } catch (error) {
-        // Format détaillé : axios v1.x + erreurs HTTP/réseau peuvent laisser
-        // error.message vide ou égal à 'Error'. Le vrai motif est dans
-        // error.code (ECONNREFUSED, ETIMEDOUT) ou error.response.status (401, 422...).
-        const errCode = error.code || error.response?.status || 'UNKNOWN';
-        const errMsg = error.message || error.toString() || 'erreur sans message';
-        logger.error(`[STT] Erreur transcription: ${errCode} - ${errMsg}`);
-        return null;
-    }
-}
-
-// Fonction pour transcrire un audio en Bambara/Dioula via l'API ASR
-// Utilise facebook/mms-1b-all pour la reconnaissance vocale Bambara
-async function transcribeAudioBambara(audioBuffer, filename = 'audio.ogg') {
-    try {
-        const FormData = require('form-data');
-        const formData = new FormData();
-        formData.append('audio', audioBuffer, {
-            filename: filename,
-            contentType: 'audio/ogg'
-        });
-        formData.append('language', 'bam');  // Bambara/Dioula
-
-        logger.info(`[ASR-BAMBARA] Appel API: ${WOURI_API_URL}/api/asr/transcribe-and-translate`);
-        const response = await axios.post(`${WOURI_API_URL}/api/asr/transcribe-and-translate`, formData, {
-            headers: {
-                ...formData.getHeaders(),
-                ...authHeaders()
-            },
-            timeout: 180000
-        });
-        logger.info(`[ASR-BAMBARA] Reponse API recue: ${response.status}`);
-
-        if (response.data) {
-            const transcription = response.data.transcription || '';
-            const frenchTranslation = response.data.french_translation || '';
-            const nluMessage = response.data.nlu_message || '';
-
-            logger.info(`[ASR-BAMBARA] Transcription Bambara: "${transcription}"`);
-            logger.info(`[ASR-BAMBARA] Traduction Francais: "${frenchTranslation}"`);
-            if (nluMessage) {
-                logger.info(`[ASR-BAMBARA] Message NLU (prioritaire): "${nluMessage}"`);
-            }
-
-            return {
-                text: nluMessage || frenchTranslation || transcription,  // NLU en priorité
-                bambara_text: transcription,
-                is_bambara: true
-            };
-        }
-        return null;
-    } catch (error) {
-        // Format détaillé (cf. transcribeAudio plus haut)
-        const errCode = error.code || error.response?.status || 'UNKNOWN';
-        const errMsg = error.message || error.toString() || 'erreur sans message';
-        logger.error(`[ASR-BAMBARA] Erreur transcription: ${errCode} - ${errMsg}`);
-        // Fallback vers Whisper français si ASR Bambara echoue
-        logger.info('[ASR-BAMBARA] Fallback vers Whisper francais...');
-        return await transcribeAudio(audioBuffer, filename);
-    }
-}
 
 // Fonction pour simuler un delai humain
 function randomDelay(min, max) {
@@ -975,10 +686,10 @@ async function connectWhatsApp() {
 
                     if (userLanguage === 'dioula' || userLanguage === 'both') {
                         logger.info(`[AUDIO] Utilisateur en mode ${userLanguage} -> ASR Bambara`);
-                        transcriptionResult = await transcribeAudioBambara(audioBuffer, 'voice_message.ogg');
+                        transcriptionResult = await asrClient.transcribeAudioBambara(audioBuffer, 'voice_message.ogg');
                     } else {
                         logger.info(`[AUDIO] Utilisateur en mode ${userLanguage} -> Whisper francais`);
-                        transcriptionResult = await transcribeAudio(audioBuffer, 'voice_message.ogg');
+                        transcriptionResult = await asrClient.transcribeAudio(audioBuffer, 'voice_message.ogg');
                     }
 
                     if (!transcriptionResult || !transcriptionResult.text || transcriptionResult.text.trim() === '') {
