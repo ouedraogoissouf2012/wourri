@@ -1,9 +1,9 @@
 # ADR-0011 — Stratégie de préchargement des modèles ML
 
-**Statut** : accepté
+**Statut** : complété
 **Date** : 2026-05-08
 **Auteur** : Claude (sous direction Ruben)
-**Valideur** : Ruben (validé le 2026-05-08)
+**Valideur** : Ruben (validé le 2026-05-08, complété le 2026-05-10)
 
 ---
 
@@ -372,3 +372,15 @@ Pas de migration de données ni d'état. Rollback < 5 min.
 - **2026-05-08 (acceptation)** — Ruben valide l'ADR. Statut basculé à **accepté**.
   Phase 2 (refactor uniformisation Whisper + NLLB → `ModelRegistry`) peut
   démarrer. Phases 3-5 enchaînées dans des PR distinctes.
+- **2026-05-10 (complétion)** — Toutes les phases livrées et mergées sur
+  `APIPy` :
+  - PR #130 (Phase 2 — refactor `ModelRegistry`)
+  - PR #131 (Phase 3 — lazy-load Whisper + NLLB)
+  - PR #132 (Phase 4 — `/health` enrichi observabilité modèles + RSS)
+  - PR #133 (Phase 5 — tests d'intégration anti-régression lazy-loading)
+
+  Toutes les **métriques de succès** (§ Métriques) atteintes en mesure live :
+  RSS boot 1503 MB ≤ 1.6 GB cible, VMS boot 2793 MB ≤ 3 GB cible, durée
+  boot ~30s ≤ 30s cible, 0 régression sur 188 tests existants. Bug initial
+  `mkl_malloc: failed to allocate memory` du 2026-05-07 résolu. Statut
+  basculé à **complété**.
