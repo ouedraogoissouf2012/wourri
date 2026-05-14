@@ -59,7 +59,40 @@ if (!fs.existsSync(TEMP_AUDIO_FOLDER)) {
 
 // Express app pour API de status
 const app = express();
-app.use(cors());
+
+// ===== CORS strict (ADR-0012 Sprint A) =====
+// Allow-list configurable via env ALLOWED_ORIGINS="https://a.com,https://b.com".
+// Si vide → refus de toute origine cross-domain (mode strict par défaut).
+// Les routes /health, /qr, /qr-page, /status sont typiquement appelées
+// same-origin (dashboard local) ou via curl/monitoring (pas de pre-flight CORS).
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+app.use(cors({
+    origin: allowedOrigins.length > 0 ? allowedOrigins : false,
+    credentials: false,
+}));
+if (allowedOrigins.length === 0) {
+    logger.info('[SECURITY] CORS strict : ALLOWED_ORIGINS non defini, refus de toute origine cross-domain');
+} else {
+    logger.info(`[SECURITY] CORS allow-list : ${allowedOrigins.join(', ')}`);
+}
+
+// ===== Rate limiting (ADR-0012 Sprint A) =====
+// Protège les routes publiques contre les abus DoS. 60 req/min/IP est
+// généreux pour du monitoring légitime (poll /health toutes les secondes
+// = 60/min) tout en bloquant les scans abusifs.
+const rateLimit = require('express-rate-limit');
+const publicRateLimit = rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Trop de requêtes, réessayez plus tard' },
+});
+app.use(publicRateLimit);
+
 app.use(express.json());
 
 // Variables d'etat
