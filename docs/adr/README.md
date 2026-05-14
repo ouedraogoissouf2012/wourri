@@ -19,6 +19,7 @@ du projet. Chaque décision passe par cet index et par le workflow du skill
 | [ADR-0008](0008-plan-migration-chromadb-pgvector.md) | Plan migration ChromaDB → PostgreSQL+pgvector | **accepté** | 2026-05-05 | Plan d'exécution en 5 phases (provisionnement → schéma → adapter+double-écriture → validation terrain → bascule). Exécute ADR-0001. |
 | [ADR-0010](0010-migration-monorepo.md) | Migration vers monorepo | **proposé** | 2026-04-23 | Structure repo actuelle (3 branches orphelines) → monorepo standard avec sous-dossiers. Exécution planifiée après stabilisation Sprint 2. |
 | [ADR-0011](0011-strategie-prechargement-ml.md) | Stratégie de préchargement des modèles ML | **accepté** | 2026-05-08 | Lazy-load ciblé NLLB + Whisper, eager pour NeMo + TTS. Migration préalable Whisper et NLLB vers `ModelRegistry`. Cible : RSS boot ≤ 1.6 GB / VMS boot ≤ 3.0 GB (vs 3.3 GB / 7.0 GB actuel). Basé sur mesures `psutil` réelles 2026-05-08. |
+| [ADR-0012](0012-securite-whatsapp-server.md) | Sécurité whatsapp-server (CORS + rate limit + npm audit) | **complété** | 2026-05-10 | Sprint A du programme dette technique : 0 vulnérabilité npm (vs 12 avant), CORS strict via `ALLOWED_ORIGINS`, rate limiting 60 req/min/IP. PRs #141, #142, #143. |
 
 ## ADRs à rédiger (roadmap, issus de [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md))
 
