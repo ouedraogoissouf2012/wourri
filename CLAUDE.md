@@ -176,22 +176,39 @@ passe par un plan validé explicitement avant code.
 
 - **God file** : `app-baileys.js` ~1300 lignes — à décomposer (Phase Modularisation)
 - **Pas de metrics Prometheus** : `/health` riche mais pas de `/metrics` scrape format
-- **CORS permissif** : `app.use(cors())` sans restriction
-- **Pas de rate limiting**
 - **Pas de retry automatique** des messages en queue : au démarrage, on envoie un
   message d'excuse à l'utilisateur au lieu de retraiter (à améliorer en Phase Modularisation)
 - **Nested folder pourri** : `whatsapp-server/whatsapp-server/` (issue P2-04, séparée)
-- **`npm audit`** : 12 vulnérabilités résiduelles (1 low, 3 moderate, 6 high, 2 critical) — Phase Sécurité
+- ~~`npm audit`~~ : **résolu Sprint A** (0 vulnérabilité, PR #141 + #142)
+- ~~CORS permissif~~ : **résolu Sprint A** (allow-list via `ALLOWED_ORIGINS`, ADR-0012)
+- ~~Pas de rate limiting~~ : **résolu Sprint A** (60 req/min/IP, ADR-0012)
 
 Phases prévues / réalisées :
 1. ✅ **Cleanup + Foundation** (mergé 2026-05-05, PR #115)
 2. ✅ **Robustesse** : backoff exponentiel + queue persistante + circuit breaker (PR #117)
 3. ✅ **UX Format adaptatif** : vocal→audio langue / écrit→texte FR (PR #119)
-4. ✅ **Observabilité** : pino JSON + `/health` enrichi + `/ready` (cette phase)
-5. ⏳ Sécurité : CORS strict + validation inputs + rate limiting + npm audit fix
+4. ✅ **Observabilité** : pino JSON + `/health` enrichi + `/ready`
+5. ✅ **Sécurité** Sprint A : CORS strict + rate limiting + npm audit clean (ADR-0012, PRs #141/#142/#143)
 6. ⏳ Tests d'intégration end-to-end + CI GitHub Actions
 7. ⏳ Déploiement : Dockerfile + PM2/systemd + runbook
 8. ⏳ Modularisation : décomposer `app-baileys.js`
+
+### Sécurité — CORS et rate limiting (ADR-0012)
+
+**CORS** : configurable via env `ALLOWED_ORIGINS` (liste séparée par virgules).
+Si vide → mode strict (refus de toute origine cross-domain). Les routes
+restent accessibles same-origin (curl, navigation directe, monitoring qui
+n'envoie pas de header `Origin`).
+
+```bash
+# Exemple
+ALLOWED_ORIGINS=https://dashboard.example.com,https://admin.wourri.ci
+```
+
+**Rate limiting** : 60 requêtes / minute / IP sur l'ensemble des routes
+publiques (`/health`, `/qr`, `/qr-page`, `/status`, `/users`, etc.).
+Dépassement → HTTP 429 avec `Retry-After` header. Headers `RateLimit-*`
+standard exposés.
 
 ## Logging structuré (Phase 3)
 
