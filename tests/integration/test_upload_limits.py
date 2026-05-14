@@ -1,5 +1,5 @@
 """
-Tests d'intégration pour les limites d'upload (issue #47).
+Tests d'intégration pour les limites d'upload audio (10 MB).
 
 Valide :
 - Un fichier > 10 MB retourne HTTP 413 sur /api/asr/transcribe
@@ -26,8 +26,13 @@ def client():
     # `_API_SECRET_KEY` est lu depuis .env au moment de l'import de app.security.
     # Si la clé existe sur disque (dev local), require_api_key retourne 403
     # avant la validation de taille (413). On patch à None pour reproduire le
-    # mode dev sans auth attendu par ces tests (Sprint B issue #146).
+    # mode dev sans auth attendu par ces tests.
+    # `WHISPER_AVAILABLE` doit aussi être forcé à True : `stt.py` check cette
+    # variable AVANT la lecture du body et renvoie 503 si False. Sur une
+    # machine sans `faster-whisper` installé, le 503 court-circuiterait la
+    # validation 413 testée ici.
     with patch("app.security._API_SECRET_KEY", None), \
+         patch("app.routers.stt.stt_whisper.WHISPER_AVAILABLE", True), \
          patch("app.services.nlu.get_nlu_service", return_value=None), \
          patch("app.services.asr_soloni_nemo.get_nemo_model", return_value=None), \
          patch("app.services.translation.get_translation_service") as mock_ts, \

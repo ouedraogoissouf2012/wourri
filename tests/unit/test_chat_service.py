@@ -180,9 +180,14 @@ class TestSearchIVRByConcept:
         Désormais `_search_ivr_by_concept` retourne directement None quand aucune
         culture n'est détectée, ce qui déclenche `_clarify_missing_culture` dans
         le chemin appelant `_try_ivr_concept`.
+
+        Invariant verrouillé : `chercher_reponse_ivr` ne doit PAS être appelé
+        dans ce cas (sinon réintroduction silencieuse d'un fallback).
         """
-        result = self.service._search_ivr_by_concept({"ACTION_PLANTER": True})
-        assert result is None
+        with patch("app.services.vdb_service.chercher_reponse_ivr") as mock_vdb:
+            result = self.service._search_ivr_by_concept({"ACTION_PLANTER": True})
+            assert result is None
+            mock_vdb.assert_not_called()
 
     def test_culture_without_action_uses_conseil_production(self):
         """Culture sans action → CONSEIL_PRODUCTION par défaut."""
