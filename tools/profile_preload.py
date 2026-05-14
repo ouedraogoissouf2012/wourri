@@ -59,6 +59,12 @@ ROOT = Path(__file__).parent.parent  # wouri-api/
 sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)  # certains services s'attendent à un CWD = wouri-api/
 
+# ── Encodage console : forcer UTF-8 sur Windows (cp1252 par défaut) ──────────
+# Les print() de ce script contiennent des caractères Unicode (Δ, é, ✅, —, …)
+# qui crashent sur cp1252.
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
+
 # ── Dépendances tierces ──────────────────────────────────────────────────────
 try:
     import psutil
