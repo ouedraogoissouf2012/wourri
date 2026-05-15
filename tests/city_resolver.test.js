@@ -49,12 +49,12 @@ describe("city_resolver — extractCity (cascade)", () => {
     });
 
     test("Étape 4 — pas de fuzzy match sur mots <4 chars (anti-faux-positif 'man'/'kon')", () => {
-        // "mai" (3 chars) ne doit PAS matcher "man" via Levenshtein
-        // (mais 'main' ferait étape 1 — donc on teste avec un mot non-listé)
-        const result = extractCity("xyz abc");
-        // Aucun match → fallback étape 5 (dernier mot >3 chars)
-        assert.notStrictEqual(result, "Man");
-        assert.notStrictEqual(result, "Kong");
+        // "xyz" et "abc" (3 chars chacun) ne doivent PAS matcher "man" / "kon" via
+        // Levenshtein car la garde `if (word.length >= 4)` les rejette. Aucun mot
+        // n'a >3 chars, donc fallback ultime étape 5 : `text.trim()` capitalisé.
+        // Assertion positive (anti-pattern #7 : éviter notStrictEqual qui laisserait
+        // passer des résultats absurdes).
+        assert.strictEqual(extractCity("xyz abc"), "Xyz abc");
     });
 
     test("Étape 5 — fallback : dernier mot >3 chars capitalisé", () => {
