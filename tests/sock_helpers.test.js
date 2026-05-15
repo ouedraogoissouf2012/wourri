@@ -16,17 +16,7 @@ const {
     sendAudioBuffer,
     AUDIO_MIMETYPE,
 } = require("../lib/sock_helpers");
-
-function makeSockMock() {
-    const sent = [];
-    const presence = [];
-    return {
-        sent,
-        presence,
-        sendMessage: async (num, msg) => { sent.push({ num, msg }); },
-        sendPresenceUpdate: async (state, num) => { presence.push({ state, num }); },
-    };
-}
+const { makeSockMock } = require("./_helpers");
 
 describe("sock_helpers — sendTextWithPause", () => {
     test("envoie sendPresenceUpdate('paused') puis sendMessage avec le texte", async () => {

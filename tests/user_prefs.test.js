@@ -15,49 +15,7 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert");
 const { UserPrefs, STEPS, DEFAULT_USER_LANGUAGE } = require("../lib/user_prefs");
-
-const silentLogger = {
-    info: () => {},
-    warn: () => {},
-    error: () => {},
-};
-
-/**
- * Mock fs minimal — stocke les fichiers en mémoire.
- * `writeFile` appelle le callback de manière asynchrone (setImmediate) pour
- * permettre de tester la mécanique de verrou _saveInProgress / _savePending.
- */
-function makeFsMock({ initial = {}, writeFailsWith = null } = {}) {
-    const files = { ...initial };
-    const writeCalls = [];
-    return {
-        files,
-        writeCalls,
-        existsSync: (p) => p in files,
-        readFileSync: (p) => {
-            if (!(p in files)) {
-                const err = new Error("ENOENT");
-                err.code = "ENOENT";
-                throw err;
-            }
-            return files[p];
-        },
-        writeFile: (p, content, enc, cb) => {
-            writeCalls.push({ path: p, content });
-            setImmediate(() => {
-                if (writeFailsWith) {
-                    cb(writeFailsWith);
-                    return;
-                }
-                files[p] = content;
-                cb(null);
-            });
-        },
-        writeFileSync: (p, content) => {
-            files[p] = content;
-        },
-    };
-}
+const { silentLogger, makeFsMock } = require("./_helpers");
 
 describe("UserPrefs — construction", () => {
     test("constructor sans fs jette une erreur", () => {
