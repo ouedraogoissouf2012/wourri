@@ -215,3 +215,69 @@ class TestChatResult:
         assert r.intent is None
         assert r.concepts == {}
         assert not r.is_out_of_scope
+
+
+class TestIVRResponseContract:
+    """Test du contrat IVR (fix #166).
+
+    Le contrat est : pour un match IVR exact ou par concept, `response` doit être
+    en français (extrait de `reponse_fr` du corpus) et `response_dioula` doit
+    contenir la version bambara (extrait de `reponse_bambara`).
+
+    Régression précédente : le code mettait `reponse_bambara` dans les deux
+    champs, ce qui faisait afficher du dioula avec un drapeau 🇫🇷 côté WhatsApp.
+    """
+
+    def setup_method(self):
+        self.service = ChatService()
+
+    def test_search_ivr_by_concept_returns_dict_with_both_languages(self):
+        """`_search_ivr_by_concept` retourne un dict avec reponse_bambara + reponse_fr."""
+        with patch("app.services.vdb_service.chercher_reponse_ivr") as mock_vdb:
+            mock_vdb.return_value = {
+                "id": "riz_conseil_001",
+                "reponse_bambara": "Malo sɛnɛ kalo la sanji tuma na.",
+                "reponse_fr": "Plante ton riz en mai pendant la saison des pluies.",
+            }
+            result = self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
+            assert isinstance(result, dict), "doit retourner un dict (#166), pas une str"
+            assert "reponse_bambara" in result
+            assert "reponse_fr" in result
+            assert result["reponse_fr"] == "Plante ton riz en mai pendant la saison des pluies."
+            assert "Malo" in result["reponse_bambara"]
+
+    def test_search_ivr_by_concept_fallback_fr_empty_when_missing(self):
+        """Si `reponse_fr` manque dans l'entrée corpus, retour dict avec reponse_fr=''."""
+        with patch("app.services.vdb_service.chercher_reponse_ivr") as mock_vdb:
+            mock_vdb.return_value = {
+                "id": "test",
+                "reponse_bambara": "Malo sɛnɛ.",
+                # reponse_fr volontairement absent
+            }
+            result = self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
+            assert result is not None
+            assert result["reponse_fr"] == ""
+            assert result["reponse_bambara"] == "Malo sɛnɛ."
+
+    def test_inject_meteo_replaces_both_tags(self):
+        """`_inject_meteo` doit remplacer {{METEO_CONTEXTUEL}} dans bam ET {{METEO_FR}} dans fr."""
+        bam_in = "Aw ni sɔgɔma. {{METEO_CONTEXTUEL}} I bɛ koo?"
+        fr_in = "Bonjour. {{METEO_FR}} Comment tu vas ?"
+        weather = {"weather_code": 0, "temperature": 30, "precipitation": 0, "city": "Bouake"}
+
+        bam_out, fr_out = self.service._inject_meteo(bam_in, fr_in, weather, "Bouake")
+
+        assert "{{METEO_CONTEXTUEL}}" not in bam_out, "tag bambara doit être remplacé"
+        assert "{{METEO_FR}}" not in fr_out, "tag français doit être remplacé"
+        # Le bambara contient le mot 'tile' (soleil) pour ciel dégagé
+        assert "tile" in bam_out or "Bouake" in bam_out
+        # Le français contient une phrase météo (clair ou irrigation selon temp)
+        assert any(kw in fr_out.lower() for kw in ("bouake", "ciel", "soleil", "chaleur", "arros", "irrig"))
+
+    def test_inject_meteo_no_tags_returns_unchanged(self):
+        """Si aucun tag, retourne les chaînes inchangées (court-circuit)."""
+        bam_in = "Pas de tag ici."
+        fr_in = "No tag here."
+        bam_out, fr_out = self.service._inject_meteo(bam_in, fr_in, None, "Abidjan")
+        assert bam_out == bam_in
+        assert fr_out == fr_in
