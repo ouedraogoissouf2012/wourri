@@ -862,13 +862,13 @@ async function connectWhatsApp() {
                     await randomDelay(300, 800);
 
                     // Sprint D.2 — envoi via ResponseSender (3 modes + feedback C4)
+                    // Note: STEPS est importé directement dans response_sender.js (#164).
                     await responseSender.sendResponse({
                         data,
                         prefs,
                         isVoiceInput,
                         userNumber,
                         saveFn: () => userPrefs.save(),
-                        STEPS,
                     });
                 }
 

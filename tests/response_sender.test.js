@@ -131,7 +131,6 @@ describe("ResponseSender — sendResponse (FRANCAIS)", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(sock.sent.length, 1);
         assert.match(sock.sent[0].msg.text, /🇫🇷 Bonjour/);
@@ -148,7 +147,6 @@ describe("ResponseSender — sendResponse (FRANCAIS)", () => {
             isVoiceInput: true,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(axios.calls[0].url, "http://localhost:8000/tts/abc.ogg");
         assert.strictEqual(sock.sent.length, 1);
@@ -164,7 +162,6 @@ describe("ResponseSender — sendResponse (FRANCAIS)", () => {
             isVoiceInput: true,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(sock.sent.length, 1);
         assert.match(sock.sent[0].msg.text, /🇫🇷 Bonjour/);
@@ -180,7 +177,6 @@ describe("ResponseSender — sendResponse (FRANCAIS)", () => {
             isVoiceInput: true,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(sock.sent.length, 1);
         assert.match(sock.sent[0].msg.text, /🇫🇷 Bonjour/);
@@ -195,7 +191,6 @@ describe("ResponseSender — sendResponse (FRANCAIS)", () => {
             isVoiceInput: true,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(axios.calls[0].url, "http://cdn.example.com/x.ogg");
     });
@@ -212,7 +207,6 @@ describe("ResponseSender — sendResponse (DIOULA)", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(sock.sent.length, 1);
         assert.ok(sock.sent[0].msg.audio);
@@ -228,7 +222,6 @@ describe("ResponseSender — sendResponse (DIOULA)", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(sock.sent.length, 1);
         assert.match(sock.sent[0].msg.text, /🇫🇷 Bonjour/);
@@ -244,7 +237,6 @@ describe("ResponseSender — sendResponse (DIOULA)", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(sock.sent.length, 1);
         assert.match(sock.sent[0].msg.text, /🇫🇷 Bonjour/);
@@ -262,7 +254,6 @@ describe("ResponseSender — sendResponse (BOTH)", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(sock.sent.length, 2);
         assert.match(sock.sent[0].msg.text, /🇫🇷 Bonjour/);
@@ -278,7 +269,6 @@ describe("ResponseSender — sendResponse (BOTH)", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(sock.sent.length, 1);
         assert.match(sock.sent[0].msg.text, /🇫🇷 Bonjour/);
@@ -294,7 +284,6 @@ describe("ResponseSender — sendResponse (BOTH)", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => {},
-            STEPS,
         });
         assert.strictEqual(sock.sent.length, 1);
         assert.match(sock.sent[0].msg.text, /🇫🇷 Bonjour/);
@@ -319,7 +308,6 @@ describe("ResponseSender — sendResponse feedback C4", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => { saveCalls++; },
-            STEPS,
         });
         // 1 audio + 1 prompt feedback
         assert.strictEqual(sock.sent.length, 2);
@@ -344,7 +332,6 @@ describe("ResponseSender — sendResponse feedback C4", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => { saveCalls++; },
-            STEPS,
         });
         assert.strictEqual(prefs.step, STEPS.WAITING_FEEDBACK);
         assert.strictEqual(saveCalls, 1);
@@ -361,7 +348,6 @@ describe("ResponseSender — sendResponse feedback C4", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => { saveCalls++; },
-            STEPS,
         });
         assert.strictEqual(prefs.step, STEPS.COMPLETE);
         assert.strictEqual(saveCalls, 0);
@@ -380,7 +366,6 @@ describe("ResponseSender — sendResponse feedback C4", () => {
             isVoiceInput: false,
             userNumber: "u1",
             saveFn: () => { saveCalls++; },
-            STEPS,
         });
         assert.strictEqual(saveCalls, 0);
         assert.strictEqual(prefs.step, STEPS.COMPLETE);
