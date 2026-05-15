@@ -19,26 +19,10 @@ const { test, describe, beforeEach } = require("node:test");
 const assert = require("node:assert");
 const { OnboardingMachine } = require("../lib/onboarding");
 const { UserPrefs, STEPS } = require("../lib/user_prefs");
+const { silentLogger, noDelay, makeSockMock, makeFsMock } = require("./_helpers");
 
-const silentLogger = {
-    info: () => {},
-    warn: () => {},
-    error: () => {},
-};
-
-const noDelay = async () => {};
-
-function makeSockMock() {
-    const sent = [];
-    const presence = [];
-    return {
-        sent,
-        presence,
-        sendMessage: async (num, msg) => { sent.push({ num, msg }); },
-        sendPresenceUpdate: async (state, num) => { presence.push({ state, num }); },
-    };
-}
-
+// Note : makeAxiosMock reste local — méthode .post spécifique à onboarding (feedback).
+// Pour la version .get (response_sender, audio download), voir tests/response_sender.test.js.
 function makeAxiosMock(responses = []) {
     const calls = [];
     let idx = 0;
@@ -49,28 +33,6 @@ function makeAxiosMock(responses = []) {
             const r = responses[idx++];
             if (r instanceof Error) throw r;
             return r || { status: 200, data: {} };
-        },
-    };
-}
-
-function makeFsMock() {
-    const files = {};
-    const writeCalls = [];
-    return {
-        files,
-        writeCalls,
-        existsSync: (p) => p in files,
-        readFileSync: (p) => {
-            if (!(p in files)) {
-                const err = new Error("ENOENT");
-                err.code = "ENOENT";
-                throw err;
-            }
-            return files[p];
-        },
-        writeFile: (p, content, enc, cb) => {
-            writeCalls.push({ path: p, content });
-            setImmediate(() => { files[p] = content; cb(null); });
         },
     };
 }

@@ -10,14 +10,7 @@
 const { test, describe } = require("node:test");
 const assert = require("node:assert");
 const { ResponseSender } = require("../lib/response_sender");
-
-const silentLogger = {
-    info: () => {},
-    warn: () => {},
-    error: () => {},
-};
-
-const noDelay = async () => {};
+const { silentLogger, noDelay, makeSockMock } = require("./_helpers");
 
 const STEPS = {
     NEW: "new",
@@ -36,15 +29,8 @@ const EXCUSE_MSG = {
     BACK_BILINGUAL: "🇫🇷 De retour. — N kɔsegira.",
 };
 
-function makeSockMock() {
-    const sent = [];
-    return {
-        sent,
-        sendMessage: async (num, msg) => { sent.push({ num, msg }); },
-        sendPresenceUpdate: async () => {},
-    };
-}
-
+// Note : makeAxiosMock reste local — méthode .get spécifique à response_sender.
+// Pour la version .post (onboarding), voir tests/onboarding.test.js.
 function makeAxiosMock(responses) {
     const calls = [];
     let idx = 0;
