@@ -33,6 +33,9 @@ const { extractCity, isValidCity } = require('./lib/city_resolver');
 const { MSG, pickMsg, detectChangeCommand } = require('./lib/i18n');
 const { AsrClient } = require('./lib/asr_client');
 
+// Sprint D.2 — préférences utilisateurs encapsulées
+const { UserPrefs, STEPS, DEFAULT_USER_LANGUAGE } = require('./lib/user_prefs');
+
 // Phase 3 Observabilité — logger structuré pino JSON
 const { logger } = require('./lib/logger');
 
@@ -133,78 +136,16 @@ const asrClient = new AsrClient({
     logger,
 });
 
-// ========================================
-// GESTION DES PREFERENCES UTILISATEURS
-// ========================================
+// Sprint D.2 — préférences utilisateurs (state + persistance débouncée)
+const userPrefs = new UserPrefs({
+    fs,
+    filePath: USER_PREFS_FILE,
+    logger,
+});
 
-// Langue par défaut si l'utilisateur est introuvable dans user_preferences.json
-// (cas extrêmement rare : entrée corrompue ou supprimée pendant que le serveur
-// tente d'envoyer un message d'excuse). Centralisé ici pour traçabilité.
-const DEFAULT_USER_LANGUAGE = 'french';
-
-// Structure: { "22541540178@s.whatsapp.net": { city: "Bonoua", language: "both", step: "complete", pendingQuestion: null } }
-let userPreferences = {};
-
-// Etapes d'onboarding
-const STEPS = {
-    NEW: 'new',           // Nouvel utilisateur
-    WAITING_CITY: 'waiting_city',     // En attente de la ville
-    WAITING_LANGUAGE: 'waiting_language', // En attente de la langue
-    COMPLETE: 'complete',          // Onboarding termine
-    WAITING_FEEDBACK: 'waiting_feedback' // En attente du feedback 👍/👎
-};
-
-// Charger les preferences depuis le fichier
-function loadUserPreferences() {
-    try {
-        if (fs.existsSync(USER_PREFS_FILE)) {
-            const data = fs.readFileSync(USER_PREFS_FILE, 'utf8');
-            userPreferences = JSON.parse(data);
-            logger.info(`[PREFS] ${Object.keys(userPreferences).length} utilisateurs charges`);
-        }
-    } catch (error) {
-        logger.error(`[PREFS] Erreur chargement: ${error.message}`);
-        userPreferences = {};
-    }
-}
-
-// Verrou d'ecriture pour eviter les race conditions
-let _saveInProgress = false;
-let _savePending = false;
-
-// Sauvegarder les preferences dans le fichier (debounced, sans race condition)
-function saveUserPreferences() {
-    if (_saveInProgress) {
-        _savePending = true;  // une autre sauvegarde est en cours, on rejoue apres
-        return;
-    }
-    _saveInProgress = true;
-    const snapshot = JSON.stringify(userPreferences, null, 2);
-    fs.writeFile(USER_PREFS_FILE, snapshot, 'utf8', (err) => {
-        _saveInProgress = false;
-        if (err) {
-            logger.error(`[PREFS] Erreur sauvegarde: ${err.message}`);
-        }
-        if (_savePending) {
-            _savePending = false;
-            saveUserPreferences();  // rejouer la sauvegarde en attente
-        }
-    });
-}
-
-// Obtenir les preferences d'un utilisateur
-function getUserPrefs(userNumber) {
-    if (!userPreferences[userNumber]) {
-        userPreferences[userNumber] = {
-            city: null,
-            language: null,
-            step: STEPS.NEW,
-            pendingQuestion: null,
-            pendingFeedback: null
-        };
-    }
-    return userPreferences[userNumber];
-}
+// Sprint D.2 — instanciation responseSender plus bas (après EXCUSE_MSG + getExcuseAudio)
+const { ResponseSender } = require('./lib/response_sender');
+let responseSender = null;
 
 // ========================================
 // FONCTIONS UTILITAIRES
@@ -327,101 +268,20 @@ async function getExcuseAudio({ kind, isFrench }) {
     return null;
 }
 
-/**
- * Envoie un message d'excuse selon la langue choisie par l'utilisateur.
- *
- * Règle (révisée 2026-05-06, remplace la règle "selon format d'entrée" de PR #119) :
- *   - Mode `french` : selon isVoiceInput (audio FR si vocal, texte FR si écrit)
- *   - Mode `dioula` : TOUJOURS tenter audio dioula, fallback texte bilingue
- *   - Mode `both`   : TOUJOURS texte FR + tenter audio dioula
- *
- * Justification UX : les agriculteurs dioula sont souvent peu alphabétisés.
- * Leur envoyer du texte dioula leur sert peu — l'audio est critique pour
- * qu'ils accèdent au contenu. Le mode `both` envoie texte FR en bonus pour
- * les bilingues.
- *
- * Si l'API TTS est down (cas circuit OPEN) → fallback texte bilingue garanti.
- *
- * @param {string} userNumber - Numéro WhatsApp destinataire
- * @param {object} options
- * @param {string} options.language - 'french' | 'dioula' | 'both'
- * @param {'unavailable'|'back'} options.kind - Type de message
- * @param {boolean} [options.isVoiceInput] - Utilisé uniquement pour mode `french`
- */
-async function sendExcuseMessage(userNumber, { language, kind, isVoiceInput = false }) {
-    const fallbackText = kind === 'back'
-        ? EXCUSE_MSG.BACK_BILINGUAL
-        : EXCUSE_MSG.UNAVAILABLE_BILINGUAL;
-
-    // ---- Mode FRENCH : selon format d'entrée ----
-    if (language === 'french') {
-        if (!isVoiceInput) {
-            // Texte entrant -> texte FR seul
-            const textFr = kind === 'back' ? EXCUSE_MSG.BACK_FR : EXCUSE_MSG.UNAVAILABLE_FR;
-            await sock.sendMessage(userNumber, { text: `🇫🇷 ${textFr}` });
-            logger.info(`[EXCUSE] Texte FR envoyé (mode french, ecrit, ${kind})`);
-            return;
-        }
-        // Vocal entrant -> audio FR avec fallback texte
-        try { await sock.sendPresenceUpdate('recording', userNumber); } catch (_) {}
-        const audioBuffer = await getExcuseAudio({ kind, isFrench: true });
-        try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
-        if (audioBuffer) {
-            await sock.sendMessage(userNumber, {
-                audio: audioBuffer,
-                mimetype: 'audio/ogg; codecs=opus',
-                ptt: true,
-            });
-            logger.info(`[EXCUSE] Audio FR envoyé (mode french, vocal, ${kind})`);
-            return;
-        }
-        await sock.sendMessage(userNumber, { text: fallbackText });
-        logger.info(`[EXCUSE] Texte bilingue (mode french, audio FR indispo, ${kind})`);
-        return;
-    }
-
-    // ---- Mode BOTH : texte FR + tenter audio dioula ----
-    if (language === 'both') {
-        const textFr = kind === 'back' ? EXCUSE_MSG.BACK_FR : EXCUSE_MSG.UNAVAILABLE_FR;
-        await sock.sendMessage(userNumber, { text: `🇫🇷 ${textFr}` });
-        logger.info(`[EXCUSE] Texte FR envoyé (mode both, ${kind})`);
-
-        try { await sock.sendPresenceUpdate('recording', userNumber); } catch (_) {}
-        const audioBuffer = await getExcuseAudio({ kind, isFrench: false });
-        try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
-        if (audioBuffer) {
-            await sock.sendMessage(userNumber, {
-                audio: audioBuffer,
-                mimetype: 'audio/ogg; codecs=opus',
-                ptt: true,
-            });
-            logger.info(`[EXCUSE] Audio dioula envoyé (mode both, ${kind})`);
-        } else {
-            logger.info(`[EXCUSE] Audio dioula indispo (mode both, ${kind}) — texte FR seulement`);
-        }
-        return;
-    }
-
-    // ---- Mode DIOULA : audio dioula prioritaire, fallback texte bilingue ----
-    try { await sock.sendPresenceUpdate('recording', userNumber); } catch (_) {}
-    const audioBuffer = await getExcuseAudio({ kind, isFrench: false });
-    try { await sock.sendPresenceUpdate('paused', userNumber); } catch (_) {}
-    if (audioBuffer) {
-        await sock.sendMessage(userNumber, {
-            audio: audioBuffer,
-            mimetype: 'audio/ogg; codecs=opus',
-            ptt: true,
-        });
-        logger.info(`[EXCUSE] Audio dioula envoyé (mode dioula, ${kind})`);
-        return;
-    }
-    // Fallback : texte bilingue (audio TTS dioula indispo, probablement API down)
-    await sock.sendMessage(userNumber, { text: fallbackText });
-    logger.info(`[EXCUSE] Texte bilingue (mode dioula, audio dioula indispo, ${kind})`);
-}
+// Sprint D.2 — instancier ResponseSender maintenant que EXCUSE_MSG + getExcuseAudio
+// sont définis. `sock` reste null pour l'instant : il est assigné dans connectWhatsApp
+// juste après `sock = makeWASocket(...)`.
+responseSender = new ResponseSender({
+    axios,
+    apiUrl: WOURI_API_URL,
+    randomDelay,
+    getExcuseAudio,
+    EXCUSE_MSG,
+    logger,
+});
 
 // Charger les preferences au demarrage
-loadUserPreferences();
+userPrefs.load();
 
 // Phase 2 — Charger la queue persistante au demarrage
 messageQueue.load().then((n) => {
@@ -498,14 +358,14 @@ async function notifyPendingUsers() {
             // ta question". L'utilisateur va re-poser dans sa langue actuelle, donc on lui
             // répond dans sa langue actuelle (et non figée au moment de l'ajout en queue).
             //
-            // Lecture directe de userPreferences[userNumber] au lieu de getUserPrefs()
+            // Lecture directe de userPrefs.data[userNumber] au lieu de userPrefs.get(),
             // pour éviter le side effect de création d'entrée par défaut pour un
             // utilisateur disparu du fichier user_preferences.json.
             const language =
-                userPreferences[userNumber]?.language
+                userPrefs.data[userNumber]?.language
                 || lastMsg.payload?.language
                 || DEFAULT_USER_LANGUAGE;
-            await sendExcuseMessage(userNumber, {
+            await responseSender.sendExcuse(userNumber, {
                 isVoiceInput,
                 language,
                 kind: 'back',
@@ -542,6 +402,9 @@ async function connectWhatsApp() {
         logger: pino({ level: 'silent' }),
         browser: ['WOURI Assistant', 'Chrome', '120.0.0'],
     });
+
+    // Sprint D.2 — propager le sock au ResponseSender (sock est mutable post-reconnect)
+    responseSender.sock = sock;
 
     // Gestion des evenements de connexion
     sock.ev.on('connection.update', async (update) => {
@@ -630,7 +493,7 @@ async function connectWhatsApp() {
             if (msg.key.remoteJid === 'status@broadcast') continue;
 
             const userNumber = msg.key.remoteJid;
-            const prefs = getUserPrefs(userNumber);
+            const prefs = userPrefs.get(userNumber);
 
             // Extraction du texte
             let messageText = msg.message?.conversation ||
@@ -703,7 +566,7 @@ async function connectWhatsApp() {
                         // est trompeur quand le vrai problème est que l'API est down.
                         if (!(await isApiHealthy())) {
                             logger.info(`[AUDIO] API indisponible -> message d'indisponibilite (mode=${prefs.language})`);
-                            await sendExcuseMessage(userNumber, {
+                            await responseSender.sendExcuse(userNumber, {
                                 language: prefs.language,
                                 kind: 'unavailable',
                                 isVoiceInput: true,
@@ -762,14 +625,14 @@ async function connectWhatsApp() {
                 if (changeCommand && prefs.step === STEPS.COMPLETE) {
                     if (changeCommand === 'city') {
                         prefs.step = STEPS.WAITING_CITY;
-                        saveUserPreferences();
+                        userPrefs.save();
                         await sock.sendPresenceUpdate('paused', userNumber);
                         await sock.sendMessage(userNumber, { text: pickMsg(MSG.CHANGE_CITY, prefs.language) });
                         continue;
                     }
                     if (changeCommand === 'language') {
                         prefs.step = STEPS.WAITING_LANGUAGE;
-                        saveUserPreferences();
+                        userPrefs.save();
                         await sock.sendPresenceUpdate('paused', userNumber);
                         await sock.sendMessage(userNumber, { text: pickMsg(MSG.CHANGE_LANGUAGE, prefs.language) });
                         continue;
@@ -779,7 +642,7 @@ async function connectWhatsApp() {
                         prefs.city = null;
                         prefs.language = null;
                         prefs.pendingQuestion = null;
-                        saveUserPreferences();
+                        userPrefs.save();
                         await sock.sendPresenceUpdate('paused', userNumber);
                         await sock.sendMessage(userNumber, { text: pickMsg(MSG.RESET, prefs.language) });
                         continue;
@@ -793,7 +656,7 @@ async function connectWhatsApp() {
                     // Sauvegarder le message initial comme question en attente
                     prefs.pendingQuestion = messageText;
                     prefs.step = STEPS.WAITING_CITY;
-                    saveUserPreferences();
+                    userPrefs.save();
 
                     await sock.sendPresenceUpdate('paused', userNumber);
                     await sock.sendMessage(userNumber, { text: MSG.WELCOME });
@@ -807,7 +670,7 @@ async function connectWhatsApp() {
                     const cityName = extractCity(messageText);
                     prefs.city = cityName;
                     prefs.step = STEPS.WAITING_LANGUAGE;
-                    saveUserPreferences();
+                    userPrefs.save();
 
                     await sock.sendPresenceUpdate('paused', userNumber);
                     await sock.sendMessage(userNumber, { text: MSG.CITY_OK(cityName) });
@@ -848,13 +711,13 @@ async function connectWhatsApp() {
                     if (prefs.pendingQuestion) {
                         messageText = prefs.pendingQuestion;
                         prefs.pendingQuestion = null;
-                        saveUserPreferences();
+                        userPrefs.save();
 
                         // Continuer le traitement ci-dessous
                         await randomDelay(1000, 2000);
                         await sock.sendPresenceUpdate('composing', userNumber);
                     } else {
-                        saveUserPreferences();
+                        userPrefs.save();
                         continue;
                     }
                 }
@@ -872,7 +735,7 @@ async function connectWhatsApp() {
                         logger.info('[FEEDBACK] Nouveau vocal recu → feedback annulé, traitement direct');
                         prefs.step = STEPS.COMPLETE;
                         prefs.pendingFeedback = null;
-                        saveUserPreferences();
+                        userPrefs.save();
                         // Ne pas return → le code STEPS.COMPLETE ci-dessous traite le message
                     } else {
 
@@ -909,7 +772,7 @@ async function connectWhatsApp() {
                     // Reprendre le mode normal
                     prefs.step = STEPS.COMPLETE;
                     prefs.pendingFeedback = null;
-                    saveUserPreferences();
+                    userPrefs.save();
                     continue; // [fix H] return sortait du handler entier — les msgs suivants du batch étaient perdus
                     } // fin else (feedback texte)
                 }
@@ -981,7 +844,7 @@ async function connectWhatsApp() {
                             keepPresence = false;
                             clearInterval(presenceInterval);
                             await sock.sendPresenceUpdate('paused', userNumber);
-                            await sendExcuseMessage(userNumber, {
+                            await responseSender.sendExcuse(userNumber, {
                                 isVoiceInput,
                                 language: prefs.language,
                                 kind: 'unavailable',
@@ -998,158 +861,15 @@ async function connectWhatsApp() {
                     await sock.sendPresenceUpdate('paused', userNumber);
                     await randomDelay(300, 800);
 
-                    // ========================================
-                    // ENVOI DES REPONSES SELON LA LANGUE ET LE TYPE D'ENTREE
-                    // ========================================
-                    // Logique:
-                    // - Message texte recu -> Reponse texte
-                    // - Message vocal recu -> Reponse audio
-
-                    // FRANCAIS
-                    if (prefs.language === 'french') {
-                        if (isVoiceInput) {
-                            // Entree vocale -> Reponse audio francais
-                            // Note: Pour french, l'audio est dans audio_url (pas audio_url_fr)
-                            if (data.audio_url) {
-                                try {
-                                    const audioUrl = data.audio_url.startsWith('http')
-                                        ? data.audio_url
-                                        : `${WOURI_API_URL}${data.audio_url}`;
-
-                                    const audioResponse = await axios.get(audioUrl, {
-                                        responseType: 'arraybuffer',
-                                        timeout: 30000
-                                    });
-
-                                    await sock.sendPresenceUpdate('recording', userNumber);
-                                    await randomDelay(1000, 2000);
-                                    await sock.sendPresenceUpdate('paused', userNumber);
-
-                                    await sock.sendMessage(userNumber, {
-                                        audio: Buffer.from(audioResponse.data),
-                                        mimetype: 'audio/ogg; codecs=opus',
-                                        ptt: true
-                                    });
-                                    logger.info('[ENVOYE] Audio francais (reponse a vocal)');
-                                } catch (audioErr) {
-                                    logger.warn(`[AUDIO FR] Erreur: ${audioErr.message}`);
-                                    // Fallback: envoyer le texte si audio echoue
-                                    if (data.response) {
-                                        await sock.sendMessage(userNumber, {
-                                            text: `🇫🇷 ${data.response}`
-                                        });
-                                    }
-                                }
-                            } else if (data.response) {
-                                // Pas d'audio disponible, envoyer le texte
-                                await sock.sendMessage(userNumber, {
-                                    text: `🇫🇷 ${data.response}`
-                                });
-                                logger.info('[ENVOYE] Texte francais (audio non disponible)');
-                            }
-                        } else {
-                            // Entree texte -> Reponse texte francais
-                            if (data.response) {
-                                await sock.sendMessage(userNumber, {
-                                    text: `🇫🇷 ${data.response}`
-                                });
-                                logger.info('[ENVOYE] Texte francais (reponse a texte)');
-                            }
-                        }
-                    }
-
-                    // DIOULA — Règle "selon langue choisie" (révisée 2026-05-06) :
-                    //   TOUJOURS audio dioula (peu importe vocal/écrit en entrée).
-                    //   Justification UX : agriculteurs dioula peu alphabétisés, l'audio
-                    //   est critique pour qu'ils accèdent au contenu. Le texte dioula leur
-                    //   sert peu. Fallback texte FR seulement si audio indispo (API TTS down).
-                    else if (prefs.language === 'dioula') {
-                        if (data.audio_url) {
-                            try {
-                                const audioUrl = data.audio_url.startsWith('http')
-                                    ? data.audio_url
-                                    : `${WOURI_API_URL}${data.audio_url}`;
-                                const audioResponse = await axios.get(audioUrl, {
-                                    responseType: 'arraybuffer',
-                                    timeout: 30000
-                                });
-                                await sock.sendPresenceUpdate('recording', userNumber);
-                                await randomDelay(1000, 2000);
-                                await sock.sendPresenceUpdate('paused', userNumber);
-                                await sock.sendMessage(userNumber, {
-                                    audio: Buffer.from(audioResponse.data),
-                                    mimetype: 'audio/ogg; codecs=opus',
-                                    ptt: true
-                                });
-                                logger.info('[ENVOYE] Audio dioula (mode dioula)');
-                            } catch (audioErr) {
-                                logger.warn(`[AUDIO DIOULA] Erreur, fallback texte FR: ${audioErr.message}`);
-                                if (data.response) {
-                                    await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
-                                }
-                            }
-                        } else if (data.response) {
-                            // Pas d'audio_url disponible -> fallback texte FR
-                            await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
-                            logger.info('[ENVOYE] Texte FR (mode dioula, audio_url indispo)');
-                        }
-                    }
-
-                    // BOTH — Règle "selon langue choisie" (révisée 2026-05-06) :
-                    //   TOUJOURS texte FR + audio dioula (combo, le meilleur des deux).
-                    //   Permet aux bilingues de profiter des deux formats sans avoir à
-                    //   choisir entre lire et écouter.
-                    else if (prefs.language === 'both') {
-                        // 1. Toujours envoyer le texte FR
-                        if (data.response) {
-                            await sock.sendMessage(userNumber, { text: `🇫🇷 ${data.response}` });
-                            logger.info('[ENVOYE] Texte FR (mode both)');
-                        }
-
-                        // 2. Toujours envoyer l'audio dioula si disponible
-                        if (data.audio_url) {
-                            try {
-                                await randomDelay(500, 1000);
-                                const audioUrl = data.audio_url.startsWith('http')
-                                    ? data.audio_url
-                                    : `${WOURI_API_URL}${data.audio_url}`;
-                                const audioResponse = await axios.get(audioUrl, {
-                                    responseType: 'arraybuffer',
-                                    timeout: 30000
-                                });
-                                await sock.sendPresenceUpdate('recording', userNumber);
-                                await randomDelay(1000, 2000);
-                                await sock.sendPresenceUpdate('paused', userNumber);
-                                await sock.sendMessage(userNumber, {
-                                    audio: Buffer.from(audioResponse.data),
-                                    mimetype: 'audio/ogg; codecs=opus',
-                                    ptt: true
-                                });
-                                logger.info('[ENVOYE] Audio dioula (mode both)');
-                            } catch (audioErr) {
-                                logger.warn(`[AUDIO DIOULA] Erreur (mode both, texte FR déjà envoyé): ${audioErr.message}`);
-                            }
-                        }
-                    }
-
-                    // ========================================
-                    // PROMPT FEEDBACK C4 (dioula/both uniquement)
-                    // ========================================
-                    if ((prefs.language === 'dioula' || prefs.language === 'both') && data.meta) {
-                        await randomDelay(500, 1000);
-                        await sock.sendMessage(userNumber, {
-                            text: 'I ka jaabi ɲuman ye wa? 👍 / 👎'
-                        });
-                        prefs.pendingFeedback = {
-                            reponse_bambara: data.response_dioula || data.response || '',
-                            reponse_fr: '',
-                            intent: data.meta.intent || '',
-                            cultures: data.meta.cultures || [],
-                            source: data.meta.source || 'unknown'
-                        };
-                        prefs.step = STEPS.WAITING_FEEDBACK;
-                        saveUserPreferences();
-                    }
+                    // Sprint D.2 — envoi via ResponseSender (3 modes + feedback C4)
+                    await responseSender.sendResponse({
+                        data,
+                        prefs,
+                        isVoiceInput,
+                        userNumber,
+                        saveFn: () => userPrefs.save(),
+                        STEPS,
+                    });
                 }
 
             } catch (error) {
@@ -1163,7 +883,7 @@ async function connectWhatsApp() {
                 await randomDelay(500, 1000);
                 // Règle "selon langue choisie" (révisée 2026-05-06) : message d'excuse adapté
                 // au mode utilisateur, plus le texte bilingue fixe.
-                await sendExcuseMessage(userNumber, {
+                await responseSender.sendExcuse(userNumber, {
                     language: prefs.language || 'french',
                     kind: 'unavailable',
                     isVoiceInput,
@@ -1182,7 +902,7 @@ app.get('/', (req, res) => {
         status: 'running',
         name: 'WOURI WhatsApp Server',
         connected: isConnected,
-        users: Object.keys(userPreferences).length
+        users: Object.keys(userPrefs.data).length
     });
 });
 
@@ -1190,7 +910,7 @@ app.get('/status', (req, res) => {
     res.json({
         connected: isConnected,
         qrCode: qrCodeData,
-        users: Object.keys(userPreferences).length
+        users: Object.keys(userPrefs.data).length
     });
 });
 
@@ -1272,7 +992,7 @@ function buildHealthPayload() {
         },
         queue: messageQueue.stats,
         apiCircuit: apiCircuitBreaker.stats,
-        users: Object.keys(userPreferences).length,
+        users: Object.keys(userPrefs.data).length,
     };
 }
 
@@ -1294,7 +1014,7 @@ app.get('/ready', (req, res) => {
 
 app.get('/users', (req, res) => {
     // Retourne les preferences de tous les utilisateurs (sans numero complet pour confidentialite)
-    const users = Object.entries(userPreferences).map(([number, prefs]) => ({
+    const users = Object.entries(userPrefs.data).map(([number, prefs]) => ({
         number: number.substring(0, 8) + '***',
         city: prefs.city,
         language: prefs.language,
@@ -1409,8 +1129,8 @@ async function gracefulShutdown(signal) {
     logger.info(`\n[SHUTDOWN] Signal ${signal} recu — sauvegarde des préférences...`);
     try {
         // Ecriture synchrone bloquante au shutdown (pas de race condition possible ici)
-        fs.writeFileSync(USER_PREFS_FILE, JSON.stringify(userPreferences, null, 2));
-        logger.info(`[SHUTDOWN] Préférences sauvegardées (${Object.keys(userPreferences).length} utilisateurs)`);
+        fs.writeFileSync(userPrefs.filePath, JSON.stringify(userPrefs.data, null, 2));
+        logger.info(`[SHUTDOWN] Préférences sauvegardées (${Object.keys(userPrefs.data).length} utilisateurs)`);
     } catch (err) {
         logger.error(`[SHUTDOWN] Erreur sauvegarde: ${err.message}`);
     }
@@ -1433,7 +1153,7 @@ app.listen(PORT, () => {
     logger.info('========================================');
     logger.info(`API: http://localhost:${PORT}`);
     logger.info(`WOURI API: ${WOURI_API_URL}`);
-    logger.info(`Utilisateurs: ${Object.keys(userPreferences).length}`);
+    logger.info(`Utilisateurs: ${Object.keys(userPrefs.data).length}`);
     logger.info('========================================\n');
 
     connectWhatsApp();
