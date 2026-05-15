@@ -147,6 +147,17 @@ const userPrefs = new UserPrefs({
 const { ResponseSender } = require('./lib/response_sender');
 let responseSender = null;
 
+// Sprint D.3 — state machine onboarding (NEW → WAITING_CITY → WAITING_LANGUAGE → COMPLETE → WAITING_FEEDBACK)
+const { OnboardingMachine } = require('./lib/onboarding');
+const onboardingMachine = new OnboardingMachine({
+    userPrefs,
+    axios,
+    apiUrl: WOURI_API_URL,
+    authHeaders,
+    randomDelay: (min, max) => randomDelay(min, max),
+    logger,
+});
+
 // ========================================
 // FONCTIONS UTILITAIRES
 // ========================================
@@ -405,6 +416,8 @@ async function connectWhatsApp() {
 
     // Sprint D.2 — propager le sock au ResponseSender (sock est mutable post-reconnect)
     responseSender.sock = sock;
+    // Sprint D.3 — propager le sock à OnboardingMachine (même pattern)
+    onboardingMachine.sock = sock;
 
     // Gestion des evenements de connexion
     sock.ev.on('connection.update', async (update) => {
@@ -619,163 +632,14 @@ async function connectWhatsApp() {
                 await sock.sendPresenceUpdate('composing', userNumber);
 
                 // ========================================
-                // DETECTER COMMANDES DE CHANGEMENT
+                // Sprint D.3 — onboarding state machine déléguée à OnboardingMachine
+                //   { handled: null }                    → step=COMPLETE, pass-through
+                //   { handled: true }                    → onboarding traité, continue
+                //   { handled: false, newMessageText }   → onboarding terminé, question à traiter
                 // ========================================
-                const changeCommand = detectChangeCommand(messageText);
-                if (changeCommand && prefs.step === STEPS.COMPLETE) {
-                    if (changeCommand === 'city') {
-                        prefs.step = STEPS.WAITING_CITY;
-                        userPrefs.save();
-                        await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: pickMsg(MSG.CHANGE_CITY, prefs.language) });
-                        continue;
-                    }
-                    if (changeCommand === 'language') {
-                        prefs.step = STEPS.WAITING_LANGUAGE;
-                        userPrefs.save();
-                        await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: pickMsg(MSG.CHANGE_LANGUAGE, prefs.language) });
-                        continue;
-                    }
-                    if (changeCommand === 'reset') {
-                        prefs.step = STEPS.NEW;
-                        prefs.city = null;
-                        prefs.language = null;
-                        prefs.pendingQuestion = null;
-                        userPrefs.save();
-                        await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: pickMsg(MSG.RESET, prefs.language) });
-                        continue;
-                    }
-                }
-
-                // ========================================
-                // ONBOARDING - ETAPE 1: NOUVEAU UTILISATEUR
-                // ========================================
-                if (prefs.step === STEPS.NEW) {
-                    // Sauvegarder le message initial comme question en attente
-                    prefs.pendingQuestion = messageText;
-                    prefs.step = STEPS.WAITING_CITY;
-                    userPrefs.save();
-
-                    await sock.sendPresenceUpdate('paused', userNumber);
-                    await sock.sendMessage(userNumber, { text: MSG.WELCOME });
-                    continue;
-                }
-
-                // ========================================
-                // ONBOARDING - ETAPE 2: ATTENTE VILLE
-                // ========================================
-                if (prefs.step === STEPS.WAITING_CITY) {
-                    const cityName = extractCity(messageText);
-                    prefs.city = cityName;
-                    prefs.step = STEPS.WAITING_LANGUAGE;
-                    userPrefs.save();
-
-                    await sock.sendPresenceUpdate('paused', userNumber);
-                    await sock.sendMessage(userNumber, { text: MSG.CITY_OK(cityName) });
-                    continue;
-                }
-
-                // ========================================
-                // ONBOARDING - ETAPE 3: ATTENTE LANGUE
-                // ========================================
-                if (prefs.step === STEPS.WAITING_LANGUAGE) {
-                    const input = messageText.trim().toLowerCase();
-                    let language = null;
-
-                    if (input === '1' || input.includes('francais') || input.includes('français')) {
-                        language = 'french';
-                    } else if (input === '2' || input.includes('dioula') || input.includes('bambara')) {
-                        language = 'dioula';
-                    } else if (input === '3' || input.includes('deux') || input.includes('both')) {
-                        language = 'both';
-                    }
-
-                    if (!language) {
-                        await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: MSG.LANGUAGE_UNKNOWN });
-                        continue;
-                    }
-
-                    prefs.language = language;
-                    prefs.step = STEPS.COMPLETE;
-
-                    const langText = language === 'french' ? 'Faransi' :
-                                    language === 'dioula' ? 'Dioula' : 'Faransi + Dioula';
-
-                    await sock.sendPresenceUpdate('paused', userNumber);
-                    await sock.sendMessage(userNumber, { text: MSG.PREFS_SAVED(prefs.city, langText) });
-
-                    // Traiter la question en attente s'il y en a une
-                    if (prefs.pendingQuestion) {
-                        messageText = prefs.pendingQuestion;
-                        prefs.pendingQuestion = null;
-                        userPrefs.save();
-
-                        // Continuer le traitement ci-dessous
-                        await randomDelay(1000, 2000);
-                        await sock.sendPresenceUpdate('composing', userNumber);
-                    } else {
-                        userPrefs.save();
-                        continue;
-                    }
-                }
-
-                // ========================================
-                // FEEDBACK 👍/👎 (C4)
-                // ========================================
-                if (prefs.step === STEPS.WAITING_FEEDBACK) {
-                    const fb = prefs.pendingFeedback || {};
-                    const msgLower = messageText.trim().toLowerCase();
-
-                    // Si l'utilisateur envoie un nouveau vocal pendant le feedback
-                    // → ignorer le feedback en cours, traiter directement la nouvelle question
-                    if (isAudioMessage || isVoiceInput) {
-                        logger.info('[FEEDBACK] Nouveau vocal recu → feedback annulé, traitement direct');
-                        prefs.step = STEPS.COMPLETE;
-                        prefs.pendingFeedback = null;
-                        userPrefs.save();
-                        // Ne pas return → le code STEPS.COMPLETE ci-dessous traite le message
-                    } else {
-
-                    // Detecter thumbsup / thumbsdown
-                    const isThumbsUp   = ['👍','oui','yes','bien','ok','super','bon','ɲuman','numan'].some(k => msgLower.includes(k));
-                    const isThumbsDown = ['👎','non','no','mauvais','mal','pas bon','te ɲuman'].some(k => msgLower.includes(k));
-
-                    if (isThumbsUp || isThumbsDown) {
-                        const endpoint = isThumbsUp ? 'positif' : 'negatif';
-                        try {
-                            await axios.post(`${WOURI_API_URL}/api/feedback/${endpoint}`, {
-                                user_id: userNumber,
-                                reponse_bambara: fb.reponse_bambara || '',
-                                reponse_fr: fb.reponse_fr || '',
-                                intent: fb.intent || '',
-                                cultures: fb.cultures || [],
-                                source: fb.source || 'unknown'
-                            }, { timeout: 10000, headers: authHeaders() });
-                            logger.info(`[FEEDBACK] ${endpoint} enregistre pour intent=${fb.intent}`);
-                        } catch (fbErr) {
-                            logger.warn(`[FEEDBACK] Erreur appel API: ${fbErr.message}`);
-                        }
-
-                        // Confirmer et reprendre le mode normal
-                        const confirm = isThumbsUp
-                            ? 'Aw ni ce! 🙏 I ka ladili nɔgɔya n ma.'
-                            : 'N bɛ a faamu. N bɛ jɛ ka ɲɛ. 🙏';
-                        await sock.sendMessage(userNumber, { text: confirm });
-                    } else {
-                        // Message invalide → re-demander
-                        await sock.sendMessage(userNumber, { text: 'I ka jaabi 👍 wala 👎 di.' });
-                    }
-
-                    // Reprendre le mode normal
-                    prefs.step = STEPS.COMPLETE;
-                    prefs.pendingFeedback = null;
-                    userPrefs.save();
-                    continue; // [fix H] return sortait du handler entier — les msgs suivants du batch étaient perdus
-                    } // fin else (feedback texte)
-                }
+                const ob = await onboardingMachine.processStep(prefs, messageText, userNumber, { isAudioMessage, isVoiceInput });
+                if (ob.handled === true) continue;
+                if (ob.newMessageText) messageText = ob.newMessageText;
 
                 // ========================================
                 // TRAITEMENT DES QUESTIONS (ONBOARDING COMPLETE)
