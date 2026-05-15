@@ -144,6 +144,29 @@ describe("OnboardingMachine — construction", () => {
     });
 });
 
+describe("OnboardingMachine — guard sock null (Pattern 12 review D.3)", () => {
+    test("sock=null → handled=true + log warn, aucun appel sock", async () => {
+        const { userPrefs } = makeUserPrefs();
+        const warnings = [];
+        const m = new OnboardingMachine({
+            userPrefs,
+            axios: makeAxiosMock(),
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            randomDelay: noDelay,
+            sock: null,
+            logger: { ...silentLogger, warn: (msg) => warnings.push(msg) },
+        });
+        const prefs = { step: STEPS.NEW, language: null, city: null, pendingQuestion: null };
+        const result = await m.processStep(prefs, "bonjour", "u1", { isAudioMessage: false, isVoiceInput: false });
+        assert.strictEqual(result.handled, true);
+        assert.strictEqual(warnings.length, 1);
+        assert.match(warnings[0], /sock non initialisé/);
+        // Step inchangé : la machine n'a pas pu agir
+        assert.strictEqual(prefs.step, STEPS.NEW);
+    });
+});
+
 describe("OnboardingMachine — STEPS.COMPLETE (pass-through)", () => {
     test("retourne { handled: null } sans rien envoyer", async () => {
         const sock = makeSockMock();
