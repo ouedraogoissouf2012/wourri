@@ -263,19 +263,23 @@ class ChatService:
 
         logger.info("[ChatService] IVR exact: %s (intent=%s)", result['id'], nlu.intent)
         ivr_bambara = result["reponse_bambara"]
+        ivr_fr = result.get("reponse_fr", "")
 
-        # Remplacer {{METEO_CONTEXTUEL}}
-        ivr_bambara = self._inject_meteo(ivr_bambara, weather_data, city)
+        # Remplacer {{METEO_CONTEXTUEL}} (bam) et {{METEO_FR}} (fr)
+        ivr_bambara, ivr_fr = self._inject_meteo(ivr_bambara, ivr_fr, weather_data, city)
 
-        # Sécurité : effacer tags résiduels
+        # Sécurité : effacer tags résiduels dans les 2 langues
         ivr_bambara = re.sub(r'\{\{[^}]+\}\}', '', ivr_bambara).strip()
+        ivr_fr = re.sub(r'\{\{[^}]+\}\}', '', ivr_fr).strip()
 
-        # Conseil saisonnier
+        # Conseil saisonnier (bilingue)
         conseil = get_conseil_saisonnier(cultures, intent=nlu.intent)
         if conseil:
             ivr_bambara = ivr_bambara + " " + conseil["bambara"]
+            if ivr_fr:
+                ivr_fr = ivr_fr + " " + conseil["fr"]
 
-        # TTS
+        # TTS basé sur le bambara (la version dioula reste autoritative pour l'audio)
         audio_url = None
         if include_audio:
             audio_url = await self._synthesize_dioula(ivr_bambara)
@@ -287,7 +291,9 @@ class ChatService:
             phrases_att = []
 
         return ChatResult(
-            response=ivr_bambara,
+            # response = FR par contrat. Fallback bambara uniquement si l'entrée
+            # corpus n'a pas reponse_fr (0/162 actuellement, garde-fou défensif).
+            response=ivr_fr or ivr_bambara,
             response_dioula=ivr_bambara,
             audio_url=audio_url,
             city=city,
@@ -329,18 +335,21 @@ class ChatService:
             logger.info("[ChatService] Action agricole sans culture → clarification")
             return await self._clarify_missing_culture(city, include_audio, language, nlu)
 
-        bambara = self._search_ivr_by_concept(nlu.concepts)
-        if not bambara:
+        ivr_result = self._search_ivr_by_concept(nlu.concepts)
+        if not ivr_result:
             return None
+
+        ivr_bambara = ivr_result["reponse_bambara"]
+        ivr_fr = ivr_result["reponse_fr"]
 
         audio_url = None
         if include_audio:
-            audio_url = await self._synthesize_dioula(bambara)
+            audio_url = await self._synthesize_dioula(ivr_bambara)
 
         cultures = [k for k in nlu.concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
         return ChatResult(
-            response=bambara,
-            response_dioula=bambara,
+            response=ivr_fr or ivr_bambara,
+            response_dioula=ivr_bambara,
             audio_url=audio_url,
             city=city,
             language=language.value,
@@ -375,7 +384,11 @@ class ChatService:
             audio_url = await self._synthesize_dioula(message_dyu)
 
         return ChatResult(
-            response=message_dyu if language == Language.DIOULA else message_fr,
+            # response = FR par contrat (cf. #166). En mode dioula, le whatsapp-server
+            # envoie l'audio dioula ; response sert de fallback texte uniquement si TTS down,
+            # auquel cas le FR explicite (préfixé 🇫🇷) reste plus clair qu'un dioula écrit
+            # avec drapeau FR.
+            response=message_fr,
             response_dioula=message_dyu,
             audio_url=audio_url,
             city=city,
@@ -388,8 +401,13 @@ class ChatService:
             },
         )
 
-    def _search_ivr_by_concept(self, concepts: dict) -> Optional[str]:
-        """Recherche IVR par concept (fallback niveau 2)."""
+    def _search_ivr_by_concept(self, concepts: dict) -> Optional[dict]:
+        """Recherche IVR par concept (fallback niveau 2).
+
+        Retourne un dict {reponse_bambara, reponse_fr} pour permettre au caller
+        d'envoyer la version FR dans `response` et la version dioula dans
+        `response_dioula` (cf. issue #166).
+        """
         if not concepts:
             return None
 
@@ -414,12 +432,18 @@ class ChatService:
                 result = chercher_reponse_ivr(intent=intent_candidat, cultures=cultures, conditions=[])
                 if result:
                     logger.info("[ChatService] IVR concept: %s (intent=%s)", result['id'], intent_candidat)
-                    return result["reponse_bambara"]
+                    return {
+                        "reponse_bambara": result["reponse_bambara"],
+                        "reponse_fr": result.get("reponse_fr", ""),
+                    }
 
             result = chercher_reponse_ivr(intent="CONSEIL_PRODUCTION", cultures=cultures, conditions=[])
             if result:
                 logger.info("[ChatService] IVR concept: %s (CONSEIL_PRODUCTION)", result['id'])
-                return result["reponse_bambara"]
+                return {
+                    "reponse_bambara": result["reponse_bambara"],
+                    "reponse_fr": result.get("reponse_fr", ""),
+                }
 
         except Exception as e:
             logger.error("[ChatService] Erreur recherche concept: %s", e)
@@ -508,19 +532,30 @@ class ChatService:
     # Helpers privés
     # ------------------------------------------------------------------
 
-    def _inject_meteo(self, ivr_bambara: str, weather_data: dict | None, city: str) -> str:
-        """Remplace {{METEO_CONTEXTUEL}} par la météo réelle en bambara."""
-        if "{{METEO_CONTEXTUEL}}" not in ivr_bambara:
-            return ivr_bambara
+    def _inject_meteo(
+        self, ivr_bambara: str, ivr_fr: str, weather_data: dict | None, city: str
+    ) -> tuple[str, str]:
+        """Remplace {{METEO_CONTEXTUEL}} (bam) et {{METEO_FR}} (fr) par la météo réelle.
+
+        Retourne le tuple (bambara, fr). Si aucun tag n'est présent dans aucune
+        des deux versions, retourne les chaînes inchangées (court-circuit).
+        """
+        has_bam_tag = "{{METEO_CONTEXTUEL}}" in ivr_bambara
+        has_fr_tag = "{{METEO_FR}}" in ivr_fr
+        if not has_bam_tag and not has_fr_tag:
+            return ivr_bambara, ivr_fr
 
         from app.data.calendrier_agricole import get_cultures_du_mois
         try:
             cultures_saison = get_cultures_du_mois(city)
-            meteo_bam, _ = _build_meteo_bambara(weather_data, city, cultures_saison)
+            meteo_bam, meteo_fr = _build_meteo_bambara(weather_data, city, cultures_saison)
         except Exception:
-            meteo_bam = ""
+            meteo_bam, meteo_fr = "", ""
 
-        return ivr_bambara.replace("{{METEO_CONTEXTUEL}}", meteo_bam)
+        return (
+            ivr_bambara.replace("{{METEO_CONTEXTUEL}}", meteo_bam),
+            ivr_fr.replace("{{METEO_FR}}", meteo_fr),
+        )
 
     async def _synthesize_dioula(self, text: str) -> Optional[str]:
         """Synthétise du texte dioula en audio (async wrapper)."""
