@@ -1,0 +1,56 @@
+# Wourri — Environnement de développement local
+# ──────────────────────────────────────────────
+# Usage standard :
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# Prérequis :
+#   - Docker Desktop >= 4.x (Windows : avec WSL2 activé)
+#
+# Référence : ADR-0008 §Phase A — Provisionnement environnement Postgres+pgvector.
+# Sprint F Phase A — issue #175.
+#
+# IMPORTANT : ce fichier est destiné UNIQUEMENT au développement local.
+# Le password par défaut (`wourri_dev_2026`) ne doit JAMAIS être réutilisé
+# en staging ou en production. Pour ces environnements, utiliser un
+# gestionnaire de secrets (variables d'environnement injectées par
+# l'orchestrateur, ou outils tels que Vault).
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: wourri_postgres_dev
+    restart: unless-stopped
+    # Port host 5433 (et non 5432) pour éviter le conflit avec une éventuelle
+    # instance PostgreSQL locale installée par pgAdmin, Laragon, etc.
+    # Préfixe `127.0.0.1:` : bind localhost uniquement (et non 0.0.0.0 par défaut)
+    # pour empêcher l'accès depuis le réseau local en télétravail (Wi-Fi café,
+    # hotspot, etc.) — défense en profondeur recommandée par review sécurité.
+    ports:
+      - "127.0.0.1:5433:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wourri}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wourri_dev_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-wourri_dev}
+    volumes:
+      # Named volume Docker : indépendant du chemin machine, invisible dans `git status`.
+      - pgdata_wourri:/var/lib/postgresql/data
+      # Scripts d'initialisation lus au PREMIER démarrage uniquement
+      # (mécanisme docker-entrypoint-initdb.d). Montés en read-only pour
+      # protection contre toute modification accidentelle depuis le container.
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # pg_isready : disponible nativement dans l'image PostgreSQL.
+      # Vérifie que le serveur accepte des connexions TCP.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wourri} -d ${POSTGRES_DB:-wourri_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      # start_period 30s : Docker Desktop Windows démarre plus lentement
+      # qu'un Docker Linux natif. Laisse au container le temps de s'initialiser.
+      start_period: 30s
+
+volumes:
+  # Named volume préfixé pour éviter collision avec d'autres projets Docker locaux.
+  # Reset complet : `docker compose -f docker-compose.dev.yml down -v && docker volume rm pgdata_wourri`
+  pgdata_wourri:
+    name: pgdata_wourri
