@@ -64,7 +64,8 @@ async def feedback_positif(request: Request, req: FeedbackRequest):
     # C3 : auto-apprentissage uniquement pour les réponses de fallback
     if req.source in ("ivr_fallback", "fallback_generic") and req.reponse_bambara:
         try:
-            from app.services.vdb_service import ajouter_reponse_validee
+            # Façade ADR-0008 §Phase C : route vers Chroma (défaut) / dual / pgvector.
+            from app.services.corpus_facade import ajouter_reponse_validee
             ok = ajouter_reponse_validee(
                 intent=req.intent or "CONSEIL_PRODUCTION",
                 cultures=req.cultures or ["*"],
@@ -109,7 +110,8 @@ async def feedback_negatif(request: Request, req: FeedbackRequest):
     corpus_entry_id = None
     if req.intent and req.source == "ivr_exact":
         try:
-            from app.services.vdb_service import chercher_reponse_ivr
+            # Façade ADR-0008 §Phase C : route vers Chroma (défaut) / dual / pgvector.
+            from app.services.corpus_facade import chercher_reponse_ivr
             result = chercher_reponse_ivr(
                 intent=req.intent,
                 cultures=req.cultures or ["*"],

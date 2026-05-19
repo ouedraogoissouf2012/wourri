@@ -3,6 +3,7 @@ WOURI - Configuration
 """
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Literal
 import os
 import sys
 
@@ -97,6 +98,13 @@ class Settings(BaseSettings):
     # d'intégration construisent leur propre URL à partir des variables
     # POSTGRES_* du .env quand `postgres_url` n'est pas défini.
     postgres_url: str = ""
+
+    # Feature flag de bascule storage corpus (ADR-0008 §Phase C).
+    # - "chroma"   : legacy ChromaDB (vdb_service.py) — comportement actuel inchangé (DÉFAUT)
+    # - "dual"     : double-lecture, retourne Chroma (autoritatif), compare pgvector en background
+    # - "pgvector" : PostgreSQL+pgvector seul (Phase E)
+    # Plan de rollback : `corpus_storage_mode=chroma` dans `.env` → restart immédiat.
+    corpus_storage_mode: Literal["chroma", "dual", "pgvector"] = "chroma"
 
     # ========== Omnilingual ASR (ADR-0002, ADR-0003) ==========
     # Provider Omnilingual créé en Phase 2 mais NON activé dans la chain

@@ -23,32 +23,20 @@ import pytest
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
-
-def _resolve_url() -> str:
-    """Cf. cross-référence dans `alembic/env.py::_resolve_url`.
-
-    DIVERGENCE INTENTIONNELLE : retourne `""` au lieu de lever `RuntimeError`,
-    car le `pytestmark = pytest.mark.skipif(...)` ci-dessous a besoin d'une
-    valeur falsy pour décider de skip le module entier proprement.
-    Toute « unification » naïve avec les versions de `alembic/env.py` ou
-    `scripts/import_corpus_ivr.py` casserait le skip et ferait planter
-    pytest dans les environnements sans container Postgres.
-    """
-    url = os.getenv("POSTGRES_URL", "").strip()
-    if url:
-        return url
-    try:
-        from app.config import get_settings
-
-        s = (get_settings().postgres_url or "").strip()
-        if s:
-            return s
-    except Exception:
-        pass
-    return ""
+# Source unique partagée avec alembic/env.py, scripts/import_corpus_ivr.py,
+# app/services/corpus_service.py. `raise_on_missing=False` est la divergence
+# test/prod encodée dans la signature : le skipif ci-dessous a besoin d'une
+# valeur falsy pour décider de skip le module entier proprement.
+from app.db.url_resolver import resolve_postgres_url  # noqa: E402
 
 
 def _postgres_reachable(url: str) -> bool:
+    """Cf. copie dans `tests/integration/test_corpus_facade.py`.
+
+    Duplication intentionnelle (2 consommateurs < seuil 4). À extraire dans
+    `tests/integration/_helpers.py` quand le 4e fichier de tests intégration
+    sera créé (issue #180 documente le pattern).
+    """
     if not url:
         return False
     try:
@@ -57,12 +45,13 @@ def _postgres_reachable(url: str) -> bool:
         engine = create_engine(url, future=True)
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
+        engine.dispose()
         return True
     except Exception:
         return False
 
 
-_URL = _resolve_url()
+_URL = resolve_postgres_url(raise_on_missing=False)
 _REACHABLE = _postgres_reachable(_URL)
 
 pytestmark = pytest.mark.skipif(
