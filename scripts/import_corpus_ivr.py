@@ -56,31 +56,12 @@ try:
 except ImportError:
     pass
 
+# Import APRÈS l'insertion dans sys.path (sinon `app.db` introuvable).
+from app.db.url_resolver import resolve_postgres_url  # noqa: E402
+
 _CORPUS_PATH = _HERE / "dictionnaires" / "corpus_ivr.json"
 _MODEL_PATH = _HERE / "modeles_manuels" / "paraphrase-multilingual-MiniLM-L12-v2"
 _EMBEDDING_DIM = 384
-
-
-def _resolve_url() -> str:
-    """Cf. cross-référence dans `alembic/env.py::_resolve_url` (duplication
-    intentionnelle, contrat identique : lève `RuntimeError` si URL absente).
-    La version dans `tests/integration/test_corpus_schema.py` diverge
-    intentionnellement (retourne `""` pour le skipif)."""
-    url = os.getenv("POSTGRES_URL", "").strip()
-    if url:
-        return url
-    try:
-        from app.config import get_settings
-
-        s = (get_settings().postgres_url or "").strip()
-        if s:
-            return s
-    except Exception:
-        pass
-    raise RuntimeError(
-        "POSTGRES_URL non définie. Renseignez-la dans wouri-api/.env "
-        "(cf. .env.example) ou exportez-la avant d'invoquer ce script."
-    )
 
 
 def _build_document_text(entry: dict) -> str:
@@ -227,7 +208,7 @@ def _upsert_metadata(conn, corpus: dict, n_entries: int) -> None:
 
 def main() -> int:
     print("[IMPORT] Wourri — Import corpus IVR → PostgreSQL + pgvector (Phase B)")
-    url = _resolve_url()
+    url = resolve_postgres_url()
     # Masque le mot de passe dans les logs (cohérent avec pratique projet).
     safe_url = url
     if "@" in url and "://" in url:

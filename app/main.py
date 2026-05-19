@@ -109,9 +109,11 @@ async def lifespan(app: FastAPI):
     # Coût accepté : ~30-60s sur le 1er vocal FR par démarrage.
     # Timeout côté WhatsApp Baileys = 180s, marge confortable.
 
-    # 5. Pré-initialiser la BD vectorielle IVR (Chroma + corpus bambara)
+    # 5. Pré-initialiser la BD vectorielle IVR via la façade ADR-0008 §Phase C
+    # (mode `chroma` défaut → équivalent à initialiser_vdb legacy ;
+    #  mode `dual` → préchargement chroma + pgvector ; mode `pgvector` → pgvector seul)
     try:
-        from app.services.vdb_service import initialiser_vdb
+        from app.services.corpus_facade import initialiser_vdb
         logger.info("[PRELOAD] Initialisation BD vectorielle IVR (corpus bambara pré-validé)...")
         initialiser_vdb()
     except Exception as e:

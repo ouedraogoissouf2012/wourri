@@ -240,7 +240,9 @@ class ChatService:
         language: Language,
     ) -> Optional[ChatResult]:
         """Cherche une réponse IVR exacte par intent + culture."""
-        from app.services.vdb_service import chercher_reponse_ivr, get_phrases_for_intent
+        # Façade ADR-0008 §Phase C : route vers Chroma (défaut) / dual / pgvector
+        # via `corpus_storage_mode`. API identique à `vdb_service`.
+        from app.services.corpus_facade import chercher_reponse_ivr, get_phrases_for_intent
 
         cultures = [k for k in nlu.concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
         conditions = [k for k in nlu.concepts if k.startswith("PROBLEME_") or k.startswith("TEMPS_")]
@@ -411,7 +413,8 @@ class ChatService:
         if not concepts:
             return None
 
-        from app.services.vdb_service import chercher_reponse_ivr
+        # Façade ADR-0008 §Phase C : route vers Chroma (défaut) / dual / pgvector.
+        from app.services.corpus_facade import chercher_reponse_ivr
 
         cultures = [k for k in concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
         if not cultures:
