@@ -37,3 +37,17 @@ psutil>=5.9.0
 
 # BD Vectorielle IVR
 chromadb>=0.4.0
+
+# ========== PostgreSQL + pgvector (Sprint F Phase B — ADR-0008) ==========
+# Migration progressive ChromaDB -> Postgres+pgvector :
+# - Phase B (en cours) : schema + migrations + import corpus (code NON activé en prod)
+# - Phase C : adapter + double-écriture (feature flag)
+# - Phase D : validation terrain
+# - Phase E : bascule + dépréciation chromadb
+sqlalchemy==2.0.49
+alembic==1.18.4
+psycopg[binary]==3.3.4
+pgvector==0.4.2
+# sentence-transformers : déjà tiré par chromadb mais on l'épingle explicitement
+# car scripts/import_corpus_ivr.py l'importe directement (pas via vdb_service)
+sentence-transformers>=2.2.0

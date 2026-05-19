@@ -88,6 +88,16 @@ class Settings(BaseSettings):
     # Blocklist d'hallucinations ASR (fichier JSON éditable).
     asr_hallucinations_path: str = "data/asr_hallucinations_dyu.json"
 
+    # ========== PostgreSQL + pgvector (Sprint F — ADR-0008) ==========
+    # URL de connexion Postgres au format psycopg :
+    #   postgresql+psycopg://user:password@host:port/database
+    # Valeur par défaut vide : Phase B est purement additive, aucun code prod
+    # ne se connecte à Postgres tant que Phase C (adapter + double-écriture)
+    # n'est pas livrée. Le script `scripts/import_corpus_ivr.py` et les tests
+    # d'intégration construisent leur propre URL à partir des variables
+    # POSTGRES_* du .env quand `postgres_url` n'est pas défini.
+    postgres_url: str = ""
+
     # ========== Omnilingual ASR (ADR-0002, ADR-0003) ==========
     # Provider Omnilingual créé en Phase 2 mais NON activé dans la chain
     # (sera activé en Phase 4 après benchmark Phase 3).
