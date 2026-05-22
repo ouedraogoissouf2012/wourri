@@ -21,33 +21,11 @@ from unittest.mock import patch
 import pytest
 
 from app.db.url_resolver import resolve_postgres_url
+from tests.integration._helpers import postgres_reachable
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 _URL = resolve_postgres_url(raise_on_missing=False)
-
-
-def _postgres_reachable(url: str) -> bool:
-    """Cf. copie dans `tests/integration/test_corpus_schema.py`.
-
-    Duplication intentionnelle (2 consommateurs < seuil 4). À extraire dans
-    `tests/integration/_helpers.py` quand le 4e fichier de tests intégration
-    sera créé.
-    """
-    if not url:
-        return False
-    try:
-        from sqlalchemy import create_engine, text
-
-        engine = create_engine(url, future=True)
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        engine.dispose()
-        return True
-    except Exception:
-        return False
-
-
-_REACHABLE = _postgres_reachable(_URL)
+_REACHABLE = postgres_reachable(_URL)
 
 pytestmark = pytest.mark.skipif(
     not _REACHABLE,

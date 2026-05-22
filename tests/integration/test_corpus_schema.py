@@ -28,31 +28,10 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 # test/prod encodée dans la signature : le skipif ci-dessous a besoin d'une
 # valeur falsy pour décider de skip le module entier proprement.
 from app.db.url_resolver import resolve_postgres_url  # noqa: E402
-
-
-def _postgres_reachable(url: str) -> bool:
-    """Cf. copie dans `tests/integration/test_corpus_facade.py`.
-
-    Duplication intentionnelle (2 consommateurs < seuil 4). À extraire dans
-    `tests/integration/_helpers.py` quand le 4e fichier de tests intégration
-    sera créé (issue #180 documente le pattern).
-    """
-    if not url:
-        return False
-    try:
-        from sqlalchemy import create_engine, text
-
-        engine = create_engine(url, future=True)
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        engine.dispose()
-        return True
-    except Exception:
-        return False
-
+from tests.integration._helpers import postgres_reachable  # noqa: E402
 
 _URL = resolve_postgres_url(raise_on_missing=False)
-_REACHABLE = _postgres_reachable(_URL)
+_REACHABLE = postgres_reachable(_URL)
 
 pytestmark = pytest.mark.skipif(
     not _REACHABLE,
