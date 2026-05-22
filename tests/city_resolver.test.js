@@ -87,11 +87,60 @@ describe("city_resolver — isValidCity", () => {
         assert.strictEqual(isValidCity("xyz"), false);
     });
 
-    test("Sous-chaîne courte de ville connue → true (asymétrie identifiée #161)", () => {
-        // Comportement actuel : 'bou' est sous-chaîne de 'bouake' → match.
-        // Asymétrie pré-existante documentée dans #161 (à corriger sprint futur).
-        // Ce test verrouille le comportement actuel pour éviter régression accidentelle.
-        assert.strictEqual(isValidCity("bou"), true);
+    test("Sous-chaîne courte de ville connue → false (Sprint H.2b correctif #161)", () => {
+        // **Changement de spécification** : avant H.2b, ce test asserait `true`
+        // (comportement buggé jugé incorrect — issue #161). Sprint H.2b a corrigé
+        // l'asymétrie API : `isValidCity` utilise maintenant
+        // word-boundary regex (comme `extractCity` étapes 2-3). Les sous-chaînes
+        // courtes ne matchent plus :
+        // - 'bou' n'est plus matché comme sous-chaîne de 'bouake'
+        // - 'ko' n'est plus matché comme sous-chaîne de 'korhogo' ou 'yamoussoukro'
+        // - 'da' n'est plus matché comme sous-chaîne de 'daloa' ou 'yopougon'
+        assert.strictEqual(isValidCity("bou"), false);
+        assert.strictEqual(isValidCity("ko"), false);
+        assert.strictEqual(isValidCity("da"), false);
+        assert.strictEqual(isValidCity("be"), false);
+    });
+});
+
+describe("city_resolver — Sprint H.2b — isValidCity DoS + faux positifs (issue #161)", () => {
+    test("DoS borne : input 10 000 chars → < 50ms (preuve MAX_TEXT_LENGTH active)", () => {
+        // Sans borne : ~55 regex word-boundary sur 10k chars + ~N substring includes
+        // → potentiellement plusieurs centaines de ms. Avec borne 500 chars → rapide.
+        const huge = "a".repeat(10000);
+        const t0 = Date.now();
+        const result = isValidCity(huge);
+        const elapsed = Date.now() - t0;
+        assert.ok(typeof result === "boolean"); // ne plante pas
+        assert.ok(elapsed < 50, `isValidCity 10k chars a pris ${elapsed}ms (attendu < 50ms)`);
+    });
+
+    test("Ville complète valide non-régression : 'bouake' → true", () => {
+        // Vérifie que le fix word-boundary ne casse pas le golden path.
+        assert.strictEqual(isValidCity("bouake"), true);
+        assert.strictEqual(isValidCity("abidjan"), true);
+        assert.strictEqual(isValidCity("yamoussoukro"), true);
+    });
+
+    test("Ville dans une phrase → true (word-boundary fonctionne)", () => {
+        // Word-boundary matche au milieu de phrase mais pas en sous-chaîne arbitraire.
+        assert.strictEqual(isValidCity("je suis a bouake"), true);
+        assert.strictEqual(isValidCity("bonjour abidjan ca va"), true);
+        assert.strictEqual(isValidCity("daloa est ma ville"), true);
+    });
+
+    test("Correction STT matchée par word-boundary : 'main' → true (correction pour Man)", () => {
+        // CITY_CORRECTIONS contient "main" → "man". Le word-boundary permet de matcher
+        // "main" comme mot entier mais PAS "mainstream" (qui contient "main" en préfixe).
+        assert.strictEqual(isValidCity("main"), true);  // mot entier
+        assert.strictEqual(isValidCity("mainstream"), false);  // sous-chaîne — faux positif corrigé
+    });
+
+    test("Texte hors-sujet → false (anti-faux-positif)", () => {
+        // Ces textes ne contiennent aucune ville comme mot entier.
+        assert.strictEqual(isValidCity("paris est belle"), false);
+        assert.strictEqual(isValidCity("xyz random text"), false);
+        assert.strictEqual(isValidCity(""), false);
     });
 });
 
