@@ -243,6 +243,178 @@ describe("AsrClient — transcribeAudioBambara (MMS Dioula)", () => {
     });
 });
 
+/**
+ * Logger qui enregistre tous les appels pour inspection.
+ * Permet de vérifier le contenu des logs (PII masqué, URL maskée).
+ */
+function makeRecordingLogger() {
+    const calls = { info: [], warn: [], error: [] };
+    return {
+        calls,
+        info: (msg) => calls.info.push(msg),
+        warn: (msg) => calls.warn.push(msg),
+        error: (msg) => calls.error.push(msg),
+    };
+}
+
+describe("AsrClient — Sprint H.1b — sécurité logs (issue #161)", () => {
+    test("transcribeAudio : URL backend NE doit PAS être loggée (anti-leak credentials)", async () => {
+        // Simule WOURI_API_URL avec credentials embarqués (cas pathologique)
+        const axiosMock = makeAxiosMock([
+            { status: 200, data: { text: "Bonjour" } },
+        ]);
+        const logger = makeRecordingLogger();
+        const client = new AsrClient({
+            apiUrl: "http://user:secret@malicious-host:8000",
+            authHeaders: () => ({}),
+            logger,
+            axios: axiosMock,
+        });
+
+        await client.transcribeAudio(Buffer.from("fake"));
+
+        // Aucun log ne doit contenir la base URL avec credentials
+        const allLogs = logger.calls.info.join(" | ");
+        assert.ok(!allLogs.includes("secret"), `Log fuit le password: ${allLogs}`);
+        assert.ok(!allLogs.includes("user:"), `Log fuit le username: ${allLogs}`);
+        assert.ok(!allLogs.includes("malicious-host"), `Log fuit le host: ${allLogs}`);
+        // Mais on doit garder le path pour debug
+        assert.ok(allLogs.includes("/api/stt/transcribe"), "Le path doit rester loggé pour debug");
+    });
+
+    test("transcribeAudioBambara : URL backend NE doit PAS être loggée", async () => {
+        const axiosMock = makeAxiosMock([
+            { status: 200, data: { transcription: "i ni ce", french_translation: "bonjour" } },
+        ]);
+        const logger = makeRecordingLogger();
+        const client = new AsrClient({
+            apiUrl: "http://user:secret@host:8000",
+            authHeaders: () => ({}),
+            logger,
+            axios: axiosMock,
+        });
+
+        await client.transcribeAudioBambara(Buffer.from("fake"));
+
+        const allLogs = logger.calls.info.join(" | ");
+        assert.ok(!allLogs.includes("secret"), `Log fuit le password: ${allLogs}`);
+        assert.ok(!allLogs.includes("user:"), `Log fuit le username: ${allLogs}`);
+        assert.ok(allLogs.includes("/api/asr/transcribe-and-translate"), "Le path doit rester loggé");
+    });
+
+    test("transcribeAudioBambara : transcription longue (>50 chars) tronquée dans les logs (PII)", async () => {
+        const longTranscription = "ne be malo senɛ ka ji caman di a ma sanji tuma na, n ko ne be a fɛ ka fɛn caman dɔn";
+        const longTranslation = "Je plante du riz et donne beaucoup d eau pendant la saison des pluies, je veux apprendre beaucoup";
+        const longNlu = "QUESTION_IRRIGATION + CULTURE_RIZ + TEMPS_SAISON_PLUIE → demande conseil irrigation riz saison pluies";
+
+        assert.ok(longTranscription.length > 50, "setup test : transcription > 50 chars");
+        assert.ok(longTranslation.length > 50, "setup test : translation > 50 chars");
+        assert.ok(longNlu.length > 50, "setup test : nlu > 50 chars");
+
+        const axiosMock = makeAxiosMock([
+            {
+                status: 200,
+                data: {
+                    transcription: longTranscription,
+                    french_translation: longTranslation,
+                    nlu_message: longNlu,
+                },
+            },
+        ]);
+        const logger = makeRecordingLogger();
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger,
+            axios: axiosMock,
+        });
+
+        await client.transcribeAudioBambara(Buffer.from("fake"));
+
+        const allLogs = logger.calls.info.join(" | ");
+        // Aucun log ne contient le contenu COMPLET (PII)
+        assert.ok(!allLogs.includes(longTranscription), "Log contient la transcription complète (PII leak)");
+        assert.ok(!allLogs.includes(longTranslation), "Log contient la traduction complète (PII leak)");
+        assert.ok(!allLogs.includes(longNlu), "Log contient le NLU complet (PII leak)");
+        // Mais doit contenir le préfixe + "..." pour debug
+        assert.ok(allLogs.includes(longTranscription.slice(0, 50) + "..."), "Log doit tronquer transcription à 50 chars + ...");
+        assert.ok(allLogs.includes(longTranslation.slice(0, 50) + "..."), "Log doit tronquer translation à 50 chars + ...");
+        assert.ok(allLogs.includes(longNlu.slice(0, 50) + "..."), "Log doit tronquer nluMessage à 50 chars + ...");
+    });
+
+    test("Edge case : transcription null/vide → log vide propre (pas 'null')", async () => {
+        // Cas où l'API retourne transcription absente ou string vide :
+        // le log doit produire "" intact (pas "null" ni "undefined").
+        const axiosMock = makeAxiosMock([
+            { status: 200, data: { transcription: "", french_translation: "" } },
+        ]);
+        const logger = makeRecordingLogger();
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger,
+            axios: axiosMock,
+        });
+        await client.transcribeAudioBambara(Buffer.from("fake"));
+        const allLogs = logger.calls.info.join(" | ");
+        assert.ok(!allLogs.includes('"null"'), `Log ne doit pas contenir "null": ${allLogs}`);
+        assert.ok(!allLogs.includes('"undefined"'), `Log ne doit pas contenir "undefined": ${allLogs}`);
+    });
+
+    test("catch error : message PII potentiellement dans error.message → tronqué (100 chars)", async () => {
+        // Simule une erreur HTTP 422 dont le message inclut la transcription user
+        // (ce que axios peut faire si le backend renvoie le body dans error.message)
+        const piiInError = "Le bot a recu: ne be malo senɛ ka ji caman di a ma sanji tuma na n ko ne be a fɛ ka fɛn caman dɔn kɔni";
+        assert.ok(piiInError.length > 100, "setup test : error message > 100 chars");
+
+        const axiosError = new Error(piiInError);
+        axiosError.code = "ERR_BAD_REQUEST";
+        axiosError.response = { status: 422 };
+
+        const axiosMock = makeAxiosMock([axiosError, axiosError]); // 2 erreurs (bambara + fallback FR)
+        const logger = makeRecordingLogger();
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger,
+            axios: axiosMock,
+        });
+
+        await client.transcribeAudioBambara(Buffer.from("fake"));
+
+        // Vérifier qu'aucun log d'erreur ne contient la PII complète
+        const allErrors = logger.calls.error.join(" | ");
+        assert.ok(!allErrors.includes(piiInError), `Log error fuit la PII complète: ${allErrors}`);
+        // Mais doit contenir un préfixe tronqué (100 chars)
+        assert.ok(allErrors.includes(piiInError.slice(0, 100)), "Log error doit garder préfixe tronqué pour debug");
+    });
+
+    test("transcribeAudioBambara : transcription courte (≤50 chars) NON tronquée (debug intact)", async () => {
+        const shortText = "i ni ce"; // 7 chars
+        const axiosMock = makeAxiosMock([
+            {
+                status: 200,
+                data: { transcription: shortText, french_translation: "bonjour" },
+            },
+        ]);
+        const logger = makeRecordingLogger();
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger,
+            axios: axiosMock,
+        });
+
+        await client.transcribeAudioBambara(Buffer.from("fake"));
+
+        const allLogs = logger.calls.info.join(" | ");
+        // Texte court → loggé intégralement (debug normal)
+        assert.ok(allLogs.includes(`"${shortText}"`), `Log doit contenir transcription courte intacte: ${allLogs}`);
+        // Pas d'ellipsis ajoutée à tort
+        assert.ok(!allLogs.includes("..."), "Log ne doit pas ajouter ... sur texte court");
+    });
+});
+
 describe("AsrClient — authHeaders dynamique", () => {
     test("authHeaders() est invoqué à chaque requête (pas de cache)", async () => {
         let callCount = 0;
