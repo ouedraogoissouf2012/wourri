@@ -281,10 +281,11 @@ class TestSearchIVRByConcept:
     def setup_method(self):
         self.service = ChatService()
 
-    def test_no_concepts_returns_none(self):
-        assert self.service._search_ivr_by_concept({}) is None
+    async def test_no_concepts_returns_none(self):
+        """Sprint G.2 : `_search_ivr_by_concept` est désormais async."""
+        assert await self.service._search_ivr_by_concept({}) is None
 
-    def test_action_planter_without_culture_returns_none(self):
+    async def test_action_planter_without_culture_returns_none(self):
         """ACTION_PLANTER sans culture → None (déclenche clarification en amont, Fix #94).
 
         Fix #94 a supprimé le fallback silencieux ACTION_PLANTER → CULTURE_MAIS.
@@ -295,19 +296,19 @@ class TestSearchIVRByConcept:
         Invariant verrouillé : `chercher_reponse_ivr` ne doit PAS être appelé
         dans ce cas (sinon réintroduction silencieuse d'un fallback).
         """
-        with patch("app.services.vdb_service.chercher_reponse_ivr") as mock_vdb:
-            result = self.service._search_ivr_by_concept({"ACTION_PLANTER": True})
+        with patch("app.services.corpus_facade.chercher_reponse_ivr") as mock_vdb:
+            result = await self.service._search_ivr_by_concept({"ACTION_PLANTER": True})
             assert result is None
             mock_vdb.assert_not_called()
 
-    def test_culture_without_action_uses_conseil_production(self):
+    async def test_culture_without_action_uses_conseil_production(self):
         """Culture sans action → CONSEIL_PRODUCTION par défaut."""
-        with patch("app.services.vdb_service.chercher_reponse_ivr") as mock_vdb:
+        with patch("app.services.corpus_facade.chercher_reponse_ivr") as mock_vdb:
             mock_vdb.return_value = {
                 "id": "riz_conseil_001",
                 "reponse_bambara": "Malo sɛnɛ..."
             }
-            result = self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
+            result = await self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
             assert result is not None
 
 
@@ -342,30 +343,33 @@ class TestIVRResponseContract:
     def setup_method(self):
         self.service = ChatService()
 
-    def test_search_ivr_by_concept_returns_dict_with_both_languages(self):
-        """`_search_ivr_by_concept` retourne un dict avec reponse_bambara + reponse_fr."""
-        with patch("app.services.vdb_service.chercher_reponse_ivr") as mock_vdb:
+    async def test_search_ivr_by_concept_returns_dict_with_both_languages(self):
+        """`_search_ivr_by_concept` retourne un dict avec reponse_bambara + reponse_fr.
+
+        Sprint G.2 : méthode async (to_thread sur chercher_reponse_ivr).
+        """
+        with patch("app.services.corpus_facade.chercher_reponse_ivr") as mock_vdb:
             mock_vdb.return_value = {
                 "id": "riz_conseil_001",
                 "reponse_bambara": "Malo sɛnɛ kalo la sanji tuma na.",
                 "reponse_fr": "Plante ton riz en mai pendant la saison des pluies.",
             }
-            result = self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
+            result = await self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
             assert isinstance(result, dict), "doit retourner un dict (#166), pas une str"
             assert "reponse_bambara" in result
             assert "reponse_fr" in result
             assert result["reponse_fr"] == "Plante ton riz en mai pendant la saison des pluies."
             assert "Malo" in result["reponse_bambara"]
 
-    def test_search_ivr_by_concept_fallback_fr_empty_when_missing(self):
+    async def test_search_ivr_by_concept_fallback_fr_empty_when_missing(self):
         """Si `reponse_fr` manque dans l'entrée corpus, retour dict avec reponse_fr=''."""
-        with patch("app.services.vdb_service.chercher_reponse_ivr") as mock_vdb:
+        with patch("app.services.corpus_facade.chercher_reponse_ivr") as mock_vdb:
             mock_vdb.return_value = {
                 "id": "test",
                 "reponse_bambara": "Malo sɛnɛ.",
                 # reponse_fr volontairement absent
             }
-            result = self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
+            result = await self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
             assert result is not None
             assert result["reponse_fr"] == ""
             assert result["reponse_bambara"] == "Malo sɛnɛ."
