@@ -245,15 +245,35 @@ describe("AsrClient — transcribeAudioBambara (MMS Dioula)", () => {
 
 /**
  * Logger qui enregistre tous les appels pour inspection.
- * Permet de vérifier le contenu des logs (PII masqué, URL maskée).
+ *
+ * Supporte l'API pino à 2 args : `logger.info(obj, msg)` (Sprint H.2a) ET
+ * l'API à 1 arg : `logger.info(msg)`.
+ *
+ * `calls.{info|warn|error}` : version stringifiée (objet + msg combinés) —
+ *   les assertions `.includes(...)` existantes continuent de marcher.
+ * `calls.structured.{info|warn|error}` : version structurée (`{ctx, msg}`) —
+ *   permet aux nouveaux tests H.2a de vérifier la présence/forme du contexte.
  */
 function makeRecordingLogger() {
-    const calls = { info: [], warn: [], error: [] };
+    const calls = {
+        info: [], warn: [], error: [],
+        structured: { info: [], warn: [], error: [] },
+    };
+    const pushFn = (level) => (...args) => {
+        // pino convention : logger.info(obj, msg) OU logger.info(msg)
+        if (args.length >= 2 && typeof args[0] === "object" && args[0] !== null) {
+            calls.structured[level].push({ ctx: args[0], msg: args[1] });
+            calls[level].push(JSON.stringify(args[0]) + " " + args[1]);
+        } else {
+            calls.structured[level].push({ ctx: null, msg: args[0] });
+            calls[level].push(String(args[0]));
+        }
+    };
     return {
         calls,
-        info: (msg) => calls.info.push(msg),
-        warn: (msg) => calls.warn.push(msg),
-        error: (msg) => calls.error.push(msg),
+        info: pushFn("info"),
+        warn: pushFn("warn"),
+        error: pushFn("error"),
     };
 }
 
@@ -412,6 +432,83 @@ describe("AsrClient — Sprint H.1b — sécurité logs (issue #161)", () => {
         assert.ok(allLogs.includes(`"${shortText}"`), `Log doit contenir transcription courte intacte: ${allLogs}`);
         // Pas d'ellipsis ajoutée à tort
         assert.ok(!allLogs.includes("..."), "Log ne doit pas ajouter ... sur texte court");
+    });
+});
+
+describe("AsrClient — Sprint H.2a — format pino objet-contexte (issue #161)", () => {
+    test("transcribeAudio : tous les logs respectent l'API pino (ctx, msg)", async () => {
+        const axiosMock = makeAxiosMock([{ status: 200, data: { text: "Bonjour" } }]);
+        const logger = makeRecordingLogger();
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger,
+            axios: axiosMock,
+        });
+        await client.transcribeAudio(Buffer.from("fake"));
+
+        // 2 logs info attendus : "Appel API" + "Reponse API recue", chacun avec ctx
+        const structured = logger.calls.structured.info;
+        assert.ok(structured.length >= 2, `attendu >= 2 logs info, recu ${structured.length}`);
+        // Log "Appel API" doit avoir { path: ... }
+        const appelLog = structured.find((s) => s.msg === "[STT] Appel API");
+        assert.ok(appelLog, "Log '[STT] Appel API' absent");
+        assert.deepStrictEqual(appelLog.ctx, { path: "/api/stt/transcribe" });
+        // Log "Reponse API recue" doit avoir { status: 200 }
+        const reponseLog = structured.find((s) => s.msg === "[STT] Reponse API recue");
+        assert.ok(reponseLog, "Log '[STT] Reponse API recue' absent");
+        assert.strictEqual(reponseLog.ctx.status, 200);
+    });
+
+    test("transcribeAudioBambara erreur : log error utilise { code, errMsg } (pino)", async () => {
+        const axiosError = new Error("Network error");
+        axiosError.code = "ECONNREFUSED";
+        // Mock retourne 2 erreurs (bambara + fallback FR)
+        const axiosMock = makeAxiosMock([axiosError, axiosError]);
+        const logger = makeRecordingLogger();
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger,
+            axios: axiosMock,
+        });
+        await client.transcribeAudioBambara(Buffer.from("fake"));
+
+        // Log error doit avoir { code, errMsg } — `errMsg` car `msg` est réservé pino
+        const errLog = logger.calls.structured.error.find(
+            (s) => s.msg === "[ASR-BAMBARA] Erreur transcription",
+        );
+        assert.ok(errLog, "Log error '[ASR-BAMBARA] Erreur transcription' absent");
+        assert.strictEqual(errLog.ctx.code, "ECONNREFUSED");
+        assert.ok(typeof errLog.ctx.errMsg === "string", "ctx.errMsg doit être une string");
+        assert.ok(errLog.ctx.errMsg.length > 0, "ctx.errMsg ne doit pas être vide");
+        // Anti-régression : la clé pino réservée `msg` ne doit PAS apparaître dans le ctx
+        assert.ok(!("msg" in errLog.ctx), "ctx ne doit pas contenir la clé réservée pino 'msg'");
+    });
+
+    test("transcribeAudio erreur : log error utilise { code, errMsg } (symétrique Bambara)", async () => {
+        // Symétrie avec le test Bambara (couverture du contrat pino sur les 2 méthodes).
+        const axiosError = new Error("HTTP 422 - body might contain user input");
+        axiosError.code = "ERR_BAD_REQUEST";
+        axiosError.response = { status: 422 };
+        const axiosMock = makeAxiosMock([axiosError]);
+        const logger = makeRecordingLogger();
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger,
+            axios: axiosMock,
+        });
+        await client.transcribeAudio(Buffer.from("fake"));
+
+        const errLog = logger.calls.structured.error.find(
+            (s) => s.msg === "[STT] Erreur transcription",
+        );
+        assert.ok(errLog, "Log error '[STT] Erreur transcription' absent");
+        // error.code prioritaire sur error.response.status
+        assert.strictEqual(errLog.ctx.code, "ERR_BAD_REQUEST");
+        assert.ok(typeof errLog.ctx.errMsg === "string");
+        assert.ok(!("msg" in errLog.ctx), "ctx ne doit pas contenir la clé réservée pino 'msg'");
     });
 });
 
