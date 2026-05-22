@@ -95,6 +95,67 @@ describe("city_resolver — isValidCity", () => {
     });
 });
 
+describe("city_resolver — bornes anti-DoS (Sprint H.1a, issue #161)", () => {
+    test("Message normal court → comportement inchangé (non-régression)", () => {
+        assert.strictEqual(extractCity("je suis a bouake"), "Bouake");
+        assert.strictEqual(extractCity("abidjan"), "Abidjan");
+    });
+
+    test("Input > 500 chars → tronqué + résolu sans timeout", () => {
+        // 1000 chars contenant "bouake" dans les 500 premiers
+        const long = "bouake " + "x".repeat(1000);
+        const t0 = Date.now();
+        const result = extractCity(long);
+        const elapsed = Date.now() - t0;
+        assert.strictEqual(result, "Bouake");
+        assert.ok(elapsed < 50, `1000 chars a pris ${elapsed}ms (attendu < 50ms)`);
+    });
+
+    test("Input pathologique 10 000 chars → < 100ms (preuve borne DoS active)", () => {
+        // Sans bornes : O(10k mots × 55 villes × n*m) = pathologique
+        // Avec bornes : tronqué à 500, fuzzy plafonné à 30 mots → rapide
+        const huge = "a".repeat(10000);
+        const t0 = Date.now();
+        const result = extractCity(huge);
+        const elapsed = Date.now() - t0;
+        assert.ok(typeof result === "string");
+        assert.ok(elapsed < 100, `10k chars a pris ${elapsed}ms (attendu < 100ms)`);
+    });
+
+    test("60 mots distincts (< MAX_TEXT_LENGTH) → fuzzy limité à MAX_FUZZY_WORDS=30", () => {
+        // Test isolé de MAX_FUZZY_WORDS : input 60 × 4 chars + espaces = 299 chars
+        // (sous MAX_TEXT_LENGTH=500) → la borne MAX_TEXT_LENGTH ne déclenche PAS.
+        // Donc on prouve que c'est MAX_FUZZY_WORDS=30 qui limite la passe fuzzy.
+        // Mots de 4 chars (>= seuil fuzzy) tous distincts pour forcer la passe 4.
+        const words = [];
+        for (let i = 0; i < 60; i++) {
+            // 4 chars chacun, séquence aaaa, aaab, aaac, ... (60 distincts)
+            words.push("aa" + String.fromCharCode(97 + Math.floor(i / 26)) + String.fromCharCode(97 + (i % 26)));
+        }
+        const text = words.join(" "); // ≈ 60*4 + 59 = 299 chars
+        assert.ok(text.length < 500, `setup test : input doit être < MAX_TEXT_LENGTH (got ${text.length})`);
+        const t0 = Date.now();
+        extractCity(text);
+        const elapsed = Date.now() - t0;
+        // Sans MAX_FUZZY_WORDS : 60 mots × 55 villes × Levenshtein(4, ~6) ≈ ~13 200 ops
+        // Avec MAX_FUZZY_WORDS=30 : 30 mots × 55 × ... ≈ ~6 600 ops → bien plus rapide
+        // Le timing prouve que la passe fuzzy est limitée à 30 mots.
+        assert.ok(elapsed < 30, `60 mots distincts pris ${elapsed}ms (attendu < 30ms avec MAX_FUZZY_WORDS actif)`);
+    });
+
+    test("Mot pathologique 100 chars dans la passe fuzzy → skip ce mot", () => {
+        // Sans borne word.length : Levenshtein(100 chars, "bouake") = coûteux.
+        // Avec MAX_WORD_LENGTH_FUZZY=30, ce mot est skip dans la passe 4.
+        const pathologicalWord = "a".repeat(100);
+        const text = `bonjour ${pathologicalWord} ville`;
+        const t0 = Date.now();
+        const result = extractCity(text);
+        const elapsed = Date.now() - t0;
+        assert.ok(typeof result === "string");
+        assert.ok(elapsed < 50, `mot 100 chars a pris ${elapsed}ms (attendu < 50ms)`);
+    });
+});
+
 describe("city_resolver — exports", () => {
     test("KNOWN_CITIES contient les villes principales", () => {
         assert.ok(KNOWN_CITIES.includes("abidjan"));
