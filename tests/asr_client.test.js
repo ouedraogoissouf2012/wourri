@@ -512,6 +512,68 @@ describe("AsrClient — Sprint H.2a — format pino objet-contexte (issue #161)"
     });
 });
 
+describe("AsrClient — Sprint H.3 — factorisation _postAudio + _logError (issue #161)", () => {
+    test("_postAudio existe et est appele depuis transcribeAudio (anti-regression refactor)", async () => {
+        // Verifie via espionnage : axios.post est appele 1 seule fois avec
+        // l URL complete (= apiUrl + endpoint passe a _postAudio).
+        const axiosMock = makeAxiosMock([{ status: 200, data: { text: "ok" } }]);
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({ "X-API-Key": "abc" }),
+            logger: silentLogger,
+            axios: axiosMock,
+        });
+        await client.transcribeAudio(Buffer.from("audio"));
+        assert.strictEqual(axiosMock.calls.length, 1);
+        assert.strictEqual(axiosMock.calls[0].url, "http://localhost:8000/api/stt/transcribe");
+        // Les headers contiennent bien la clé API + form-data multipart
+        assert.strictEqual(axiosMock.calls[0].headers["X-API-Key"], "abc");
+    });
+
+    test("transcribeAudio exception → null (PAS de fallback, anti-regression)", async () => {
+        // Une exception du axios.post DOIT donner null pour transcribeAudio
+        // (pas de fallback comme transcribeAudioBambara).
+        const networkError = new Error("Network down");
+        networkError.code = "ECONNREFUSED";
+        const axiosMock = makeAxiosMock([networkError]);
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger: silentLogger,
+            axios: axiosMock,
+        });
+        const result = await client.transcribeAudio(Buffer.from("audio"));
+        assert.strictEqual(result, null);
+        // Une seule tentative — pas de retry/fallback
+        assert.strictEqual(axiosMock.calls.length, 1);
+    });
+
+    test("transcribeAudioBambara exception → fallback STT (anti-regression refactor)", async () => {
+        // Exception bambara → DOIT appeler transcribeAudio en fallback.
+        // Le refactor H.3 doit preserver ce comportement metier critique.
+        const bambaraError = new Error("MMS down");
+        bambaraError.code = "ETIMEDOUT";
+        const axiosMock = makeAxiosMock([
+            bambaraError, // 1er appel : ASR-BAMBARA → echec
+            { status: 200, data: { text: "fallback ok" } }, // 2e appel : Whisper FR → succes
+        ]);
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger: silentLogger,
+            axios: axiosMock,
+        });
+        const result = await client.transcribeAudioBambara(Buffer.from("audio"));
+        // 2 appels axios : 1er ASR-BAMBARA, 2e Whisper FR (fallback)
+        assert.strictEqual(axiosMock.calls.length, 2);
+        assert.ok(axiosMock.calls[0].url.includes("/api/asr/transcribe-and-translate"));
+        assert.ok(axiosMock.calls[1].url.includes("/api/stt/transcribe"));
+        // Le resultat retourne ce que Whisper FR a produit
+        assert.ok(result);
+        assert.strictEqual(result.text, "fallback ok");
+    });
+});
+
 describe("AsrClient — authHeaders dynamique", () => {
     test("authHeaders() est invoqué à chaque requête (pas de cache)", async () => {
         let callCount = 0;
