@@ -101,6 +101,117 @@ class TestNLUPreprocessing:
         assert result.intent == "HORS_SUJET"
         assert result.is_out_of_scope
 
+    # ──────────────────────────────────────────────────────────────────
+    # Sprint G.1 (issue #171, #191) : fallback FR pour language=BOTH
+    # ──────────────────────────────────────────────────────────────────
+
+    @patch("app.services.nlu.get_nlu_service")
+    def test_fr_message_both_falls_back_to_nlu(self, mock_nlu_fn):
+        """Phrase FR pure en mode BOTH : doit déclencher le NLU sur le message FR
+        (le ConceptExtractor a aussi les keywords FR riz/planter/...).
+
+        Sans ce fallback, la cascade tombait sur DeepSeek+NLLB qui inventait
+        `rɛzɛnmɔw` au lieu de `malo` (issue #171).
+        """
+        mock_nlu = MagicMock()
+        mock_result = MagicMock()
+        mock_result.is_out_of_scope = False
+        mock_result.concepts = {"CULTURE_RIZ": 1.0, "ACTION_PLANTER": 1.0}
+        mock_result.intent = "QUESTION_SAISON_PLANTATION"
+        mock_result.french_sentence = "Quelle est la meilleure saison pour planter du riz ?"
+        mock_nlu.process.return_value = mock_result
+        mock_nlu_fn.return_value = mock_nlu
+
+        result = self.service._preprocess_nlu(
+            "Bonjour je veux planter du riz", None, Language.BOTH
+        )
+
+        # Le NLU a bien été appelé sur la phrase FR (pas court-circuité)
+        mock_nlu.process.assert_called_once_with("Bonjour je veux planter du riz")
+        assert result.intent == "QUESTION_SAISON_PLANTATION"
+        assert "CULTURE_RIZ" in result.concepts
+
+    def test_fr_message_french_only_no_nlu(self):
+        """Mode FRENCH pure : le NLU ne doit PAS être appelé (régression check)."""
+        result = self.service._preprocess_nlu(
+            "Bonjour je veux planter du riz", None, Language.FRENCH
+        )
+        # Pas de NLU en mode FRENCH (court-circuit ligne 172)
+        assert result.intent is None
+        assert result.concepts == {}
+        assert result.message_for_deepseek == "Bonjour je veux planter du riz"
+
+    def test_dioula_priority_over_fr_fallback(self):
+        """Si bambara_text est fourni, il a priorité sur le fallback FR."""
+        with patch("app.services.nlu.get_nlu_service") as mock_nlu_fn:
+            mock_nlu = MagicMock()
+            mock_result = MagicMock()
+            mock_result.is_out_of_scope = False
+            mock_result.concepts = {"CULTURE_RIZ": 1.0}
+            mock_result.intent = "CONSEIL_PRODUCTION"
+            mock_result.french_sentence = "Je cherche des conseils pour le riz"
+            mock_nlu.process.return_value = mock_result
+            mock_nlu_fn.return_value = mock_nlu
+
+            result = self.service._preprocess_nlu(
+                "Je veux planter du riz", "malo bɛ sɛnɛ", Language.BOTH
+            )
+
+            # Le NLU doit recevoir bambara_text, PAS le message FR
+            mock_nlu.process.assert_called_once_with("malo bɛ sɛnɛ")
+            assert result.intent == "CONSEIL_PRODUCTION"
+
+    def test_fr_message_dioula_only_no_fallback(self):
+        """Mode DIOULA pure + message FR sans chars bambara : pas de fallback FR
+        (uniquement BOTH déclenche le fallback)."""
+        result = self.service._preprocess_nlu(
+            "Bonjour je veux planter du riz", None, Language.DIOULA
+        )
+        # Pas de fallback en mode DIOULA strict
+        assert result.intent is None
+        assert result.concepts == {}
+
+
+class TestPreprocessNluFrIntegration:
+    """Tests d'intégration : le NLU réel doit retourner les bons concepts
+    pour des phrases FR variées (validation empirique du fix Sprint G.1)."""
+
+    def setup_method(self):
+        self.service = ChatService()
+
+    # NB sorgho → CULTURE_MIL : choix INTENTIONNEL du projet. Le concept
+    # CULTURE_MIL groupe mil + sorgho (keywords "keninge", "keninge foro",
+    # "sorgho" dans dictionnaires/nlu_concepts.json) — pattern commun en
+    # Afrique de l'Ouest où ces deux céréales sont traitées ensemble.
+    # Pas de CULTURE_SORGHO distinct. Si un futur ADR sépare les deux,
+    # mettre à jour ce paramètre.
+    @pytest.mark.parametrize("phrase,expected_intent,expected_culture", [
+        ("Bonjour je veux planter du riz",
+         "QUESTION_SAISON_PLANTATION", "CULTURE_RIZ"),
+        ("Je voudrais planter du mais cette saison",
+         "QUESTION_SAISON_PLANTATION", "CULTURE_MAIS"),
+        ("Comment cultiver de l arachide ?",
+         "QUESTION_SAISON_PLANTATION", "CULTURE_ARACHIDE"),
+        ("Mon manioc est malade que faire ?",
+         "DIAGNOSTIC_PROBLEME", "CULTURE_MANIOC"),
+        ("Quand recolter le sorgho ?",
+         "QUESTION_RECOLTE", "CULTURE_MIL"),  # sorgho → CULTURE_MIL (cf. commentaire ci-dessus)
+        ("Je cherche des conseils pour le cacao",
+         "CONSEIL_PRODUCTION", "CULTURE_CACAO"),
+    ])
+    def test_nlu_extracts_culture_and_intent_from_fr(
+        self, phrase, expected_intent, expected_culture
+    ):
+        """Le NLU réel détecte intent + culture sur phrases FR (cible Sprint G.1)."""
+        result = self.service._preprocess_nlu(phrase, None, Language.BOTH)
+        assert result.intent == expected_intent, (
+            f"Intent attendu '{expected_intent}', obtenu '{result.intent}' pour {phrase!r}"
+        )
+        assert expected_culture in result.concepts, (
+            f"Culture '{expected_culture}' absente des concepts {dict(result.concepts)} "
+            f"pour {phrase!r}"
+        )
+
 
 class TestEnrichForDeepseek:
     """Test de l'enrichissement contextuel."""

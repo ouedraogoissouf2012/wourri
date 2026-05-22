@@ -168,13 +168,27 @@ class ChatService:
         bambara_text: Optional[str],
         language: Language,
     ) -> NLUResult:
-        """Applique le NLU si le message est en dioula/bambara."""
+        """Applique le NLU si le message est en dioula/bambara.
+
+        Sprint G.1 (issue #171, #191) : fallback FR pour `language=BOTH` quand
+        aucun texte dioula n'est disponible. Le `ConceptExtractor` indexe déjà
+        les mots-clés français (`riz`, `planter`, `maïs`, etc. dans
+        `dictionnaires/nlu_concepts.json`) — vérifié empiriquement sur 6 phrases
+        FR variées. Sans ce fallback, la cascade tombe sur DeepSeek+NLLB qui
+        invente des termes hors-vocabulaire validé (ex: `rɛzɛnmɔw` au lieu
+        de `malo` pour le riz).
+        """
         if language not in (Language.DIOULA, Language.BOTH):
             return NLUResult(message_for_deepseek=message)
 
         text_to_analyze = bambara_text or ""
         bambara_chars = set("ɛɔŋɲɛ̀ɛ́ɔ̀ɔ́")
         if not text_to_analyze and any(c in message for c in bambara_chars):
+            text_to_analyze = message
+
+        # Fallback FR (Sprint G.1) : si mode BOTH et pas de texte dioula,
+        # passer le message FR au NLU qui a aussi les keywords agricoles FR.
+        if not text_to_analyze and language == Language.BOTH:
             text_to_analyze = message
 
         if not text_to_analyze:
