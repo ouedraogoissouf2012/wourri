@@ -265,10 +265,15 @@ class ChatService:
             return None
 
         try:
-            result = chercher_reponse_ivr(
-                intent=nlu.intent,
-                cultures=cultures if cultures else ["*"],
-                conditions=conditions,
+            # Sprint G.2 (issue #193) : `chercher_reponse_ivr` invoque
+            # `corpus_service._embed_query()` (SentenceTransformer.encode
+            # ~50-200ms) qui bloque le event loop FastAPI sans `to_thread`.
+            # Wrapping ici couvre les 2 backends (Chroma + pgvector) via la façade.
+            result = await asyncio.to_thread(
+                chercher_reponse_ivr,
+                nlu.intent,
+                cultures if cultures else ["*"],
+                conditions,
             )
         except Exception as e:
             logger.error("[ChatService] VDB erreur: %s", e)
@@ -351,7 +356,7 @@ class ChatService:
             logger.info("[ChatService] Action agricole sans culture → clarification")
             return await self._clarify_missing_culture(city, include_audio, language, nlu)
 
-        ivr_result = self._search_ivr_by_concept(nlu.concepts)
+        ivr_result = await self._search_ivr_by_concept(nlu.concepts)
         if not ivr_result:
             return None
 
@@ -417,12 +422,16 @@ class ChatService:
             },
         )
 
-    def _search_ivr_by_concept(self, concepts: dict) -> Optional[dict]:
+    async def _search_ivr_by_concept(self, concepts: dict) -> Optional[dict]:
         """Recherche IVR par concept (fallback niveau 2).
 
         Retourne un dict {reponse_bambara, reponse_fr} pour permettre au caller
         d'envoyer la version FR dans `response` et la version dioula dans
         `response_dioula` (cf. issue #166).
+
+        Sprint G.2 (issue #193) : `async def` car `chercher_reponse_ivr` est
+        wrappée via `asyncio.to_thread` (évite de bloquer le event loop avec
+        `corpus_service._embed_query()` SentenceTransformer ~50-200ms).
         """
         if not concepts:
             return None
@@ -446,7 +455,10 @@ class ChatService:
 
         try:
             if intent_candidat:
-                result = chercher_reponse_ivr(intent=intent_candidat, cultures=cultures, conditions=[])
+                # Sprint G.2 : to_thread pour ne pas bloquer event loop sur embed.
+                result = await asyncio.to_thread(
+                    chercher_reponse_ivr, intent_candidat, cultures, []
+                )
                 if result:
                     logger.info("[ChatService] IVR concept: %s (intent=%s)", result['id'], intent_candidat)
                     return {
@@ -454,7 +466,9 @@ class ChatService:
                         "reponse_fr": result.get("reponse_fr", ""),
                     }
 
-            result = chercher_reponse_ivr(intent="CONSEIL_PRODUCTION", cultures=cultures, conditions=[])
+            result = await asyncio.to_thread(
+                chercher_reponse_ivr, "CONSEIL_PRODUCTION", cultures, []
+            )
             if result:
                 logger.info("[ChatService] IVR concept: %s (CONSEIL_PRODUCTION)", result['id'])
                 return {
