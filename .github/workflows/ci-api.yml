@@ -1,0 +1,100 @@
+# Wourri — CI tests wouri-api (Sprint I.c, issue #201).
+# ───────────────────────────────────────────────────────
+#
+# Exécute pytest sur chaque pull request ciblant `APIPy`.
+# Filet de sécurité avant merge : aucune régression silencieuse acceptée
+# (cf. règle projet : tests verts sans flags --ignore/--deselect).
+
+name: ci-api
+
+on:
+  pull_request:
+    branches: [APIPy]
+    # Sprint I.c.1 review ARCH M2 : couverture paths alignée sur deploy-api.yml
+    # (sinon un changement dans dictionnaires/, scripts/, db-init/ ou
+    # Dockerfile.prod déploierait sans CI → trou de filet).
+    paths:
+      - 'Dockerfile.prod'
+      - '.dockerignore'
+      - 'app/**'
+      - 'alembic/**'
+      - 'alembic.ini'
+      - 'db-init/**'
+      - 'dictionnaires/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'requirements.txt'
+      - 'requirements-dev.txt'
+      - '.github/workflows/ci-api.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # Sprint I.c.1 review OPS M9 : guard-rail anti hang (job qui tourne 6h
+    # = facturation runners). 30 min suffit largement (pytest local ~3 min).
+    timeout-minutes: 30
+
+    # Postgres + pgvector requis pour les tests d'intégration
+    # (Sprint F Phase B + Phase C + Phase D ajoutent des tests qui hit la DB).
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: wourri
+          POSTGRES_PASSWORD: wourri_test
+          POSTGRES_DB: wourri_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wourri -d wourri_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install system deps (libsndfile + ffmpeg pour audio tests)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libsndfile1 ffmpeg libpq5
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Create pgvector extension
+        # L'image pgvector/pgvector pré-installe l'extension mais ne la crée pas
+        # automatiquement dans la DB cible. On la crée explicitement avant les tests.
+        env:
+          PGPASSWORD: wourri_test
+        run: |
+          psql -h localhost -U wourri -d wourri_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
+
+      - name: Apply Alembic migrations
+        env:
+          POSTGRES_URL: postgresql+psycopg://wourri:wourri_test@localhost:5432/wourri_test
+        run: alembic upgrade head
+
+      - name: Run pytest
+        env:
+          POSTGRES_URL: postgresql+psycopg://wourri:wourri_test@localhost:5432/wourri_test
+          # Force mode CPU pour éviter download CUDA dans le runner (pas de GPU).
+          CUDA_VISIBLE_DEVICES: ""
+        # Sprint I.c.1 review OPS M9 : --maxfail=5 = arrêt rapide si cascade
+        # de pannes (vs run complet inutile). timeout-minutes job-level couvre
+        # le risque de hang individuel.
+        run: pytest -q --tb=short --maxfail=5
