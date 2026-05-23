@@ -9,6 +9,9 @@ python-multipart==0.0.6
 # pour rate limiting, mais absent du requirements — dette pre-existante
 # revelee par la nouvelle CI pytest qui s'auto-declenche sur la PR).
 slowapi==0.1.9
+# Sprint I.c.1 review : ajout rapidfuzz (utilise par app/services/asr_normalizer.py
+# pour fuzzy matching ASR — meme cause root que slowapi : dette pre-existante).
+rapidfuzz==3.14.3
 
 # Templates
 jinja2==3.1.3
