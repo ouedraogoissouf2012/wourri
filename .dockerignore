@@ -1,0 +1,123 @@
+# Wourri - .dockerignore pour `wouri-api` (Sprint I.a, issue #201)
+#
+# Élimine du build context Docker tout ce qui n'a pas vocation à finir dans
+# l'image runtime prod. Réduit la taille du contexte + accélère le build +
+# évite les fuites accidentelles (secrets, modèles locaux, backups).
+#
+# Référence : `agent_security_rules.md` §2 (jamais de secret en dur), §6
+# (pas de fichiers user en zone publique sans cleanup).
+
+# ──────────────────────────────────────────────────
+# Secrets & config locale
+# ──────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+.env.prod
+.env.staging
+
+# ──────────────────────────────────────────────────
+# Backups projet (BACKUP_2026-01-26/, etc.) — à la racine du repo parent
+# ──────────────────────────────────────────────────
+BACKUP_*/
+../BACKUP_*/
+
+# ──────────────────────────────────────────────────
+# Environnements virtuels Python
+# ──────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+
+# ──────────────────────────────────────────────────
+# Caches Python
+# ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ──────────────────────────────────────────────────
+# Modèles ML pré-téléchargés en local (volume séparé en prod)
+# Décision D4 : modèles téléchargés au démarrage via cache HuggingFace
+# monté sur volume nommé `wouri_model_cache`. PAS dans l'image.
+# ──────────────────────────────────────────────────
+modeles_manuels/
+models/
+*.bin
+*.pt
+*.safetensors
+*.onnx
+*.gguf
+*.ggml
+
+# ──────────────────────────────────────────────────
+# Données ChromaDB locales (corpus_storage_mode=chroma legacy)
+# Phase E ADR-0008 (Sprint K #203) supprimera ChromaDB définitivement.
+# ──────────────────────────────────────────────────
+data/chroma_ivr/
+data/cv-corpus-*/
+data/hf_datasets/
+data/jeli_*/
+data/bayelemabaga*/
+data/bibleinlivingsound/
+data/fivefish/
+data/mooreburkina/
+data/references_*/
+data/wikipedia_*/
+data/validation_sources/
+
+# Audio temporaire + sortie (volumes en prod)
+data/audio/
+static/audio/
+static/output/
+audio_temp/
+temp_audio/
+
+# ──────────────────────────────────────────────────
+# Logs (volume en prod)
+# ──────────────────────────────────────────────────
+logs/
+*.log
+
+# ──────────────────────────────────────────────────
+# Tests (hors scope image runtime)
+# Note : on les copie quand même côté CI pour `pytest` sur la branche,
+# mais pas dans l'image runtime finale.
+# ──────────────────────────────────────────────────
+tests/
+.coverage
+htmlcov/
+
+# ──────────────────────────────────────────────────
+# Documentation (hors scope image runtime)
+# La doc reste sur GitHub, pas besoin dans l'image.
+# ──────────────────────────────────────────────────
+docs/
+*.md
+!README.md
+
+# ──────────────────────────────────────────────────
+# Git + IDE + outils dev
+# ──────────────────────────────────────────────────
+.git/
+.gitignore
+.github/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+node_modules/
+
+# ──────────────────────────────────────────────────
+# Artefacts CI/CD
+# ──────────────────────────────────────────────────
+.tox/
+.nox/
+dist/
+build/
+*.egg-info/

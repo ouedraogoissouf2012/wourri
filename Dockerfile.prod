@@ -1,0 +1,130 @@
+# syntax=docker/dockerfile:1.7
+#
+# Wourri — Dockerfile production wouri-api (Sprint I.a, issue #201).
+#
+# Stratégie tranchée par le code-architect (cf. plan Sprint I) :
+#   D1 — base python:3.11-slim-bookworm (PyTorch CPU compatible, taille minimale)
+#   D3 — multi-stage build (builder = wheels, runtime = venv copié)
+#   D4 — modèles ML téléchargés au DÉMARRAGE via cache HuggingFace persistant
+#        sur volume `wouri_model_cache` (évite +3-4 GB par image push/pull)
+#
+# Pas de secret dans l'image (toute injection via `--env-file .env.prod`
+# au runtime, cf. décision D9).
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ STAGE 1 : builder                                                    │
+# │ Installe les dépendances Python dans un venv isolé.                  │
+# │ Contient les outils de compilation (gcc, build-essential) qui ne     │
+# │ doivent PAS finir dans l'image runtime.                              │
+# ╰──────────────────────────────────────────────────────────────────────╯
+FROM python:3.11-slim-bookworm AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Dépendances système nécessaires pour compiler les wheels Python
+# (psycopg, soundfile, etc.). Supprimées au stage runtime.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+        libsndfile1-dev \
+        ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Création du venv isolé qui sera copié au stage runtime
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Installation des dépendances Python en couche cacheable
+# (requirements.txt change moins souvent que le code)
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install -r /tmp/requirements.txt
+
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ STAGE 2 : runtime                                                    │
+# │ Image finale minimale, uniquement les libs runtime + le code +       │
+# │ le venv pré-construit.                                               │
+# ╰──────────────────────────────────────────────────────────────────────╯
+FROM python:3.11-slim-bookworm AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    # D4 : cache HuggingFace persistant sur volume nommé en prod
+    HF_HOME=/app/.cache/huggingface \
+    TRANSFORMERS_CACHE=/app/.cache/huggingface \
+    HF_DATASETS_CACHE=/app/.cache/huggingface
+
+# Dépendances système runtime UNIQUEMENT (pas de compilateurs).
+# libpq5 pour psycopg, libsndfile1 pour soundfile, ffmpeg pour pydub.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libpq5 \
+        libsndfile1 \
+        ffmpeg \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Utilisateur non-root pour réduire la surface d'attaque
+# (cf. agent_security_rules.md — pas de container en root inutilement)
+RUN useradd --create-home --shell /bin/bash --uid 1000 wourri
+
+WORKDIR /app
+
+# Copie du venv depuis le stage builder.
+# Sprint I.a review MAJOR-3 : chown vers `wourri` pour permettre aux libs
+# Python qui écrivent dans site-packages (triton cache, .pth files dynamiques)
+# de fonctionner. Pas de risque sécurité : `wourri` n'a pas plus de droits
+# qu'une lib qui s'auto-modifierait au runtime (comportement courant pip).
+COPY --from=builder /opt/venv /opt/venv
+RUN chown -R wourri:wourri /opt/venv
+
+# Copie du code source (sélective — .dockerignore exclut le reste).
+# Ordre par fréquence de changement : moins fréquent d'abord = meilleur cache.
+# Sprint I.a review MAJOR-2 : alembic.ini est SAFE (sqlalchemy.url=vide,
+# l'URL réelle est injectée via env POSTGRES_URL → alembic/env.py la résout
+# via app/db/url_resolver.py). Aucun credential dans l'image.
+COPY --chown=wourri:wourri alembic.ini ./
+COPY --chown=wourri:wourri alembic/ ./alembic/
+COPY --chown=wourri:wourri db-init/ ./db-init/
+COPY --chown=wourri:wourri dictionnaires/ ./dictionnaires/
+COPY --chown=wourri:wourri scripts/ ./scripts/
+COPY --chown=wourri:wourri templates/ ./templates/
+COPY --chown=wourri:wourri app/ ./app/
+
+# Prépare les dossiers runtime (cache HF, audio output, logs).
+# Sprint I.a review MAJOR-1 : ces 3 dossiers DOIVENT être couverts par des
+# volumes nommés en prod (cf. docker-compose.prod.yml Sprint I.c).
+RUN mkdir -p /app/.cache/huggingface /app/static/audio /app/logs \
+    && chown -R wourri:wourri /app
+
+# Déclaration explicite des volumes attendus en runtime.
+# Si l'opérateur lance `docker run` sans monter ces volumes, Docker affichera
+# un avertissement (volumes anonymes créés) → on évite la régression
+# silencieuse où les modèles ML disparaissent à chaque `--rm`.
+VOLUME ["/app/.cache/huggingface", "/app/static/audio", "/app/logs"]
+
+USER wourri
+
+# Healthcheck applicatif — Sprint I.a review NICE-1 : start-period 900s (15 min)
+# pour absorber le cold-start de téléchargement des modèles ML quand le volume
+# cache est vide. Une fois le cache chaud (sur volume nommé persistant), le
+# démarrage suivant prend ~30s et le healthcheck passe rapidement.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=900s --retries=5 \
+    CMD curl --silent --fail http://localhost:8000/health || exit 1
+
+EXPOSE 8000
+
+# uvicorn en mode prod : 2 workers, sans reload, log JSON propre.
+# Les workers permettent de gérer N requêtes concurrentes (~30 utilisateurs
+# WhatsApp simultanés visés pour le staging).
+CMD ["uvicorn", "app.main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "2", \
+     "--log-level", "info", \
+     "--access-log", \
+     "--proxy-headers"]
