@@ -46,8 +46,11 @@ const WOURI_API_KEY = process.env.WOURI_API_KEY || '';
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
 const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
 const AUDIO_CACHE_FOLDER = path.join(__dirname, 'audio_cache');
-const USER_PREFS_FILE = path.join(__dirname, 'user_preferences.json');
-const PENDING_MESSAGES_FILE = path.join(__dirname, 'pending_messages.json');
+// Sprint I.b : chemins surchargés via env vars en prod pour pointer vers /app/data
+// (volume nommé persistant). Sans override → fallback __dirname comme avant
+// (compat dev local + tests : aucun changement de comportement par défaut).
+const USER_PREFS_FILE = process.env.USER_PREFS_FILE || path.join(__dirname, 'user_preferences.json');
+const PENDING_MESSAGES_FILE = process.env.PENDING_MESSAGES_FILE || path.join(__dirname, 'pending_messages.json');
 
 // [P0-02a] Helper : header X-API-Key pour appels backend Wourri
 // Si WOURI_API_KEY vide, retourne objet vide (mode dev backend avec auth desactivee)

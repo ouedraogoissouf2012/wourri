@@ -1,0 +1,81 @@
+# Wourri - .dockerignore pour `whatsapp-server` (Sprint I.b, issue #201)
+#
+# Élimine du build context Docker tout ce qui n'a pas vocation à finir dans
+# l'image runtime prod. Réduit la taille du contexte + accélère le build +
+# évite les fuites accidentelles (sessions WhatsApp, secrets, données users).
+#
+# Référence : `whatsapp-server/CLAUDE.md` section "Sécurité — CORS et rate
+# limiting" + agent_security_rules.md §2 + .gitignore existant.
+
+# ──────────────────────────────────────────────────
+# Secrets & config locale
+# ──────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ──────────────────────────────────────────────────
+# 🔴 SESSIONS WHATSAPP - NE JAMAIS dans l'image
+# (vivent sur volume nommé `wourri_auth_baileys` en prod)
+# ──────────────────────────────────────────────────
+auth_baileys/
+.wwebjs_auth/
+.wwebjs_cache/
+
+# ──────────────────────────────────────────────────
+# Données utilisateurs persistantes (volumes en prod)
+# ──────────────────────────────────────────────────
+user_preferences.json
+pending_messages.json
+
+# ──────────────────────────────────────────────────
+# Audio temporaire + cache (regénérables, volumes en prod)
+# ──────────────────────────────────────────────────
+temp_audio/
+audio_cache/
+
+# ──────────────────────────────────────────────────
+# Dépendances Node (réinstallées dans le stage builder)
+# ──────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# ──────────────────────────────────────────────────
+# Logs (volume en prod)
+# ──────────────────────────────────────────────────
+*.log
+debug.log
+test_result.tmp
+nul
+
+# ──────────────────────────────────────────────────
+# Tests (hors scope image runtime)
+# ──────────────────────────────────────────────────
+tests/
+
+# ──────────────────────────────────────────────────
+# Documentation (hors scope image runtime)
+# ──────────────────────────────────────────────────
+*.md
+!README.md
+docs/
+
+# ──────────────────────────────────────────────────
+# Git + IDE + outils dev
+# ──────────────────────────────────────────────────
+.git/
+.gitignore
+.github/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ──────────────────────────────────────────────────
+# Backups projet (au cas où présents)
+# ──────────────────────────────────────────────────
+BACKUP_*/
+_archive_legacy/

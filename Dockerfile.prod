@@ -1,0 +1,103 @@
+# syntax=docker/dockerfile:1.7
+#
+# Wourri — Dockerfile production whatsapp-server (Sprint I.b, issue #201).
+#
+# Stratégie tranchée par le code-architect (cf. plan Sprint I) :
+#   D2 — base node:20-slim (Debian, PAS alpine — Baileys a des bindings natifs
+#        qui nécessitent glibc, alpine + musl = recette de build cassé)
+#   D3 — multi-stage build (builder = npm ci, runtime = node_modules copié)
+#   D9 — secrets via --env-file .env.prod au runtime (AUCUN secret dans
+#        l'image, cf. agent_security_rules.md §2)
+#
+# Volumes en prod (déclarés VOLUME + montés dans docker-compose.prod.yml) :
+#   - /app/auth_baileys (session WhatsApp, NE JAMAIS perdre — re-scan QR sinon)
+#   - /app/audio_cache (cache audios excuse pré-générés, regénérable)
+#   - /app/data (user_preferences.json + pending_messages.json persistants)
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ STAGE 1 : builder                                                    │
+# │ npm ci --omit=dev pour installer UNIQUEMENT les deps prod.           │
+# │ Évite que les devDependencies (pino-pretty optionnel, etc.) ne       │
+# │ finissent dans l'image runtime.                                      │
+# ╰──────────────────────────────────────────────────────────────────────╯
+FROM node:20-slim AS builder
+
+WORKDIR /app
+
+# Installation déterministe : npm ci respecte package-lock.json à la lettre.
+# `--omit=dev` exclut les devDependencies (cf. Sprint A versions figées).
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ STAGE 2 : runtime                                                    │
+# │ Image finale minimale : node + node_modules + code applicatif.       │
+# │ ~300 MB total.                                                       │
+# ╰──────────────────────────────────────────────────────────────────────╯
+FROM node:20-slim AS runtime
+
+ENV NODE_ENV=production \
+    # Sprint I.b BLOCKER fix : sans ces ENV, app-baileys.js écrit
+    # user_preferences.json + pending_messages.json à la racine /app/
+    # (cf. path.join(__dirname, ...) lignes 49-50) → hors du volume
+    # nommé /app/data → perte de prefs/queue à chaque restart prod.
+    # Avec ces ENV, les chemins sont surchargés vers /app/data/ et
+    # protégés par VOLUME ["/app/data"] déclaré plus bas.
+    USER_PREFS_FILE=/app/data/user_preferences.json \
+    PENDING_MESSAGES_FILE=/app/data/pending_messages.json
+
+# Dépendance système pour healthcheck curl + ca-certificates pour HTTPS
+# vers wouri-api (TLS validation derrière proxy futur).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Utilisateur non-root pour réduire la surface d'attaque
+# (pattern aligné sur wouri-api Sprint I.a)
+RUN groupadd --gid 1000 wourri \
+    && useradd --uid 1000 --gid wourri --shell /bin/bash --create-home wourri
+
+WORKDIR /app
+
+# Copie des dépendances depuis le stage builder
+COPY --from=builder --chown=wourri:wourri /app/node_modules ./node_modules
+
+# Copie du code source (sélective — .dockerignore exclut le reste)
+# Ordre par fréquence de changement : package.json moins fréquent d'abord
+COPY --chown=wourri:wourri package.json package-lock.json ./
+COPY --chown=wourri:wourri lib/ ./lib/
+COPY --chown=wourri:wourri app-baileys.js ./
+
+# Prépare les dossiers runtime persistants (DOIVENT être montés sur volumes
+# nommés en prod — cf. docker-compose.prod.yml Sprint I.c).
+# Sans ces volumes :
+#   - auth_baileys/ : perte de session WhatsApp à chaque restart → re-scan QR
+#   - audio_cache/ : 4 audios d'excuse re-générés à chaque démarrage
+#   - data/ : user_preferences.json + pending_messages.json perdus
+RUN mkdir -p /app/auth_baileys /app/audio_cache /app/temp_audio /app/data /app/logs \
+    && chown -R wourri:wourri /app
+
+# Déclaration explicite des volumes attendus en runtime.
+# Si l'opérateur lance `docker run` sans monter ces volumes, Docker crée
+# des volumes anonymes (avertissement visible) → évite la régression
+# silencieuse où auth_baileys disparaît à chaque `docker compose down -v`.
+VOLUME ["/app/auth_baileys", "/app/audio_cache", "/app/data", "/app/logs"]
+
+USER wourri
+
+# Healthcheck applicatif — start-period court car whatsapp-server démarre
+# rapidement (Baileys + Express ~5-10s). Pas de modèle ML lourd ici.
+# Pendant le démarrage : si auth_baileys/ vide, le serveur attend le scan QR
+# manuel (statut /health = "degraded") mais le container reste healthy
+# (le check vérifie que l'API répond, pas que WhatsApp est connecté).
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl --silent --fail http://localhost:3001/health || exit 1
+
+EXPOSE 3001
+
+# Pattern simple : node app-baileys.js (équivalent du `npm run production`
+# défini dans package.json:8). On reste explicite plutôt que npm pour éviter
+# le wrapper npm qui consomme un signal SIGTERM mal en standalone.
+CMD ["node", "app-baileys.js"]
