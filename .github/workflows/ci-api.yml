@@ -84,6 +84,29 @@ jobs:
         run: |
           psql -h localhost -U wourri -d wourri_test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
+      # Sprint I.c.1 review fix : `scripts/import_corpus_ivr.py` (Phase B
+      # ADR-0008) exige le modèle d'embedding local dans `modeles_manuels/`
+      # (gitignored car ~400 MB). On le pré-télécharge ici depuis HuggingFace
+      # pour permettre aux tests d'intégration Sprint F Phase B+C de tourner.
+      # Cache actions/cache → 1er run télécharge, suivants restaurent (~10s).
+      - name: Cache embedding model paraphrase-multilingual-MiniLM-L12-v2
+        id: cache-embedding-model
+        uses: actions/cache@v4
+        with:
+          path: modeles_manuels/paraphrase-multilingual-MiniLM-L12-v2
+          key: embedding-model-paraphrase-multilingual-MiniLM-L12-v2-v1
+
+      - name: Pre-download embedding model (cache miss)
+        if: steps.cache-embedding-model.outputs.cache-hit != 'true'
+        run: |
+          python -c "
+          from huggingface_hub import snapshot_download
+          snapshot_download(
+              repo_id='sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2',
+              local_dir='modeles_manuels/paraphrase-multilingual-MiniLM-L12-v2',
+          )
+          "
+
       - name: Apply Alembic migrations
         env:
           POSTGRES_URL: postgresql+psycopg://wourri:wourri_test@localhost:5432/wourri_test
