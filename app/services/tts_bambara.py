@@ -487,37 +487,11 @@ def translate_to_french(bambara_text: str) -> str:
     return result
 
 
-from app.services._ffmpeg import get_ffmpeg as find_ffmpeg, wav_to_ogg_normalized
-
-
-def convert_wav_to_ogg(wav_path: str, ogg_path: str) -> bool:
-    """Convertit un fichier WAV en OGG Opus avec normalisation loudnorm EBU R128.
-    Délègue à _ffmpeg.wav_to_ogg_normalized (source unique, loudnorm si disponible).
-    """
-    if wav_to_ogg_normalized(wav_path, ogg_path):
-        return True
-
-    # Fallback pydub (sans loudnorm)
-    try:
-        from pydub import AudioSegment
-        try:
-            ffmpeg_path = find_ffmpeg()
-            if ffmpeg_path != 'ffmpeg':
-                AudioSegment.converter = ffmpeg_path
-        except RuntimeError:
-            pass
-        audio = AudioSegment.from_wav(wav_path)
-        audio.export(ogg_path, format="ogg", codec="libopus", bitrate="64k")
-        try:
-            os.remove(wav_path)
-        except OSError:
-            pass
-        logger.info("Conversion WAV -> OGG reussie avec pydub")
-        return True
-    except Exception as e:
-        logger.error(f"Erreur pydub: {e}")
-
-    return False
+# Sprint refactor 2026-05-28 : convert_wav_to_ogg deplace dans tts_common.py
+# (audit P1 #4 — DRY mutualisation tts_bambara/tts_dioula, 28 lignes
+# identiques entre les 2 fichiers). Reexport pour compat des callsites
+# internes (synthesize_bambara_text:553 ci-dessous).
+from app.services.tts_common import convert_wav_to_ogg  # noqa: F401
 
 
 def synthesize_bambara_text(bambara_text: str) -> str | None:
