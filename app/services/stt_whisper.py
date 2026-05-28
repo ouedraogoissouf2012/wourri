@@ -6,8 +6,12 @@ NOTE: Necessite faster-whisper
 Pour installer: pip install faster-whisper
 """
 import asyncio
+import json
 import logging
 import os
+import re
+from functools import lru_cache
+from pathlib import Path
 
 # Désactiver les symlinks sur Windows (évite les erreurs de permission)
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
@@ -18,10 +22,66 @@ import tempfile
 import subprocess
 from app.config import get_settings
 from app.services._ffmpeg import get_ffmpeg
+# Sprint refactor 2026-05-28 : heuristiques deplacees dans stt/postprocess.py
+# (extractions ADR-0005 / dette `is_likely_dioula_input` a supprimer apres
+# integration AfroLID). Re-exportees ici pour compat des callsites internes.
+from app.services.stt.postprocess import (
+    is_likely_hallucination,
+    is_likely_dioula_input,
+)
 
 logger = logging.getLogger(__name__)
 
 settings = get_settings()
+
+# Sprint refactor 2026-05-28 : corrections externalisees en JSON pour
+# permettre aux contributeurs non-Python (linguistes, agronomes) de
+# les enrichir sans toucher au code. Fichiers : agriculture.json (99
+# entrees) + cities.json (132 entrees), charges lazy + caches via lru_cache.
+_CORRECTIONS_DIR = Path(__file__).resolve().parent.parent / "data" / "stt_whisper_corrections"
+
+
+# @lru_cache choisi (vs constante module-level) pour anticiper l'ajout
+# de N domaines (cf. ADR-0005 Phase D : detection langue AfroLID pourra
+# venir avec son propre fichier de patterns externalise).
+@lru_cache(maxsize=None)
+def _load_corrections(name: str) -> dict[str, str]:
+    """Charge un fichier de corrections JSON (cache module-level).
+
+    Mode degrade en cas de fichier absent OU corrompu : retourne `{}` (no-op)
+    pour ne pas casser la transcription. La doc invite des contributeurs
+    non-Python a editer ces JSON ; un JSONDecodeError (virgule trainante,
+    guillemet manquant) doit logger un error explicite mais pas crasher
+    la chaine de transcription.
+    """
+    path = _CORRECTIONS_DIR / f"{name}.json"
+    try:
+        with open(path, encoding="utf-8") as f:
+            data: dict[str, str] = json.load(f)
+            return data
+    except FileNotFoundError:
+        logger.warning(f"[Faster-Whisper] Corrections {name}.json introuvable, no-op")
+        return {}
+    except json.JSONDecodeError as e:
+        logger.error(
+            f"[Faster-Whisper] Corrections {name}.json corrompu ({e}), no-op. "
+            "Verifier la syntaxe JSON (virgule trainante, guillemets manquants)."
+        )
+        return {}
+
+
+def _apply_corrections(text: str, corrections: dict[str, str], label: str) -> str:
+    """Applique les corrections (case-insensitive, regex sur match)."""
+    if not text or not corrections:
+        return text
+    result = text
+    text_lower = text.lower()
+    for wrong, correct in corrections.items():
+        if wrong in text_lower:
+            pattern = re.compile(re.escape(wrong), re.IGNORECASE)
+            result = pattern.sub(correct, result)
+            logger.info(f"[Faster-Whisper] Correction {label}: '{wrong}' -> '{correct}'")
+    return result
 
 # Chemin ffmpeg — résolu au premier appel via get_ffmpeg()
 def find_ffmpeg():
@@ -271,568 +331,23 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
 
 
 def correct_agricultural_terms(text: str) -> str:
+    """Corrige les termes agricoles mal transcrits par Whisper.
+
+    Le dictionnaire est externalise dans
+    app/data/stt_whisper_corrections/agriculture.json pour permettre aux
+    contributeurs non-Python (linguistes, agronomes) de l'enrichir.
     """
-    Corrige les termes agricoles mal transcrits par Whisper.
-    Whisper confond souvent les termes agricoles avec des mots plus courants.
-
-    Args:
-        text: Le texte transcrit
-
-    Returns:
-        Le texte avec les termes agricoles corrigés
-    """
-    if not text:
-        return text
-
-    # Dictionnaire de corrections pour termes agricoles
-    # Clé: ce que Whisper transcrit (en minuscules)
-    # Valeur: le terme correct
-    agricultural_corrections = {
-        # Période (très souvent mal transcrit)
-        "pégole": "période",
-        "pégo": "période",
-        "pégol": "période",
-        "pegole": "période",
-        "pégole": "période",
-        "pégolle": "période",
-
-        # Banane (Paname = argot pour Paris!)
-        "paname": "banane",
-        "panama": "banane",
-        "panane": "banane",
-        "bannan": "banane",
-        "banan": "banane",
-
-        # Manioc
-        "manioque": "manioc",
-        "manioq": "manioc",
-        "manyoc": "manioc",
-        "maniac": "manioc",
-
-        # Igname (très souvent mal transcrit!)
-        "inyam": "igname",
-        "ignam": "igname",
-        "igniam": "igname",
-        "yam": "igname",
-        "signes d'igname": "igname",
-        "signe d'igname": "igname",
-        "signe igname": "igname",
-        "signes igname": "igname",
-        "des signes d'igname": "de l'igname",
-        "cygne": "igname",
-
-        # Cacao
-        "kakao": "cacao",
-        "cacau": "cacao",
-        "cacaou": "cacao",
-
-        # Café
-        "caffé": "café",
-        "caffet": "café",
-        "caffer": "café",
-
-        # Maïs
-        "maïsse": "maïs",
-        "maisse": "maïs",
-        "mais": "maïs",
-        "maize": "maïs",
-
-        # Riz
-        "rize": "riz",
-        "rise": "riz",
-
-        # Arachide
-        "arachid": "arachide",
-        "arachyde": "arachide",
-        "arachidé": "arachide",
-
-        # Palmier
-        "palmié": "palmier",
-        "palmyer": "palmier",
-
-        # Hévéa (caoutchouc)
-        "évéa": "hévéa",
-        "hévéat": "hévéa",
-        "heveya": "hévéa",
-
-        # Anacarde (noix de cajou)
-        "anacardé": "anacarde",
-        "anakard": "anacarde",
-        "anacart": "anacarde",
-
-        # Coton
-        "cotton": "coton",
-        "cotont": "coton",
-
-        # Planter
-        "planté": "planter",
-        "plantée": "planter",
-        "plentée": "planter",
-
-        # Récolte/Récolter
-        "récolt": "récolte",
-        "recolter": "récolter",
-        "récoltée": "récolte",
-
-        # Semer
-        "semée": "semer",
-        "semé": "semer",
-        "semer": "semer",
-
-        # Cultiver
-        "cultivée": "cultiver",
-        "cultivé": "cultiver",
-
-        # Engrais
-        "engraie": "engrais",
-        "angrai": "engrais",
-        "engraît": "engrais",
-
-        # Irrigation
-        "irrégation": "irrigation",
-        "irriguation": "irrigation",
-
-        # Saison
-        "sèson": "saison",
-        "séson": "saison",
-
-        # Pluie
-        "pluies": "pluie",
-        "pluît": "pluie",
-
-        # Sécheresse
-        "sécherese": "sécheresse",
-        "secheresse": "sécheresse",
-
-        # Parcelle
-        "parcel": "parcelle",
-        "parselle": "parcelle",
-
-        # Rendement
-        "rendent": "rendement",
-        "randement": "rendement",
-
-        # Pesticide
-        "pésticide": "pesticide",
-        "pestissid": "pesticide",
-
-        # Fongicide
-        "fongissid": "fongicide",
-        "fongicid": "fongicide",
-
-        # Herbicide
-        "erbicide": "herbicide",
-        "herbissid": "herbicide",
-
-        # Légumes
-        "légum": "légumes",
-        "legume": "légumes",
-
-        # Tomate
-        "tomat": "tomate",
-        "tomatte": "tomate",
-
-        # Aubergine
-        "aubergin": "aubergine",
-        "obergin": "aubergine",
-
-        # Piment
-        "piman": "piment",
-        "pimant": "piment",
-
-        # Oignon
-        "oignont": "oignon",
-        "ognon": "oignon",
-
-        # Gombo
-        "gombeau": "gombo",
-        "gombos": "gombo",
-
-        # Patate (douce)
-        "patat": "patate",
-        "patatte": "patate",
-
-        # Haricot
-        "aricot": "haricot",
-        "haricots": "haricot",
-
-        # Tubercule
-        "tubercul": "tubercule",
-        "tuberkul": "tubercule",
-    }
-
-    # Appliquer les corrections (insensible à la casse)
-    result = text
-    text_lower = text.lower()
-
-    for wrong, correct in agricultural_corrections.items():
-        if wrong in text_lower:
-            import re
-            pattern = re.compile(re.escape(wrong), re.IGNORECASE)
-            result = pattern.sub(correct, result)
-            logger.info(f"[Faster-Whisper] Correction agricole: '{wrong}' -> '{correct}'")
-
-    return result
+    return _apply_corrections(text, _load_corrections("agriculture"), "agricole")
 
 
 def correct_city_names(text: str) -> str:
+    """Corrige les noms de villes ivoiriennes mal transcrits par Whisper.
+
+    Le dictionnaire est externalise dans
+    `app/data/stt_whisper_corrections/cities.json` pour permettre aux
+    contributeurs non-Python de l'enrichir sans toucher le code.
     """
-    Corrige les noms de villes ivoiriennes mal transcrits par Whisper.
-    Utilise une correspondance phonétique pour trouver la ville correcte.
-
-    Args:
-        text: Le texte transcrit
-
-    Returns:
-        Le texte avec les noms de villes corrigés
-    """
-    if not text:
-        return text
-
-    # Dictionnaire de corrections phonétiques
-    # Clé: ce que Whisper peut transcrire (en minuscules)
-    # Valeur: le nom correct de la ville
-    city_corrections = {
-        # Bonoua
-        "bonnois": "Bonoua",
-        "bonois": "Bonoua",
-        "bono wa": "Bonoua",
-        "bono oua": "Bonoua",
-        "bonwa": "Bonoua",
-        "bonouas": "Bonoua",
-        "bono": "Bonoua",
-
-        # Bouaké
-        "bouaquer": "Bouaké",
-        "bouake": "Bouaké",
-        "bouaker": "Bouaké",
-        "boua ké": "Bouaké",
-        "bouakais": "Bouaké",
-
-        # Yamoussoukro
-        "yamoussoukros": "Yamoussoukro",
-        "yamou soukro": "Yamoussoukro",
-        "yamoussokro": "Yamoussoukro",
-        "yamoussoukroi": "Yamoussoukro",
-
-        # Korhogo
-        "khorogo": "Korhogo",
-        "korogho": "Korhogo",
-        "korogau": "Korhogo",
-        "korogo": "Korhogo",
-
-        # San-Pedro / San Pedro
-        "sain pedro": "San-Pedro",
-        "saint pedro": "San-Pedro",
-        "san pédro": "San-Pedro",
-        "sampedro": "San-Pedro",
-
-        # Abidjan
-        "abijean": "Abidjan",
-        "abidjean": "Abidjan",
-        "abijan": "Abidjan",
-
-        # Daloa
-        "dalois": "Daloa",
-        "da loa": "Daloa",
-
-        # Man (très court, souvent confondu)
-        "manne": "Man",
-        "mann": "Man",
-        "main": "Man",
-        "mane": "Man",
-        "mans": "Man",
-        "ment": "Man",
-        "mont": "Man",
-        "mène": "Man",
-        "mens": "Man",
-        "mang": "Man",
-
-        # Gagnoa
-        "gagnois": "Gagnoa",
-        "ganyoa": "Gagnoa",
-        "gagnoua": "Gagnoa",
-
-        # Divo
-        "divaux": "Divo",
-        "divos": "Divo",
-        "divot": "Divo",
-
-        # Abengourou
-        "abenguru": "Abengourou",
-        "abengouroux": "Abengourou",
-        "abengrou": "Abengourou",
-
-        # Soubré
-        "soubres": "Soubré",
-        "soubre": "Soubré",
-        "soubrer": "Soubré",
-
-        # Bouaflé
-        "bouaflée": "Bouaflé",
-        "bouafler": "Bouaflé",
-        "boua flé": "Bouaflé",
-
-        # Issia
-        "issias": "Issia",
-        "isiat": "Issia",
-
-        # Ferkessédougou (nombreuses variantes phonétiques)
-        "ferké": "Ferkessédougou",
-        "ferkessedougou": "Ferkessédougou",
-        "ferke": "Ferkessédougou",
-        "ferké seingou": "Ferkessédougou",
-        "ferké selon dougou": "Ferkessédougou",
-        "ferkesse dougou": "Ferkessédougou",
-        "fer ké": "Ferkessédougou",
-        "ferk sédougou": "Ferkessédougou",
-        "ferke sédougou": "Ferkessédougou",
-        "ferkessédou": "Ferkessédougou",
-        "ferkessedou": "Ferkessédougou",
-        "ferke seindou": "Ferkessédougou",
-        "ferkeu": "Ferkessédougou",
-        "ferkes": "Ferkessédougou",
-        "ferkès": "Ferkessédougou",
-        "ferkéssédougou": "Ferkessédougou",
-        "ferquessedougou": "Ferkessédougou",
-        "fer kesse dougou": "Ferkessédougou",
-
-        # Odienné
-        "odiénné": "Odienné",
-        "odienne": "Odienné",
-        "odienner": "Odienné",
-
-        # Séguéla
-        "seguéla": "Séguéla",
-        "seguela": "Séguéla",
-        "seguelas": "Séguéla",
-
-        # Bondoukou
-        "bonduku": "Bondoukou",
-        "bondukou": "Bondoukou",
-
-        # Aboisso
-        "aboiso": "Aboisso",
-        "aboisos": "Aboisso",
-        "abois so": "Aboisso",
-
-        # Danané
-        "dananer": "Danané",
-        "danane": "Danané",
-        "da nané": "Danané",
-
-        # Duékoué
-        "duékouer": "Duékoué",
-        "duekoue": "Duékoué",
-        "duekwe": "Duékoué",
-
-        # Guiglo
-        "guigleau": "Guiglo",
-        "guiglos": "Guiglo",
-        "gui glo": "Guiglo",
-
-        # Tabou
-        "tabous": "Tabou",
-        "taboue": "Tabou",
-
-        # Sassandra
-        "sassandras": "Sassandra",
-        "sassandrat": "Sassandra",
-
-        # Grand-Bassam
-        "grand bassam": "Grand-Bassam",
-        "grandbassam": "Grand-Bassam",
-        "grand-bassams": "Grand-Bassam",
-
-        # Jacqueville
-        "jackville": "Jacqueville",
-        "jacquevilles": "Jacqueville",
-        "jack ville": "Jacqueville",
-
-        # Agboville
-        "agbovilles": "Agboville",
-        "agbo ville": "Agboville",
-
-        # Dabou
-        "dabous": "Dabou",
-        "da bou": "Dabou",
-
-        # Dimbokro
-        "dimbokros": "Dimbokro",
-        "dim bokro": "Dimbokro",
-        "dimbocro": "Dimbokro",
-
-        # Toumodi
-        "toumodis": "Toumodi",
-        "tou modi": "Toumodi",
-        "toumaudit": "Toumodi",
-
-        # Tiébissou
-        "tiébissous": "Tiébissou",
-        "tiebissou": "Tiébissou",
-        "tié bissou": "Tiébissou",
-
-        # Katiola
-        "katiolas": "Katiola",
-        "katio la": "Katiola",
-        "cattiola": "Katiola",
-
-        # Boundiali
-        "boundialis": "Boundiali",
-        "boundi ali": "Boundiali",
-        "boundialy": "Boundiali",
-
-        # Tengrela
-        "tengrelas": "Tengrela",
-        "tengré la": "Tengrela",
-        "tangrela": "Tengrela",
-
-        # Anyama
-        "anyamas": "Anyama",
-        "ani ama": "Anyama",
-        "annyama": "Anyama",
-
-        # Bingerville
-        "bingervilles": "Bingerville",
-        "binger ville": "Bingerville",
-        "binguer ville": "Bingerville",
-    }
-
-    # Appliquer les corrections (insensible à la casse)
-    result = text
-    text_lower = text.lower()
-
-    for wrong, correct in city_corrections.items():
-        if wrong in text_lower:
-            # Trouver la position et remplacer en préservant la casse environnante
-            import re
-            pattern = re.compile(re.escape(wrong), re.IGNORECASE)
-            result = pattern.sub(correct, result)
-            logger.info(f"[Faster-Whisper] Correction ville: '{wrong}' -> '{correct}'")
-
-    return result
-
-
-def is_likely_hallucination(text: str) -> bool:
-    """
-    Détecte si un texte semble être une hallucination de Whisper.
-    Les hallucinations sont des textes générés par le modèle qui ne correspondent pas
-    à ce qui a été dit dans l'audio.
-
-    Args:
-        text: Le texte transcrit
-
-    Returns:
-        True si le texte semble être une hallucination
-    """
-    if not text:
-        return True
-
-    # Texte trop court (moins de 2 mots)
-    words = text.split()
-    if len(words) < 2:
-        return True
-
-    # Caractères non-latins (signe d'hallucination)
-    non_latin_chars = sum(1 for c in text if ord(c) > 0x024F and not c.isspace())
-    if non_latin_chars > len(text) * 0.2:  # Plus de 20% de caractères non-latins
-        logger.warning(f"[Faster-Whisper] Trop de caractères non-latins détectés")
-        return True
-
-    # Phrases répétitives (signe d'hallucination)
-    if len(text) > 50:
-        # Vérifier les répétitions de mots
-        if len(words) > 4:
-            word_counts = {}
-            for word in words:
-                word_lower = word.lower()
-                word_counts[word_lower] = word_counts.get(word_lower, 0) + 1
-
-            # Si un mot apparaît plus de 50% du temps, c'est suspect
-            max_count = max(word_counts.values())
-            if max_count > len(words) * 0.5:
-                logger.warning(f"[Faster-Whisper] Répétition excessive détectée")
-                return True
-
-    # Phrases génériques connues comme hallucinations de Whisper
-    hallucination_patterns = [
-        "sous-titres réalisés",
-        "sous-titrage",
-        "merci d'avoir regardé",
-        "thank you for watching",
-        "subscribe",
-        "abonnez-vous",
-        "like and subscribe",
-        "www.",
-        "http",
-        "copyright",
-        "tous droits réservés",
-    ]
-
-    text_lower = text.lower()
-    for pattern in hallucination_patterns:
-        if pattern in text_lower:
-            logger.warning(f"[Faster-Whisper] Pattern d'hallucination détecté: {pattern}")
-            return True
-
-    return False
-
-
-def is_likely_dioula_input(text: str, language_probability: float = 0.0) -> bool:
-    """
-    Détecte si l'audio original était probablement en Dioula/Bambara
-    mais a été mal transcrit en français par Whisper.
-
-    Indices:
-    - Phrases incohérentes en français
-    - Questions qui n'ont pas de sens
-    - Probabilité de langue française basse
-    - Mots répétés ou sons étranges
-
-    Args:
-        text: Le texte transcrit
-        language_probability: Probabilité de la langue détectée par Whisper
-
-    Returns:
-        True si l'audio était probablement en Dioula
-    """
-    if not text:
-        return False
-
-    text_lower = text.lower()
-
-    # Indices de transcription incorrecte (Dioula parlé -> français charabia)
-    incoherent_patterns = [
-        # Questions qui n'ont pas de sens en français
-        "est-ce que tu parles plus là",
-        "tu parles plus là",
-        "parles plus là",
-        "est-ce que tu parles",
-        # Phrases répétitives typiques des mauvaises transcriptions
-        "dis-moi dis-moi",
-        "oui oui oui",
-        "non non non",
-        # Sons/mots qui ressemblent au Dioula mal interprétés
-        "ala", "allah", "wala", "walahi",
-        "n'golo", "ngolo",
-        "fola", "fo la",
-        # Onomatopées fréquentes
-        "hein hein",
-        "eh eh",
-        "mmh mmh",
-    ]
-
-    for pattern in incoherent_patterns:
-        if pattern in text_lower:
-            logger.info(f"[STT] Détection Dioula probable: pattern '{pattern}' trouvé")
-            return True
-
-    # Si la probabilité de langue est basse (<70%), c'est suspect
-    if 0 < language_probability < 0.7:
-        logger.info(f"[STT] Détection Dioula probable: probabilité langue faible ({language_probability:.2f})")
-        return True
-
-    return False
+    return _apply_corrections(text, _load_corrections("cities"), "ville")
 
 
 async def transcribe_audio_bytes(audio_bytes: bytes, filename: str = "audio.wav", language: str = "fr") -> dict | None:
