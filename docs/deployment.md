@@ -395,8 +395,19 @@ find "$BACKUP_DIR" -type f -mtime "+$RETENTION_DAYS" -delete
 # rclone sync "$BACKUP_DIR" scw-backup:wourri-backups/$(hostname)/ \
 #     --include "*_$DATE.*" --include "env_prod_$DATE"
 
+# 7. Ping de fin vers healthchecks.io (issue #220)
+#    Sans ping en 26h, healthchecks.io envoie une alerte email.
+#    `[ -n "..." ]` : ne ping que si la variable est définie (graceful no-op).
+#    `|| echo` : un échec ping est non-fatal (le backup réussit même sans ping).
+[ -n "${HEALTHCHECKS_BACKUP_URL:-}" ] && \
+    curl -fsS -m 10 --retry 3 "$HEALTHCHECKS_BACKUP_URL" >/dev/null || \
+    echo "[backup] WARN: ping healthchecks.io échoué (non-fatal)"
+
 echo "[backup] $(date -u +%FT%TZ) done — $(du -sh "$BACKUP_DIR" | cut -f1)"
 ```
+
+> Note : `backup.sh` doit pouvoir lire `$HEALTHCHECKS_BACKUP_URL` depuis
+> `.env.prod`. Solution sourcée dans la crontab (cf. §3 ci-dessous).
 
 ```bash
 sudo chmod +x /srv/wourri/backup.sh
@@ -408,7 +419,9 @@ sudo chown wourri:wourri /srv/wourri/backup.sh
 ```bash
 sudo crontab -u wourri -e
 # Ajouter :
-15 2 * * * /srv/wourri/backup.sh >> /srv/wourri/backups/backup.log 2>&1
+# `set -a; . /srv/wourri/.env.prod; set +a` source les vars du .env.prod
+# (notamment HEALTHCHECKS_BACKUP_URL) pour que backup.sh puisse les lire.
+15 2 * * * set -a && . /srv/wourri/.env.prod && set +a && /srv/wourri/backup.sh >> /srv/wourri/backups/backup.log 2>&1
 ```
 
 #### 4. Test de restauration (OBLIGATOIRE — un backup non testé = pas de backup)
@@ -416,11 +429,77 @@ sudo crontab -u wourri -e
 À faire en environnement dev/staging AVANT prod réelle. Procédure dans
 [Section Restauration](#restauration-postgres-après-incident) ci-dessous.
 
-#### 5. Monitoring du backup
+#### 5. Monitoring externe (healthchecks.io) — issue #220
 
-Vérifier que `backup.log` montre `done` à 02h20 chaque jour. À défaut,
-mettre une alerte (issue backlog "monitoring externe healthchecks.io" —
-référence : ROADMAP #209).
+Sans monitoring externe, un cron de backup qui s'arrête silencieusement n'est
+découvert qu'après incident. Healthchecks.io résout ce problème en envoyant
+une alerte email/Slack si un ping attendu n'arrive pas dans la fenêtre prévue.
+
+##### a) Créer le compte + 3 checks
+
+1. S'inscrire sur https://healthchecks.io (gratuit, 20 checks)
+2. Dans **Projects → Wourri (nouveau projet)** → créer 3 checks :
+
+| Check name | Schedule | Grace time | Usage |
+|---|---|---|---|
+| `wourri-backup-daily` | Cron `15 2 * * *` (02h15 UTC) | 60 min | Ping de `backup.sh` |
+| `wourri-api-health` | Period `5 min` | 10 min | Ping périodique `/health` wouri-api |
+| `wourri-wa-health` | Period `5 min` | 10 min | Ping périodique `/health` whatsapp-server |
+
+3. Pour chaque check, copier l'URL `https://hc-ping.com/<uuid>` et la mettre
+   dans `.env.prod` :
+   ```bash
+   sudo nano /srv/wourri/.env.prod
+   # Remplir :
+   #   HEALTHCHECKS_BACKUP_URL=https://hc-ping.com/<uuid-backup>
+   #   HEALTHCHECKS_API_URL=https://hc-ping.com/<uuid-api>
+   #   HEALTHCHECKS_WA_URL=https://hc-ping.com/<uuid-wa>
+   ```
+
+##### b) Configurer l'alerte email/Slack
+
+Sur healthchecks.io : **Integrations → Email / Slack / Discord / Webhook**.
+Recommandation : email vers `adcdevteam2025@gmail.com` minimum, ajouter Slack
+si une instance équipe existe.
+
+##### c) Ping de fin de `backup.sh`
+
+Déjà intégré dans le template `backup.sh` ci-dessus (étape 7). Le ping est
+graceful : si `HEALTHCHECKS_BACKUP_URL` est vide, le backup tourne quand même.
+
+##### d) Cron de ping `/health` toutes les 5 min
+
+Ces 2 pings remontent l'état applicatif (Postgres → wouri-api → whatsapp-server).
+Si `/health` répond non-200 ou ne répond pas dans la fenêtre, alerte
+healthchecks.io.
+
+```bash
+sudo crontab -u wourri -e
+# Ajouter (en plus de la ligne backup déjà présente) :
+*/5 * * * * set -a && . /srv/wourri/.env.prod && set +a && [ -n "$HEALTHCHECKS_API_URL" ] && curl -fsS -m 5 http://127.0.0.1:8000/health >/dev/null && curl -fsS -m 5 "$HEALTHCHECKS_API_URL" >/dev/null
+*/5 * * * * set -a && . /srv/wourri/.env.prod && set +a && [ -n "$HEALTHCHECKS_WA_URL" ] && curl -fsS -m 5 http://127.0.0.1:3001/health >/dev/null && curl -fsS -m 5 "$HEALTHCHECKS_WA_URL" >/dev/null
+```
+
+Logique : on n'envoie le ping QUE si `/health` répond 200. Si `/health` est
+KO, healthchecks.io détecte l'absence de ping en 10 min (grace time) et alerte.
+
+##### e) Vérifier le setup
+
+```bash
+# Forcer un ping immédiat (utile pour valider chaque URL)
+curl -fsS "$HEALTHCHECKS_BACKUP_URL"   # ⇒ "OK"
+
+# Sur healthchecks.io dashboard, le check correspondant doit passer "up"
+# en < 5 secondes.
+```
+
+##### f) Limites
+
+- **Healthchecks.io est gratuit jusqu'à 20 checks** — largement suffisant pour
+  Wourri staging. Si l'app grossit (10 services), envisager Uptime-kuma
+  (self-hosted) — tracé issue #220.
+- **Détecte la perte de service, pas la dégradation lente**. Pour des SLO
+  type latence p95, prévoir Grafana + Prometheus dans un Sprint ultérieur.
 
 ---
 
