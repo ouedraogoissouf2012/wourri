@@ -1,0 +1,145 @@
+# Wourri — CI/CD whatsapp-server (Sprint I.c.2, issue #201).
+# ──────────────────────────────────────────────────────────────
+#
+# Build l'image `Dockerfile.prod` à chaque push sur `whatsappServeur`,
+# la pousse sur `ghcr.io`, puis (optionnellement) déclenche un pull
+# SSH sur la VM Scaleway.
+#
+# Pattern aligné sur `deploy-api.yml` (livré dans wouri-api/ PR #212).
+# Différences principales :
+#   - Pas de migration Alembic (Node, pas de DDL applicatif)
+#   - Image plus légère (~300 MB vs ~3 GB pour wouri-api)
+#   - Healthcheck plus rapide (Baileys + Express boot ~5-10s)
+#
+# Le déploiement est GATED par une repo variable `DEPLOY_WA_ENABLED=true`.
+# Tant qu'elle n'est pas définie, le workflow se contente de build+push.
+#
+# Secrets requis pour activer le déploiement (Settings → Secrets) :
+#   - SCALEWAY_HOST     : IP ou hostname de la VM (partagé avec deploy-api)
+#   - SCALEWAY_USER     : utilisateur SSH (ex: `wourri`)
+#   - SCALEWAY_SSH_KEY  : clé privée SSH dédiée CI (format OpenSSH, sans passphrase)
+#   - SCALEWAY_PORT     : port SSH (défaut 22, surchargeable)
+#
+# Variables requises (Settings → Variables) :
+#   - DEPLOY_WA_ENABLED : `true` pour activer le job deploy
+
+name: deploy-wa
+
+on:
+  push:
+    branches: [whatsappServeur]
+    # Filter paths : pas de rebuild inutile si seule la doc change.
+    paths:
+      - 'Dockerfile.prod'
+      - '.dockerignore'
+      - 'app-baileys.js'
+      - 'lib/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-wa.yml'
+  workflow_dispatch:  # déclenchement manuel possible
+
+env:
+  REGISTRY: ghcr.io
+  # Image name : `ouedraogoissouf2012/wourri-whatsapp` (lowercase requis par ghcr).
+  IMAGE_NAME: ${{ github.repository_owner }}/wourri-whatsapp
+
+jobs:
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ Build l'image et la pousse sur ghcr.io                               │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          # GITHUB_TOKEN auto-fourni par GitHub Actions, scope packages:write
+          # autorisé par la directive `permissions:` ci-dessus.
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # Tag SHA long (immuable) — utilisable pour rollback explicite
+            type=sha,format=long,prefix=sha-
+            # Tag `latest` sur push branch whatsappServeur (référence par défaut du compose)
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/whatsappServeur' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.prod
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Cache GitHub Actions : build incrémental (gain ~1-2 min par run).
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ Déploiement sur la VM Scaleway via SSH                               │
+  # │ Gated par `vars.DEPLOY_WA_ENABLED == 'true'` (off par défaut).       │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: ${{ vars.DEPLOY_WA_ENABLED == 'true' }}
+    # Concurrence : un seul deploy à la fois (laisse le deploy en cours
+    # finir avant le suivant — cohérent avec deploy-api.yml).
+    concurrency:
+      group: deploy-wa-prod
+      cancel-in-progress: false
+
+    steps:
+      - name: Pull image + restart
+        # Pas de SCP : le compose vit déjà sur la VM (livré par deploy-api.yml).
+        # On se contente de pull la nouvelle image WA et restart le service.
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SCALEWAY_HOST }}
+          username: ${{ secrets.SCALEWAY_USER }}
+          key: ${{ secrets.SCALEWAY_SSH_KEY }}
+          port: ${{ secrets.SCALEWAY_PORT || 22 }}
+          # Pattern aligné sur deploy-api.yml :
+          # `set -euo pipefail` + `trap ERR` pour fail-fast et diagnostic.
+          script: |
+            set -euo pipefail
+            trap 'echo "[deploy-wa] FAIL — image actuelle: $(docker inspect --format={{.Config.Image}} wourri_whatsapp_prod 2>/dev/null || echo inconnue). Investiguer AVANT prochain push." >&2' ERR
+            cd /srv/wourri
+            echo "[deploy-wa] Pull nouvelle image whatsapp-server..."
+            docker compose --env-file .env.prod -f docker-compose.prod.yml pull whatsapp-server
+            # Sprint I.c.2 review M3 : `up -d` recrée le container = downtime court
+            # ~5-10 s (recreate Baileys connection). Acceptable car :
+            # 1) `lib/message_queue.js` persiste les messages en attente
+            #    (`/app/data/pending_messages.json`, volume `wourri_wa_data`)
+            #    → ils sont retraités au redémarrage.
+            # 2) Baileys reconnect auto à WhatsApp via la session persistée
+            #    (`/app/auth_baileys`, volume `wourri_wa_auth`).
+            # 3) `lib/circuit_breaker.js` protège côté API si la fenêtre est
+            #    plus longue qu'attendu.
+            # Pour un déploiement strictement zero-downtime : prévoir un Sprint
+            # dédié avec un mécanisme blue-green WhatsApp (complexe, hors scope).
+            echo "[deploy-wa] Restart whatsapp-server avec la nouvelle image..."
+            docker compose --env-file .env.prod -f docker-compose.prod.yml up -d whatsapp-server
+            echo "[deploy-wa] Nettoyage images obsolètes..."
+            docker image prune -f
+            echo "[deploy-wa] OK — image ${{ needs.build-and-push.outputs.image_tag }} déployée."

@@ -1,0 +1,53 @@
+# Wourri — CI tests whatsapp-server (Sprint I.c.2, issue #201).
+# ──────────────────────────────────────────────────────────────
+#
+# Exécute `node --test` sur chaque pull request ciblant `whatsappServeur`.
+# Filet de sécurité avant merge : aucune régression silencieuse acceptée
+# (cf. règle projet : tests verts sans flags `--ignore`/`--deselect`).
+#
+# Note : pas de modèle ML, pas de Postgres → CI très rapide (~30s).
+
+name: ci-wa
+
+on:
+  pull_request:
+    branches: [whatsappServeur]
+    paths:
+      - 'app-baileys.js'
+      - 'lib/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/ci-wa.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # Guard-rail anti hang (cohérent avec ci-api.yml). 10 min largement
+    # suffisant : suite locale tourne en ~1s sur ~247 tests.
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        # Aligné sur Dockerfile.prod (node:20-slim). Pas d'incohérence
+        # entre l'env CI et l'env runtime prod.
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps (npm ci, déterministe)
+        # `npm ci` exige package-lock.json à jour. Pas d'install de
+        # devDependencies optionnelles ici — la suite tourne avec les
+        # mocks dans tests/_helpers.js (pas besoin de Baileys réel).
+        run: npm ci
+
+      - name: Run tests
+        # node --test natif (Node ≥18). Suite ~247 tests, durée locale ~1s.
+        # Lister explicitement les fichiers évite que `tests/_helpers.js`
+        # (helpers partagés, pas un fichier de test) soit interprété par
+        # node:test comme une suite vide. Cf. pattern projet documenté.
+        run: node --test tests/*.test.js
