@@ -1,0 +1,159 @@
+# Wourri — CI/CD wouri-api (Sprint I.c, issue #201).
+# ─────────────────────────────────────────────────────
+#
+# Build l'image `Dockerfile.prod` à chaque push sur `APIPy`, la pousse
+# sur `ghcr.io`, puis (optionnellement) déclenche un déploiement SSH
+# sur la VM Scaleway.
+#
+# Le déploiement est GATED par une repo variable `DEPLOY_API_ENABLED=true`
+# (Settings → Secrets and variables → Actions → Variables). Tant qu'elle
+# n'est pas définie, le workflow se contente de build+push.
+#
+# Secrets requis pour activer le déploiement (Settings → Secrets) :
+#   - SCALEWAY_HOST     : IP ou hostname de la VM
+#   - SCALEWAY_USER     : utilisateur SSH (ex: `wourri`)
+#   - SCALEWAY_SSH_KEY  : clé privée SSH (format OpenSSH, sans passphrase)
+#   - SCALEWAY_PORT     : port SSH (défaut 22, surchargeable)
+#
+# Variables requises (Settings → Variables) :
+#   - DEPLOY_API_ENABLED : `true` pour activer le job deploy
+
+name: deploy-api
+
+on:
+  push:
+    branches: [APIPy]
+    # Filter paths : pas de rebuild inutile si seules la doc ou les tests changent.
+    paths:
+      - 'Dockerfile.prod'
+      - '.dockerignore'
+      - 'app/**'
+      - 'alembic/**'
+      - 'alembic.ini'
+      - 'db-init/**'
+      - 'dictionnaires/**'
+      - 'scripts/**'
+      - 'templates/**'
+      - 'requirements.txt'
+      - 'docker-compose.prod.yml'
+      - '.github/workflows/deploy-api.yml'
+  workflow_dispatch:  # déclenchement manuel possible
+
+env:
+  REGISTRY: ghcr.io
+  # Image name : `ouedraogoissouf2012/wourri-api` (lowercase requis par ghcr).
+  IMAGE_NAME: ${{ github.repository_owner }}/wourri-api
+
+jobs:
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ Build l'image et la pousse sur ghcr.io                               │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # nécessaire pour push sur ghcr.io
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          # GITHUB_TOKEN auto-fourni par GitHub Actions, scope packages:write
+          # autorisé par la directive `permissions:` ci-dessus.
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # Tag SHA long (immuable) — utilisable pour rollback explicite
+            type=sha,format=long,prefix=sha-
+            # Tag `latest` sur push branch APIPy (référence par défaut du compose)
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/APIPy' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.prod
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Cache GitHub Actions : build incrémental (gain ~3-5 min par run).
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ Déploiement sur la VM Scaleway via SSH                               │
+  # │ Gated par `vars.DEPLOY_API_ENABLED == 'true'` (off par défaut).      │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: ${{ vars.DEPLOY_API_ENABLED == 'true' }}
+    # Concurrence : un seul deploy à la fois (annule un deploy en cours
+    # si un nouveau push arrive — évite les states intermédiaires).
+    concurrency:
+      group: deploy-api-prod
+      cancel-in-progress: false  # finit le deploy en cours avant le suivant
+
+    steps:
+      - name: Checkout (compose + db-init)
+        uses: actions/checkout@v4
+
+      - name: Copy compose + db-init to VM
+        # appleboy/scp-action : transfert sécurisé via SSH.
+        # Pin version (v0.1.7) — pas de v* mouvant pour reproductibilité.
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SCALEWAY_HOST }}
+          username: ${{ secrets.SCALEWAY_USER }}
+          key: ${{ secrets.SCALEWAY_SSH_KEY }}
+          port: ${{ secrets.SCALEWAY_PORT || 22 }}
+          # `source` : fichiers/dossiers depuis le runner GitHub.
+          # Sprint I.c.1 review OPS N1 : `db-init/` sans glob shell — appleboy/scp
+          # gère les dossiers récursivement, le glob peut être mal interprété.
+          source: "docker-compose.prod.yml,db-init/"
+          target: "/srv/wourri/"
+          overwrite: true
+
+      - name: Pull image + migrate + restart
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SCALEWAY_HOST }}
+          username: ${{ secrets.SCALEWAY_USER }}
+          key: ${{ secrets.SCALEWAY_SSH_KEY }}
+          port: ${{ secrets.SCALEWAY_PORT || 22 }}
+          # Sprint I.c.1 review OPS B1 :
+          # - `set -euo pipefail` : `set -e` seul ne couvre pas les pipes ni
+          #   les variables non-définies. La triplette `-euo pipefail` est
+          #   l'incantation correcte pour un script ops fiable.
+          # - `trap ERR` : si une étape échoue (typiquement la migration
+          #   Alembic), on log l'image actuellement déployée pour faciliter
+          #   le diagnostic + signaler explicitement le state incohérent
+          #   (image pull mais ancienne version qui tourne toujours).
+          script: |
+            set -euo pipefail
+            trap 'echo "[deploy-api] FAIL — image actuelle: $(docker inspect --format={{.Config.Image}} wourri_api_prod 2>/dev/null || echo inconnue). Investiguer AVANT prochain push." >&2' ERR
+            cd /srv/wourri
+            echo "[deploy-api] Pull nouvelle image wouri-api..."
+            docker compose --env-file .env.prod -f docker-compose.prod.yml pull wouri-api
+            echo "[deploy-api] Application des migrations Alembic..."
+            docker compose --env-file .env.prod -f docker-compose.prod.yml run --rm wouri-api /app/scripts/run_migrations.sh
+            echo "[deploy-api] Restart wouri-api avec la nouvelle image..."
+            docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
+            echo "[deploy-api] Nettoyage images obsolètes..."
+            docker image prune -f
+            echo "[deploy-api] OK — image ${{ needs.build-and-push.outputs.image_tag }} déployée."

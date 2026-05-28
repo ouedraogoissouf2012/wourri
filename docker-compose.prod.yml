@@ -1,0 +1,236 @@
+# Wourri — Orchestration production (Sprint I.c, issue #201).
+# ─────────────────────────────────────────────────────────────
+#
+# Usage sur la VM Scaleway (chemin canonique `/srv/wourri/`) :
+#
+#   # 1. Première installation (cf. docs/deployment.md)
+#   sudo mkdir -p /srv/wourri && sudo chown $USER:$USER /srv/wourri
+#   # ... scp docker-compose.prod.yml + db-init/ + .env.prod sur la VM ...
+#
+#   # 2. Démarrer / mettre à jour (workflow déploiement)
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml pull
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml run --rm wouri-api /app/scripts/run_migrations.sh
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
+#
+#   # 3. Logs / debug
+#   docker compose -f docker-compose.prod.yml logs -f wouri-api whatsapp-server
+#
+# Décisions tranchées (cf. ADR + plan Sprint I) :
+#   - 3 services : postgres (pgvector/pg16) + wouri-api + whatsapp-server
+#   - Images depuis ghcr.io (push par CI à chaque merge sur APIPy / whatsappServeur)
+#   - Aucun build local en prod : le serveur fait juste `pull && up -d`
+#   - Tous ports bindés sur `127.0.0.1:` (défense en profondeur — reverse proxy
+#     futur en Sprint J s'ouvrira sur 443)
+#   - Postgres self-hosted (Scaleway Managed = ~30€/mois, injustifié pour ~30 users staging)
+#   - Volumes nommés `wourri_*` (collisions exclues avec autres projets Docker)
+
+services:
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ PostgreSQL + pgvector (cohérent avec docker-compose.dev.yml)         │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: wourri_postgres_prod
+    restart: unless-stopped
+    # Sprint I.c.1 review SEC M3 : no-new-privileges empêche tout exploit
+    # in-container d'escalader vers root host (setuid binaries).
+    security_opt:
+      - "no-new-privileges:true"
+    # Sprint I.c.1 review OPS M1 : limite mémoire stricte. Postgres tient
+    # confortablement en 512m pour ~30 utilisateurs (heuristique pgvector
+    # léger sur 162 entrées corpus IVR + tables annexes).
+    mem_limit: 512m
+    mem_reservation: 256m
+    # Sprint I.c.1 review OPS M2 : rotation logs Docker pour éviter
+    # saturation du disque sur la VM (40 GB Scaleway DEV1-M).
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    # Pas d'exposition host : Postgres reste interne au réseau Docker.
+    # Pour debug ad-hoc depuis la VM : `docker compose exec postgres psql -U $POSTGRES_USER`.
+    # Pour accès distant : tunnel SSH ponctuel (cf. runbook).
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER manquant dans .env.prod}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env.prod}
+      POSTGRES_DB: ${POSTGRES_DB:-wourri_prod}
+      # Sprint I.c.1 review OPS M3 : TZ UTC partout pour aligner les logs
+      # des 3 services lors du debug (jamais Europe/Paris : DST = pièges).
+      TZ: UTC
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+      # db-init/init.sql crée l'extension `vector` au PREMIER démarrage
+      # (mécanisme docker-entrypoint-initdb.d). Doit être présent sur la VM.
+      # Read-only pour empêcher modification accidentelle depuis le container.
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-wourri_prod}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - wourri_net
+
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ wouri-api (FastAPI + modèles ML)                                     │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  wouri-api:
+    image: ghcr.io/ouedraogoissouf2012/wourri-api:${API_IMAGE_TAG:-latest}
+    container_name: wourri_api_prod
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Sprint I.c.1 review SEC M3 : no-new-privileges (cf. postgres ci-dessus).
+    security_opt:
+      - "no-new-privileges:true"
+    # Sprint I.c.1 review OPS M1 : 3 GB pour absorber Whisper + NLLB + MMS-dyu
+    # chargés en mémoire (~2.5 GB RSS observé, marge +500m). Sur DEV1-M (4 GB
+    # RAM totale), il reste 1 GB pour postgres + wa + OS + swap → OOM-safe.
+    mem_limit: 3g
+    mem_reservation: 1500m
+    # Sprint I.c.1 review OPS M2 : rotation logs Docker.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    # Bind 127.0.0.1 uniquement : seul le reverse proxy futur (Sprint J)
+    # pourra exposer ce port en 443. Empêche tout accès direct depuis Internet.
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      # URL Postgres : host = nom du service Docker (`postgres`, pas localhost).
+      # Driver `+psycopg` requis (psycopg 3.x utilisé par requirements.txt).
+      POSTGRES_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-wourri_prod}
+      # Sprint I.c.1 review ARCH M1 : valeur EXPLICITE obligatoire (fail-fast
+      # `${VAR:?...}` au lieu de défaut). ADR-0008 Phase E exige que la bascule
+      # `pgvector` soit décidée explicitement après ≥7j staging en `dual`.
+      # Tant que Phase E n'est pas validée, .env.prod doit contenir `dual`
+      # (cf. .env.prod.template). Pattern aligné sur POSTGRES_USER/PASSWORD.
+      CORPUS_STORAGE_MODE: ${CORPUS_STORAGE_MODE:?CORPUS_STORAGE_MODE manquant (valeurs autorisees=chroma|dual|pgvector — cf. ADR-0008)}
+      # Sprint I.c.1 review OPS M3 : TZ UTC partout.
+      TZ: UTC
+      # Clé partagée whatsapp-server ↔ wouri-api (header X-API-Key).
+      WOURI_API_KEY: ${WOURI_API_KEY:?WOURI_API_KEY manquant dans .env.prod}
+      # CORS : laisser vide pour mode strict (pas de frontend web en Sprint I).
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # HuggingFace cache : pointe vers le volume monté
+      HF_HOME: /app/.cache/huggingface
+      TRANSFORMERS_CACHE: /app/.cache/huggingface
+    volumes:
+      # Cache modèles ML : volume nommé persistant. Évite re-téléchargement
+      # de PyTorch + Whisper + NLLB + MMS-dyu à chaque redéploiement.
+      - hf_cache:/app/.cache/huggingface
+      # Audio output (TTS générés) : persistant pour servir aux clients
+      - audio_output:/app/static/audio
+      - api_logs:/app/logs
+    healthcheck:
+      # start_period 900s (15 min) : cold-start premier deploy = téléchargement
+      # ~3-4 GB de modèles depuis HuggingFace. Démarrages suivants ~30s grâce
+      # au cache HF persistant.
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 900s
+    networks:
+      - wourri_net
+
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ whatsapp-server (Node.js + Baileys)                                  │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  whatsapp-server:
+    image: ghcr.io/ouedraogoissouf2012/wourri-whatsapp:${WA_IMAGE_TAG:-latest}
+    container_name: wourri_whatsapp_prod
+    restart: unless-stopped
+    depends_on:
+      wouri-api:
+        condition: service_healthy
+    # Sprint I.c.1 review SEC M3 : no-new-privileges (cf. postgres ci-dessus).
+    security_opt:
+      - "no-new-privileges:true"
+    # Sprint I.c.1 review OPS M1 : 512m suffit (Baileys + Express, pas de ML).
+    mem_limit: 512m
+    mem_reservation: 256m
+    # Sprint I.c.1 review OPS M2 : rotation logs Docker.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    # Bind 127.0.0.1 : pour scanner le QR code initial, utiliser un tunnel SSH :
+    #   ssh -L 3001:127.0.0.1:3001 user@vm-scaleway
+    #   → puis ouvrir http://localhost:3001/qr-page dans le navigateur local.
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      # URL backend : host = nom du service Docker (réseau interne).
+      WOURI_API_URL: http://wouri-api:8000
+      WOURI_API_KEY: ${WOURI_API_KEY:?WOURI_API_KEY manquant dans .env.prod}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Sprint I.c.1 review OPS M3 : TZ UTC partout.
+      TZ: UTC
+      # Chemins override pour pointer vers /app/data (volume nommé persistant).
+      # Cf. Sprint I.b — sans ces ENV, les fichiers étaient écrits à la racine
+      # /app/ et perdus à chaque restart. Les ENV sont aussi dans Dockerfile.prod
+      # (défense en profondeur — un opérateur qui copie ce compose ailleurs aura
+      # quand même les bons chemins).
+      USER_PREFS_FILE: /app/data/user_preferences.json
+      PENDING_MESSAGES_FILE: /app/data/pending_messages.json
+    volumes:
+      # auth_baileys : session WhatsApp persistante. PERTE = re-scan QR manuel.
+      - wa_auth:/app/auth_baileys
+      # audio_cache : 4 audios excuse pré-générés. PERTE = régénérés au boot
+      # (latence ~5s × 4 si API healthy, fallback texte sinon).
+      - wa_audio_cache:/app/audio_cache
+      # data/ : user_preferences.json + pending_messages.json (cf. Sprint I.b).
+      - wa_data:/app/data
+      - wa_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:3001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      # start_period court : Baileys + Express ~5-10s. Pas de modèle ML lourd.
+      start_period: 30s
+    networks:
+      - wourri_net
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ Volumes nommés persistants                                           │
+# │ Préfixe `wourri_` : évite collisions avec d'autres projets Docker.   │
+# ╰──────────────────────────────────────────────────────────────────────╯
+volumes:
+  pgdata_prod:
+    name: wourri_pgdata_prod
+  hf_cache:
+    name: wourri_hf_cache
+  audio_output:
+    name: wourri_audio_output
+  api_logs:
+    name: wourri_api_logs
+  wa_auth:
+    name: wourri_wa_auth
+  wa_audio_cache:
+    name: wourri_wa_audio_cache
+  wa_data:
+    name: wourri_wa_data
+  wa_logs:
+    name: wourri_wa_logs
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ Réseau interne — isolation des services entre eux                    │
+# ╰──────────────────────────────────────────────────────────────────────╯
+networks:
+  wourri_net:
+    name: wourri_net
+    driver: bridge
