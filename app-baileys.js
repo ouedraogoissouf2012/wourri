@@ -161,6 +161,12 @@ const onboardingMachine = new OnboardingMachine({
     logger,
 });
 
+// Sprint 2026-05-28 — extraction du handler messages.upsert vers lib/message_handler.js
+// (audit P2 #5 : 260 lignes inline + 5 niveaux d'imbrication factorisees).
+// Le handler est cree DANS connectToWhatsApp() apres makeWASocket() pour
+// capturer le sock courant (Pattern 11 projet : sock mutable post-init).
+const { createMessageHandler } = require('./lib/message_handler');
+
 // ========================================
 // FONCTIONS UTILITAIRES
 // ========================================
@@ -497,267 +503,31 @@ async function connectWhatsApp() {
     // GESTION DES MESSAGES ENTRANTS
     // ========================================
 
-    sock.ev.on('messages.upsert', async ({ messages }) => {
-        for (const msg of messages) {
-            // Ignorer les messages envoyes par nous-meme
-            if (msg.key.fromMe) continue;
-
-            // Ignorer les messages de groupe
-            if (msg.key.remoteJid.endsWith('@g.us')) continue;
-
-            // Ignorer les statuts WhatsApp
-            if (msg.key.remoteJid === 'status@broadcast') continue;
-
-            const userNumber = msg.key.remoteJid;
-            const prefs = userPrefs.get(userNumber);
-
-            // Extraction du texte
-            let messageText = msg.message?.conversation ||
-                             msg.message?.extendedTextMessage?.text ||
-                             msg.message?.buttonsResponseMessage?.selectedButtonId ||
-                             msg.message?.listResponseMessage?.singleSelectReply?.selectedRowId ||
-                             msg.message?.templateButtonReplyMessage?.selectedId ||
-                             '';
-
-            // Detecter si c'est un message vocal (pour adapter la reponse)
-            const audioMsg = msg.message?.audioMessage;
-            const isAudioMessage = audioMsg !== undefined && audioMsg !== null && !messageText;
-            let isVoiceInput = false; // Pour savoir si l'utilisateur a envoye un vocal
-            let bambaraText = null;   // Transcription bambara brute (pour NLU preprocessing)
-
-            if (isAudioMessage) {
-                logger.info(`\n[AUDIO] Message vocal recu de: ${userNumber}`);
-
-                if (!audioMsg?.mediaKey || !audioMsg?.url) {
-                    logger.info('[AUDIO] Message sans cle media valide - ignore');
-                    continue;
-                }
-
-                try {
-                    await sock.readMessages([msg.key]);
-                    // Message vocal recu -> reponse sera audio -> afficher 'recording'
-                    await sock.sendPresenceUpdate('recording', userNumber);
-
-                    const audioBuffer = await downloadMediaMessage(
-                        msg,
-                        'buffer',
-                        {},
-                        {
-                            logger: pino({ level: 'silent' }),
-                            reuploadRequest: sock.updateMediaMessage
-                        }
-                    );
-
-                    if (!audioBuffer) {
-                        await sock.sendPresenceUpdate('paused', userNumber);
-                        await sock.sendMessage(userNumber, { text: pickMsg(MSG.AUDIO_ERROR, prefs.language) });
-                        continue;
-                    }
-
-                    logger.info(`[AUDIO] Telecharge: ${audioBuffer.length} bytes`);
-
-                    // Choisir le moteur de transcription selon la langue de l'utilisateur
-                    // - Si langue = dioula ou both -> utiliser ASR Bambara (MMS)
-                    //   (les utilisateurs "both" parlent souvent en Dioula, Whisper hallucine sur du Dioula)
-                    // - Si langue = french -> utiliser Whisper (francais)
-                    let transcriptionResult;
-                    const userLanguage = prefs.language || 'french';
-
-                    if (userLanguage === 'dioula' || userLanguage === 'both') {
-                        logger.info(`[AUDIO] Utilisateur en mode ${userLanguage} -> ASR Bambara`);
-                        transcriptionResult = await asrClient.transcribeAudioBambara(audioBuffer, 'voice_message.ogg');
-                    } else {
-                        logger.info(`[AUDIO] Utilisateur en mode ${userLanguage} -> Whisper francais`);
-                        transcriptionResult = await asrClient.transcribeAudio(audioBuffer, 'voice_message.ogg');
-                    }
-
-                    if (!transcriptionResult || !transcriptionResult.text || transcriptionResult.text.trim() === '') {
-                        await sock.sendPresenceUpdate('paused', userNumber);
-
-                        // Distinguer la cause de l'échec de transcription :
-                        //   - API down → message d'indisponibilité (cohérent avec les autres erreurs API)
-                        //   - API up mais transcription vide → vrai cas "audio incompréhensible"
-                        //
-                        // Sans cette distinction, MSG.AUDIO_FAILED ("je n'ai pas compris ton vocal")
-                        // est trompeur quand le vrai problème est que l'API est down.
-                        if (!(await isApiHealthy())) {
-                            logger.info(`[AUDIO] API indisponible -> message d'indisponibilite (mode=${prefs.language})`);
-                            await responseSender.sendExcuse(userNumber, {
-                                language: prefs.language,
-                                kind: 'unavailable',
-                                isVoiceInput: true,
-                            });
-                        } else {
-                            // API up mais transcription a vraiment échoué -> vrai "audio non compris"
-                            await sock.sendMessage(userNumber, { text: pickMsg(MSG.AUDIO_FAILED, prefs.language) });
-                        }
-                        continue;
-                    }
-
-                    const transcribedText = transcriptionResult.text;
-                    const likelyDioulaInput = transcriptionResult.likely_dioula_input || false;
-                    const isBambaraTranscription = transcriptionResult.is_bambara || false;
-
-                    logger.info(`[STT] Transcription: "${transcribedText}"`);
-                    if (isBambaraTranscription) {
-                        logger.info(`[STT] Transcription Bambara reussie!`);
-                        if (transcriptionResult.bambara_text) {
-                            logger.info(`[STT] Texte Bambara original: "${transcriptionResult.bambara_text}"`);
-                        }
-                    } else if (likelyDioulaInput) {
-                        logger.info(`[STT] ATTENTION: Audio probablement en Dioula - transcription peut etre incorrecte`);
-                    }
-
-                    messageText = transcribedText;
-                    isVoiceInput = true; // Marquer comme message vocal
-                    // Conserver le bambara brut pour le NLU preprocessing dans chat.py
-                    if (transcriptionResult.bambara_text) {
-                        bambaraText = transcriptionResult.bambara_text;
-                    }
-
-                } catch (audioError) {
-                    logger.error(`[AUDIO] Erreur: ${audioError.message}`);
-                    await sock.sendPresenceUpdate('paused', userNumber);
-                    await sock.sendMessage(userNumber, { text: pickMsg(MSG.AUDIO_ERROR, prefs.language) });
-                    continue;
-                }
-            }
-
-            if (!messageText) continue;
-
-            logger.info(`\n[MESSAGE] De: ${userNumber}`);
-            logger.info(`[MESSAGE] Texte: ${messageText}`);
-            logger.info(`[MESSAGE] Etape: ${prefs.step}`);
-
-            try {
-                await sock.readMessages([msg.key]);
-                await randomDelay(500, 1000);
-                await sock.sendPresenceUpdate('composing', userNumber);
-
-                // ========================================
-                // Sprint D.3 — onboarding state machine déléguée à OnboardingMachine
-                //   { handled: null }                    → step=COMPLETE, pass-through
-                //   { handled: true }                    → onboarding traité, continue
-                //   { handled: false, newMessageText }   → onboarding terminé, question à traiter
-                // ========================================
-                const ob = await onboardingMachine.processStep(prefs, messageText, userNumber, { isAudioMessage, isVoiceInput });
-                if (ob.handled === true) continue;
-                if (ob.newMessageText) messageText = ob.newMessageText;
-
-                // ========================================
-                // TRAITEMENT DES QUESTIONS (ONBOARDING COMPLETE)
-                // ========================================
-                if (prefs.step === STEPS.COMPLETE) {
-                    logger.info(`[API] Appel avec ville: ${prefs.city}, langue: ${prefs.language}, voiceInput: ${isVoiceInput}`);
-
-                    // Determiner le type de presence selon le contexte
-                    // - Si entree vocale OU langue dioula/both -> reponse audio probable -> 'recording'
-                    // - Sinon -> reponse texte -> 'composing'
-                    const willBeAudio = isVoiceInput || prefs.language === 'dioula' || prefs.language === 'both';
-                    const presenceType = willBeAudio ? 'recording' : 'composing';
-
-                    // Maintenir le statut pendant le traitement
-                    let keepPresence = true;
-                    const presenceInterval = setInterval(async () => {
-                        if (keepPresence) {
-                            try {
-                                await sock.sendPresenceUpdate(presenceType, userNumber);
-                            } catch (e) {}
-                        }
-                    }, 5000);
-
-                    // Phase 2 — enregistrer le message dans la queue avant traitement
-                    // Permet de garantir qu'aucun message n'est perdu silencieusement
-                    const queueId = msg.key?.id || `wamsg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-                    try {
-                        await messageQueue.add({
-                            id: queueId,
-                            userNumber,
-                            payload: {
-                                messageText,
-                                bambaraText,
-                                isVoiceInput,
-                                city: prefs.city,
-                                language: prefs.language,
-                            },
-                        });
-                    } catch (qErr) {
-                        logger.error(`[QUEUE] Erreur ajout queue : ${qErr.message}`);
-                    }
-
-                    let data;
-                    try {
-                        // Wrap l'appel API dans le circuit breaker (Phase 2)
-                        const response = await apiCircuitBreaker.execute(async () =>
-                            axios.post(`${WOURI_API_URL}/api/chat/`, {
-                                message: messageText,
-                                city: prefs.city,
-                                language: prefs.language,
-                                include_audio: true,
-                                user_id: userNumber,           // Pour l'historique de conversation
-                                bambara_text: bambaraText      // Pour le NLU preprocessing (si message vocal bambara)
-                            }, { timeout: 180000, headers: authHeaders() })
-                        );
-                        data = response.data;
-                        // Succes : retirer de la queue
-                        await messageQueue.markSuccess(queueId);
-                    } catch (apiErr) {
-                        // Echec : marquer dans la queue (reste en attente pour observabilité)
-                        await messageQueue.markFailure(queueId, apiErr);
-
-                        // Si circuit ouvert, message d'attente adapté au format du dernier message
-                        if (apiErr instanceof CircuitOpenError) {
-                            logger.info(`[CIRCUIT] wouri-api en circuit OPEN — message d'attente envoyé (isVoice=${isVoiceInput}, lang=${prefs.language})`);
-                            keepPresence = false;
-                            clearInterval(presenceInterval);
-                            await sock.sendPresenceUpdate('paused', userNumber);
-                            await responseSender.sendExcuse(userNumber, {
-                                isVoiceInput,
-                                language: prefs.language,
-                                kind: 'unavailable',
-                            });
-                            continue;  // Passer au message suivant du batch
-                        }
-                        throw apiErr;  // Re-throw : capturé par le try/catch global du handler
-                    } finally {
-                        keepPresence = false;
-                        clearInterval(presenceInterval);
-                    }
-
-                    logger.info(`[API] Reponse recue`);
-                    await sock.sendPresenceUpdate('paused', userNumber);
-                    await randomDelay(300, 800);
-
-                    // Sprint D.2 — envoi via ResponseSender (3 modes + feedback C4)
-                    // Note: STEPS est importé directement dans response_sender.js (#164).
-                    await responseSender.sendResponse({
-                        data,
-                        prefs,
-                        isVoiceInput,
-                        userNumber,
-                        saveFn: () => userPrefs.save(),
-                    });
-                }
-
-            } catch (error) {
-                // Format détaillé : axios v1.x + erreurs réseau Windows mettent parfois
-                // le vrai motif dans error.code (ECONNREFUSED, ETIMEDOUT...) plutôt que
-                // dans error.message. On expose les deux pour faciliter le diagnostic.
-                const errCode = error.code || error.response?.status || 'UNKNOWN';
-                const errMsg = error.message || error.toString() || 'erreur sans message';
-                logger.error(`[ERREUR] ${errCode} - ${errMsg}`);
-                await sock.sendPresenceUpdate('paused', userNumber);
-                await randomDelay(500, 1000);
-                // Règle "selon langue choisie" (révisée 2026-05-06) : message d'excuse adapté
-                // au mode utilisateur, plus le texte bilingue fixe.
-                await responseSender.sendExcuse(userNumber, {
-                    language: prefs.language || 'french',
-                    kind: 'unavailable',
-                    isVoiceInput,
-                });
-            }
-        }
+    // Sprint 2026-05-28 — handler extrait dans lib/message_handler.js (audit P2 #5).
+    // Le handler doit etre cree ici (et non au top) pour capturer le sock courant
+    // (Pattern 11 : sock reassigne sur reconnexion via makeWASocket).
+    const messageHandler = createMessageHandler({
+        sock,
+        logger,
+        asrClient,
+        responseSender,
+        userPrefs,
+        onboardingMachine,
+        messageQueue,
+        apiCircuitBreaker,
+        apiUrl: WOURI_API_URL,
+        MSG,
+        STEPS,
+        authHeaders,
+        isApiHealthy,
+        pickMsg,
+        randomDelay,
+        downloadMediaMessage,
+        pino,
+        axios,
+        CircuitOpenError,
     });
+    sock.ev.on('messages.upsert', messageHandler);
 }
 
 // ========================================

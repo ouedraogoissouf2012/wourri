@@ -114,11 +114,25 @@ jobs:
         # Pas de SCP : le compose vit déjà sur la VM (livré par deploy-api.yml).
         # On se contente de pull la nouvelle image WA et restart le service.
         uses: appleboy/ssh-action@v1.0.3
+        # Issue #216 : on injecte WA_IMAGE_TAG=sha-<commit> dans le shell
+        # SSH pour pinner le pull sur l'image immuable buildee par CE
+        # workflow run. Sans ca, `docker compose pull whatsapp-server`
+        # resoudrait `${WA_IMAGE_TAG:-latest}` depuis .env.prod → `latest`
+        # mutable → race condition si 2 push rapides. La priorite Docker
+        # Compose (shell env > --env-file) garantit que notre valeur
+        # ecrase celle de .env.prod. L'operateur peut toujours rollback
+        # explicitement en editant .env.prod (WA_IMAGE_TAG=sha-PREVIOUS).
+        # Pattern aligne sur deploy-api.yml (PR wouri-api APIPy #234).
+        env:
+          WA_IMAGE_TAG: sha-${{ github.sha }}
         with:
           host: ${{ secrets.SCALEWAY_HOST }}
           username: ${{ secrets.SCALEWAY_USER }}
           key: ${{ secrets.SCALEWAY_SSH_KEY }}
           port: ${{ secrets.SCALEWAY_PORT || 22 }}
+          # `envs:` exporte la liste de variables locales du runner vers le
+          # shell SSH distant. Mecanique standard appleboy/ssh-action.
+          envs: WA_IMAGE_TAG
           # Pattern aligné sur deploy-api.yml :
           # `set -euo pipefail` + `trap ERR` pour fail-fast et diagnostic.
           script: |
