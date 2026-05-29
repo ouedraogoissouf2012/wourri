@@ -117,7 +117,59 @@ cp -r tmp-clone/db-init .
 rm -rf tmp-clone
 ```
 
+#### 4b. Provisionnement disque Postgres (issue #218)
+
+Le `docker-compose.prod.yml` utilise un **bind-mount explicite** vers
+`/srv/wourri/data/postgres` (vs un named volume Docker caché). Avantages :
+
+- **Visibilité `df -h`** immédiate : on voit la taille consommée par Postgres
+- **Backup rsync direct** : `rsync /srv/wourri/data/postgres/ ...` (vs copier depuis un volume Docker caché)
+- **Migration disque dédié facile** : si tu ajoutes un volume SSD plus tard,
+  `mv /srv/wourri/data/postgres /mnt/ssd/postgres-data && ln -s ...`
+
+**Création du dossier avec les bonnes permissions** :
+
+```bash
+sudo mkdir -p /srv/wourri/data/postgres
+# UID 999 = utilisateur `postgres` dans l'image officielle pgvector/pgvector:pg16
+# (Debian-based). Sans ce chown, Postgres echoue avec "Permission denied" au demarrage.
+sudo chown 999:999 /srv/wourri/data/postgres
+# 700 = lecture/ecriture/execute UNIQUEMENT pour postgres (UID 999).
+# Empeche les autres users (meme du groupe docker) de lire les fichiers de la BDD.
+sudo chmod 700 /srv/wourri/data/postgres
+```
+
+**Vérification post-création** :
+
+```bash
+ls -ld /srv/wourri/data/postgres
+# Doit afficher : drwx------ 2 999 999 ...  (= chown 999:999 + chmod 700)
+```
+
+**Filesystem recommandé en production** : XFS (meilleure perf Postgres que
+ext4). Pour staging, ext4 par défaut est OK. Si tu provisionnes un disque
+dédié XFS plus tard :
+
+```bash
+# Optionnel — disque dedie XFS pour les data Postgres
+sudo mkfs.xfs /dev/sdb1
+sudo mkdir -p /mnt/postgres-data
+sudo mount /dev/sdb1 /mnt/postgres-data
+# Persister dans /etc/fstab :
+echo "/dev/sdb1 /mnt/postgres-data xfs defaults,noatime 0 0" | sudo tee -a /etc/fstab
+# Migration des data existantes :
+sudo systemctl stop docker
+sudo rsync -aHAX /srv/wourri/data/postgres/ /mnt/postgres-data/
+sudo mv /srv/wourri/data/postgres /srv/wourri/data/postgres.old
+sudo ln -s /mnt/postgres-data /srv/wourri/data/postgres
+sudo systemctl start docker
+# Verifier l'integrite (psql), puis :
+sudo rm -rf /srv/wourri/data/postgres.old
+```
+
 ### 5. Configurer les secrets prod
+
+#### 5a. Variables non-secrètes (.env.prod)
 
 ```bash
 cp .env.prod.template .env.prod
@@ -126,10 +178,67 @@ cp .env.prod.template .env.prod
 sudo chown root:root .env.prod
 sudo chmod 600 .env.prod
 sudo nano .env.prod
-# Remplir TOUTES les valeurs (cf. commentaires dans le template).
-# Génération recommandée :
-#   openssl rand -base64 32     # → POSTGRES_PASSWORD, WOURI_API_KEY
+# Remplir les valeurs non-secrètes : POSTGRES_USER, POSTGRES_DB, ALLOWED_ORIGINS,
+# LOG_LEVEL, CORPUS_STORAGE_MODE, API_IMAGE_TAG, WA_IMAGE_TAG, HEALTHCHECKS_*,
+# WOURI_API_KEY (toujours utilisée par whatsapp-server side, cf. §5b note).
+# Génération recommandée pour les chaînes aléatoires :
+#   openssl rand -base64 32
 ```
+
+#### 5b. Docker secrets (issue #213) — POSTGRES_PASSWORD + API_SECRET_KEY
+
+Pour éviter que les secrets soient visibles dans `docker inspect`,
+`/proc/<pid>/environ` ou `docker compose config`, ils sont stockés dans des
+**fichiers** sur l'host (mode `0600` root:root), montés en read-only dans
+`/run/secrets/<nom>` côté container.
+
+```bash
+# Préparer le dossier secrets (mode 0700, root only)
+sudo mkdir -p /srv/wourri/secrets
+sudo chmod 0700 /srv/wourri/secrets
+sudo chown root:root /srv/wourri/secrets
+
+# 1. POSTGRES_PASSWORD : lu nativement par l'image postgres via
+#    POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+echo -n "$(openssl rand -base64 32)" | sudo tee /srv/wourri/secrets/postgres_password >/dev/null
+sudo chmod 0600 /srv/wourri/secrets/postgres_password
+sudo chown root:root /srv/wourri/secrets/postgres_password
+
+# 2. API_SECRET_KEY : lu par app/config.py::_read_file_secret() via
+#    API_SECRET_KEY_FILE=/run/secrets/api_secret_key
+echo -n "$(openssl rand -base64 32)" | sudo tee /srv/wourri/secrets/api_secret_key >/dev/null
+sudo chmod 0600 /srv/wourri/secrets/api_secret_key
+sudo chown root:root /srv/wourri/secrets/api_secret_key
+
+# Vérification
+sudo ls -la /srv/wourri/secrets/
+# Doit afficher :
+#   drwx------ 2 root root  ...
+#   -rw------- 1 root root  ... postgres_password
+#   -rw------- 1 root root  ... api_secret_key
+```
+
+#### Particularité whatsapp-server
+
+`whatsapp-server` (Node.js) lit toujours `WOURI_API_KEY` depuis env var
+(env-based pattern, pas FILE). Pour cohérence :
+- Le contenu de `/srv/wourri/secrets/api_secret_key` DOIT être identique à
+  `WOURI_API_KEY` dans `.env.prod`
+- À chaque rotation, mettre à jour les **deux** sources
+- Une issue backlog est ouverte pour migrer whatsapp-server vers le même
+  pattern `*_FILE` (nécessite modif `app-baileys.js` côté Node, cross-repo)
+
+```bash
+# Synchroniser .env.prod avec le fichier secret
+API_KEY=$(sudo cat /srv/wourri/secrets/api_secret_key)
+sudo sed -i "s|^WOURI_API_KEY=.*|WOURI_API_KEY=$API_KEY|" /srv/wourri/.env.prod
+```
+
+#### Backup hors-VM (obligatoire)
+
+Comme `.env.prod`, les fichiers `/srv/wourri/secrets/*` sont l'UNIQUE moyen
+de redéployer en cas de perte VM. Les sauvegarder dans le gestionnaire de
+secrets (1Password / Bitwarden) **avant le premier démarrage**.
 
 > Sprint I.c.1 review OPS B4 : **sauvegarder `.env.prod` HORS de la VM** dans
 > un gestionnaire de secrets (1Password, Bitwarden, Scaleway Secret Manager).
@@ -140,14 +249,132 @@ sudo nano .env.prod
 
 ### 6. Login GHCR (pull privé)
 
-Si les images sont privées sur `ghcr.io` :
+Si les images sont privées sur `ghcr.io`, tu as **3 options** selon ton contexte (sécurité vs simplicité). Lis cette section en entier avant de choisir, **la décision se prend une fois pour toutes** sur la VM.
+
+#### Pourquoi 3 options (issue #214)
+
+`docker login ghcr.io --password-stdin` (méthode standard ci-dessous) écrit le PAT GitHub dans `~/.docker/config.json` en **base64 (pas chiffré)** :
 
 ```bash
-# Créer un PAT GitHub (Settings → Developer settings → Personal access tokens
-# (classic) → scope `read:packages` uniquement). À mettre dans `~/.gh-pat`.
-chmod 600 ~/.gh-pat
+$ cat ~/.docker/config.json
+{ "auths": { "ghcr.io": { "auth": "Z2hwX2FiYzEyMy..." } } }
+```
+
+Sur compromission VM (root malveillant, dump disque), le token est récupérable et utilisable depuis n'importe où jusqu'à révocation. C'est documenté dans la review sécurité Sprint I.c.1 (PR #212 MAJOR M2).
+
+→ Les 3 options ci-dessous arbitrent différemment **sécurité / simplicité opérationnelle**.
+
+#### Minimum obligatoire (les 3 options)
+
+Quelle que soit l'option retenue ci-dessous, tu DOIS :
+
+1. **Créer un PAT GitHub dédié** avec scope **uniquement** `read:packages` (pas `repo`, pas `write`).
+2. **Rotation 90 jours** : entrée dans ton calendrier partagé, alerte automatique 7 jours avant échéance.
+3. **Audit cron mensuel** : vérifier la date de modif du fichier credentials (`stat -c '%y' ~/.docker/config.json`) — si > 90 jours, la rotation a été oubliée.
+
+#### Option A (recommandée pour la production) — `docker-credential-pass`
+
+Chiffrement du token via `pass` (qui s'appuie sur GnuPG). Le token n'est **jamais** en clair sur disque.
+
+**Pré-requis VM** : Debian/Ubuntu (Scaleway recommandé). Penser à exporter la clé GPG en backup hors-VM (sinon perte du déchiffrage à la perte de VM).
+
+```bash
+# 1. Installer les outils
+sudo apt-get install -y pass gnupg2 docker-credential-helpers
+
+# 2. Générer une clé GPG dédiée Docker (NE PAS réutiliser une clé perso existante)
+gpg --batch --generate-key <<EOF
+%no-protection
+Key-Type: RSA
+Key-Length: 2048
+Name-Real: Wourri Docker
+Name-Email: docker@wourri.ci
+Expire-Date: 1y
+EOF
+
+# 3. Récupérer l'ID de la clé qu'on vient de créer
+GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format=LONG | awk '/^sec/{print $2}' | cut -d/ -f2 | head -1)
+
+# 4. Initialiser pass avec cette clé
+pass init "$GPG_KEY_ID"
+
+# 5. Activer le helper côté Docker (modifier ~/.docker/config.json AVANT login)
+mkdir -p ~/.docker
+cat > ~/.docker/config.json <<'EOF'
+{ "credsStore": "pass" }
+EOF
+
+# 6. Login ghcr — le PAT sera stocké chiffré dans pass (pas en base64)
 cat ~/.gh-pat | docker login ghcr.io -u <github-username> --password-stdin
 ```
+
+**Backup obligatoire de la clé GPG** (sinon, perte de VM = impossible de re-déchiffrer) :
+
+```bash
+gpg --export-secret-keys --armor "$GPG_KEY_ID" > /tmp/docker-gpg-private.asc
+# Copier ce fichier dans ton gestionnaire de secrets (1Password, Bitwarden) puis :
+shred -u /tmp/docker-gpg-private.asc
+```
+
+Vérif que le token n'est PAS en clair après l'opération :
+
+```bash
+cat ~/.docker/config.json  # ← doit montrer { "credsStore": "pass" }, PAS un champ "auths.auth"
+pass ls  # ← doit montrer "docker-credential-helpers/docker-pass-initialized-check"
+```
+
+#### Option B (pragmatique pour staging/MVP) — Images publiques ghcr.io
+
+Si tu acceptes que les **tags et SHA de tes images** soient publiquement listables sur ghcr.io, tu peux passer le repo en `public`. Plus de login nécessaire = plus de PAT à gérer.
+
+**Ce que ça expose** :
+- Les noms d'images : `ghcr.io/ouedraogoissouf2012/wourri-api`
+- Les SHA des commits utilisés pour build
+- La fréquence des releases (visible dans le packages tab)
+
+**Ce que ça n'expose PAS** :
+- Aucun secret applicatif (`.env.prod` n'est jamais dans l'image — cf. `.dockerignore` PR #210/#211)
+- Aucune PII (les corpus IVR sont déjà publics)
+- Aucune clé / credential
+
+Sur GitHub :
+1. `Settings → Packages → wourri-api → Change visibility → Public`
+2. Idem pour `wourri-whatsapp`
+3. Sur la VM, supprimer la conf credentials existante : `rm ~/.docker/config.json` (les pulls anonymes fonctionneront)
+
+#### Option C (minimum syndical) — login standard + rotation stricte
+
+Conserver le `docker login --password-stdin` actuel, mais avec **discipline opérationnelle stricte** :
+
+```bash
+chmod 600 ~/.gh-pat
+cat ~/.gh-pat | docker login ghcr.io -u <github-username> --password-stdin
+
+# Apres login, supprimer le fichier PAT en clair (le credential reste dans ~/.docker/config.json,
+# mais on n'a plus besoin du fichier source)
+shred -u ~/.gh-pat
+```
+
+**À ajouter dans la crontab** :
+
+```bash
+# Audit mensuel : alerter si config.json non touché depuis > 90 jours
+# (= rotation manquée ; un re-login docker fait `touch` sur le fichier)
+0 9 1 * * test "$(find ~/.docker/config.json -mtime +90 -print)" && echo "[GHCR] PAT à rotater" | mail -s "Wourri ops: GHCR rotation" admin@example.com
+```
+
+#### Tableau récapitulatif
+
+| Critère | Option A (helper) | Option B (public) | Option C (login + rotation) |
+|---|---|---|---|
+| Token chiffré au repos | ✅ | n/a (pas de token) | ❌ (base64) |
+| Effort initial | ~30 min | ~5 min | ~5 min |
+| Effort rotation 90j | reuse helper | n/a | exécuter `docker login` à la main |
+| Backup hors-VM | clé GPG | n/a | PAT (déjà géré) |
+| Risque info disclosure | aucun | tags / SHA / fréquence releases | aucun |
+| Recommandé pour | **production** ≥ 100 users | staging / MVP | dev / test |
+
+---
 
 ### 7. Premier démarrage
 
@@ -270,6 +497,50 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml pull
 docker compose --env-file .env.prod -f docker-compose.prod.yml run --rm wouri-api /app/scripts/run_migrations.sh
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
 docker image prune -f
+```
+
+### Stratégie de cache des modèles ML (issue #217)
+
+Depuis l'issue #217, les modèles essentiels (TTS bambara/dioula, NLLB-200,
+embedding multilingual) sont **préchargés dans l'image Docker** au build :
+
+| Avant #217 | Après #217 |
+|---|---|
+| Image ~3 GB | Image ~4 GB (+1 GB) |
+| Cold-start premier démarrage ~15 min (download HF) | Cold-start ~30 s (lecture image) |
+| `start_period: 900s` (15 min) | `start_period: 120s` (2 min) |
+| Pull Scaleway ~3 min | Pull Scaleway ~4 min (+1 min) |
+
+Trade-off accepté : +1 min pull / +5 min CI build × N déploiements bien moins
+coûteux que les 15 min × N premiers démarrages économisés (et l'attente
+opérateur lors d'un rollback).
+
+**Modèles NON préchargés** (lazy on-demand) :
+- **Whisper large-v3-turbo** (~1.5 GB) : utilisé seulement par les utilisateurs
+  `language=french` qui envoient des vocaux (minoritaires)
+- **TTS ivoirien** (ati, dyi, gud, etc.) : usage minoritaire
+- **NeMo Soloni** (.nemo, ~150 MB) : workflow HF Hub différent, init lazy
+
+**Cas particulier : mise à jour d'un modèle**
+
+Le volume nommé `wourri_hf_cache` PRIORITAIRE sur le contenu de l'image au
+runtime (Docker policy standard). Si le volume contient un ancien modèle et
+que l'image a une nouvelle version, **le runtime continue d'utiliser l'ancien**.
+
+Pour basculer sur la nouvelle version :
+
+```bash
+# 1. Arrêter wouri-api proprement
+docker compose --env-file .env.prod -f docker-compose.prod.yml stop wouri-api
+
+# 2. Purger le volume (perd le cache, sera reconstruit depuis l'image)
+docker volume rm wourri_hf_cache
+
+# 3. Pull la nouvelle image (si pas déjà fait)
+docker compose --env-file .env.prod -f docker-compose.prod.yml pull wouri-api
+
+# 4. Redémarrer : Docker copie le contenu de la NOUVELLE image dans le volume
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
 ```
 
 ### Rollback vers une version antérieure
@@ -586,7 +857,7 @@ docker compose -f docker-compose.prod.yml exec postgres \
 
 | Symptôme | Diagnostic | Solution |
 |---|---|---|
-| `wouri-api` reste `unhealthy` >15 min | Cold-start premier deploy (download modèles ~3-4 GB) | Patienter, vérifier `docker logs wouri-api` montre progress |
+| `wouri-api` reste `unhealthy` >2 min | Issue #217 : modèles préchargés dans l'image, mais Whisper/NeMo restent lazy | Patienter, `docker logs wouri-api` doit montrer `[PRELOAD]` et `Application startup complete` |
 | `whatsapp-server` log `WhatsApp non connecté` | Session manquante ou expirée | Re-scan QR via tunnel SSH (cf. §8) |
 | `pull access denied` sur `ghcr.io` | Image privée + pas loggé | `docker login ghcr.io` (cf. §6) |
 | `permission denied` sur `/app/auth_baileys` | Volume créé en root | `docker compose down && docker volume rm wourri_wa_auth && docker compose up -d` (perd session) |

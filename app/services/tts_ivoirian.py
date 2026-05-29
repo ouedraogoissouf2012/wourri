@@ -100,42 +100,14 @@ def get_tts_model(language_code: str):
         return None, None
 
 
-from app.services._ffmpeg import get_ffmpeg as find_ffmpeg
-
-
-def convert_wav_to_ogg(wav_path: str, ogg_path: str) -> bool:
-    """Convertit un fichier WAV en OGG (Opus) pour WhatsApp mobile"""
-    ffmpeg_path = find_ffmpeg()
-
-    if ffmpeg_path:
-        try:
-            result = subprocess.run([
-                ffmpeg_path, '-y', '-i', wav_path,
-                '-c:a', 'libopus', '-b:a', '64k',
-                '-vbr', 'on', '-compression_level', '10',
-                ogg_path
-            ], capture_output=True, text=True, timeout=30)
-
-            if result.returncode == 0 and os.path.exists(ogg_path):
-                os.remove(wav_path)
-                return True
-        except Exception as e:
-            logger.error(f"Erreur ffmpeg: {e}")
-
-    # Fallback avec pydub
-    try:
-        from pydub import AudioSegment
-        if ffmpeg_path and ffmpeg_path != 'ffmpeg':
-            AudioSegment.converter = ffmpeg_path
-
-        audio = AudioSegment.from_wav(wav_path)
-        audio.export(ogg_path, format="ogg", codec="libopus", bitrate="64k")
-        os.remove(wav_path)
-        return True
-    except Exception as e:
-        logger.error(f"Erreur pydub: {e}")
-
-    return False
+# Sprint refactor 2026-05-29 (issue #231) : convert_wav_to_ogg deplace dans
+# tts_common.py pour aligner sur la normalisation EBU R128 (loudnorm I=-16
+# TP=-1.5 LRA=11) deja utilisee par tts_bambara/tts_dioula via PR #230. Sans
+# cet alignement, les audios ivoiriens (ati/dyi/myk/gud/adj/dnj/wob/bam) ont
+# un volume non-normalise tandis que bambara/dioula sont a -16 LUFS standard
+# podcast → inconsistance percue par l'utilisateur WhatsApp. Reexport pour
+# compat des callsites internes (synthesize_ivorian_text ci-dessous).
+from app.services.tts_common import convert_wav_to_ogg  # noqa: F401
 
 
 def synthesize_ivorian_text(text: str, language: str = "bam") -> Optional[str]:

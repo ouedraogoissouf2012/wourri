@@ -82,18 +82,33 @@ def _load_corpus() -> dict:
         return json.load(f)
 
 
+# Identifiant HuggingFace du modèle (cohérent avec vdb_service.py, ADR-0008 §Phase B).
+_HF_MODEL_ID = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
+
 def _load_model():
-    """Charge le modèle SentenceTransformer local (paraphrase-multilingual)."""
+    """Charge le modèle SentenceTransformer (local si disponible, sinon HF).
+
+    Issue #223 — fallback gracieux pour permettre l'exécution du script dans :
+        - dev local avec ``modeles_manuels/`` présent (chemin historique, rapide)
+        - CI sans modèle pré-téléchargé (download HF, ~30 s premier run)
+        - container prod avec ``HF_HOME=/app/.cache/huggingface`` (volume cache
+          persistant, cf. docker-compose.prod.yml)
+
+    Le modèle est strictement le même (paraphrase-multilingual-MiniLM-L12-v2)
+    quel que soit le chemin → pas de divergence d'embeddings.
+    """
     from sentence_transformers import SentenceTransformer
 
-    if not _MODEL_PATH.exists():
-        raise RuntimeError(
-            f"Modèle introuvable : {_MODEL_PATH}. "
-            "Phase B exige le même modèle que vdb_service.py "
-            "(paraphrase-multilingual-MiniLM-L12-v2)."
-        )
-    print(f"[IMPORT] Chargement du modèle d'embedding : {_MODEL_PATH.name}")
-    return SentenceTransformer(str(_MODEL_PATH))
+    if _MODEL_PATH.exists():
+        print(f"[IMPORT] Modèle local : {_MODEL_PATH.name}")
+        return SentenceTransformer(str(_MODEL_PATH))
+
+    print(
+        f"[IMPORT] Modèle local absent ({_MODEL_PATH}) — fallback HuggingFace "
+        f"({_HF_MODEL_ID}, cache HF_HOME)"
+    )
+    return SentenceTransformer(_HF_MODEL_ID)
 
 
 def _truncate_all(conn) -> None:

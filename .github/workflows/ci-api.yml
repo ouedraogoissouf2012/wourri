@@ -76,6 +76,13 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
+      # Issue #219 : drift check rapide (< 1s) avant les etapes lourdes.
+      # Echec ici = quelqu'un a ajoute `${VAR:?}` dans le compose sans la
+      # declarer dans .env.prod.template, ou inversement. Fail-fast evite
+      # de gaspiller les ~3 min de pytest qui auraient passe quand meme.
+      - name: Check env consistency (compose ↔ .env.prod.template)
+        run: python scripts/check_env_consistency.py
+
       - name: Create pgvector extension
         # L'image pgvector/pgvector pré-installe l'extension mais ne la crée pas
         # automatiquement dans la DB cible. On la crée explicitement avant les tests.

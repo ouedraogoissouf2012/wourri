@@ -55,13 +55,24 @@ services:
       - "5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER manquant dans .env.prod}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env.prod}
+      # Issue #213 : Docker secret monté en read-only dans /run/secrets/.
+      # L'image postgres lit nativement POSTGRES_PASSWORD_FILE → ne touche
+      # PAS POSTGRES_PASSWORD ici (sinon les 2 sont en conflit).
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
       POSTGRES_DB: ${POSTGRES_DB:-wourri_prod}
       # Sprint I.c.1 review OPS M3 : TZ UTC partout pour aligner les logs
       # des 3 services lors du debug (jamais Europe/Paris : DST = pièges).
       TZ: UTC
+    secrets:
+      - postgres_password
     volumes:
-      - pgdata_prod:/var/lib/postgresql/data
+      # Issue #218 (Sprint I.c.1 review OPS MAJOR M7) : bind-mount explicite
+      # vers /srv/wourri/data/postgres (vs named volume cache dans
+      # /var/lib/docker/volumes/...). Benefice : visibilite `df -h`, backup
+      # rsync direct, migration disque dedie facile a posteriori.
+      # Prerequis : creer le dossier avec chown 999:999 (UID image postgres
+      # officielle pgvector/pgvector:pg16) — cf. docs/deployment.md §4.
+      - /srv/wourri/data/postgres:/var/lib/postgresql/data
       # db-init/init.sql crée l'extension `vector` au PREMIER démarrage
       # (mécanisme docker-entrypoint-initdb.d). Doit être présent sur la VM.
       # Read-only pour empêcher modification accidentelle depuis le container.
@@ -115,15 +126,19 @@ services:
       CORPUS_STORAGE_MODE: ${CORPUS_STORAGE_MODE:?CORPUS_STORAGE_MODE manquant (valeurs autorisees=chroma|dual|pgvector — cf. ADR-0008)}
       # Sprint I.c.1 review OPS M3 : TZ UTC partout.
       TZ: UTC
-      # Issue #222 : Clé partagée whatsapp-server ↔ wouri-api (header X-API-Key).
-      # Renommage en API_SECRET_KEY pour matcher le champ Pydantic Settings
-      # (`app/config.py:api_secret_key`). Le nom public expose a l'operateur
-      # reste WOURI_API_KEY (cf. .env.prod.template), mais le container recoit
-      # la valeur sous le nom API_SECRET_KEY. Sans ce renommage, l'auth etait
-      # silencieusement DESACTIVEE en prod (Pydantic ne lisait pas WOURI_API_KEY).
-      API_SECRET_KEY: ${WOURI_API_KEY:?WOURI_API_KEY manquant dans .env.prod}
-      # Clé précédente acceptée temporairement pendant une rotation zero-downtime.
-      # Optionnelle : vide en temps normal, remplie 5 min pendant une rotation.
+      # Issue #213 + #222 : combinaison Docker secret (cle courante) + env var
+      # (cle precedente dual-key pour rotation zero-downtime).
+      #
+      # - API_SECRET_KEY_FILE : monte par Docker secret, lu par _read_file_secret()
+      #   dans app/config.py et utilise pour override `api_secret_key` au demarrage.
+      #   Renommage WOURI_API_KEY → API_SECRET_KEY introduit en PR #245 (issue #222).
+      # - API_SECRET_KEY_PREVIOUS : env var simple, vide en temps normal, remplie
+      #   5 min pendant une rotation (dual-key zero-downtime).
+      #
+      # API_SECRET_KEY_PREVIOUS_FILE (pattern secrets pour la cle precedente)
+      # sera ajoute dans une PR de suivi (issue creee post-merge #245 pour aligner
+      # la cle precedente sur le pattern Docker secrets).
+      API_SECRET_KEY_FILE: /run/secrets/api_secret_key
       API_SECRET_KEY_PREVIOUS: ${WOURI_API_KEY_PREVIOUS:-}
       # CORS : laisser vide pour mode strict (pas de frontend web en Sprint I).
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
@@ -131,6 +146,9 @@ services:
       # HuggingFace cache : pointe vers le volume monté
       HF_HOME: /app/.cache/huggingface
       TRANSFORMERS_CACHE: /app/.cache/huggingface
+    secrets:
+      # Issue #213 : monte en read-only dans /run/secrets/ du container.
+      - api_secret_key
     volumes:
       # Cache modèles ML : volume nommé persistant. Évite re-téléchargement
       # de PyTorch + Whisper + NLLB + MMS-dyu à chaque redéploiement.
@@ -139,14 +157,15 @@ services:
       - audio_output:/app/static/audio
       - api_logs:/app/logs
     healthcheck:
-      # start_period 900s (15 min) : cold-start premier deploy = téléchargement
-      # ~3-4 GB de modèles depuis HuggingFace. Démarrages suivants ~30s grâce
-      # au cache HF persistant.
+      # Issue #217 : start_period 120s (2 min) — les modèles essentiels (TTS
+      # bambara/dioula, NLLB, embedding multilingual) sont préchargés dans
+      # l'image au build (cf. Dockerfile.prod). Cold-start ~30 s + marge pour
+      # Whisper/NeMo lazy. Avant : 900s pour absorber download HF de 3-4 GB.
       test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 900s
+      start_period: 120s
     networks:
       - wourri_net
 
@@ -218,8 +237,10 @@ services:
 # │ Préfixe `wourri_` : évite collisions avec d'autres projets Docker.   │
 # ╰──────────────────────────────────────────────────────────────────────╯
 volumes:
-  pgdata_prod:
-    name: wourri_pgdata_prod
+  # Note : `pgdata_prod` retire (issue #218) au profit d'un bind-mount
+  # vers /srv/wourri/data/postgres (cf. service postgres ci-dessus).
+  # Les autres volumes restent nommes car n'ont pas le meme besoin de
+  # visibilite/backup ad-hoc.
   hf_cache:
     name: wourri_hf_cache
   audio_output:
@@ -234,6 +255,21 @@ volumes:
     name: wourri_wa_data
   wa_logs:
     name: wourri_wa_logs
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ Docker secrets (issue #213)                                          │
+# │ Les fichiers vivent dans /srv/wourri/secrets/ (mode 0600 root:root). │
+# │ Docker les monte read-only dans /run/secrets/<nom> côté container.   │
+# │ → INVISIBLES dans `docker inspect`, `/proc/<pid>/environ`.           │
+# │ Création des fichiers sur la VM : cf. docs/deployment.md §5b.        │
+# ╰──────────────────────────────────────────────────────────────────────╯
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password
+  api_secret_key:
+    file: ./secrets/api_secret_key
+  # api_secret_key_previous : a ajouter dans une PR de suivi apres le merge
+  # de #245 (PR qui ajoute le champ api_secret_key_previous dans Settings).
 
 # ╭──────────────────────────────────────────────────────────────────────╮
 # │ Réseau interne — isolation des services entre eux                    │
