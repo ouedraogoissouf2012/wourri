@@ -71,16 +71,26 @@ def _load_corrections(name: str) -> dict[str, str]:
 
 
 def _apply_corrections(text: str, corrections: dict[str, str], label: str) -> str:
-    """Applique les corrections (case-insensitive, regex sur match)."""
+    """Applique les corrections (case-insensitive, word boundary, regex sur match).
+
+    Word boundary `\\b` (issue #228) : sans ce garde, des entrees courtes
+    comme `ment` matchent dans `vraiment`/`comment` -> `vraiMan`/`comMan`.
+    Le filtre prealable `wrong in text_lower` n'attrape pas non plus le
+    cas substring : la regex avec `\\b` est l'autorite finale.
+    """
     if not text or not corrections:
         return text
     result = text
     text_lower = text.lower()
     for wrong, correct in corrections.items():
         if wrong in text_lower:
-            pattern = re.compile(re.escape(wrong), re.IGNORECASE)
-            result = pattern.sub(correct, result)
-            logger.info(f"[Faster-Whisper] Correction {label}: '{wrong}' -> '{correct}'")
+            pattern = re.compile(r"\b" + re.escape(wrong) + r"\b", re.IGNORECASE)
+            # Sub peut renvoyer le meme texte si le match etait substring sans
+            # word boundary -> on ne log que si une vraie substitution a eu lieu.
+            new_result = pattern.sub(correct, result)
+            if new_result != result:
+                logger.info(f"[Faster-Whisper] Correction {label}: '{wrong}' -> '{correct}'")
+                result = new_result
     return result
 
 # Chemin ffmpeg — résolu au premier appel via get_ffmpeg()
