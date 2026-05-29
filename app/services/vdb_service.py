@@ -37,6 +37,13 @@ def _load_corpus() -> dict:
 # Chemin de persistance Chroma
 _CHROMA_DIR = Path(__file__).parent.parent.parent / "data" / "chroma_ivr"
 
+# Identifiant HuggingFace du modèle d'embedding (followup #246).
+# DOIT être strictement identique à scripts/import_corpus_ivr.py::_HF_MODEL_ID
+# pour garantir la cohérence des embeddings entre import et search. Avant cette
+# constante, le fallback `DefaultEmbeddingFunction()` de chromadb utilisait un
+# modèle 384-dim générique DIFFERENT → divergence silencieuse import vs search.
+_HF_MODEL_ID = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
 _chroma_collection = None
 
 
@@ -74,15 +81,22 @@ def _get_collection():
 
         client = chromadb.PersistentClient(path=str(_CHROMA_DIR))
 
-        # Embedding function : paraphrase-multilingual (déjà présent dans modeles_manuels)
+        # Embedding function : paraphrase-multilingual.
+        # Followup #246 : fallback HuggingFace (cohérence avec scripts/import_corpus_ivr.py).
+        # Avant : `DefaultEmbeddingFunction()` chromadb (modèle 384-dim générique
+        # DIFFÉRENT) → bug silencieux de divergence embeddings import vs search.
+        # Apres : meme modele paraphrase-multilingual via slug HF (telechargement
+        # cache HF_HOME, persistant sur volume `wourri_hf_cache` en prod).
         model_path = Path(__file__).parent.parent.parent / "modeles_manuels" / "paraphrase-multilingual-MiniLM-L12-v2"
         if model_path.exists():
             ef = embedding_functions.SentenceTransformerEmbeddingFunction(
                 model_name=str(model_path)
             )
         else:
-            ef = embedding_functions.DefaultEmbeddingFunction()
-            logger.warning("[VDB] Modèle multilingual non trouvé — utilisation embedding par défaut")
+            logger.info("[VDB] Modele local absent — fallback HF: %s", _HF_MODEL_ID)
+            ef = embedding_functions.SentenceTransformerEmbeddingFunction(
+                model_name=_HF_MODEL_ID
+            )
 
         _chroma_collection = client.get_or_create_collection(
             name="corpus_ivr",
