@@ -272,6 +272,50 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
 docker image prune -f
 ```
 
+### Stratégie de cache des modèles ML (issue #217)
+
+Depuis l'issue #217, les modèles essentiels (TTS bambara/dioula, NLLB-200,
+embedding multilingual) sont **préchargés dans l'image Docker** au build :
+
+| Avant #217 | Après #217 |
+|---|---|
+| Image ~3 GB | Image ~4 GB (+1 GB) |
+| Cold-start premier démarrage ~15 min (download HF) | Cold-start ~30 s (lecture image) |
+| `start_period: 900s` (15 min) | `start_period: 120s` (2 min) |
+| Pull Scaleway ~3 min | Pull Scaleway ~4 min (+1 min) |
+
+Trade-off accepté : +1 min pull / +5 min CI build × N déploiements bien moins
+coûteux que les 15 min × N premiers démarrages économisés (et l'attente
+opérateur lors d'un rollback).
+
+**Modèles NON préchargés** (lazy on-demand) :
+- **Whisper large-v3-turbo** (~1.5 GB) : utilisé seulement par les utilisateurs
+  `language=french` qui envoient des vocaux (minoritaires)
+- **TTS ivoirien** (ati, dyi, gud, etc.) : usage minoritaire
+- **NeMo Soloni** (.nemo, ~150 MB) : workflow HF Hub différent, init lazy
+
+**Cas particulier : mise à jour d'un modèle**
+
+Le volume nommé `wourri_hf_cache` PRIORITAIRE sur le contenu de l'image au
+runtime (Docker policy standard). Si le volume contient un ancien modèle et
+que l'image a une nouvelle version, **le runtime continue d'utiliser l'ancien**.
+
+Pour basculer sur la nouvelle version :
+
+```bash
+# 1. Arrêter wouri-api proprement
+docker compose --env-file .env.prod -f docker-compose.prod.yml stop wouri-api
+
+# 2. Purger le volume (perd le cache, sera reconstruit depuis l'image)
+docker volume rm wourri_hf_cache
+
+# 3. Pull la nouvelle image (si pas déjà fait)
+docker compose --env-file .env.prod -f docker-compose.prod.yml pull wouri-api
+
+# 4. Redémarrer : Docker copie le contenu de la NOUVELLE image dans le volume
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
+```
+
 ### Rollback vers une version antérieure
 
 Toutes les images sont taggées avec le SHA commit (`sha-<long-sha>`).
@@ -560,7 +604,7 @@ docker compose -f docker-compose.prod.yml exec postgres \
 
 | Symptôme | Diagnostic | Solution |
 |---|---|---|
-| `wouri-api` reste `unhealthy` >15 min | Cold-start premier deploy (download modèles ~3-4 GB) | Patienter, vérifier `docker logs wouri-api` montre progress |
+| `wouri-api` reste `unhealthy` >2 min | Issue #217 : modèles préchargés dans l'image, mais Whisper/NeMo restent lazy | Patienter, `docker logs wouri-api` doit montrer `[PRELOAD]` et `Application startup complete` |
 | `whatsapp-server` log `WhatsApp non connecté` | Session manquante ou expirée | Re-scan QR via tunnel SSH (cf. §8) |
 | `pull access denied` sur `ghcr.io` | Image privée + pas loggé | `docker login ghcr.io` (cf. §6) |
 | `permission denied` sur `/app/auth_baileys` | Volume créé en root | `docker compose down && docker volume rm wourri_wa_auth && docker compose up -d` (perd session) |

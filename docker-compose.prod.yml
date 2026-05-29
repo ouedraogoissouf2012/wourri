@@ -131,14 +131,15 @@ services:
       - audio_output:/app/static/audio
       - api_logs:/app/logs
     healthcheck:
-      # start_period 900s (15 min) : cold-start premier deploy = téléchargement
-      # ~3-4 GB de modèles depuis HuggingFace. Démarrages suivants ~30s grâce
-      # au cache HF persistant.
+      # Issue #217 : start_period 120s (2 min) — les modèles essentiels (TTS
+      # bambara/dioula, NLLB, embedding multilingual) sont préchargés dans
+      # l'image au build (cf. Dockerfile.prod). Cold-start ~30 s + marge pour
+      # Whisper/NeMo lazy. Avant : 900s pour absorber download HF de 3-4 GB.
       test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 900s
+      start_period: 120s
     networks:
       - wourri_net
 
