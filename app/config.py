@@ -3,9 +3,32 @@ WOURI - Configuration
 """
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 import os
 import sys
+
+
+def _read_file_secret(name: str) -> str:
+    """Lit le contenu du fichier référencé par `{NAME}_FILE` env var.
+
+    Issue #213 — pattern Docker secrets. Le compose monte les fichiers de
+    secrets dans `/run/secrets/<nom>`, puis définit dans environment :
+        API_SECRET_KEY_FILE=/run/secrets/api_secret_key
+    Pydantic Settings lit la valeur d'env `API_SECRET_KEY` (vide), donc on
+    surcharge dans `get_settings()` en lisant le fichier ici.
+
+    Backward-compat : si `{NAME}_FILE` n'est pas défini OU le fichier est
+    introuvable, retourne `""` → l'opérateur qui n'a pas migré garde le
+    comportement précédent (lecture depuis `.env`).
+    """
+    file_path = os.getenv(f"{name}_FILE")
+    if not file_path:
+        return ""
+    p = Path(file_path)
+    if not p.is_file():
+        return ""
+    return p.read_text(encoding="utf-8").strip()
 
 
 class Settings(BaseSettings):
@@ -127,8 +150,22 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    """Retourne les settings (cached)"""
-    s = Settings()
+    """Retourne les settings (cached).
+
+    Issue #213 : si `API_SECRET_KEY_FILE` / `API_SECRET_KEY_PREVIOUS_FILE`
+    sont définis (pattern Docker secrets), leur contenu OVERRIDE les
+    valeurs lues depuis `.env`. Cela permet de stocker les secrets dans
+    des fichiers mode 0600 sur la VM plutôt que dans des env vars
+    (visibles via `docker inspect`).
+    """
+    # Construire les overrides depuis Docker secrets si présents.
+    # Note : API_SECRET_KEY_PREVIOUS_FILE pourra etre ajoute apres le merge
+    # de PR #245 (qui introduit le champ api_secret_key_previous).
+    overrides: dict[str, str] = {}
+    if file_secret := _read_file_secret("API_SECRET_KEY"):
+        overrides["api_secret_key"] = file_secret
+
+    s = Settings(**overrides)
     # En production : forcer debug=False et exiger API_SECRET_KEY
     if s.is_production:
         if not s.api_secret_key:

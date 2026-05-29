@@ -55,11 +55,16 @@ services:
       - "5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER manquant dans .env.prod}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env.prod}
+      # Issue #213 : Docker secret monté en read-only dans /run/secrets/.
+      # L'image postgres lit nativement POSTGRES_PASSWORD_FILE → ne touche
+      # PAS POSTGRES_PASSWORD ici (sinon les 2 sont en conflit).
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
       POSTGRES_DB: ${POSTGRES_DB:-wourri_prod}
       # Sprint I.c.1 review OPS M3 : TZ UTC partout pour aligner les logs
       # des 3 services lors du debug (jamais Europe/Paris : DST = pièges).
       TZ: UTC
+    secrets:
+      - postgres_password
     volumes:
       - pgdata_prod:/var/lib/postgresql/data
       # db-init/init.sql crée l'extension `vector` au PREMIER démarrage
@@ -115,14 +120,21 @@ services:
       CORPUS_STORAGE_MODE: ${CORPUS_STORAGE_MODE:?CORPUS_STORAGE_MODE manquant (valeurs autorisees=chroma|dual|pgvector — cf. ADR-0008)}
       # Sprint I.c.1 review OPS M3 : TZ UTC partout.
       TZ: UTC
-      # Clé partagée whatsapp-server ↔ wouri-api (header X-API-Key).
-      WOURI_API_KEY: ${WOURI_API_KEY:?WOURI_API_KEY manquant dans .env.prod}
+      # Issue #213 : Docker secret pour API_SECRET_KEY (lu par
+      # _read_file_secret() dans app/config.py). API_SECRET_KEY_PREVIOUS_FILE
+      # sera ajoute dans une PR de suivi apres le merge de #245 (champ
+      # api_secret_key_previous introduit dans Settings).
+      # Renommage WOURI_API_KEY → API_SECRET_KEY introduit en PR #245 (issue #222).
+      API_SECRET_KEY_FILE: /run/secrets/api_secret_key
       # CORS : laisser vide pour mode strict (pas de frontend web en Sprint I).
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # HuggingFace cache : pointe vers le volume monté
       HF_HOME: /app/.cache/huggingface
       TRANSFORMERS_CACHE: /app/.cache/huggingface
+    secrets:
+      # Issue #213 : monte en read-only dans /run/secrets/ du container.
+      - api_secret_key
     volumes:
       # Cache modèles ML : volume nommé persistant. Évite re-téléchargement
       # de PyTorch + Whisper + NLLB + MMS-dyu à chaque redéploiement.
@@ -226,6 +238,21 @@ volumes:
     name: wourri_wa_data
   wa_logs:
     name: wourri_wa_logs
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ Docker secrets (issue #213)                                          │
+# │ Les fichiers vivent dans /srv/wourri/secrets/ (mode 0600 root:root). │
+# │ Docker les monte read-only dans /run/secrets/<nom> côté container.   │
+# │ → INVISIBLES dans `docker inspect`, `/proc/<pid>/environ`.           │
+# │ Création des fichiers sur la VM : cf. docs/deployment.md §5b.        │
+# ╰──────────────────────────────────────────────────────────────────────╯
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password
+  api_secret_key:
+    file: ./secrets/api_secret_key
+  # api_secret_key_previous : a ajouter dans une PR de suivi apres le merge
+  # de #245 (PR qui ajoute le champ api_secret_key_previous dans Settings).
 
 # ╭──────────────────────────────────────────────────────────────────────╮
 # │ Réseau interne — isolation des services entre eux                    │

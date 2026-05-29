@@ -119,6 +119,8 @@ rm -rf tmp-clone
 
 ### 5. Configurer les secrets prod
 
+#### 5a. Variables non-secrètes (.env.prod)
+
 ```bash
 cp .env.prod.template .env.prod
 # Sprint I.c.1 review OPS N4 : owner root + permissions strictes pour empêcher
@@ -126,10 +128,67 @@ cp .env.prod.template .env.prod
 sudo chown root:root .env.prod
 sudo chmod 600 .env.prod
 sudo nano .env.prod
-# Remplir TOUTES les valeurs (cf. commentaires dans le template).
-# Génération recommandée :
-#   openssl rand -base64 32     # → POSTGRES_PASSWORD, WOURI_API_KEY
+# Remplir les valeurs non-secrètes : POSTGRES_USER, POSTGRES_DB, ALLOWED_ORIGINS,
+# LOG_LEVEL, CORPUS_STORAGE_MODE, API_IMAGE_TAG, WA_IMAGE_TAG, HEALTHCHECKS_*,
+# WOURI_API_KEY (toujours utilisée par whatsapp-server side, cf. §5b note).
+# Génération recommandée pour les chaînes aléatoires :
+#   openssl rand -base64 32
 ```
+
+#### 5b. Docker secrets (issue #213) — POSTGRES_PASSWORD + API_SECRET_KEY
+
+Pour éviter que les secrets soient visibles dans `docker inspect`,
+`/proc/<pid>/environ` ou `docker compose config`, ils sont stockés dans des
+**fichiers** sur l'host (mode `0600` root:root), montés en read-only dans
+`/run/secrets/<nom>` côté container.
+
+```bash
+# Préparer le dossier secrets (mode 0700, root only)
+sudo mkdir -p /srv/wourri/secrets
+sudo chmod 0700 /srv/wourri/secrets
+sudo chown root:root /srv/wourri/secrets
+
+# 1. POSTGRES_PASSWORD : lu nativement par l'image postgres via
+#    POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+echo -n "$(openssl rand -base64 32)" | sudo tee /srv/wourri/secrets/postgres_password >/dev/null
+sudo chmod 0600 /srv/wourri/secrets/postgres_password
+sudo chown root:root /srv/wourri/secrets/postgres_password
+
+# 2. API_SECRET_KEY : lu par app/config.py::_read_file_secret() via
+#    API_SECRET_KEY_FILE=/run/secrets/api_secret_key
+echo -n "$(openssl rand -base64 32)" | sudo tee /srv/wourri/secrets/api_secret_key >/dev/null
+sudo chmod 0600 /srv/wourri/secrets/api_secret_key
+sudo chown root:root /srv/wourri/secrets/api_secret_key
+
+# Vérification
+sudo ls -la /srv/wourri/secrets/
+# Doit afficher :
+#   drwx------ 2 root root  ...
+#   -rw------- 1 root root  ... postgres_password
+#   -rw------- 1 root root  ... api_secret_key
+```
+
+#### Particularité whatsapp-server
+
+`whatsapp-server` (Node.js) lit toujours `WOURI_API_KEY` depuis env var
+(env-based pattern, pas FILE). Pour cohérence :
+- Le contenu de `/srv/wourri/secrets/api_secret_key` DOIT être identique à
+  `WOURI_API_KEY` dans `.env.prod`
+- À chaque rotation, mettre à jour les **deux** sources
+- Une issue backlog est ouverte pour migrer whatsapp-server vers le même
+  pattern `*_FILE` (nécessite modif `app-baileys.js` côté Node, cross-repo)
+
+```bash
+# Synchroniser .env.prod avec le fichier secret
+API_KEY=$(sudo cat /srv/wourri/secrets/api_secret_key)
+sudo sed -i "s|^WOURI_API_KEY=.*|WOURI_API_KEY=$API_KEY|" /srv/wourri/.env.prod
+```
+
+#### Backup hors-VM (obligatoire)
+
+Comme `.env.prod`, les fichiers `/srv/wourri/secrets/*` sont l'UNIQUE moyen
+de redéployer en cas de perte VM. Les sauvegarder dans le gestionnaire de
+secrets (1Password / Bitwarden) **avant le premier démarrage**.
 
 > Sprint I.c.1 review OPS B4 : **sauvegarder `.env.prod` HORS de la VM** dans
 > un gestionnaire de secrets (1Password, Bitwarden, Scaleway Secret Manager).
