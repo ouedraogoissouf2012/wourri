@@ -140,14 +140,132 @@ sudo nano .env.prod
 
 ### 6. Login GHCR (pull privé)
 
-Si les images sont privées sur `ghcr.io` :
+Si les images sont privées sur `ghcr.io`, tu as **3 options** selon ton contexte (sécurité vs simplicité). Lis cette section en entier avant de choisir, **la décision se prend une fois pour toutes** sur la VM.
+
+#### Pourquoi 3 options (issue #214)
+
+`docker login ghcr.io --password-stdin` (méthode standard ci-dessous) écrit le PAT GitHub dans `~/.docker/config.json` en **base64 (pas chiffré)** :
 
 ```bash
-# Créer un PAT GitHub (Settings → Developer settings → Personal access tokens
-# (classic) → scope `read:packages` uniquement). À mettre dans `~/.gh-pat`.
-chmod 600 ~/.gh-pat
+$ cat ~/.docker/config.json
+{ "auths": { "ghcr.io": { "auth": "Z2hwX2FiYzEyMy..." } } }
+```
+
+Sur compromission VM (root malveillant, dump disque), le token est récupérable et utilisable depuis n'importe où jusqu'à révocation. C'est documenté dans la review sécurité Sprint I.c.1 (PR #212 MAJOR M2).
+
+→ Les 3 options ci-dessous arbitrent différemment **sécurité / simplicité opérationnelle**.
+
+#### Minimum obligatoire (les 3 options)
+
+Quelle que soit l'option retenue ci-dessous, tu DOIS :
+
+1. **Créer un PAT GitHub dédié** avec scope **uniquement** `read:packages` (pas `repo`, pas `write`).
+2. **Rotation 90 jours** : entrée dans ton calendrier partagé, alerte automatique 7 jours avant échéance.
+3. **Audit cron mensuel** : vérifier la date de modif du fichier credentials (`stat -c '%y' ~/.docker/config.json`) — si > 90 jours, la rotation a été oubliée.
+
+#### Option A (recommandée pour la production) — `docker-credential-pass`
+
+Chiffrement du token via `pass` (qui s'appuie sur GnuPG). Le token n'est **jamais** en clair sur disque.
+
+**Pré-requis VM** : Debian/Ubuntu (Scaleway recommandé). Penser à exporter la clé GPG en backup hors-VM (sinon perte du déchiffrage à la perte de VM).
+
+```bash
+# 1. Installer les outils
+sudo apt-get install -y pass gnupg2 docker-credential-helpers
+
+# 2. Générer une clé GPG dédiée Docker (NE PAS réutiliser une clé perso existante)
+gpg --batch --generate-key <<EOF
+%no-protection
+Key-Type: RSA
+Key-Length: 2048
+Name-Real: Wourri Docker
+Name-Email: docker@wourri.ci
+Expire-Date: 1y
+EOF
+
+# 3. Récupérer l'ID de la clé qu'on vient de créer
+GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format=LONG | awk '/^sec/{print $2}' | cut -d/ -f2 | head -1)
+
+# 4. Initialiser pass avec cette clé
+pass init "$GPG_KEY_ID"
+
+# 5. Activer le helper côté Docker (modifier ~/.docker/config.json AVANT login)
+mkdir -p ~/.docker
+cat > ~/.docker/config.json <<'EOF'
+{ "credsStore": "pass" }
+EOF
+
+# 6. Login ghcr — le PAT sera stocké chiffré dans pass (pas en base64)
 cat ~/.gh-pat | docker login ghcr.io -u <github-username> --password-stdin
 ```
+
+**Backup obligatoire de la clé GPG** (sinon, perte de VM = impossible de re-déchiffrer) :
+
+```bash
+gpg --export-secret-keys --armor "$GPG_KEY_ID" > /tmp/docker-gpg-private.asc
+# Copier ce fichier dans ton gestionnaire de secrets (1Password, Bitwarden) puis :
+shred -u /tmp/docker-gpg-private.asc
+```
+
+Vérif que le token n'est PAS en clair après l'opération :
+
+```bash
+cat ~/.docker/config.json  # ← doit montrer { "credsStore": "pass" }, PAS un champ "auths.auth"
+pass ls  # ← doit montrer "docker-credential-helpers/docker-pass-initialized-check"
+```
+
+#### Option B (pragmatique pour staging/MVP) — Images publiques ghcr.io
+
+Si tu acceptes que les **tags et SHA de tes images** soient publiquement listables sur ghcr.io, tu peux passer le repo en `public`. Plus de login nécessaire = plus de PAT à gérer.
+
+**Ce que ça expose** :
+- Les noms d'images : `ghcr.io/ouedraogoissouf2012/wourri-api`
+- Les SHA des commits utilisés pour build
+- La fréquence des releases (visible dans le packages tab)
+
+**Ce que ça n'expose PAS** :
+- Aucun secret applicatif (`.env.prod` n'est jamais dans l'image — cf. `.dockerignore` PR #210/#211)
+- Aucune PII (les corpus IVR sont déjà publics)
+- Aucune clé / credential
+
+Sur GitHub :
+1. `Settings → Packages → wourri-api → Change visibility → Public`
+2. Idem pour `wourri-whatsapp`
+3. Sur la VM, supprimer la conf credentials existante : `rm ~/.docker/config.json` (les pulls anonymes fonctionneront)
+
+#### Option C (minimum syndical) — login standard + rotation stricte
+
+Conserver le `docker login --password-stdin` actuel, mais avec **discipline opérationnelle stricte** :
+
+```bash
+chmod 600 ~/.gh-pat
+cat ~/.gh-pat | docker login ghcr.io -u <github-username> --password-stdin
+
+# Apres login, supprimer le fichier PAT en clair (le credential reste dans ~/.docker/config.json,
+# mais on n'a plus besoin du fichier source)
+shred -u ~/.gh-pat
+```
+
+**À ajouter dans la crontab** :
+
+```bash
+# Audit mensuel : alerter si config.json non touché depuis > 90 jours
+# (= rotation manquée ; un re-login docker fait `touch` sur le fichier)
+0 9 1 * * test "$(find ~/.docker/config.json -mtime +90 -print)" && echo "[GHCR] PAT à rotater" | mail -s "Wourri ops: GHCR rotation" admin@example.com
+```
+
+#### Tableau récapitulatif
+
+| Critère | Option A (helper) | Option B (public) | Option C (login + rotation) |
+|---|---|---|---|
+| Token chiffré au repos | ✅ | n/a (pas de token) | ❌ (base64) |
+| Effort initial | ~30 min | ~5 min | ~5 min |
+| Effort rotation 90j | reuse helper | n/a | exécuter `docker login` à la main |
+| Backup hors-VM | clé GPG | n/a | PAT (déjà géré) |
+| Risque info disclosure | aucun | tags / SHA / fréquence releases | aucun |
+| Recommandé pour | **production** ≥ 100 users | staging / MVP | dev / test |
+
+---
 
 ### 7. Premier démarrage
 
