@@ -69,6 +69,16 @@ class Settings(BaseSettings):
     # Mettre une valeur dans .env pour activer : API_SECRET_KEY=votre_cle_secrete
     api_secret_key: str = ""
 
+    # Issue #222 : clé précédente acceptée TEMPORAIREMENT pendant une rotation
+    # zero-downtime de WOURI_API_KEY. Quand on rotate :
+    #   1. Mettre API_SECRET_KEY_PREVIOUS=$OLD + API_SECRET_KEY=$NEW dans .env
+    #   2. Restart wouri-api → accepte les 2 clés
+    #   3. Restart whatsapp-server → envoie $NEW (peut envoyer $OLD à la marge)
+    #   4. Vider API_SECRET_KEY_PREVIOUS après quelques minutes
+    # Tant que cette var est définie, un warning est loggé au démarrage pour
+    # alerter l'opérateur de purger après la fenêtre de rotation.
+    api_secret_key_previous: str = ""
+
     # Langue TTS ivoirienne par défaut
     default_ivorian_language: str = "bam"
 

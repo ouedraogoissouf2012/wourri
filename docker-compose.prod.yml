@@ -126,12 +126,20 @@ services:
       CORPUS_STORAGE_MODE: ${CORPUS_STORAGE_MODE:?CORPUS_STORAGE_MODE manquant (valeurs autorisees=chroma|dual|pgvector — cf. ADR-0008)}
       # Sprint I.c.1 review OPS M3 : TZ UTC partout.
       TZ: UTC
-      # Issue #213 : Docker secret pour API_SECRET_KEY (lu par
-      # _read_file_secret() dans app/config.py). API_SECRET_KEY_PREVIOUS_FILE
-      # sera ajoute dans une PR de suivi apres le merge de #245 (champ
-      # api_secret_key_previous introduit dans Settings).
-      # Renommage WOURI_API_KEY → API_SECRET_KEY introduit en PR #245 (issue #222).
+      # Issue #213 + #222 : combinaison Docker secret (cle courante) + env var
+      # (cle precedente dual-key pour rotation zero-downtime).
+      #
+      # - API_SECRET_KEY_FILE : monte par Docker secret, lu par _read_file_secret()
+      #   dans app/config.py et utilise pour override `api_secret_key` au demarrage.
+      #   Renommage WOURI_API_KEY → API_SECRET_KEY introduit en PR #245 (issue #222).
+      # - API_SECRET_KEY_PREVIOUS : env var simple, vide en temps normal, remplie
+      #   5 min pendant une rotation (dual-key zero-downtime).
+      #
+      # API_SECRET_KEY_PREVIOUS_FILE (pattern secrets pour la cle precedente)
+      # sera ajoute dans une PR de suivi (issue creee post-merge #245 pour aligner
+      # la cle precedente sur le pattern Docker secrets).
       API_SECRET_KEY_FILE: /run/secrets/api_secret_key
+      API_SECRET_KEY_PREVIOUS: ${WOURI_API_KEY_PREVIOUS:-}
       # CORS : laisser vide pour mode strict (pas de frontend web en Sprint I).
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
