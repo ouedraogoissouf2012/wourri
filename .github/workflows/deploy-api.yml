@@ -131,11 +131,26 @@ jobs:
 
       - name: Pull image + migrate + restart
         uses: appleboy/ssh-action@v1.0.3
+        # Issue #216 : on injecte API_IMAGE_TAG=sha-<commit> dans le shell
+        # SSH pour pinner le pull sur l'image immuable buildee par CE
+        # workflow run. Sans ca, `docker compose pull wouri-api` resoudrait
+        # `${API_IMAGE_TAG:-latest}` depuis .env.prod, donc `latest` mutable
+        # → race condition si 2 push rapides : le 2e deploy pulle une image
+        # qui n'est pas celle de SON build. La priorite Docker Compose
+        # (shell env > --env-file) garantit que notre valeur ecrase celle
+        # de .env.prod. L'operateur peut toujours rollback explicitement en
+        # editant .env.prod (API_IMAGE_TAG=sha-PREVIOUS).
+        env:
+          API_IMAGE_TAG: sha-${{ github.sha }}
         with:
           host: ${{ secrets.SCALEWAY_HOST }}
           username: ${{ secrets.SCALEWAY_USER }}
           key: ${{ secrets.SCALEWAY_SSH_KEY }}
           port: ${{ secrets.SCALEWAY_PORT || 22 }}
+          # `envs:` exporte la liste de variables locales du runner vers le
+          # shell SSH distant. C'est la mecanique standard appleboy/ssh-action
+          # pour pinner via env (vs hardcoder le tag dans le script bash).
+          envs: API_IMAGE_TAG
           # Sprint I.c.1 review OPS B1 :
           # - `set -euo pipefail` : `set -e` seul ne couvre pas les pipes ni
           #   les variables non-définies. La triplette `-euo pipefail` est
