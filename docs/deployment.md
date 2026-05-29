@@ -117,6 +117,56 @@ cp -r tmp-clone/db-init .
 rm -rf tmp-clone
 ```
 
+#### 4b. Provisionnement disque Postgres (issue #218)
+
+Le `docker-compose.prod.yml` utilise un **bind-mount explicite** vers
+`/srv/wourri/data/postgres` (vs un named volume Docker caché). Avantages :
+
+- **Visibilité `df -h`** immédiate : on voit la taille consommée par Postgres
+- **Backup rsync direct** : `rsync /srv/wourri/data/postgres/ ...` (vs copier depuis un volume Docker caché)
+- **Migration disque dédié facile** : si tu ajoutes un volume SSD plus tard,
+  `mv /srv/wourri/data/postgres /mnt/ssd/postgres-data && ln -s ...`
+
+**Création du dossier avec les bonnes permissions** :
+
+```bash
+sudo mkdir -p /srv/wourri/data/postgres
+# UID 999 = utilisateur `postgres` dans l'image officielle pgvector/pgvector:pg16
+# (Debian-based). Sans ce chown, Postgres echoue avec "Permission denied" au demarrage.
+sudo chown 999:999 /srv/wourri/data/postgres
+# 700 = lecture/ecriture/execute UNIQUEMENT pour postgres (UID 999).
+# Empeche les autres users (meme du groupe docker) de lire les fichiers de la BDD.
+sudo chmod 700 /srv/wourri/data/postgres
+```
+
+**Vérification post-création** :
+
+```bash
+ls -ld /srv/wourri/data/postgres
+# Doit afficher : drwx------ 2 999 999 ...  (= chown 999:999 + chmod 700)
+```
+
+**Filesystem recommandé en production** : XFS (meilleure perf Postgres que
+ext4). Pour staging, ext4 par défaut est OK. Si tu provisionnes un disque
+dédié XFS plus tard :
+
+```bash
+# Optionnel — disque dedie XFS pour les data Postgres
+sudo mkfs.xfs /dev/sdb1
+sudo mkdir -p /mnt/postgres-data
+sudo mount /dev/sdb1 /mnt/postgres-data
+# Persister dans /etc/fstab :
+echo "/dev/sdb1 /mnt/postgres-data xfs defaults,noatime 0 0" | sudo tee -a /etc/fstab
+# Migration des data existantes :
+sudo systemctl stop docker
+sudo rsync -aHAX /srv/wourri/data/postgres/ /mnt/postgres-data/
+sudo mv /srv/wourri/data/postgres /srv/wourri/data/postgres.old
+sudo ln -s /mnt/postgres-data /srv/wourri/data/postgres
+sudo systemctl start docker
+# Verifier l'integrite (psql), puis :
+sudo rm -rf /srv/wourri/data/postgres.old
+```
+
 ### 5. Configurer les secrets prod
 
 ```bash

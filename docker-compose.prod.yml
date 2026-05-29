@@ -61,7 +61,13 @@ services:
       # des 3 services lors du debug (jamais Europe/Paris : DST = pièges).
       TZ: UTC
     volumes:
-      - pgdata_prod:/var/lib/postgresql/data
+      # Issue #218 (Sprint I.c.1 review OPS MAJOR M7) : bind-mount explicite
+      # vers /srv/wourri/data/postgres (vs named volume cache dans
+      # /var/lib/docker/volumes/...). Benefice : visibilite `df -h`, backup
+      # rsync direct, migration disque dedie facile a posteriori.
+      # Prerequis : creer le dossier avec chown 999:999 (UID image postgres
+      # officielle pgvector/pgvector:pg16) — cf. docs/deployment.md §4.
+      - /srv/wourri/data/postgres:/var/lib/postgresql/data
       # db-init/init.sql crée l'extension `vector` au PREMIER démarrage
       # (mécanisme docker-entrypoint-initdb.d). Doit être présent sur la VM.
       # Read-only pour empêcher modification accidentelle depuis le container.
@@ -210,8 +216,10 @@ services:
 # │ Préfixe `wourri_` : évite collisions avec d'autres projets Docker.   │
 # ╰──────────────────────────────────────────────────────────────────────╯
 volumes:
-  pgdata_prod:
-    name: wourri_pgdata_prod
+  # Note : `pgdata_prod` retire (issue #218) au profit d'un bind-mount
+  # vers /srv/wourri/data/postgres (cf. service postgres ci-dessus).
+  # Les autres volumes restent nommes car n'ont pas le meme besoin de
+  # visibilite/backup ad-hoc.
   hf_cache:
     name: wourri_hf_cache
   audio_output:
