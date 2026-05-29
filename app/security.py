@@ -24,12 +24,25 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["10/minute"])
 _API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
 # Lecture via Pydantic Settings (qui charge .env correctement) plutôt que
 # os.getenv() qui n'a pas connaissance du .env
-_API_SECRET_KEY: str | None = get_settings().api_secret_key or None
+_settings = get_settings()
+_API_SECRET_KEY: str | None = _settings.api_secret_key or None
+# Issue #222 : clé précédente acceptée temporairement (rotation zero-downtime)
+_API_SECRET_KEY_PREVIOUS: str | None = _settings.api_secret_key_previous or None
 
 if not _API_SECRET_KEY:
     logger.warning(
         "[SECURITY] API_SECRET_KEY non configurée dans .env — "
         "authentification désactivée (mode dev)"
+    )
+
+if _API_SECRET_KEY_PREVIOUS:
+    # Présence intentionnelle = rotation en cours. Logger un warning visible
+    # pour rappeler à l'opérateur de purger cette variable après la fenêtre
+    # de rotation (par défaut 5 min, cf. docs/deployment.md §rotation).
+    logger.warning(
+        "[SECURITY] API_SECRET_KEY_PREVIOUS définie → rotation en cours. "
+        "Les 2 clés sont acceptées. Pense à vider API_SECRET_KEY_PREVIOUS "
+        "après la fenêtre de transition (procédure : deployment.md §rotation)."
     )
 
 
@@ -38,12 +51,21 @@ async def require_api_key(api_key: str | None = Depends(_API_KEY_HEADER)) -> Non
 
     Si API_SECRET_KEY n'est pas configurée → pass (mode dev).
     En production, toute requête sans clé valide reçoit un 403.
+
+    Issue #222 : si API_SECRET_KEY_PREVIOUS est définie, accepte AUSSI
+    cette clé (fenêtre de rotation zero-downtime).
     """
     if not _API_SECRET_KEY:
         return  # mode dev
 
-    if api_key != _API_SECRET_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Clé API invalide ou manquante (header X-API-Key requis)",
-        )
+    # Clé courante OK
+    if api_key == _API_SECRET_KEY:
+        return
+    # Clé précédente OK (fenêtre de rotation)
+    if _API_SECRET_KEY_PREVIOUS and api_key == _API_SECRET_KEY_PREVIOUS:
+        return
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Clé API invalide ou manquante (header X-API-Key requis)",
+    )

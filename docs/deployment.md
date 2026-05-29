@@ -285,39 +285,65 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml pull wouri-api
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
 ```
 
-### Rotation du `WOURI_API_KEY`
+### Rotation du `WOURI_API_KEY` (zero-downtime, issue #222)
 
 Le secret est partagé entre `wouri-api` (validation `X-API-Key`) et `whatsapp-server` (envoi `X-API-Key`).
 
-> **Sprint I.c.1 review OPS B2 — downtime de 30 s à 2 min INÉVITABLE**
-> Docker Compose recrée les containers SÉQUENTIELLEMENT (jamais simultanément).
-> Pendant la fenêtre où l'un a la nouvelle clé et l'autre l'ancienne, toutes
-> les requêtes WhatsApp → API renvoient 401. **Planifier la rotation hors
-> heures de pic** (nuit CI = 02h00 UTC = 02h00 Abidjan).
-> Issue backlog "dual-key pour rotation zero-downtime" (validation 2 clés
-> simultanément côté API pendant 5 min) — non livré Sprint I.c, à prévoir
-> avant prod réelle. Référence : ROADMAP #209.
+> **Issue #222 livrée** : `wouri-api` accepte désormais **2 clés simultanément** pendant une fenêtre de rotation. La procédure ci-dessous fait une rotation **zero-downtime** (vs ~30 s de 401 garantis avant).
+
+#### Procédure rotation zero-downtime
 
 ```bash
-# 1. Générer une nouvelle clé
+# 1. Générer la nouvelle clé
 NEW_KEY=$(openssl rand -base64 32)
 
-# 2. Sauvegarder l'ancienne dans le coffre-fort (gestionnaire de secrets)
+# 2. Sauvegarder l'ancienne dans le coffre-fort (1Password / Bitwarden)
 #    AVANT de l'écraser localement (filet de sécurité en cas d'oubli).
+OLD_KEY=$(grep ^WOURI_API_KEY= /srv/wourri/.env.prod | cut -d= -f2-)
 
-# 3. L'écrire dans .env.prod
+# 3. Mettre les 2 clés dans .env.prod :
+#    - WOURI_API_KEY        = NEW (utilisée par tous les nouveaux appels)
+#    - WOURI_API_KEY_PREVIOUS = OLD (acceptée temporairement par wouri-api)
 sudo sed -i "s|^WOURI_API_KEY=.*|WOURI_API_KEY=$NEW_KEY|" /srv/wourri/.env.prod
+sudo sed -i "s|^WOURI_API_KEY_PREVIOUS=.*|WOURI_API_KEY_PREVIOUS=$OLD_KEY|" /srv/wourri/.env.prod
 
-# 4. Recharger les 2 services dans la foulée (downtime ~30 s)
-#    `up -d` recrée le container si l'env a changé.
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api whatsapp-server
+# 4. Restart wouri-api → accepte les 2 clés simultanément.
+#    Pendant cette etape, le whatsapp-server envoie ENCORE l'ancienne cle =>
+#    wouri-api ACCEPTE (grace a WOURI_API_KEY_PREVIOUS). Zero 401.
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
 
-# 5. Vérifier que les 2 services repartent OK (sinon rollback ancienne clé) :
+# 5. Restart whatsapp-server → envoie désormais la nouvelle clé.
+#    Si pendant la fenetre wa envoie encore l'ancienne (race), wouri-api accepte.
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d whatsapp-server
+
+# 6. Vérifier que les 2 services repartent OK :
 curl -fsS http://127.0.0.1:8000/health
 curl -fsS http://127.0.0.1:3001/health
 
-# 6. Mettre à jour le coffre-fort avec la NOUVELLE clé (sinon perte irréversible).
+# 7. Attendre ~5 min (laisser passer les requêtes en vol qui pourraient avoir
+#    été émises avant le redémarrage de whatsapp-server avec l'ancienne clé)
+sleep 300
+
+# 8. Purger la clé précédente : seule la nouvelle clé est désormais valide.
+sudo sed -i "s|^WOURI_API_KEY_PREVIOUS=.*|WOURI_API_KEY_PREVIOUS=|" /srv/wourri/.env.prod
+docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
+
+# 9. Mettre à jour le coffre-fort avec la NOUVELLE clé (sinon perte irréversible
+#    à la prochaine rotation).
 ```
+
+> **Garantie zero-downtime** : entre l'étape 4 et 8, **les 2 clés sont valides**. Aucune requête WhatsApp → API ne peut échouer pour cause de clé différente. Tu peux faire la rotation en pleine journée.
+
+> **Alerte automatique** : tant que `WOURI_API_KEY_PREVIOUS` est définie (non vide), `wouri-api` log un `WARNING` au démarrage pour rappeler de purger après la fenêtre :
+> ```
+> [SECURITY] API_SECRET_KEY_PREVIOUS définie → rotation en cours.
+> Les 2 clés sont acceptées. Pense à vider API_SECRET_KEY_PREVIOUS
+> après la fenêtre de transition.
+> ```
+
+#### Tests d'intégration (issue #222)
+
+Le module `app/security.py` est couvert par `tests/unit/test_security.py` (6 tests : clé courante, invalide, absente, previous acceptée, previous vide backward-compat, mode dev). `pytest tests/unit/test_security.py` doit passer 6/6 vert.
 
 ### Rotation du `POSTGRES_PASSWORD`
 

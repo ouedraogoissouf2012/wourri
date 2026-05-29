@@ -115,8 +115,16 @@ services:
       CORPUS_STORAGE_MODE: ${CORPUS_STORAGE_MODE:?CORPUS_STORAGE_MODE manquant (valeurs autorisees=chroma|dual|pgvector — cf. ADR-0008)}
       # Sprint I.c.1 review OPS M3 : TZ UTC partout.
       TZ: UTC
-      # Clé partagée whatsapp-server ↔ wouri-api (header X-API-Key).
-      WOURI_API_KEY: ${WOURI_API_KEY:?WOURI_API_KEY manquant dans .env.prod}
+      # Issue #222 : Clé partagée whatsapp-server ↔ wouri-api (header X-API-Key).
+      # Renommage en API_SECRET_KEY pour matcher le champ Pydantic Settings
+      # (`app/config.py:api_secret_key`). Le nom public expose a l'operateur
+      # reste WOURI_API_KEY (cf. .env.prod.template), mais le container recoit
+      # la valeur sous le nom API_SECRET_KEY. Sans ce renommage, l'auth etait
+      # silencieusement DESACTIVEE en prod (Pydantic ne lisait pas WOURI_API_KEY).
+      API_SECRET_KEY: ${WOURI_API_KEY:?WOURI_API_KEY manquant dans .env.prod}
+      # Clé précédente acceptée temporairement pendant une rotation zero-downtime.
+      # Optionnelle : vide en temps normal, remplie 5 min pendant une rotation.
+      API_SECRET_KEY_PREVIOUS: ${WOURI_API_KEY_PREVIOUS:-}
       # CORS : laisser vide pour mode strict (pas de frontend web en Sprint I).
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
