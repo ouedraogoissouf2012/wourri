@@ -292,15 +292,10 @@ _jeli_loaded = False
 _ud_mots: set = set()
 _ud_loaded = False
 
-_kouman_fr: list = []
-_kouman_dyu: list = []
-_kouman_loaded = False
-_kouman_global_freq: Counter = Counter()
-
-_findora_fr: list = []
-_findora_dyu: list = []
-_findora_loaded = False
-_findora_global_freq: Counter = Counter()
+# Note: les globals `_kouman_*` et `_findora_*` ont ete remplaces par des
+# attributs d'instance TfidfSource (cf. `_KOUMAN_SRC` et `_FINDORA_SRC`
+# plus bas, issue #233 PR 2). PR 3 finira la migration avec les 4 scrapers
+# HTTP via une nouvelle classe HttpScraperSource.
 
 
 def _charger_agri_dict():
@@ -356,36 +351,50 @@ def _charger_ud():
     _ud_loaded = True
 
 
+# Instances Koumankan + Findora (issue #233 PR 2).
+# Anciens parametres preserves : min_global=2, min_match_lignes=2 pour les 2
+# (cf. legacy `_koumankan` et `_findora` avant refactor).
+# Lazy-init via helpers `_kouman_src()` et `_findora_src()`.
+_KOUMAN_SRC: "TfidfSource | None" = None
+_FINDORA_SRC: "TfidfSource | None" = None
+
+
+def _kouman_src() -> TfidfSource:
+    global _KOUMAN_SRC
+    if _KOUMAN_SRC is None:
+        _KOUMAN_SRC = TfidfSource(
+            name="koumankan",
+            fr_path=DATA_DIR / "koumankan" / "koumankan.fr",
+            dyu_path=DATA_DIR / "koumankan" / "koumankan.dyu",
+            weight=3,
+            min_global=2,
+            min_match_lignes=2,
+        )
+    return _KOUMAN_SRC
+
+
+def _findora_src() -> TfidfSource:
+    global _FINDORA_SRC
+    if _FINDORA_SRC is None:
+        _FINDORA_SRC = TfidfSource(
+            name="findora",
+            fr_path=DATA_DIR / "findora" / "findora.fr",
+            dyu_path=DATA_DIR / "findora" / "findora.dyu",
+            weight=3,
+            min_global=2,
+            min_match_lignes=2,
+        )
+    return _FINDORA_SRC
+
+
 def _charger_koumankan():
-    """Charge Koumankan4Dyula — 10 929 paires dioula CI (UVCI)."""
-    global _kouman_fr, _kouman_dyu, _kouman_loaded
-    if _kouman_loaded:
-        return
-    fr_f = DATA_DIR / "koumankan" / "koumankan.fr"
-    dyu_f = DATA_DIR / "koumankan" / "koumankan.dyu"
-    if fr_f.exists() and dyu_f.exists():
-        with open(fr_f, encoding="utf-8") as f:
-            _kouman_fr = f.readlines()
-        with open(dyu_f, encoding="utf-8") as f:
-            _kouman_dyu = f.readlines()
-    _kouman_loaded = True
-    logger.info(f"[VAL] Koumankan: {len(_kouman_fr)} paires chargées (dioula CI)")
+    """Wrapper de compatibilite (issue #233 PR 2) : delegue a TfidfSource."""
+    _kouman_src().load()
 
 
 def _charger_findora():
-    """Charge Findora — 20 513 paires dioula CI."""
-    global _findora_fr, _findora_dyu, _findora_loaded
-    if _findora_loaded:
-        return
-    fr_f = DATA_DIR / "findora" / "findora.fr"
-    dyu_f = DATA_DIR / "findora" / "findora.dyu"
-    if fr_f.exists() and dyu_f.exists():
-        with open(fr_f, encoding="utf-8") as f:
-            _findora_fr = f.readlines()
-        with open(dyu_f, encoding="utf-8") as f:
-            _findora_dyu = f.readlines()
-    _findora_loaded = True
-    logger.info(f"[VAL] Findora: {len(_findora_fr)} paires chargées (dioula CI)")
+    """Wrapper de compatibilite (issue #233 PR 2) : delegue a TfidfSource."""
+    _findora_src().load()
 
 
 # ─────────────────────────────────────────────
@@ -514,52 +523,20 @@ def _bayelemabaga(concept_fr: str) -> Counter:
 # ─────────────────────────────────────────────
 
 def _koumankan(concept_fr: str) -> Counter:
-    """
+    """Wrapper de compatibilite (issue #233 PR 2) : delegue a TfidfSource.
+
+    Anciennement 47 lignes de TF-IDF dupliquees avec `_bayelemabaga` et
+    `_findora`. Migre vers TfidfSource generique (cf. classe en haut du
+    fichier, parametres : min_global=2, min_match_lignes=2 pour preserver
+    le comportement legacy).
+
+    Particularite Koumankan vs Bayelemabaga : 1 seul fichier de paires
+    (pas de splits multiples train/test/valid), donc pas besoin de
+    `_load_all_splits()` ni de `_all_splits_loaded`.
+
     TF-IDF sur Koumankan4Dyula (10 929 paires dioula CI, UVCI).
-    Même logique que _bayelemabaga mais sur du dioula CI pur.
     """
-    global _kouman_global_freq
-    _charger_koumankan()
-
-    concept = concept_fr.lower()
-
-    def _match(ligne_fr: str) -> bool:
-        return bool(re.search(r'\b' + re.escape(concept) + r'\b', ligne_fr.lower()))
-
-    lignes_match = [
-        dyu for fr, dyu in zip(_kouman_fr, _kouman_dyu)
-        if _match(fr)
-    ]
-
-    if len(lignes_match) < 2:
-        return Counter()
-
-    tf = Counter()
-    for ligne in lignes_match:
-        tf.update(_tokeniser_simple(ligne))
-
-    if not _kouman_global_freq:
-        logger.info("[VAL] Calcul frequence globale Koumankan (une fois)...")
-        for ligne in _kouman_dyu:
-            _kouman_global_freq.update(_tokeniser_simple(ligne))
-        logger.info(f"[VAL] Koumankan vocabulaire: {len(_kouman_global_freq)} mots uniques")
-
-    n_match = len(lignes_match)
-    n_total = max(len(_kouman_dyu), 1)
-
-    scores = Counter()
-    for terme, freq_match in tf.items():
-        freq_global = _kouman_global_freq.get(terme, 0)
-        if freq_global < 2:
-            continue
-        if freq_match < 1:
-            continue
-        tf_rate = freq_match / n_match
-        idf_rate = freq_global / n_total
-        ratio = tf_rate / idf_rate
-        scores[terme] = max(1, round(ratio * 100))
-
-    return scores
+    return _kouman_src().find(concept_fr)
 
 
 # ─────────────────────────────────────────────
@@ -567,52 +544,14 @@ def _koumankan(concept_fr: str) -> Counter:
 # ─────────────────────────────────────────────
 
 def _findora(concept_fr: str) -> Counter:
-    """
+    """Wrapper de compatibilite (issue #233 PR 2) : delegue a TfidfSource.
+
+    Anciennement 47 lignes de TF-IDF dupliquees. Migre vers TfidfSource
+    generique (min_global=2, min_match_lignes=2).
+
     TF-IDF sur Findora (20 513 paires dioula CI).
-    Même logique que Koumankan.
     """
-    global _findora_global_freq
-    _charger_findora()
-
-    concept = concept_fr.lower()
-
-    def _match(ligne_fr: str) -> bool:
-        return bool(re.search(r'\b' + re.escape(concept) + r'\b', ligne_fr.lower()))
-
-    lignes_match = [
-        dyu for fr, dyu in zip(_findora_fr, _findora_dyu)
-        if _match(fr)
-    ]
-
-    if len(lignes_match) < 2:
-        return Counter()
-
-    tf = Counter()
-    for ligne in lignes_match:
-        tf.update(_tokeniser_simple(ligne))
-
-    if not _findora_global_freq:
-        logger.info("[VAL] Calcul frequence globale Findora (une fois)...")
-        for ligne in _findora_dyu:
-            _findora_global_freq.update(_tokeniser_simple(ligne))
-        logger.info(f"[VAL] Findora vocabulaire: {len(_findora_global_freq)} mots uniques")
-
-    n_match = len(lignes_match)
-    n_total = max(len(_findora_dyu), 1)
-
-    scores = Counter()
-    for terme, freq_match in tf.items():
-        freq_global = _findora_global_freq.get(terme, 0)
-        if freq_global < 2:
-            continue
-        if freq_match < 1:
-            continue
-        tf_rate = freq_match / n_match
-        idf_rate = freq_global / n_total
-        ratio = tf_rate / idf_rate
-        scores[terme] = max(1, round(ratio * 100))
-
-    return scores
+    return _findora_src().find(concept_fr)
 
 
 # ─────────────────────────────────────────────
