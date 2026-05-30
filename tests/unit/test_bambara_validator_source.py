@@ -463,3 +463,200 @@ def test_findora_wrapper_appelle_tfidf_source(tmp_path, monkeypatch):
     assert "kaba" in result, (
         f"_findora doit retourner les scores de TfidfSource. Counter: {dict(result)}"
     )
+
+
+# ─────────────────────────────────────────────
+# Tests HttpScraperSource (issue #233 PR 3)
+# ─────────────────────────────────────────────
+
+
+class _FakeResponse:
+    """Mock minimal d'une reponse requests.get."""
+
+    def __init__(self, status_code: int = 200, text: str = ""):
+        self.status_code = status_code
+        self.text = text
+
+
+def _builder_constant(url: str, params=None):
+    """Construit un url_builder reutilisable pour les tests."""
+    return lambda concept: (url, params)
+
+
+def test_http_scraper_user_agent_par_defaut_mozilla(monkeypatch):
+    """Le User-Agent par defaut est Mozilla (harmonise Bamadaba qui n'en avait pas)."""
+    capture = {}
+
+    def fake_get(url, params=None, timeout=None, headers=None):
+        capture["headers"] = headers
+        return _FakeResponse(200, "riz malo")
+
+    monkeypatch.setattr(_mod.requests, "get", fake_get)
+    monkeypatch.setattr(_mod, "_ud_loaded", True)
+    monkeypatch.setattr(_mod, "_ud_mots", {"malo"})
+
+    src = _mod.HttpScraperSource(
+        name="test",
+        url_builder=_builder_constant("http://example.com"),
+        weight=1,
+        fenetre=100,
+    )
+    src.find("riz")
+    assert capture["headers"]["User-Agent"] == _mod.HttpScraperSource.DEFAULT_USER_AGENT
+
+
+def test_http_scraper_user_agent_personnalise(monkeypatch):
+    """Le User-Agent peut etre override au constructeur."""
+    capture = {}
+
+    def fake_get(url, params=None, timeout=None, headers=None):
+        capture["headers"] = headers
+        return _FakeResponse(200, "")
+
+    monkeypatch.setattr(_mod.requests, "get", fake_get)
+
+    src = _mod.HttpScraperSource(
+        name="test",
+        url_builder=_builder_constant("http://example.com"),
+        weight=1,
+        fenetre=100,
+        user_agent="WouriValidator/1.0",
+    )
+    src.find("riz")
+    assert capture["headers"]["User-Agent"] == "WouriValidator/1.0"
+
+
+def test_http_scraper_status_non_200_retourne_counter_vide(monkeypatch):
+    """Status != 200 → Counter() vide sans crash."""
+    monkeypatch.setattr(_mod.requests, "get", lambda *a, **k: _FakeResponse(404, "ignored"))
+
+    src = _mod.HttpScraperSource(
+        name="test",
+        url_builder=_builder_constant("http://example.com"),
+        weight=1,
+        fenetre=100,
+    )
+    assert src.find("riz") == Counter()
+
+
+def test_http_scraper_exception_reseau_retourne_counter_vide(monkeypatch):
+    """Exception (timeout, DNS, etc.) → Counter() vide + log debug (pas de crash)."""
+    def fake_get(*a, **k):
+        raise ConnectionError("simulated network failure")
+
+    monkeypatch.setattr(_mod.requests, "get", fake_get)
+
+    src = _mod.HttpScraperSource(
+        name="test",
+        url_builder=_builder_constant("http://example.com"),
+        weight=1,
+        fenetre=100,
+    )
+    assert src.find("riz") == Counter()
+
+
+def test_http_scraper_pre_extraction_check_actif(monkeypatch):
+    """Avec `pre_extraction_check=True`, on saute l'extraction si concept absent
+    du contenu de la page (optimisation legacy Bamadaba)."""
+    # Page ne contient PAS "riz" → check echoue → Counter vide retourne sans
+    # appeler _extraire_fenetre.
+    page_sans_riz = "malo ɛɔɲ contenu html sans le concept recherche"
+    monkeypatch.setattr(_mod.requests, "get", lambda *a, **k: _FakeResponse(200, page_sans_riz))
+
+    src = _mod.HttpScraperSource(
+        name="test",
+        url_builder=_builder_constant("http://example.com"),
+        weight=1,
+        fenetre=100,
+        pre_extraction_check=True,
+    )
+    assert src.find("riz") == Counter()
+
+
+def test_http_scraper_extrait_termes_dans_fenetre(monkeypatch):
+    """Cas nominal : page 200 avec concept → extraction fenetre retourne Counter."""
+    # Page contient le concept + des termes bambara (caracteres phonetiques)
+    page_html = (
+        "intro <p>blah blah riz signifie malo ɛn dioula ɛn ce contexte agricole "
+        "le malo ɲɔ est cultive partout</p> footer"
+    )
+    monkeypatch.setattr(_mod.requests, "get", lambda *a, **k: _FakeResponse(200, page_html))
+    # Pre-charger _ud_mots vide pour que _est_bambara se base uniquement sur
+    # les caracteres phonetiques (ɛ, ɲ, etc.)
+    monkeypatch.setattr(_mod, "_ud_loaded", True)
+    monkeypatch.setattr(_mod, "_ud_mots", set())
+
+    src = _mod.HttpScraperSource(
+        name="test",
+        url_builder=_builder_constant("http://example.com"),
+        weight=1,
+        fenetre=200,
+    )
+    result = src.find("riz")
+    assert isinstance(result, Counter)
+    # "malo" sera retenu via _ud_mots si on l'ajoute ; sans ud_mots, il faut
+    # un caractere phonetique pour passer le filtre _est_bambara.
+    # On verifie simplement que des termes phonetiques sont remontes.
+    assert any(any(c in _mod.BAMBARA_CHARS for c in term) for term in result), (
+        f"Au moins un terme avec caractere phonetique bambara attendu. Got: {dict(result)}"
+    )
+
+
+# ─────────────────────────────────────────────
+# Tests wrappers HTTP + dispatcher trouver_meilleur_terme (fix MAJOR-3 archi)
+# ─────────────────────────────────────────────
+
+
+def test_bamadaba_wrapper_retourne_counter_unifie(monkeypatch):
+    """Le wrapper `_bamadaba()` retourne maintenant un Counter (PR 3) au lieu
+    d'une `list` comme avant. Ceci permet le dispatcher unifie par TYPE dans
+    `trouver_meilleur_terme()` (fix MAJOR-3 archi).
+    """
+    monkeypatch.setattr(_mod.requests, "get", lambda *a, **k: _FakeResponse(200, "ignored"))
+
+    result = _mod._bamadaba("riz")
+    assert isinstance(result, Counter), (
+        f"_bamadaba doit retourner Counter (PR 3 unification), got {type(result).__name__}"
+    )
+
+
+def test_dispatcher_par_type_pas_par_nom(monkeypatch):
+    """Fix MAJOR-3 archi : `trouver_meilleur_terme()` dispatche par TYPE
+    retourne (Counter vs list) et non plus par NOM hardcode.
+
+    On verifie qu'on peut traiter une source qui s'appellerait `"bayelemabaga"`
+    mais retournerait une `list` (cas hypothetique post-refactor agri_dict)
+    sans declencher la branche TF-IDF par erreur — preuve que le NOM n'est
+    plus utilise pour dispatcher.
+    """
+    # Source factice qui s'appelle "bayelemabaga" mais retourne une LIST.
+    # Si l'ancien `if nom == "bayelemabaga"` etait encore en place, cette
+    # source serait traitee comme un Counter et crasherait sur .most_common(10).
+    fake_sources = [("bayelemabaga", lambda c: ["term1", "term2", "term1"], 2)]
+    monkeypatch.setattr(_mod, "SOURCES_PRINCIPALES", fake_sources)
+    # Court-circuiter SOURCES_CONFIRMATION pour ne pas charger jeli/UD
+    monkeypatch.setattr(_mod, "SOURCES_CONFIRMATION", [])
+    # Court-circuit sleep
+    monkeypatch.setattr(_mod.time, "sleep", lambda _: None)
+
+    result = _mod.trouver_meilleur_terme("riz", verbose=False)
+    # Pas de crash → dispatch par type a fonctionne
+    assert result["meilleur_terme"] in ("term1", "term2"), result
+    assert result["concept_fr"] == "riz"
+
+
+def test_dispatcher_traite_counter_en_top10(monkeypatch):
+    """Verifie que le branche Counter du dispatcher prend les top10 (pas top3)."""
+    # Counter avec 5 termes — tous doivent passer dans la branche top10.
+    fake_counter = Counter({"a": 10, "b": 8, "c": 6, "d": 4, "e": 2})
+    fake_sources = [("any_name", lambda c: fake_counter, 1)]
+    monkeypatch.setattr(_mod, "SOURCES_PRINCIPALES", fake_sources)
+    monkeypatch.setattr(_mod, "SOURCES_CONFIRMATION", [])
+    monkeypatch.setattr(_mod.time, "sleep", lambda _: None)
+
+    result = _mod.trouver_meilleur_terme("riz", verbose=False)
+    classement_termes = [c["terme"] for c in result["classement"]]
+    # Les 5 termes doivent etre presents (top10 capture tout)
+    assert set(classement_termes) == {"a", "b", "c", "d", "e"}, classement_termes
+    # Le top doit etre "a" (score le plus haut)
+    assert result["meilleur_terme"] == "a"
