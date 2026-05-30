@@ -9,7 +9,7 @@ Le routeur chat.py ne fait que valider l'input et retourner le résultat.
 import asyncio
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from app.models.schemas import Language
@@ -24,14 +24,12 @@ settings = get_settings()
 # ---------------------------------------------------------------------------
 # Data classes pour les résultats intermédiaires
 # ---------------------------------------------------------------------------
-
-@dataclass
-class NLUResult:
-    """Résultat du preprocessing NLU."""
-    message_for_deepseek: str
-    intent: Optional[str] = None
-    concepts: dict = field(default_factory=dict)
-    is_out_of_scope: bool = False
+#
+# Refactor P2-09 PR 3/5 : NLUResult extrait vers app/services/chat/nlu_preprocessor.py
+# (defini la-bas car c'est le type de retour de preprocess_nlu()). Re-exporte
+# ici pour back-compat (tests + autres modules qui font
+# `from app.services.chat_service import NLUResult`).
+from app.services.chat.nlu_preprocessor import NLUResult  # noqa: F401
 
 
 @dataclass
@@ -49,30 +47,15 @@ class ChatResult:
 # ---------------------------------------------------------------------------
 # Labels pour enrichissement DeepSeek
 # ---------------------------------------------------------------------------
-
-_CULTURE_LABELS = {
-    "CULTURE_RIZ": "riz", "CULTURE_MAIS": "maïs", "CULTURE_MIL": "mil",
-    "CULTURE_ARACHIDE": "arachide", "CULTURE_IGNAME": "igname", "CULTURE_MANIOC": "manioc",
-    "CULTURE_HARICOT": "haricot", "CULTURE_COTON": "coton", "CULTURE_SESAME": "sésame",
-    "CULTURE_BANANE": "banane", "CULTURE_TOMATE": "tomate", "CULTURE_OIGNON": "oignon",
-    "CULTURE_PATATE": "patate douce", "CULTURE_GOMBO": "gombo", "CULTURE_CACAO": "cacao",
-    "CULTURE_CAFE": "café", "CULTURE_ANANAS": "ananas",
-}
-_ANIMAL_LABELS = {
-    "ANIMAL_POULET": "poulets", "ANIMAL_BOVIN": "bovins", "ANIMAL_OVIN": "moutons",
-    "ANIMAL_CAPRIN": "chèvres", "ANIMAL_PORC": "porcs", "ANIMAL_POISSON": "poissons",
-}
-
-_ACTION_TO_INTENT = {
-    "ACTION_PLANTER": "QUESTION_SAISON_PLANTATION",
-    "ACTION_RECOLTER": "QUESTION_RECOLTE",
-    "ACTION_ARROSER": "QUESTION_IRRIGATION",
-    "ACTION_TRAITER": "DIAGNOSTIC_PROBLEME",
-    "ACTION_STOCKER": "QUESTION_STOCKAGE",
-    "ACTION_VENDRE": "QUESTION_VENTE",
-    "ACTION_CHERCHER_CONSEIL": "CONSEIL_PRODUCTION",
-    "ACTION_LABOURER": "CONSEIL_PRODUCTION",
-}
+#
+# Refactor P2-09 PR 3/5 : CULTURE_LABELS / ANIMAL_LABELS / ACTION_TO_INTENT
+# extraits vers app/services/chat/nlu_preprocessor.py. Re-exportes ici pour
+# back-compat (le _ a ete retire = export public, conforme PEP-8).
+from app.services.chat.nlu_preprocessor import (  # noqa: F401
+    CULTURE_LABELS as _CULTURE_LABELS,
+    ANIMAL_LABELS as _ANIMAL_LABELS,
+    ACTION_TO_INTENT as _ACTION_TO_INTENT,
+)
 
 
 class ChatService:
@@ -160,6 +143,10 @@ class ChatService:
 
     # ------------------------------------------------------------------
     # Étape 2 : NLU preprocessing
+    #
+    # Refactor P2-09 PR 3/5 (Sprint L #204) : logique extraite vers
+    # app/services/chat/nlu_preprocessor.py (module pur). Wrappers 1-line
+    # ci-dessous pour preserver l'API publique de ChatService.
     # ------------------------------------------------------------------
 
     def _preprocess_nlu(
@@ -168,78 +155,14 @@ class ChatService:
         bambara_text: Optional[str],
         language: Language,
     ) -> NLUResult:
-        """Applique le NLU si le message est en dioula/bambara.
-
-        Sprint G.1 (issue #171, #191) : fallback FR pour `language=BOTH` quand
-        aucun texte dioula n'est disponible. Le `ConceptExtractor` indexe déjà
-        les mots-clés français (`riz`, `planter`, `maïs`, etc. dans
-        `dictionnaires/nlu_concepts.json`) — vérifié empiriquement sur 6 phrases
-        FR variées. Sans ce fallback, la cascade tombe sur DeepSeek+NLLB qui
-        invente des termes hors-vocabulaire validé (ex: `rɛzɛnmɔw` au lieu
-        de `malo` pour le riz).
-        """
-        if language not in (Language.DIOULA, Language.BOTH):
-            return NLUResult(message_for_deepseek=message)
-
-        text_to_analyze = bambara_text or ""
-        bambara_chars = set("ɛɔŋɲɛ̀ɛ́ɔ̀ɔ́")
-        if not text_to_analyze and any(c in message for c in bambara_chars):
-            text_to_analyze = message
-
-        # Fallback FR (Sprint G.1) : si mode BOTH et pas de texte dioula,
-        # passer le message FR au NLU qui a aussi les keywords agricoles FR.
-        if not text_to_analyze and language == Language.BOTH:
-            text_to_analyze = message
-
-        if not text_to_analyze:
-            return NLUResult(message_for_deepseek=message)
-
-        try:
-            from app.services.nlu import get_nlu_service
-            nlu = get_nlu_service()
-            if nlu is None:
-                return NLUResult(message_for_deepseek=message)
-
-            result = nlu.process(text_to_analyze)
-
-            if result.is_out_of_scope:
-                logger.info("[ChatService] Hors sujet: '%s'", text_to_analyze[:50])
-                return NLUResult(
-                    message_for_deepseek=result.out_of_scope_message_fr or message,
-                    intent="HORS_SUJET",
-                    is_out_of_scope=True,
-                )
-
-            concepts = result.concepts or {}
-            if result.french_sentence:
-                enriched = self._enrich_for_deepseek(result.french_sentence, concepts)
-                logger.info("[ChatService] NLU phrase: '%s'", result.french_sentence)
-                return NLUResult(
-                    message_for_deepseek=enriched,
-                    intent=result.intent,
-                    concepts=concepts,
-                )
-
-            return NLUResult(
-                message_for_deepseek=message,
-                intent=result.intent,
-                concepts=concepts,
-            )
-
-        except Exception as e:
-            logger.error("[ChatService] NLU erreur: %s", e)
-            return NLUResult(message_for_deepseek=message)
+        """Wrapper compat (PR 3/5) : delegue a nlu_preprocessor.preprocess_nlu()."""
+        from app.services.chat.nlu_preprocessor import preprocess_nlu
+        return preprocess_nlu(message, bambara_text, language)
 
     def _enrich_for_deepseek(self, french_sentence: str, concepts: dict) -> str:
-        """Ajoute un contexte [Paysan cultive: X] pour guider DeepSeek."""
-        culture = next((_CULTURE_LABELS[k] for k in concepts if k in _CULTURE_LABELS), None)
-        animal = next((_ANIMAL_LABELS[k] for k in concepts if k in _ANIMAL_LABELS), None)
-        sujet = culture or animal
-        if sujet:
-            prefix = f"[Paysan cultive: {sujet}] "
-            logger.info("[ChatService] Contexte: %s", prefix.strip())
-            return prefix + french_sentence
-        return french_sentence
+        """Wrapper compat (PR 3/5) : delegue a nlu_preprocessor.enrich_for_deepseek()."""
+        from app.services.chat.nlu_preprocessor import enrich_for_deepseek
+        return enrich_for_deepseek(french_sentence, concepts)
 
     # ------------------------------------------------------------------
     # Étape 3 : Chercher IVR exact
