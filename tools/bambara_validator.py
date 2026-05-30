@@ -351,6 +351,69 @@ def _charger_ud():
     _ud_loaded = True
 
 
+class HttpScraperSource(Source):
+    """Source HTTP : fetch d'une URL + extraction fenetre autour du concept.
+
+    Issue #233 PR 3 : unifie les 4 scrapers HTTP (`_bamadaba`, `_voa_bambara`,
+    `_bambara_org`, `_bamanankan_org`) qui partageaient la meme structure
+    (`requests.get` → check 200 → `_extraire_fenetre`) avec uniquement
+    l'URL, la fenetre, le User-Agent et un check pre-extraction qui variaient.
+
+    Harmonisation des inconsistances historiques :
+      - User-Agent Mozilla par defaut (Bamadaba n'en avait pas, les 3 autres si)
+      - `pre_extraction_check=True` reproduit le test `concept in r.text` de
+        Bamadaba ; les 3 autres scrapers passaient direct a `_extraire_fenetre`.
+
+    Retourne `Counter` (uniformite avec TfidfSource) plutot que `list[str]`,
+    ce qui permet a `trouver_meilleur_terme()` de dispatcher par TYPE plutot
+    que par NOM (fix MAJOR-3 archi review PR 1).
+    """
+
+    DEFAULT_USER_AGENT = "Mozilla/5.0"
+
+    def __init__(
+        self,
+        name: str,
+        url_builder,  # Callable[[str], tuple[str, dict | None]]
+        weight: int,
+        fenetre: int,
+        user_agent: str = DEFAULT_USER_AGENT,
+        pre_extraction_check: bool = False,
+        timeout: int = 10,
+    ):
+        self.name = name
+        self.url_builder = url_builder
+        self.weight = weight
+        self.fenetre = fenetre
+        self.user_agent = user_agent
+        self.pre_extraction_check = pre_extraction_check
+        self.timeout = timeout
+
+    def load(self) -> None:
+        """No-op : les sources HTTP n'ont pas de pre-loading (fetch a chaque find)."""
+
+    def find(self, concept_fr: str) -> Counter:
+        url, params = self.url_builder(concept_fr)
+        try:
+            r = requests.get(
+                url,
+                params=params,
+                timeout=self.timeout,
+                headers={"User-Agent": self.user_agent},
+            )
+            if r.status_code != 200:
+                return Counter()
+            # Check pre-extraction optionnel (utilise par Bamadaba pour eviter
+            # de scanner des pages qui ne contiennent pas du tout le concept).
+            if self.pre_extraction_check and concept_fr.lower() not in r.text.lower():
+                return Counter()
+            termes = _extraire_fenetre(r.text, concept_fr, fenetre=self.fenetre)
+            return Counter(termes)
+        except Exception as e:
+            logger.debug(f"[VAL] {self.name}: {e}")
+            return Counter()
+
+
 # Instances Koumankan + Findora (issue #233 PR 2).
 # Anciens parametres preserves : min_global=2, min_match_lignes=2 pour les 2
 # (cf. legacy `_koumankan` et `_findora` avant refactor).
@@ -579,87 +642,104 @@ def _ud_confirme(terme: str) -> bool:
 
 
 # ─────────────────────────────────────────────
-# Source 4 — Bamadaba (CNRS, en ligne)
+# Sources HTTP — Issue #233 PR 3 : migration vers HttpScraperSource
 # ─────────────────────────────────────────────
+#
+# Avant PR 3 : 4 fonctions (`_bamadaba`, `_voa_bambara`, `_bambara_org`,
+# `_bamanankan_org`) avec ~15 lignes chacune de structure HTTP identique
+# (`requests.get` → check 200 → `_extraire_fenetre`), seuls l'URL, la
+# fenetre, le User-Agent et un check pre-extraction variaient.
+#
+# Apres : 4 instances `HttpScraperSource` (classe definie en haut du fichier)
+# + 4 wrappers 1-line de compatibilite. Harmonisation des inconsistances :
+# Bamadaba recoit maintenant le User-Agent Mozilla par defaut (les 3 autres
+# l'avaient deja) et son check `concept in r.text` est exprime via le
+# parametre `pre_extraction_check=True`.
 
-def _bamadaba(concept_fr: str) -> list:
+# Builders d'URL : (concept_fr) -> (url, params).
+# `params=None` → query string en dur (cas VOA, Bambara.org, Bamanankan).
+# `params=dict` → encodage par requests (cas Bamadaba).
+
+def _bamadaba_url(concept_fr: str):
+    return (
+        "http://cormand.huma-num.fr/cgi-bin/corpus.cgi",
+        {"c": "Bamadaba", "q": concept_fr, "interface_language": "fr"},
+    )
+
+
+def _voa_url(concept_fr: str):
+    return (f"https://www.voabambara.com/s?k={concept_fr}", None)
+
+
+def _bambara_org_url(concept_fr: str):
+    return ("http://www.bambara.org/biblia/bam/dico/dico_f.htm", None)
+
+
+def _bamanankan_url(concept_fr: str):
+    return (f"https://www.bamanankan.org/?s={concept_fr}", None)
+
+
+_BAMADABA_SRC = HttpScraperSource(
+    name="bamadaba",
+    url_builder=_bamadaba_url,
+    weight=2,
+    fenetre=150,
+    pre_extraction_check=True,
+)
+_VOA_SRC = HttpScraperSource(
+    name="voa_bambara",
+    url_builder=_voa_url,
+    weight=1,
+    fenetre=200,
+)
+_BAMBARA_ORG_SRC = HttpScraperSource(
+    name="bambara_org",
+    url_builder=_bambara_org_url,
+    weight=1,
+    fenetre=100,
+)
+_BAMANANKAN_SRC = HttpScraperSource(
+    name="bamanankan",
+    url_builder=_bamanankan_url,
+    weight=1,
+    fenetre=200,
+)
+
+
+def _bamadaba(concept_fr: str) -> Counter:
+    """Wrapper de compatibilite (issue #233 PR 3) : delegue a HttpScraperSource.
+
+    Bamadaba = dictionnaire bambara du CNRS. Cherche le concept en francais
+    et extrait les mots bambara dans une fenetre de 150 chars autour de chaque
+    occurrence. `pre_extraction_check=True` : on saute l'extraction si le
+    concept n'apparait pas dans la page (optimisation legacy preservee).
     """
-    Bamadaba = dictionnaire bambara du CNRS.
-    Cherche le concept en français et extrait les mots bambara
-    dans une fenêtre de 150 chars autour de chaque occurrence.
+    return _BAMADABA_SRC.find(concept_fr)
+
+
+def _voa_bambara(concept_fr: str) -> Counter:
+    """Wrapper de compatibilite (issue #233 PR 3) : delegue a HttpScraperSource.
+
+    VOA Bambara = actualites en bambara. Fenetre 200 chars.
     """
-    termes = []
-    try:
-        url = "http://cormand.huma-num.fr/cgi-bin/corpus.cgi"
-        params = {"c": "Bamadaba", "q": concept_fr, "interface_language": "fr"}
-        r = requests.get(url, params=params, timeout=10)
-        if r.status_code == 200 and concept_fr.lower() in r.text.lower():
-            termes = _extraire_fenetre(r.text, concept_fr, fenetre=150)
-    except Exception as e:
-        logger.debug(f"[VAL] Bamadaba: {e}")
-    return termes
+    return _VOA_SRC.find(concept_fr)
 
 
-# ─────────────────────────────────────────────
-# Source 5 — VOA Bambara
-# ─────────────────────────────────────────────
+def _bambara_org(concept_fr: str) -> Counter:
+    """Wrapper de compatibilite (issue #233 PR 3) : delegue a HttpScraperSource.
 
-def _voa_bambara(concept_fr: str) -> list:
+    Bambara.org/dico = dictionnaire francais-bambara en HTML statique. Fenetre
+    petite (100 chars) car les entrees dictionnaire sont courtes.
     """
-    VOA Bambara = actualités en bambara.
-    Extrait les mots bambara dans une fenêtre de 200 chars autour
-    de chaque occurrence du concept dans les résultats de recherche.
+    return _BAMBARA_ORG_SRC.find(concept_fr)
+
+
+def _bamanankan_org(concept_fr: str) -> Counter:
+    """Wrapper de compatibilite (issue #233 PR 3) : delegue a HttpScraperSource.
+
+    Bamanankan.org = reference academique bambara (WordPress). Fenetre 200 chars.
     """
-    termes = []
-    try:
-        url = f"https://www.voabambara.com/s?k={concept_fr}"
-        r = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
-        if r.status_code == 200:
-            termes = _extraire_fenetre(r.text, concept_fr, fenetre=200)
-    except Exception as e:
-        logger.debug(f"[VAL] VOA: {e}")
-    return termes
-
-
-# ─────────────────────────────────────────────
-# Source 6 — Bambara.org (dictionnaire statique)
-# ─────────────────────────────────────────────
-
-def _bambara_org(concept_fr: str) -> list:
-    """
-    Bambara.org/dico = dictionnaire français-bambara en HTML statique.
-    Fenêtre petite (100 chars) car les entrées dictionnaire sont courtes.
-    """
-    termes = []
-    try:
-        url = "http://www.bambara.org/biblia/bam/dico/dico_f.htm"
-        r = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
-        if r.status_code == 200:
-            termes = _extraire_fenetre(r.text, concept_fr, fenetre=100)
-    except Exception as e:
-        logger.debug(f"[VAL] Bambara.org: {e}")
-    return termes
-
-
-# ─────────────────────────────────────────────
-# Source 7 — Bamanankan.org
-# ─────────────────────────────────────────────
-
-def _bamanankan_org(concept_fr: str) -> list:
-    """
-    Bamanankan.org = référence académique bambara (WordPress).
-    Les snippets de résultats contiennent des termes bambara
-    proches du concept recherché.
-    """
-    termes = []
-    try:
-        url = f"https://www.bamanankan.org/?s={concept_fr}"
-        r = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
-        if r.status_code == 200:
-            termes = _extraire_fenetre(r.text, concept_fr, fenetre=200)
-    except Exception as e:
-        logger.debug(f"[VAL] Bamanankan: {e}")
-    return termes
+    return _BAMANANKAN_SRC.find(concept_fr)
 
 
 # ─────────────────────────────────────────────
@@ -713,23 +793,32 @@ def trouver_meilleur_terme(concept_fr: str, verbose: bool = True) -> dict:
         print(f"  Recherche : '{concept_fr}'")
         print(f"{'='*60}")
 
-    # ── Étape 1 : Collecter les termes depuis chaque source ──
+    # ── Etape 1 : Collecter les termes depuis chaque source ──
+    #
+    # Issue #233 PR 3 fix MAJOR-3 archi : dispatcher par TYPE retourne plutot
+    # que par NOM hardcode. Sources TF-IDF (Bayelemabaga/Koumankan/Findora) et
+    # HTTP scrapers (Bamadaba/VOA/Bambara.org/Bamanankan) retournent toutes
+    # un Counter. `agri_dict` retourne encore une `list` (sera migre vers
+    # LookupSource dans un follow-up). On garde la branche `list` pour cette
+    # transition.
     for nom, fn, poids in SOURCES_PRINCIPALES:
         try:
-            if nom == "bayelemabaga":
-                # Retourne un Counter (scores TF-IDF)
-                compteur = fn(concept_fr)
-                top10 = compteur.most_common(10)  # top 10 pour capturer bases de composés
-                for terme, score_tfidf in top10:
+            result = fn(concept_fr)
+
+            if isinstance(result, Counter):
+                # Sources unifiees (TfidfSource + HttpScraperSource).
+                # top10 pour capturer les bases de composes (cas TF-IDF
+                # ou la racine et un derive peuvent tous deux apparaitre).
+                top10 = result.most_common(10)
+                for terme, score in top10:
                     votes[terme]["count"] += poids
-                    votes[terme]["sources"].append(f"{nom}(tfidf~{score_tfidf})")
+                    votes[terme]["sources"].append(f"{nom}(~{score})")
                 if verbose:
                     top_str = ", ".join([f"{t}(~{s})" for t, s in top10[:3]])
                     print(f"  [{nom:15s}] -> {top_str if top10 else 'rien trouve'}")
             else:
-                # Retourne une liste — on prend les 3 plus fréquents
-                termes = fn(concept_fr)
-                freq_locale = Counter(termes)
+                # Source legacy retournant une liste (agri_dict uniquement).
+                freq_locale = Counter(result)
                 top3 = [t for t, _ in freq_locale.most_common(3)]
                 for terme in top3:
                     votes[terme]["count"] += poids
