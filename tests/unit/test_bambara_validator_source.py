@@ -620,29 +620,38 @@ def test_bamadaba_wrapper_retourne_counter_unifie(monkeypatch):
     )
 
 
-def test_dispatcher_par_type_pas_par_nom(monkeypatch):
-    """Fix MAJOR-3 archi : `trouver_meilleur_terme()` dispatche par TYPE
-    retourne (Counter vs list) et non plus par NOM hardcode.
+def test_dispatcher_uniforme_apres_pr4(monkeypatch):
+    """Issue #233 PR 4 : `trouver_meilleur_terme()` dispatche desormais
+    de maniere uniforme — TOUTES les sources retournent Counter. Plus de
+    branche `else` legacy pour `list`. Pattern OCP atteint a 100%.
 
-    On verifie qu'on peut traiter une source qui s'appellerait `"bayelemabaga"`
-    mais retournerait une `list` (cas hypothetique post-refactor agri_dict)
-    sans declencher la branche TF-IDF par erreur — preuve que le NOM n'est
-    plus utilise pour dispatcher.
+    Test : 2 sources retournant des Counters de natures differentes
+    (TfidfSource simule avec scores eleves + LookupSource simule avec
+    score=1) sont fusionnees correctement sans dispatch par nom ni par
+    isinstance.
     """
-    # Source factice qui s'appelle "bayelemabaga" mais retourne une LIST.
-    # Si l'ancien `if nom == "bayelemabaga"` etait encore en place, cette
-    # source serait traitee comme un Counter et crasherait sur .most_common(10).
-    fake_sources = [("bayelemabaga", lambda c: ["term1", "term2", "term1"], 2)]
+    # Source 1 type TfidfSource (scores eleves)
+    fake_tfidf = lambda c: Counter({"malo": 50, "ji": 30})
+    # Source 2 type LookupSource (score=1 par presence)
+    fake_lookup = lambda c: Counter({"malo": 1, "kini": 1})
+
+    fake_sources = [
+        ("tfidf_source", fake_tfidf, 2),
+        ("lookup_source", fake_lookup, 5),  # poids 5 pour valider l'application uniform
+    ]
     monkeypatch.setattr(_mod, "SOURCES_PRINCIPALES", fake_sources)
-    # Court-circuiter SOURCES_CONFIRMATION pour ne pas charger jeli/UD
     monkeypatch.setattr(_mod, "SOURCES_CONFIRMATION", [])
-    # Court-circuit sleep
     monkeypatch.setattr(_mod.time, "sleep", lambda _: None)
 
     result = _mod.trouver_meilleur_terme("riz", verbose=False)
-    # Pas de crash → dispatch par type a fonctionne
-    assert result["meilleur_terme"] in ("term1", "term2"), result
+    # Pas de crash, dispatch uniforme OK
     assert result["concept_fr"] == "riz"
+    # 'malo' apparait dans les 2 sources → count cumule (poids 2 + poids 5 = 7)
+    # 'ji' uniquement TfidfSource (poids 2), 'kini' uniquement LookupSource (poids 5)
+    classement = {c["terme"]: c["score"] for c in result["classement"]}
+    assert "malo" in classement
+    assert "kini" in classement
+    assert "ji" in classement
 
 
 def test_dispatcher_traite_counter_en_top10(monkeypatch):
@@ -660,3 +669,104 @@ def test_dispatcher_traite_counter_en_top10(monkeypatch):
     assert set(classement_termes) == {"a", "b", "c", "d", "e"}, classement_termes
     # Le top doit etre "a" (score le plus haut)
     assert result["meilleur_terme"] == "a"
+
+
+# ─────────────────────────────────────────────
+# Tests LookupSource agri_dict (issue #233 PR 4 — finalise OCP)
+# ─────────────────────────────────────────────
+
+
+def test_lookup_src_cree_instance_avec_bons_parametres():
+    """`_AGRI_DICT_SRC` doit etre une LookupSource avec les bons parametres."""
+    src = _mod._AGRI_DICT_SRC
+    assert isinstance(src, _mod.LookupSource)
+    assert src.name == "agri_dict"
+    assert src.weight == 5  # poids maximum (dico valide multi-sources)
+    assert src.entries_root == "cultures"
+    assert src.key_field == "bambara"
+    assert src.variante_field == "variante"
+
+
+def test_lookup_source_load_fichier_present(tmp_path):
+    """Cas nominal : JSON valide → dict charge correctement."""
+    json_path = tmp_path / "agri_dict.json"
+    json_path.write_text(
+        '{"cultures": {'
+        '"riz": {"bambara": "malo", "variante": "kini"},'
+        '"manioc": {"bambara": "bananku"}'
+        '}}',
+        encoding="utf-8",
+    )
+    src = _mod.LookupSource(name="test", json_path=json_path, weight=5)
+    src.load()
+    assert src._loaded is True
+    # 3 entrees : riz principal, riz variante, manioc principal
+    assert len(src._dict) == 3
+    assert src._dict["riz"] == "malo"
+    assert src._dict["riz__variante"] == "kini"
+    assert src._dict["manioc"] == "bananku"
+    # manioc n'a pas de variante → pas d'entree __variante
+    assert "manioc__variante" not in src._dict
+
+
+def test_lookup_source_load_fichier_absent_no_op(tmp_path):
+    """Fichier absent → no-op (pas de crash) + dict vide + _loaded=True."""
+    src = _mod.LookupSource(
+        name="missing",
+        json_path=tmp_path / "nope.json",
+        weight=5,
+    )
+    src.load()
+    assert src._loaded is True  # marque comme tente
+    assert src._dict == {}
+    # find() ne crashe pas
+    assert src.find("riz") == Counter()
+
+
+def test_lookup_source_find_concept_avec_et_sans_variante(tmp_path):
+    """find() retourne Counter avec terme principal + variante si dispo."""
+    json_path = tmp_path / "agri_dict.json"
+    json_path.write_text(
+        '{"cultures": {'
+        '"riz": {"bambara": "malo", "variante": "kini"},'
+        '"manioc": {"bambara": "bananku"}'
+        '}}',
+        encoding="utf-8",
+    )
+    src = _mod.LookupSource(name="test", json_path=json_path, weight=5)
+
+    # Concept avec variante → 2 termes
+    result_riz = src.find("riz")
+    assert result_riz == Counter({"malo": 1, "kini": 1}), result_riz
+
+    # Concept sans variante → 1 terme
+    result_manioc = src.find("manioc")
+    assert result_manioc == Counter({"bananku": 1}), result_manioc
+
+    # Concept absent → Counter vide
+    assert src.find("inexistant") == Counter()
+
+    # Case insensitive (concept passe en .lower())
+    result_riz_caps = src.find("RIZ")
+    assert result_riz_caps == Counter({"malo": 1, "kini": 1}), result_riz_caps
+
+
+def test_agri_dict_lookup_wrapper_retourne_counter(tmp_path, monkeypatch):
+    """Le wrapper `_agri_dict_lookup()` retourne maintenant Counter (PR 4) au
+    lieu de list (PR 3 et avant). Permet le dispatcher uniforme.
+    """
+    # Setup fichier reel via patch de l'instance
+    json_path = tmp_path / "agri_dict.json"
+    json_path.write_text(
+        '{"cultures": {"riz": {"bambara": "malo"}}}',
+        encoding="utf-8",
+    )
+    fake_src = _mod.LookupSource(name="agri_dict", json_path=json_path, weight=5)
+    monkeypatch.setattr(_mod, "_AGRI_DICT_SRC", fake_src)
+
+    result = _mod._agri_dict_lookup("riz")
+    assert isinstance(result, Counter), (
+        f"_agri_dict_lookup doit retourner Counter (PR 4 unification), "
+        f"got {type(result).__name__}"
+    )
+    assert result == Counter({"malo": 1})
