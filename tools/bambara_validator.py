@@ -279,12 +279,10 @@ STOPWORDS_BAM = {
 # État interne — chargé une seule fois
 # ─────────────────────────────────────────────
 
-_agri_dict: dict = {}          # Dictionnaire agricole validé multi-sources
-_agri_loaded = False
-
-# Note: les globals `_baye_*` ont ete remplaces par l'attribut d'instance de
-# `TfidfSource` (cf. `_BAYELEMABAGA_SRC` plus haut, issue #233 PR 1).
-# Les 2 autres TF-IDF (`_kouman_*`, `_findora_*`) seront migres en PR 2.
+# Note: les globals `_agri_dict`, `_agri_loaded` ont ete remplaces par
+# l'attribut d'instance de `LookupSource` (cf. `_AGRI_DICT_SRC` plus bas,
+# issue #233 PR 4). Les globals `_baye_*` ont ete remplaces par `TfidfSource`
+# en PR 1 (`_BAYELEMABAGA_SRC`).
 
 _jeli_phrases: list = []
 _jeli_loaded = False
@@ -296,26 +294,6 @@ _ud_loaded = False
 # attributs d'instance TfidfSource (cf. `_KOUMAN_SRC` et `_FINDORA_SRC`
 # plus bas, issue #233 PR 2). PR 3 finira la migration avec les 4 scrapers
 # HTTP via une nouvelle classe HttpScraperSource.
-
-
-def _charger_agri_dict():
-    global _agri_dict, _agri_loaded
-    if _agri_loaded:
-        return
-    f = DATA_DIR / "agri_dict.json"
-    if f.exists():
-        with open(f, encoding="utf-8") as fp:
-            data = json.load(fp)
-        # Construire un index : concept_fr.lower() → terme_bambara
-        for concept, info in data.get("cultures", {}).items():
-            terme = info.get("bambara")
-            if terme:
-                _agri_dict[concept.lower()] = terme
-            variante = info.get("variante")
-            if variante:
-                _agri_dict[f"{concept.lower()}__variante"] = variante
-    _agri_loaded = True
-    logger.info(f"[VAL] agri_dict: {len(_agri_dict)} concepts charges")
 
 
 def _charger_bayelemabaga():
@@ -412,6 +390,94 @@ class HttpScraperSource(Source):
         except Exception as e:
             logger.debug(f"[VAL] {self.name}: {e}")
             return Counter()
+
+
+class LookupSource(Source):
+    """Source de lookup direct dans un dictionnaire JSON structure.
+
+    Issue #233 PR 4 : finalise la migration OCP en convertissant la derniere
+    source legacy (`agri_dict`) vers le pattern Source ABC. Avant cette PR,
+    `_agri_dict_lookup()` retournait `list[str]`, forcant le dispatcher
+    `trouver_meilleur_terme()` a garder une branche `else` legacy. Apres :
+    toutes les sources retournent `Counter`, dispatcher uniforme = OCP 100%.
+
+    Exemple de structure JSON supportee (agri_dict.json) :
+        {
+          "cultures": {
+            "riz":   {"bambara": "malo", "variante": "kini"},
+            "manioc": {"bambara": "bananku"}
+          }
+        }
+
+    Score : Counter[terme] = 1 pour chaque match (presence binary, pas TF-IDF).
+    Logique de confiance : `weight` au registre fait monter le score final
+    via la multiplication dans `trouver_meilleur_terme()`.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        json_path: Path,
+        weight: int,
+        entries_root: str = "cultures",
+        key_field: str = "bambara",
+        variante_field: str = "variante",
+    ):
+        self.name = name
+        self.json_path = json_path
+        self.weight = weight
+        self.entries_root = entries_root
+        self.key_field = key_field
+        self.variante_field = variante_field
+        # Etat interne (anciennement globals _agri_dict, _agri_loaded)
+        self._dict: dict[str, str] = {}
+        self._loaded = False
+
+    def load(self) -> None:
+        if self._loaded:
+            return
+        if not self.json_path.exists():
+            self._loaded = True
+            return
+        with open(self.json_path, encoding="utf-8") as fp:
+            data = json.load(fp)
+        for concept, info in data.get(self.entries_root, {}).items():
+            terme = info.get(self.key_field)
+            if terme:
+                self._dict[concept.lower()] = terme
+            variante = info.get(self.variante_field)
+            if variante:
+                self._dict[f"{concept.lower()}__variante"] = variante
+        self._loaded = True
+        logger.info(f"[VAL] {self.name}: {len(self._dict)} concepts charges")
+
+    def find(self, concept_fr: str) -> Counter:
+        self.load()
+        concept = concept_fr.lower()
+        result: Counter = Counter()
+        if concept in self._dict:
+            result[self._dict[concept]] = 1
+        variante_key = f"{concept}__variante"
+        if variante_key in self._dict:
+            result[self._dict[variante_key]] = 1
+        return result
+
+
+# Instance LookupSource pour agri_dict (issue #233 PR 4 — finalise OCP).
+# Place ici car necessite la classe LookupSource definie juste au-dessus.
+_AGRI_DICT_SRC = LookupSource(
+    name="agri_dict",
+    json_path=DATA_DIR / "agri_dict.json",
+    weight=5,                # poids maximum (dico valide multi-sources)
+    entries_root="cultures",
+    key_field="bambara",
+    variante_field="variante",
+)
+
+
+def _charger_agri_dict():
+    """Wrapper de compatibilite (issue #233 PR 4) : delegue a LookupSource."""
+    _AGRI_DICT_SRC.load()
 
 
 # Instances Koumankan + Findora (issue #233 PR 2).
@@ -535,23 +601,21 @@ def _extraire_fenetre(texte: str, concept: str, fenetre: int = 250) -> list:
 # Source 0 — Dictionnaire agricole validé (local)
 # ─────────────────────────────────────────────
 
-def _agri_dict_lookup(concept_fr: str) -> list:
-    """
-    Cherche le concept français dans le dictionnaire agricole validé.
-    Retourne [terme_principal] ou [terme_principal, variante] si trouvé.
+def _agri_dict_lookup(concept_fr: str) -> Counter:
+    """Wrapper de compatibilite (issue #233 PR 4) : delegue a LookupSource.
 
-    Confiance maximale : termes vérifiés par 2-5 sources académiques.
-    Ex: riz → ['malo'], igname → ['ku'], manioc → ['bananku']
+    Cherche le concept francais dans le dictionnaire agricole valide.
+    Retourne Counter({terme_principal: 1, variante: 1}) si trouve, sinon
+    Counter() vide.
+
+    Confiance maximale : termes verifies par 2-5 sources academiques.
+    Ex: riz → Counter({'malo': 1}), banane → Counter({'banaku': 1, 'namasa': 1}).
+
+    Changement type retour (PR 4) : list -> Counter, pour permettre au
+    dispatcher `trouver_meilleur_terme()` de traiter toutes les sources
+    uniformement (fix MAJOR-3 archi 100%).
     """
-    _charger_agri_dict()
-    concept = concept_fr.lower()
-    termes = []
-    if concept in _agri_dict:
-        termes.append(_agri_dict[concept])
-    variante_key = f"{concept}__variante"
-    if variante_key in _agri_dict:
-        termes.append(_agri_dict[variante_key])
-    return termes
+    return _AGRI_DICT_SRC.find(concept_fr)
 
 
 # ─────────────────────────────────────────────
@@ -795,36 +859,24 @@ def trouver_meilleur_terme(concept_fr: str, verbose: bool = True) -> dict:
 
     # ── Etape 1 : Collecter les termes depuis chaque source ──
     #
-    # Issue #233 PR 3 fix MAJOR-3 archi : dispatcher par TYPE retourne plutot
-    # que par NOM hardcode. Sources TF-IDF (Bayelemabaga/Koumankan/Findora) et
-    # HTTP scrapers (Bamadaba/VOA/Bambara.org/Bamanankan) retournent toutes
-    # un Counter. `agri_dict` retourne encore une `list` (sera migre vers
-    # LookupSource dans un follow-up). On garde la branche `list` pour cette
-    # transition.
+    # Issue #233 PR 4 : dispatcher 100% uniforme. Toutes les sources retournent
+    # desormais Counter (TfidfSource depuis PR 1+2, HttpScraperSource depuis
+    # PR 3, LookupSource depuis cette PR pour agri_dict). Plus de branche
+    # `else` legacy, plus de `if isinstance(result, list)`. Pattern OCP 100%
+    # atteint : ajouter une nouvelle source = creer 1 instance + 1 ligne dans
+    # SOURCES_PRINCIPALES (zero modification de cette fonction).
     for nom, fn, poids in SOURCES_PRINCIPALES:
         try:
-            result = fn(concept_fr)
-
-            if isinstance(result, Counter):
-                # Sources unifiees (TfidfSource + HttpScraperSource).
-                # top10 pour capturer les bases de composes (cas TF-IDF
-                # ou la racine et un derive peuvent tous deux apparaitre).
-                top10 = result.most_common(10)
-                for terme, score in top10:
-                    votes[terme]["count"] += poids
-                    votes[terme]["sources"].append(f"{nom}(~{score})")
-                if verbose:
-                    top_str = ", ".join([f"{t}(~{s})" for t, s in top10[:3]])
-                    print(f"  [{nom:15s}] -> {top_str if top10 else 'rien trouve'}")
-            else:
-                # Source legacy retournant une liste (agri_dict uniquement).
-                freq_locale = Counter(result)
-                top3 = [t for t, _ in freq_locale.most_common(3)]
-                for terme in top3:
-                    votes[terme]["count"] += poids
-                    votes[terme]["sources"].append(nom)
-                if verbose:
-                    print(f"  [{nom:15s}] -> {top3 if top3 else 'rien trouve'}")
+            compteur = fn(concept_fr)
+            # top10 pour capturer les bases de composes (cas TF-IDF ou la
+            # racine et un derive peuvent tous deux apparaitre dans le top).
+            top10 = compteur.most_common(10)
+            for terme, score in top10:
+                votes[terme]["count"] += poids
+                votes[terme]["sources"].append(f"{nom}(~{score})")
+            if verbose:
+                top_str = ", ".join([f"{t}(~{s})" for t, s in top10[:3]])
+                print(f"  [{nom:15s}] -> {top_str if top10 else 'rien trouve'}")
 
             time.sleep(0.3)  # Politesse pour les sites en ligne
 
