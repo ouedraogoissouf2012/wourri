@@ -287,7 +287,9 @@ class ChatService:
         ivr_fr = result.get("reponse_fr", "")
 
         # Remplacer {{METEO_CONTEXTUEL}} (bam) et {{METEO_FR}} (fr)
-        ivr_bambara, ivr_fr = self._inject_meteo(ivr_bambara, ivr_fr, weather_data, city)
+        # Refactor P2-09 PR 1 (Sprint L) : delegue a app.services.chat.meteo_injector
+        from app.services.chat.meteo_injector import inject_meteo
+        ivr_bambara, ivr_fr = inject_meteo(ivr_bambara, ivr_fr, weather_data, city)
 
         # Sécurité : effacer tags résiduels dans les 2 langues
         ivr_bambara = re.sub(r'\{\{[^}]+\}\}', '', ivr_bambara).strip()
@@ -561,88 +563,17 @@ class ChatService:
 
     # ------------------------------------------------------------------
     # Helpers privés
+    #
+    # Refactor P2-09 PR 1 (Sprint L #204) : _inject_meteo + _build_meteo_bambara
+    # extraits vers app/services/chat/meteo_injector.py (module pur, fonctions
+    # module-level). Le seul appelant (_try_ivr_exact) importe directement
+    # `inject_meteo` depuis le module.
     # ------------------------------------------------------------------
-
-    def _inject_meteo(
-        self, ivr_bambara: str, ivr_fr: str, weather_data: dict | None, city: str
-    ) -> tuple[str, str]:
-        """Remplace {{METEO_CONTEXTUEL}} (bam) et {{METEO_FR}} (fr) par la météo réelle.
-
-        Retourne le tuple (bambara, fr). Si aucun tag n'est présent dans aucune
-        des deux versions, retourne les chaînes inchangées (court-circuit).
-        """
-        has_bam_tag = "{{METEO_CONTEXTUEL}}" in ivr_bambara
-        has_fr_tag = "{{METEO_FR}}" in ivr_fr
-        if not has_bam_tag and not has_fr_tag:
-            return ivr_bambara, ivr_fr
-
-        from app.data.calendrier_agricole import get_cultures_du_mois
-        try:
-            cultures_saison = get_cultures_du_mois(city)
-            meteo_bam, meteo_fr = _build_meteo_bambara(weather_data, city, cultures_saison)
-        except Exception:
-            meteo_bam, meteo_fr = "", ""
-
-        return (
-            ivr_bambara.replace("{{METEO_CONTEXTUEL}}", meteo_bam),
-            ivr_fr.replace("{{METEO_FR}}", meteo_fr),
-        )
 
     async def _synthesize_dioula(self, text: str) -> Optional[str]:
         """Synthétise du texte dioula en audio (async wrapper)."""
         from app.services.tts_dioula import synthesize_dioula_text
         return await asyncio.to_thread(synthesize_dioula_text, text)
-
-
-# ---------------------------------------------------------------------------
-# Fonction météo bambara (utilisée par ChatService et potentiellement d'autres)
-# ---------------------------------------------------------------------------
-
-def _build_meteo_bambara(weather_data: dict | None, city: str, cultures: list = None) -> tuple[str, str]:
-    """Construit un message météo + cultures de saison en bambara."""
-    if not weather_data:
-        return ("Aw ka aw ka foro kɔlɔsi ka waati ɲuman sɔrɔ.",
-                "Surveillez votre champ et profitez du bon moment.")
-
-    code = weather_data.get("weather_code", 0)
-    temp = weather_data.get("temperature", 28)
-    precip = weather_data.get("precipitation", 0)
-    city_name = weather_data.get("city", city)
-
-    if code >= 95:
-        bam = f"{city_name} kɔnɔ sanfɛla bɛ na. Aw ka aw ka dòn ni aw ka fɛnw bɛɛ lakana joona!"
-        fr = f"Un orage arrive sur {city_name}. Mettez à l'abri vos grains et affaires immédiatement !"
-    elif code >= 61 or precip > 5:
-        bam = f"{city_name} kɔnɔ sanji bɛ na. Aw ka aw ka dòn ni aw ka fɛnw lakana, sanji bɛ se ka u bɔsi. Foro labɛnni waati ye sisan ye!"
-        fr = f"La pluie arrive sur {city_name}. Protégez vos grains et affaires. C'est le moment de préparer le champ !"
-    elif code >= 51 or precip > 0:
-        bam = f"{city_name} kɔnɔ sanji fɛrɛn bɛ na. Sɛnɛ daminɛ waati ɲuman ye sisan ye."
-        fr = f"Légère pluie sur {city_name}. C'est un bon moment pour commencer les semis."
-    elif code == 3:
-        bam = f"{city_name} kɔnɔ sankolo bɛ fara. Sanji bɛ se ka na. Aw ka foro labɛn sisan."
-        fr = f"Ciel couvert sur {city_name}. La pluie peut venir. Préparez votre champ maintenant."
-    elif temp > 33:
-        bam = f"{city_name} kɔnɔ tile ka jugu, sanji tɛ. Aw ka aw ka sɛnɛ kalan dɔn kosɛbɛ ani aw yɛrɛw lakana tile la."
-        fr = f"Chaleur intense sur {city_name}, pas de pluie. Irriguez bien vos cultures et protégez-vous du soleil."
-    else:
-        bam = f"{city_name} kɔnɔ tile bɛ ɲɛ, sanji tɛ sisan. Aw ka aw ka sɛnɛ kalan dɔn ni ji."
-        fr = f"Ciel dégagé sur {city_name}, pas de pluie. Pensez à arroser vos cultures."
-
-    if cultures:
-        noms_bam = [c["bambara"] for c in cultures]
-        noms_fr = [c["fr"] for c in cultures]
-        if len(noms_bam) == 1:
-            liste_bam, liste_fr = noms_bam[0], noms_fr[0]
-        elif len(noms_bam) == 2:
-            liste_bam = f"{noms_bam[0]} ani {noms_bam[1]}"
-            liste_fr = f"{noms_fr[0]} et {noms_fr[1]}"
-        else:
-            liste_bam = f"{', '.join(noms_bam[:-1])} ani {noms_bam[-1]}"
-            liste_fr = f"{', '.join(noms_fr[:-1])} et {noms_fr[-1]}"
-        bam += f" Sisan ye {liste_bam} sɛnɛ waati ye aw ka zone kɔnɔ."
-        fr += f" En ce moment, les cultures de saison dans votre zone sont : {liste_fr}."
-
-    return (bam, fr)
 
 
 # ---------------------------------------------------------------------------

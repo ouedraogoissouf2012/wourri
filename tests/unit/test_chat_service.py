@@ -17,8 +17,11 @@ from app.services.chat_service import (
     ChatService,
     NLUResult,
     ChatResult,
-    _build_meteo_bambara,
 )
+# Refactor P2-09 PR 1 (Sprint L) : _build_meteo_bambara migre vers
+# app/services/chat/meteo_injector.py. Tests existants continuent de
+# l'importer depuis ce module externe pour preserver leur logique.
+from app.services.chat.meteo_injector import build_meteo_bambara as _build_meteo_bambara
 from app.models.schemas import Language
 
 
@@ -375,12 +378,18 @@ class TestIVRResponseContract:
             assert result["reponse_bambara"] == "Malo sɛnɛ."
 
     def test_inject_meteo_replaces_both_tags(self):
-        """`_inject_meteo` doit remplacer {{METEO_CONTEXTUEL}} dans bam ET {{METEO_FR}} dans fr."""
+        """`inject_meteo` doit remplacer {{METEO_CONTEXTUEL}} dans bam ET {{METEO_FR}} dans fr.
+
+        Refactor P2-09 PR 1 : `_inject_meteo` n'est plus une methode de
+        ChatService — appel direct a `inject_meteo` du module extrait.
+        """
+        from app.services.chat.meteo_injector import inject_meteo
+
         bam_in = "Aw ni sɔgɔma. {{METEO_CONTEXTUEL}} I bɛ koo?"
         fr_in = "Bonjour. {{METEO_FR}} Comment tu vas ?"
         weather = {"weather_code": 0, "temperature": 30, "precipitation": 0, "city": "Bouake"}
 
-        bam_out, fr_out = self.service._inject_meteo(bam_in, fr_in, weather, "Bouake")
+        bam_out, fr_out = inject_meteo(bam_in, fr_in, weather, "Bouake")
 
         assert "{{METEO_CONTEXTUEL}}" not in bam_out, "tag bambara doit être remplacé"
         assert "{{METEO_FR}}" not in fr_out, "tag français doit être remplacé"
@@ -391,8 +400,10 @@ class TestIVRResponseContract:
 
     def test_inject_meteo_no_tags_returns_unchanged(self):
         """Si aucun tag, retourne les chaînes inchangées (court-circuit)."""
+        from app.services.chat.meteo_injector import inject_meteo
+
         bam_in = "Pas de tag ici."
         fr_in = "No tag here."
-        bam_out, fr_out = self.service._inject_meteo(bam_in, fr_in, None, "Abidjan")
+        bam_out, fr_out = inject_meteo(bam_in, fr_in, None, "Abidjan")
         assert bam_out == bam_in
         assert fr_out == fr_in
