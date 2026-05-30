@@ -1,10 +1,37 @@
 # Archive — versions historiques du corpus IVR
 
-**Dernière mise à jour** : 2026-04-23 (issue #101 [P1-07])
+**Dernière mise à jour** : 2026-05-30 (session ADR-0014 formalisation)
 
 Ce dossier contient des versions historiques ou exploratoires du corpus IVR
 qui **ne sont plus utilisées par le code applicatif**. La source de vérité
 actuelle reste `dictionnaires/corpus_ivr.json` (v2.3, 162 entrées).
+
+## ⚠️ État du draft v3 dioula CI (mai 2026)
+
+Le fichier `corpus_ivr_v3_full_draft.json` est l'objet d'un **plan de promotion
+formalisé via [ADR-0014](../../docs/adr/0014-promotion-corpus-v3-dioula-ci.md)**.
+
+**14 Pull Requests ouvertes** sur la branche `fix/p3-feedback-deepseek-finetune`
+proposent des enrichissements/corrections sur ce draft :
+
+- **#69** : correction `karo` → `kalo` (mois en dioula CI)
+- **#70** : arachide (5 entrées)
+- **#71-80** : igname, manioc, cacao, mil, coton, banane, tomate, haricot, gombo, oignon (8 entrées par culture)
+- **#82** : 35 entrées restantes (sésame, café, ananas, mangue, néré, agrumes)
+- **#84** : fix TTS format mois
+
+**Toutes labellisées** `corpus-v3-dioula-ci` pour regroupement visuel GitHub.
+
+**Statut** : ⏳ **en attente de validation locuteur natif dioula CI + tests E2E
+staging (Sprint J #202) + score validation ≥ 95%** (actuel 84,9%).
+
+**Décision tranchée** (ADR-0014) : promotion globale (Chemin A) après prérequis
+validés. Plan en 5 phases. Tag backup `backup/corpus-v2.3-pre-v3-promotion`
+créé AVANT bascule pour rollback garanti.
+
+**Voir [ADR-0014](../../docs/adr/0014-promotion-corpus-v3-dioula-ci.md)
+pour le plan complet** (3 options analysées, recommandation argumentée,
+critères d'acceptation, plan d'exécution).
 
 ## Pourquoi conserver ces fichiers ?
 
