@@ -1,0 +1,295 @@
+# Wourri — Orchestration STAGING (Sprint J, issue #202).
+# ────────────────────────────────────────────────────────────
+#
+# Environnement de staging dedie (VM separee de la prod) avec :
+#   - 3 services applicatifs : postgres + wouri-api + whatsapp-server
+#   - 2 services monitoring : Loki (agregation logs) + Promtail (collecte)
+#
+# Differences VS docker-compose.prod.yml :
+#   * Container names suffixes `_staging` (collisions exclues si meme VM)
+#   * Volumes nommes `wourri_staging_*` (idem)
+#   * Reseau `wourri_staging_net` (idem)
+#   * Image tags par defaut `:staging` (pas `:latest`)
+#   * Bind-mount postgres : `/srv/wourri-staging/data/postgres/`
+#   * Bind-mount loki : `/srv/wourri-staging/data/loki/`
+#   * Mem limits identiques a prod (pour mesurer latence comparable
+#     en vue de la decision Phase E ADR-0008, cf. issue #203)
+#   * Endpoints exposes sur ports differents pour pouvoir cohabiter
+#     avec prod sur meme VM si besoin (port 127.0.0.1:8001 / :3002)
+#
+# Usage sur la VM staging :
+#
+#   # 1. Premiere installation (cf. docs/staging-deployment.md)
+#   sudo mkdir -p /srv/wourri-staging/{data,secrets} \
+#     && sudo chown $USER:$USER /srv/wourri-staging
+#   sudo mkdir -p /srv/wourri-staging/data/{postgres,loki}
+#   sudo chown 999:999 /srv/wourri-staging/data/postgres   # UID image pgvector
+#   sudo chown 10001:10001 /srv/wourri-staging/data/loki   # UID image grafana/loki
+#
+#   # 2. Demarrer / mettre a jour (workflow deploiement)
+#   docker compose --env-file .env.staging -f docker-compose.staging.yml pull
+#   docker compose --env-file .env.staging -f docker-compose.staging.yml \
+#       run --rm wouri-api /app/scripts/run_migrations.sh
+#   docker compose --env-file .env.staging -f docker-compose.staging.yml up -d
+#
+#   # 3. Logs / debug
+#   docker compose -f docker-compose.staging.yml logs -f wouri-api whatsapp-server
+#
+#   # 4. Acces Loki UI (depuis poste local via tunnel SSH) :
+#   ssh -L 3100:127.0.0.1:3100 user@vm-staging
+#   # → http://localhost:3100/ready et /metrics dispos
+#   # → queries via LogQL : curl 'http://localhost:3100/loki/api/v1/query?query={job="wouri-api"}'
+
+services:
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ PostgreSQL + pgvector (variante staging)                             │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: wourri_postgres_staging
+    restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+    mem_limit: 512m
+    mem_reservation: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER manquant dans .env.staging}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: ${POSTGRES_DB:-wourri_staging}
+      TZ: UTC
+    secrets:
+      - postgres_password
+    volumes:
+      - /srv/wourri-staging/data/postgres:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-wourri_staging}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - wourri_staging_net
+
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ wouri-api (FastAPI + modeles ML) — staging                           │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  wouri-api:
+    image: ghcr.io/ouedraogoissouf2012/wourri-api:${API_IMAGE_TAG:-staging}
+    container_name: wourri_api_staging
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    security_opt:
+      - "no-new-privileges:true"
+    mem_limit: 3g
+    mem_reservation: 1500m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    # Port 8001 (vs 8000 prod) : permet cohabitation prod + staging sur
+    # meme VM si l'operateur choisit cette config. Sinon ignore sur VM dediee.
+    ports:
+      - "127.0.0.1:8001:8000"
+    environment:
+      POSTGRES_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-wourri_staging}
+      # STAGING par defaut en mode DUAL pour valider pgvector en conditions reelles
+      # avant bascule Phase E (cf. ADR-0008 §Phase E + issue #203). Override
+      # possible via .env.staging si besoin de tester un autre mode.
+      CORPUS_STORAGE_MODE: ${CORPUS_STORAGE_MODE:-dual}
+      TZ: UTC
+      API_SECRET_KEY_FILE: /run/secrets/api_secret_key
+      API_SECRET_KEY_PREVIOUS: ${WOURI_API_KEY_PREVIOUS:-}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}  # debug par defaut staging (plus de signal)
+      HF_HOME: /app/.cache/huggingface
+      TRANSFORMERS_CACHE: /app/.cache/huggingface
+    secrets:
+      - api_secret_key
+    volumes:
+      - hf_cache:/app/.cache/huggingface
+      - audio_output:/app/static/audio
+      - api_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - wourri_staging_net
+
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ whatsapp-server (Node.js + Baileys) — staging                        │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  whatsapp-server:
+    image: ghcr.io/ouedraogoissouf2012/wourri-whatsapp:${WA_IMAGE_TAG:-staging}
+    container_name: wourri_whatsapp_staging
+    restart: unless-stopped
+    depends_on:
+      wouri-api:
+        condition: service_healthy
+    security_opt:
+      - "no-new-privileges:true"
+    mem_limit: 512m
+    mem_reservation: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    # Port 3002 (vs 3001 prod) pour cohabitation eventuelle.
+    ports:
+      - "127.0.0.1:3002:3001"
+    environment:
+      NODE_ENV: production       # NODE_ENV=production meme en staging (Express opt)
+      PORT: 3001
+      WOURI_API_URL: http://wouri-api:8000
+      WOURI_API_KEY: ${WOURI_API_KEY:?WOURI_API_KEY manquant dans .env.staging}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      TZ: UTC
+      USER_PREFS_FILE: /app/data/user_preferences.json
+      PENDING_MESSAGES_FILE: /app/data/pending_messages.json
+    volumes:
+      - wa_auth:/app/auth_baileys
+      - wa_audio_cache:/app/audio_cache
+      - wa_data:/app/data
+      - wa_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:3001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - wourri_staging_net
+
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ Loki — agregation logs (issue #202)                                  │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  # Loki = backend Grafana pour les logs (equivalent ELK mais beaucoup plus
+  # leger). 512 MB RAM suffit pour le volume Wourri (~30 utilisateurs,
+  # retention 14 jours).
+  #
+  # Pas d'UI Grafana provisionnee ici : l'acces se fait via API LogQL
+  # directe (curl + jq) ou via un Grafana externe (poste local) qui
+  # interroge Loki via tunnel SSH. Cette approche reduit la surface
+  # d'attaque + la consommation memoire en staging.
+  loki:
+    image: grafana/loki:3.3.2  # version exacte pour reproductibilite
+    container_name: wourri_loki_staging
+    restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+    mem_limit: 512m
+    mem_reservation: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Port 3100 expose en localhost seulement : acces via tunnel SSH.
+    ports:
+      - "127.0.0.1:3100:3100"
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ./config/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      # Bind-mount du stockage Loki vers /srv/wourri-staging/data/loki :
+      # permet inspection + backup rsync direct. Sans bind, les logs vivraient
+      # dans un volume Docker anonyme = perte au prochain `docker compose down -v`.
+      - /srv/wourri-staging/data/loki:/loki
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    networks:
+      - wourri_staging_net
+
+  # ╭──────────────────────────────────────────────────────────────────────╮
+  # │ Promtail — collecte logs Docker pour Loki                            │
+  # ╰──────────────────────────────────────────────────────────────────────╯
+  # Promtail lit les fichiers de logs JSON ecrits par le daemon Docker
+  # (cf. logging: driver: json-file sur chaque service) et les push vers
+  # Loki avec les labels {job, container_name, ...}.
+  #
+  # IMPORTANT : Promtail necessite l'acces au socket Docker pour decouvrir
+  # les containers. Pas de probleme securite ici car Promtail tourne en
+  # read-only sur le socket (cf. config/promtail/promtail-config.yml).
+  promtail:
+    image: grafana/promtail:3.3.2
+    container_name: wourri_promtail_staging
+    restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+    mem_limit: 128m
+    mem_reservation: 64m
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+    depends_on:
+      loki:
+        condition: service_healthy
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./config/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      # Lecture seule des logs Docker host (chemin standard sur Linux)
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # Position file pour Promtail (memorise ou il en est dans chaque fichier)
+      - promtail_positions:/tmp/promtail
+    networks:
+      - wourri_staging_net
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ Volumes nommes persistants — prefixes wourri_staging_                │
+# ╰──────────────────────────────────────────────────────────────────────╯
+volumes:
+  hf_cache:
+    name: wourri_staging_hf_cache
+  audio_output:
+    name: wourri_staging_audio_output
+  api_logs:
+    name: wourri_staging_api_logs
+  wa_auth:
+    name: wourri_staging_wa_auth
+  wa_audio_cache:
+    name: wourri_staging_wa_audio_cache
+  wa_data:
+    name: wourri_staging_wa_data
+  wa_logs:
+    name: wourri_staging_wa_logs
+  promtail_positions:
+    name: wourri_staging_promtail_positions
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ Docker secrets — fichiers dans /srv/wourri-staging/secrets/         │
+# │ Identique au pattern prod (cf. docker-compose.prod.yml).             │
+# ╰──────────────────────────────────────────────────────────────────────╯
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password
+  api_secret_key:
+    file: ./secrets/api_secret_key
+
+# ╭──────────────────────────────────────────────────────────────────────╮
+# │ Reseau interne staging — isole de prod                               │
+# ╰──────────────────────────────────────────────────────────────────────╯
+networks:
+  wourri_staging_net:
+    name: wourri_staging_net
+    driver: bridge

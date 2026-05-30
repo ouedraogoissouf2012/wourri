@@ -1,0 +1,91 @@
+# Wourri — Configuration Loki STAGING (issue #202).
+# ──────────────────────────────────────────────────────
+#
+# Loki 3.3.2 — backend agregation logs. Stockage filesystem local sur
+# /loki (bind-mont depuis /srv/wourri-staging/data/loki sur la VM).
+#
+# Choix de design pour staging Wourri :
+#   - Single-binary mode (pas de microservices Loki) : 1 seul container
+#     = 1 seul ingester + 1 seul querier + 1 seul compactor combines
+#   - Stockage filesystem (pas S3/GCS/MinIO) : suffit pour staging,
+#     ~5-10 GB de logs sur 14 jours de retention
+#   - Pas d'authentification : Loki est expose uniquement sur
+#     127.0.0.1:3100 (acces via tunnel SSH depuis le poste local)
+#   - Retention : 14 jours (compromis cout disque / capacite a debugger
+#     un bug remonte par utilisateur quelques jours apres)
+#
+# Pour la prod (a faire dans Sprint K ou ulterieur) : passer en mode
+# microservices ou utiliser Grafana Cloud Loki managed.
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  # Logs Loki en niveau info (eviter le bruit debug en staging)
+  log_level: info
+  # Limites HTTP raisonnables (Loki par defaut accepte 10MB par push,
+  # ce qui est largement suffisant pour les logs Wourri).
+  grpc_server_max_recv_msg_size: 8388608
+  grpc_server_max_send_msg_size: 8388608
+
+# Common config pour mode single-binary (Loki 2.4+ : evite de dupliquer
+# le wal_dir, ring config, replication_factor=1, etc.)
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+# Schema config — version v13 actuelle (Loki 2.9+)
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+# Limites d'ingestion — protege Loki contre une explosion de volume
+# (ex: bug qui logge 100k lignes/sec)
+limits_config:
+  # Retention 14 jours (336h)
+  retention_period: 336h
+  # Refus si push depasse 4 MB/s par utilisateur (Wourri = 1 utilisateur Loki)
+  ingestion_rate_mb: 4
+  ingestion_burst_size_mb: 6
+  # Refuse les streams avec plus de 50k entries en attente (backpressure)
+  max_entries_limit_per_query: 5000
+  # Pas trop de label cardinality (eviter explosion combinatoire)
+  max_label_value_length: 2048
+  max_label_name_length: 1024
+  max_label_names_per_series: 30
+
+# Compactor : tasks de nettoyage en arriere-plan (retention + dedup)
+compactor:
+  working_directory: /loki/compactor
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
+  delete_request_store: filesystem
+
+# Ruler : alertes (desactivees pour staging, on configurera plus tard
+# avec Sprint K monitoring avance si besoin)
+ruler:
+  alertmanager_url: http://localhost:9093
+  enable_api: false
+
+# Analytics : envoi de telemetrie anonyme a Grafana Labs. DESACTIVE par
+# defense en profondeur (donnees Wourri = PII agriculteurs CI/Mali, on
+# n'envoie RIEN dehors meme du metadata anonymise).
+analytics:
+  reporting_enabled: false
