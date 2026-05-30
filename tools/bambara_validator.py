@@ -32,12 +32,232 @@ import json
 import time
 import logging
 import requests
+from abc import ABC, abstractmethod
 from pathlib import Path
 from collections import Counter, defaultdict
 
 logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).parent.parent.parent.parent / "data" / "validation_sources"
+
+
+# ─────────────────────────────────────────────
+# Sources — Abstraction OCP (issue #233, PR 1)
+# ─────────────────────────────────────────────
+#
+# Avant refactor : 3 fonctions TF-IDF (`_bayelemabaga`, `_koumankan`,
+# `_findora`) avec ~70 lignes de logique strictement identique, 13 globals
+# eparpilles, et un registre ad-hoc (`SOURCES_PRINCIPALES`). Ajouter une
+# nouvelle source = modifier 4 endroits (state, loader, fonction, registre).
+#
+# Apres PR 1 : interface `Source` ABC + 1ere implementation `TfidfSource`
+# qui encapsule le state (paires fr/dyu + cache freq globale) en attribut
+# d'instance plutot qu'en globals module-level.
+#
+# Scope PR 1 = preuve de concept : seul Bayelemabaga est migre. Les 2
+# autres TF-IDF (Koumankan, Findora) et les 4 scrapers HTTP restent
+# inchanges. PR 2 et PR 3 finiront la migration une fois le design valide.
+
+
+class Source(ABC):
+    """Interface pour une source de validation bambara/dioula.
+
+    Une source produit un `Counter` (terme → score). Pour les sources TF-IDF,
+    le score est `round(tf_rate / idf_rate * 100)` ; pour les listes (scrapers
+    HTTP) une couche d'adaptation reste a definir en PR ulterieure.
+    """
+
+    name: str
+    weight: int
+
+    @abstractmethod
+    def load(self) -> None:
+        """Charge les donnees en memoire (cache `_loaded`, idempotent)."""
+
+    @abstractmethod
+    def find(self, concept_fr: str) -> Counter:
+        """Retourne `{terme: score}` pour ce concept. `Counter()` vide si rien."""
+
+
+class TfidfSource(Source):
+    """Source TF-IDF generique sur 2 fichiers texte alignes (paires fr/dyu).
+
+    Encapsule l'etat (paires + cache freq globale) en attribut d'instance.
+    Anciennement reparti sur 4 globals module-level (`_baye_fr`, `_baye_bam`,
+    `_baye_loaded`, `_baye_global_freq`) repetes par source.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        fr_path: Path,
+        dyu_path: Path,
+        weight: int,
+        min_global: int,
+        min_match_lignes: int,
+    ):
+        self.name = name
+        self.fr_path = fr_path
+        self.dyu_path = dyu_path
+        self.weight = weight
+        self.min_global = min_global
+        self.min_match_lignes = min_match_lignes
+        # Etat interne (anciennement globals)
+        self._fr: list[str] = []
+        self._dyu: list[str] = []
+        self._global_freq: Counter = Counter()
+        self._loaded = False
+        # Garde-fou idempotence pour les sources qui concatenent plusieurs
+        # fichiers via `append_split()` (cas Bayelemabaga, 3 splits).
+        # Sans ce flag, appeler 2x une fonction d'orchestration externe
+        # (ex: _bayelemabaga_load_all_splits) dupliquerait le corpus en
+        # memoire → TF-IDF fausse. Fix review issue #233 PR 1 MAJOR-1.
+        self._all_splits_loaded: bool = False
+
+    def load(self) -> None:
+        if self._loaded:
+            return
+        if self.fr_path.exists() and self.dyu_path.exists():
+            with open(self.fr_path, encoding="utf-8") as f:
+                self._fr = f.readlines()
+            with open(self.dyu_path, encoding="utf-8") as f:
+                self._dyu = f.readlines()
+        self._loaded = True
+        logger.info(f"[VAL] {self.name}: {len(self._fr)} paires chargees")
+
+    def append_split(self, fr_path: Path, dyu_path: Path) -> None:
+        """Ajoute un split additionnel a la source apres `load()`.
+
+        Cas d'usage : Bayelemabaga est splitte en 3 dossiers (train/test/valid).
+        `load()` charge le 1er split, `append_split()` ajoute les suivants.
+
+        Invalide automatiquement le cache `_global_freq` pour qu'il soit
+        recalcule sur l'ensemble du corpus au prochain `find()`. Fix review
+        issue #233 PR 1 MAJOR-2 (encapsulation : remplace l'acces direct aux
+        attributs prives `_fr`/`_dyu`/`_global_freq` depuis l'exterieur).
+        """
+        if not fr_path.exists() or not dyu_path.exists():
+            return
+        with open(fr_path, encoding="utf-8") as f:
+            self._fr.extend(f.readlines())
+        with open(dyu_path, encoding="utf-8") as f:
+            self._dyu.extend(f.readlines())
+        # Invalider le cache global_freq pour recalcul au prochain find()
+        self._global_freq = Counter()
+
+    def find(self, concept_fr: str) -> Counter:
+        self.load()
+
+        concept = concept_fr.lower()
+
+        # Match en mot entier pour eviter les faux positifs
+        # (ex: "mais" comme substring de "mais aussi").
+        def _match(ligne_fr: str) -> bool:
+            return bool(re.search(r"\b" + re.escape(concept) + r"\b", ligne_fr.lower()))
+
+        lignes_match = [dyu for fr, dyu in zip(self._fr, self._dyu) if _match(fr)]
+
+        if len(lignes_match) < self.min_match_lignes:
+            return Counter()
+
+        # TF : frequence dans les lignes matchant
+        tf: Counter = Counter()
+        for ligne in lignes_match:
+            tf.update(_tokeniser_simple(ligne))
+
+        # Cache freq globale (calculee une seule fois)
+        if not self._global_freq:
+            logger.info(f"[VAL] Calcul frequence globale {self.name} (une fois)...")
+            for ligne in self._dyu:
+                self._global_freq.update(_tokeniser_simple(ligne))
+            logger.info(
+                f"[VAL] {self.name} vocabulaire: {len(self._global_freq)} mots uniques"
+            )
+
+        n_match = len(lignes_match)
+        n_total = max(len(self._dyu), 1)
+
+        scores: Counter = Counter()
+        for terme, freq_match in tf.items():
+            freq_global = self._global_freq.get(terme, 0)
+            if freq_global < self.min_global:
+                continue
+            if freq_match < 1:
+                continue
+            tf_rate = freq_match / n_match
+            idf_rate = freq_global / n_total
+            ratio = tf_rate / idf_rate
+            scores[terme] = max(1, round(ratio * 100))
+
+        return scores
+
+
+# Instance Bayelemabaga (anciens parametres : min_global=3, min_match_lignes=3).
+# Volontairement initialisee a None et instanciee lazy dans _bayelemabaga_src()
+# pour conserver le comportement "charge a la 1ere utilisation" du module
+# (DATA_DIR resolu une seule fois mais fichiers lus sur demande).
+_BAYELEMABAGA_SRC: "TfidfSource | None" = None
+
+
+def _bayelemabaga_src() -> TfidfSource:
+    global _BAYELEMABAGA_SRC
+    if _BAYELEMABAGA_SRC is None:
+        for split in ("train", "test", "valid"):
+            # Bayelemabaga est splitte en 3 dossiers. On garde la 1ere paire
+            # existante comme initialisation primaire ; les autres splits sont
+            # concatenes ci-dessous pour reproduire le comportement legacy.
+            base = DATA_DIR / "bayelemabaga" / split
+            if (base / f"{split}.fr").exists():
+                _BAYELEMABAGA_SRC = TfidfSource(
+                    name="bayelemabaga",
+                    fr_path=base / f"{split}.fr",
+                    dyu_path=base / f"{split}.bam",
+                    weight=2,
+                    min_global=3,
+                    min_match_lignes=3,
+                )
+                break
+        if _BAYELEMABAGA_SRC is None:
+            # Aucun split present : TfidfSource avec paths vides → load() sera
+            # un no-op, find() renverra Counter() vide. Comportement equivalent
+            # a l'ancien code (qui ne chargait rien si fichiers absents).
+            _BAYELEMABAGA_SRC = TfidfSource(
+                name="bayelemabaga",
+                fr_path=DATA_DIR / "bayelemabaga" / "train" / "train.fr",
+                dyu_path=DATA_DIR / "bayelemabaga" / "train" / "train.bam",
+                weight=2,
+                min_global=3,
+                min_match_lignes=3,
+            )
+    return _BAYELEMABAGA_SRC
+
+
+def _bayelemabaga_load_all_splits() -> None:
+    """Concatene les 3 splits (train/test/valid) de Bayelemabaga dans la source.
+
+    Comportement legacy : le module original chargait les 3 splits en boucle
+    avant l'introduction de l'abstraction `TfidfSource`. On preserve ce
+    comportement en chargeant les splits additionnels apres `load()`.
+
+    Idempotent (fix review #233 PR 1 MAJOR-1) : le flag `_all_splits_loaded`
+    sur l'instance empeche une 2e concatenation qui doublerait le corpus.
+    Utilise `append_split()` (fix MAJOR-2) plutot qu'un acces direct aux
+    attributs prives pour preserver l'encapsulation.
+    """
+    src = _bayelemabaga_src()
+    if src._all_splits_loaded:
+        return
+    src.load()
+    if src._loaded and len(src._fr) > 0:
+        # 1er split deja charge par load(). Concatener les autres si dispo.
+        deja_charge = src.fr_path.parent.name  # ex: "train"
+        for split in ("train", "test", "valid"):
+            if split == deja_charge:
+                continue
+            fr_f = DATA_DIR / "bayelemabaga" / split / f"{split}.fr"
+            bam_f = DATA_DIR / "bayelemabaga" / split / f"{split}.bam"
+            src.append_split(fr_f, bam_f)
+    src._all_splits_loaded = True
 
 # Caractères phonétiques spécifiques au bambara (absents de l'anglais et du HTML)
 BAMBARA_CHARS = frozenset("ɛɔɲŋɓɗɪʊ")
@@ -62,10 +282,9 @@ STOPWORDS_BAM = {
 _agri_dict: dict = {}          # Dictionnaire agricole validé multi-sources
 _agri_loaded = False
 
-_baye_fr: list = []
-_baye_bam: list = []
-_baye_loaded = False
-_baye_global_freq: Counter = Counter()   # Cache TF-IDF global
+# Note: les globals `_baye_*` ont ete remplaces par l'attribut d'instance de
+# `TfidfSource` (cf. `_BAYELEMABAGA_SRC` plus haut, issue #233 PR 1).
+# Les 2 autres TF-IDF (`_kouman_*`, `_findora_*`) seront migres en PR 2.
 
 _jeli_phrases: list = []
 _jeli_loaded = False
@@ -105,19 +324,13 @@ def _charger_agri_dict():
 
 
 def _charger_bayelemabaga():
-    global _baye_fr, _baye_bam, _baye_loaded
-    if _baye_loaded:
-        return
-    for split in ["train", "test", "valid"]:
-        fr_f = DATA_DIR / "bayelemabaga" / split / f"{split}.fr"
-        bam_f = DATA_DIR / "bayelemabaga" / split / f"{split}.bam"
-        if fr_f.exists() and bam_f.exists():
-            with open(fr_f, encoding="utf-8") as f:
-                _baye_fr.extend(f.readlines())
-            with open(bam_f, encoding="utf-8") as f:
-                _baye_bam.extend(f.readlines())
-    _baye_loaded = True
-    logger.info(f"[VAL] Bayelemabaga: {len(_baye_fr)} paires chargées")
+    """Wrapper de compatibilite (issue #233 PR 1) : delegue a `TfidfSource`.
+
+    L'ancien code chargeait les 3 splits (train/test/valid) en boucle. On
+    reproduit ce comportement via `_bayelemabaga_load_all_splits()` qui
+    concatene les splits dans l'instance.
+    """
+    _bayelemabaga_load_all_splits()
 
 
 def _charger_jeli():
@@ -274,74 +487,26 @@ def _agri_dict_lookup(concept_fr: str) -> list:
 # ─────────────────────────────────────────────
 
 def _bayelemabaga(concept_fr: str) -> Counter:
-    """
-    Approche TF-IDF pour identifier la traduction bambara d'un concept français.
+    """Wrapper de compatibilite (issue #233 PR 1) : delegue a `TfidfSource`.
 
-    Logique :
-      TF    = fréquence du terme dans les lignes BAM où concept_fr apparaît
-      IDF   = fréquence du terme dans TOUT le corpus BAM (normalisée)
-      Ratio = TF / IDF → élevé si le terme est SPÉCIFIQUE à ce concept
+    Anciennement ~69 lignes de logique TF-IDF dupliquees avec `_koumankan`
+    et `_findora`. Migre vers `TfidfSource.find()` generique (cf. classe
+    en haut du fichier). Les 2 autres TF-IDF seront migres en PR 2.
+
+    Particularite Bayelemabaga : les paires sont splittees en train/test/valid.
+    On force la concatenation des 3 splits via `_bayelemabaga_load_all_splits()`
+    avant de deleguer.
+
+    Logique TF-IDF inchangee :
+      TF    = frequence du terme dans les lignes BAM ou concept_fr apparait
+      IDF   = frequence du terme dans TOUT le corpus BAM (normalisee)
+      Ratio = TF / IDF → eleve si le terme est SPECIFIQUE a ce concept
 
     Note : utilise _tokeniser_simple (sans filtre de langue) car les lignes
     BAM de Bayelemabaga sont garanties bambara.
     """
-    global _baye_global_freq
-    _charger_bayelemabaga()
-
-    concept = concept_fr.lower()
-
-    # Variantes pour éviter les faux positifs ("mais" = "but" en français)
-    # On cherche avec un espace/début de mot pour limiter les faux positifs
-    def _match(ligne_fr: str) -> bool:
-        l = ligne_fr.lower()
-        # Chercher le concept comme mot entier (pas comme sous-chaîne de verbe/nom)
-        return bool(re.search(r'\b' + re.escape(concept) + r'\b', l))
-
-    lignes_match = [
-        bam for fr, bam in zip(_baye_fr, _baye_bam)
-        if _match(fr)
-    ]
-
-    # Minimum de 3 lignes pour avoir confiance dans le résultat
-    if len(lignes_match) < 3:
-        return Counter()
-
-    # TF : fréquence dans les lignes matchant (tokenizer SIMPLE — c'est du bambara)
-    tf = Counter()
-    for ligne in lignes_match:
-        tf.update(_tokeniser_simple(ligne))
-
-    # Fréquence globale — calculée une seule fois et mise en cache mémoire
-    if not _baye_global_freq:
-        logger.info("[VAL] Calcul frequence globale Bayelemabaga (une fois)...")
-        for ligne in _baye_bam:
-            _baye_global_freq.update(_tokeniser_simple(ligne))
-        logger.info(f"[VAL] Vocabulaire global: {len(_baye_global_freq)} mots uniques")
-
-    n_match = len(lignes_match)
-    n_total = max(len(_baye_bam), 1)
-
-    # Ratio TF/IDF avec filtres de qualité :
-    #   - min_global = 3  : rejeter les hapax et mots ultra-rares (< 3 fois dans tout le corpus)
-    #   - min_match  = 1  : accepter même si présent dans 1 seule ligne (corpus petits)
-    MIN_GLOBAL = 3
-    MIN_MATCH  = 1
-
-    scores = Counter()
-    for terme, freq_match in tf.items():
-        freq_global = _baye_global_freq.get(terme, 0)
-
-        if freq_global < MIN_GLOBAL:       # trop rare → probablement du jargon
-            continue
-        if freq_match < MIN_MATCH:         # apparaît dans 1 seule ligne → peu fiable
-            continue
-
-        tf_rate  = freq_match / n_match
-        idf_rate = freq_global / n_total
-        ratio = tf_rate / idf_rate
-        scores[terme] = max(1, round(ratio * 100))
-
-    return scores
+    _bayelemabaga_load_all_splits()
+    return _bayelemabaga_src().find(concept_fr)
 
 
 # ─────────────────────────────────────────────
