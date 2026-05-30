@@ -386,3 +386,80 @@ def test_bayelemabaga_src_fallback_sans_splits(tmp_path, monkeypatch):
     assert "train" in str(src.fr_path)
     # find() doit fonctionner sans crash (load() = no-op car fichiers absents)
     assert src.find("riz") == Counter()
+
+
+# ─────────────────────────────────────────────
+# Tests Koumankan + Findora (issue #233 PR 2)
+# ─────────────────────────────────────────────
+
+
+def test_kouman_src_cree_instance_avec_bons_parametres(tmp_path, monkeypatch):
+    """`_kouman_src()` doit creer une TfidfSource avec les bons parametres
+    legacy (weight=3, min_global=2, min_match_lignes=2)."""
+    monkeypatch.setattr(_mod, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(_mod, "_KOUMAN_SRC", None)
+
+    src = _mod._kouman_src()
+    assert isinstance(src, _mod.TfidfSource)
+    assert src.name == "koumankan"
+    assert src.weight == 3
+    assert src.min_global == 2
+    assert src.min_match_lignes == 2
+    # Path attendu : DATA_DIR/koumankan/koumankan.{fr,dyu}
+    assert "koumankan" in str(src.fr_path)
+
+
+def test_koumankan_wrapper_appelle_tfidf_source(tmp_path, monkeypatch):
+    """Le wrapper `_koumankan()` doit deleguer a `TfidfSource.find()`."""
+    # Setup arborescence Koumankan reelle dans tmp_path
+    kdir = tmp_path / "koumankan"
+    kdir.mkdir()
+    (kdir / "koumankan.fr").write_text(
+        "le riz pousse\nje mange du riz\nriz est bon\n", encoding="utf-8"
+    )
+    (kdir / "koumankan.dyu").write_text(
+        "malo bena\nmalo dun\nmalo ka di\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(_mod, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(_mod, "_KOUMAN_SRC", None)
+
+    result = _mod._koumankan("riz")
+    assert isinstance(result, Counter)
+    assert "malo" in result, (
+        f"_koumankan doit retourner les scores de TfidfSource. Counter: {dict(result)}"
+    )
+
+
+def test_findora_src_cree_instance_avec_bons_parametres(tmp_path, monkeypatch):
+    """`_findora_src()` doit creer une TfidfSource avec les bons parametres
+    legacy (weight=3, min_global=2, min_match_lignes=2)."""
+    monkeypatch.setattr(_mod, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(_mod, "_FINDORA_SRC", None)
+
+    src = _mod._findora_src()
+    assert isinstance(src, _mod.TfidfSource)
+    assert src.name == "findora"
+    assert src.weight == 3
+    assert src.min_global == 2
+    assert src.min_match_lignes == 2
+    assert "findora" in str(src.fr_path)
+
+
+def test_findora_wrapper_appelle_tfidf_source(tmp_path, monkeypatch):
+    """Le wrapper `_findora()` doit deleguer a `TfidfSource.find()`."""
+    fdir = tmp_path / "findora"
+    fdir.mkdir()
+    (fdir / "findora.fr").write_text(
+        "achete du mais\nle mais pousse\nmais est cher\n", encoding="utf-8"
+    )
+    (fdir / "findora.dyu").write_text(
+        "kaba san\nkaba bena\nkaba ka da\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(_mod, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(_mod, "_FINDORA_SRC", None)
+
+    result = _mod._findora("mais")
+    assert isinstance(result, Counter)
+    assert "kaba" in result, (
+        f"_findora doit retourner les scores de TfidfSource. Counter: {dict(result)}"
+    )
