@@ -20,6 +20,7 @@ du projet. Chaque décision passe par cet index et par le workflow du skill
 | [ADR-0010](0010-migration-monorepo.md) | Migration vers monorepo | **proposé** | 2026-04-23 | Structure repo actuelle (3 branches orphelines) → monorepo standard avec sous-dossiers. Exécution planifiée après stabilisation Sprint 2. |
 | [ADR-0011](0011-strategie-prechargement-ml.md) | Stratégie de préchargement des modèles ML | **complété** | 2026-05-08 / 2026-05-10 | Lazy-load ciblé NLLB + Whisper, eager pour NeMo + TTS. Toutes phases livrées (PR #130-#133). Métriques mesurées : RSS boot 1503 MB / VMS boot 2793 MB (cibles atteintes). Bug `mkl_malloc` 2026-05-07 résolu. |
 | [ADR-0012](0012-securite-whatsapp-server.md) | Sécurité whatsapp-server (CORS + rate limit + npm audit) | **complété** | 2026-05-10 | Sprint A du programme dette technique : 0 vulnérabilité npm (vs 12 avant), CORS strict via `ALLOWED_ORIGINS`, rate limiting 60 req/min/IP. PRs #141, #142, #143. |
+| [ADR-0013](0013-ssh-deploy-hardening-options.md) | Durcissement déploiement SSH (3 options) | **proposé** | 2026-05-30 | Analyse 3 options pour remplacer la clé SSH statique CI (BLOCKER B1-SEC issue #221) : self-hosted runner, Tailscale SSH, Scaleway OIDC. Recommandation : **Option B (Tailscale)** — meilleur ratio coût/bénéfice, audit logs centralisés synergiques avec ARTCI (#215). En attente validation Ruben. |
 
 ## ADRs à rédiger (roadmap, issus de [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md))
 
