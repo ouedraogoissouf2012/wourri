@@ -5,8 +5,11 @@ from pydantic_settings import BaseSettings
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
+import logging
 import os
 import sys
+
+logger = logging.getLogger(__name__)
 
 
 def _read_file_secret(name: str) -> str:
@@ -179,10 +182,9 @@ def get_settings() -> Settings:
     # En production : forcer debug=False et exiger API_SECRET_KEY
     if s.is_production:
         if not s.api_secret_key:
-            print(
-                "[SECURITY] ERREUR : ENV=production mais API_SECRET_KEY est vide.\n"
-                "Configurez API_SECRET_KEY dans .env avant de démarrer en production.",
-                file=sys.stderr,
+            logger.critical(
+                "[SECURITY] ERREUR : ENV=production mais API_SECRET_KEY est vide. "
+                "Configurez API_SECRET_KEY dans .env avant de démarrer en production."
             )
             sys.exit(1)
         # Forcer debug=False même si le .env dit debug=True

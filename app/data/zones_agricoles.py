@@ -2,6 +2,9 @@
 WOURI - Zones agricoles Côte d'Ivoire
 Mapping: région administrative CI → zone agricole → cultures typiques
 """
+import logging
+
+logger = logging.getLogger(__name__)
 
 # ============================================================
 # ZONES AGRICOLES (4 grandes zones CI)
@@ -107,7 +110,7 @@ def get_zone_for_city(city: str) -> str:
     city_data = IVORIAN_CITIES.get(city, {})
     region = city_data.get("region", "")
     zone = REGION_TO_ZONE.get(region, "ZONE_CENTRE")
-    print(f"[ZONE] {city} → région '{region}' → {zone}")
+    logger.debug("[ZONE] %s → région '%s' → %s", city, region, zone)
     return zone
 
 
