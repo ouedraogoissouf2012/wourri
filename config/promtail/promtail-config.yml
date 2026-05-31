@@ -1,0 +1,95 @@
+# Wourri — Configuration Promtail STAGING (issue #202).
+# ──────────────────────────────────────────────────────────
+#
+# Promtail 3.3.2 — agent de collecte de logs. Lit les fichiers de logs
+# JSON du daemon Docker (driver json-file configure sur chaque service
+# dans docker-compose.staging.yml) et les push vers Loki avec des labels
+# {job, container_name, ...}.
+#
+# Filtres :
+#   - On collecte UNIQUEMENT les containers prefixes `wourri_*_staging`
+#     (eviter de polluer Loki avec d'autres containers Docker sur la VM
+#     si l'operateur en a fait tourner d'autres)
+#   - On filtre les logs ts (timestamp + niveau) au format JSON Docker
+#
+# Pour debug : `docker compose logs promtail | grep error`
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  # Promtail memorise la position de lecture dans chaque fichier de log
+  # pour reprendre apres redemarrage sans reploguer les anciennes lignes.
+  filename: /tmp/promtail/positions.yaml
+
+clients:
+  # Push vers Loki interne (DNS service Docker → resolution automatique).
+  - url: http://loki:3100/loki/api/v1/push
+    # Backoff exponentiel en cas d'erreur Loki (down, surcharge) — evite
+    # de noyer Loki au redemarrage si beaucoup de logs accumules.
+    backoff_config:
+      min_period: 500ms
+      max_period: 5m
+      max_retries: 10
+
+scrape_configs:
+  # ─────────────────────────────────────────────
+  # Containers Docker — auto-discovery via socket Docker
+  # ─────────────────────────────────────────────
+  - job_name: wourri-docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 15s
+        # Filtre : ne scrape QUE les containers wourri_*_staging
+        filters:
+          - name: name
+            values: ["wourri_.*_staging"]
+    relabel_configs:
+      # Extraire le nom du container comme label `container_name`
+      - source_labels: ["__meta_docker_container_name"]
+        regex: "/(.*)"
+        target_label: container_name
+      # Job = nom du service Docker Compose (extrait du container_name)
+      # Ex: wourri_api_staging → job=wouri-api
+      - source_labels: ["__meta_docker_container_name"]
+        regex: "/wourri_([a-z_]+)_staging"
+        target_label: job
+        replacement: "$1"
+      # Stack = "wourri-staging" (utile si on ajoute d'autres stacks futur)
+      - target_label: stack
+        replacement: "wourri-staging"
+      # Source path Docker logs (chemin canonique json-file driver)
+      - source_labels: ["__meta_docker_container_id"]
+        target_label: __path__
+        replacement: "/var/lib/docker/containers/$1/$1-json.log"
+
+    # Pipeline de parsing : Docker json-file driver ecrit du JSON avec
+    # {log, stream, time}. On extrait `log` (le message reel) et `time`
+    # (timestamp ISO 8601) pour les passer a Loki avec le bon timestamp.
+    pipeline_stages:
+      - json:
+          expressions:
+            output: log
+            stream: stream
+            timestamp: time
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      - labels:
+          stream:
+      - output:
+          source: output
+
+  # ─────────────────────────────────────────────
+  # System logs (optionnel — syslog VM pour debug systeme)
+  # Active si on veut correler les erreurs containers avec les events systeme.
+  # Desactive par defaut pour limiter le volume.
+  # ─────────────────────────────────────────────
+  # - job_name: syslog
+  #   static_configs:
+  #     - targets: ["localhost"]
+  #       labels:
+  #         job: syslog
+  #         __path__: /var/log/syslog

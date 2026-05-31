@@ -11,12 +11,14 @@ env/
 # Sprint I.c.1 review ARCH N1 : exclure tous les .env d'environnement.
 # Sans ces patterns, un opérateur peut accidentellement commiter .env.prod
 # (secrets POSTGRES_PASSWORD + WOURI_API_KEY) → fuite ARTCI critique.
-# Whitelist explicite pour .env.example et .env.prod.template (publics).
+# Whitelist explicite pour les templates publics (.env.example, .env.prod.template,
+# .env.staging.template). Les vrais .env.prod / .env.staging restent ignores.
 .env.prod
 .env.staging
 .env.*
 !.env.example
 !.env.prod.template
+!.env.staging.template
 *.egg-info/
 dist/
 build/
