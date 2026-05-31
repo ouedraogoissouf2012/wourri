@@ -395,3 +395,133 @@ describe("OnboardingMachine — STEPS.WAITING_FEEDBACK", () => {
         assert.strictEqual(axios.calls[0].opts.headers["X-API-Key"], "dyn");
     });
 });
+
+
+// ─────────────────────────────────────────────
+// Fix bug #260 — substring collision feedback (word boundary regex)
+//
+// Avant fix : ["bon", "ɲuman", ...].some(k => msgLower.includes(k))
+//   - "pas bon" matchait "bon" thumbsUp en premier → classe POSITIF (bug)
+//   - "te ɲuman" matchait "ɲuman" thumbsUp en premier → classe POSITIF (bug)
+//
+// Apres fix : regex \b word boundary + thumbsDown teste EN PREMIER.
+// Ces 4 tests garantissent le comportement correct + anti-regression
+// sur les cas simples.
+// ─────────────────────────────────────────────
+
+describe("OnboardingMachine — fix bug #260 substring collision feedback", () => {
+    test("[fix #260] 'te ɲuman' (bambara negation) → endpoint negatif", async () => {
+        const sock = makeSockMock();
+        const axios = makeAxiosMock([{ status: 200, data: {} }]);
+        const { userPrefs } = makeUserPrefs();
+        const m = new OnboardingMachine({
+            userPrefs,
+            axios,
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({ "X-API-Key": "test" }),
+            randomDelay: noDelay,
+            sock,
+            logger: silentLogger,
+        });
+        const prefs = {
+            step: STEPS.WAITING_FEEDBACK,
+            pendingFeedback: { intent: "CULTURE_MAIS" },
+        };
+
+        const result = await m.processStep(prefs, "te ɲuman", "u1", {
+            isAudioMessage: false,
+            isVoiceInput: false,
+        });
+        assert.strictEqual(result.handled, true);
+        assert.strictEqual(axios.calls.length, 1);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/negatif$/);
+    });
+
+    test("[fix #260] 'pas bon' (FR negation 2 mots) → endpoint negatif", async () => {
+        const sock = makeSockMock();
+        const axios = makeAxiosMock([{ status: 200, data: {} }]);
+        const { userPrefs } = makeUserPrefs();
+        const m = new OnboardingMachine({
+            userPrefs,
+            axios,
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({ "X-API-Key": "test" }),
+            randomDelay: noDelay,
+            sock,
+            logger: silentLogger,
+        });
+        const prefs = {
+            step: STEPS.WAITING_FEEDBACK,
+            pendingFeedback: { intent: "CULTURE_RIZ" },
+        };
+
+        const result = await m.processStep(prefs, "C'est pas bon du tout", "u1", {
+            isAudioMessage: false,
+            isVoiceInput: false,
+        });
+        assert.strictEqual(result.handled, true);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/negatif$/);
+    });
+
+    test("[fix #260 anti-reg] 'je trouve ça bien' (FR positif simple) → endpoint positif", async () => {
+        // Verifie que le fix word boundary n'a PAS casse le cas simple positif.
+        const sock = makeSockMock();
+        const axios = makeAxiosMock([{ status: 200, data: {} }]);
+        const { userPrefs } = makeUserPrefs();
+        const m = new OnboardingMachine({
+            userPrefs,
+            axios,
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({ "X-API-Key": "test" }),
+            randomDelay: noDelay,
+            sock,
+            logger: silentLogger,
+        });
+        const prefs = {
+            step: STEPS.WAITING_FEEDBACK,
+            pendingFeedback: { intent: "X" },
+        };
+
+        const result = await m.processStep(prefs, "je trouve ça bien", "u1", {
+            isAudioMessage: false,
+            isVoiceInput: false,
+        });
+        assert.strictEqual(result.handled, true);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/positif$/);
+    });
+
+    test("[fix #260 anti-reg] 'bonjour' ne matche PAS thumbsUp (collision 'bon' bloquee)", async () => {
+        // Avant fix : "bonjour" contenait "bon" → matchait thumbsUp.
+        // Apres fix : word boundary `\b(?:bon)\b` rejette "bonjour" (continuation).
+        // Resultat attendu : message invalide → re-demande 'jaabi 👍 wala 👎'.
+        const sock = makeSockMock();
+        const axios = makeAxiosMock();
+        const { userPrefs } = makeUserPrefs();
+        const m = new OnboardingMachine({
+            userPrefs,
+            axios,
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({ "X-API-Key": "test" }),
+            randomDelay: noDelay,
+            sock,
+            logger: silentLogger,
+        });
+        const prefs = {
+            step: STEPS.WAITING_FEEDBACK,
+            pendingFeedback: { intent: "X" },
+        };
+
+        const result = await m.processStep(prefs, "bonjour", "u1", {
+            isAudioMessage: false,
+            isVoiceInput: false,
+        });
+        assert.strictEqual(result.handled, true);
+        // Aucun POST API (message invalide, pas de feedback envoye)
+        assert.strictEqual(axios.calls.length, 0);
+        // Sock a envoye la re-demande
+        assert.ok(
+            sock.sent.some(s => /jaabi|👍|👎/.test(s.msg.text)),
+            "Message re-demande envoye"
+        );
+    });
+});
