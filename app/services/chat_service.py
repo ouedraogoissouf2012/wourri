@@ -14,8 +14,10 @@ from typing import Optional
 
 from app.models.schemas import Language
 from app.config import get_settings
-from app.data.cities import IVORIAN_CITIES
 from app.data.calendrier_agricole import get_conseil_saisonnier
+# Note (PR 2/5 refactor #204) : `IVORIAN_CITIES` n'est plus importe ici —
+# la detection de ville est deleguee a `app/services/chat/city_detector.py`
+# qui importe IVORIAN_CITIES directement depuis app.data.cities.
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -147,16 +149,17 @@ class ChatService:
 
     # ------------------------------------------------------------------
     # Étape 1 : Détection de ville
+    #
+    # Refactor P2-09 PR 2/5 (Sprint L #204) : logique extraite vers
+    # app/services/chat/city_detector.py (module pur). La methode
+    # _detect_city devient un wrapper 1-line pour preserver l'API
+    # publique de ChatService (utilisee par process() ligne 102).
     # ------------------------------------------------------------------
 
     def _detect_city(self, message: str) -> Optional[str]:
-        """Détecte une ville ivoirienne dans le message."""
-        msg_lower = message.lower()
-        for city_name in sorted(IVORIAN_CITIES.keys(), key=len, reverse=True):
-            pattern = r'\b' + re.escape(city_name.lower()) + r'\b'
-            if re.search(pattern, msg_lower):
-                return city_name
-        return None
+        """Wrapper compat (PR 2/5) : delegue a city_detector.detect_city()."""
+        from app.services.chat.city_detector import detect_city
+        return detect_city(message)
 
     # ------------------------------------------------------------------
     # Étape 2 : NLU preprocessing
