@@ -118,7 +118,17 @@ def _format_vector(vec) -> str:
     Dupliqué intentionnellement de `scripts/import_corpus_ivr.py:_format_vector`
     (2 consommateurs < seuil 4 du projet). Évite un couplage entre le script
     one-shot d'import et ce module de service (le script manipule `sys.path`).
+
+    Issue #184 : defense en profondeur. Si un modele downgrade ou un mock test
+    produit une dimension autre que `_EMBEDDING_DIM`, on leve plutot que
+    d'inserer un vecteur invalide qui produirait une erreur SQL opaque cote
+    pgvector. Symetrique avec l'assertion defensive de
+    `alembic/versions/0001_create_corpus_schema.py:47` (FIX-4 Phase B).
     """
+    if len(vec) != _EMBEDDING_DIM:
+        raise ValueError(
+            f"Embedding dim mismatch: {len(vec)} != {_EMBEDDING_DIM}"
+        )
     return "[" + ",".join(f"{float(x):.7f}" for x in vec) + "]"
 
 
