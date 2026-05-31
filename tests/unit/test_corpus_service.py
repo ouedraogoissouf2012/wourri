@@ -177,13 +177,37 @@ class TestGetCurrentSeason:
 
 class TestFormatVector:
     def test_serialize_list_of_floats(self):
-        out = corpus_service._format_vector([0.1, 0.2, 0.3])
+        # Fix #184 : `_format_vector` exige `len(vec) == _EMBEDDING_DIM`.
+        # On patche la constante a 3 pour preserver la valeur pedagogique
+        # du test (assertion exacte sur la string de sortie).
+        with patch.object(corpus_service, "_EMBEDDING_DIM", 3):
+            out = corpus_service._format_vector([0.1, 0.2, 0.3])
         assert out == "[0.1000000,0.2000000,0.3000000]"
 
     def test_serialize_numpy_array(self):
         np = pytest.importorskip("numpy")
-        out = corpus_service._format_vector(np.array([0.5, -0.5]))
+        with patch.object(corpus_service, "_EMBEDDING_DIM", 2):
+            out = corpus_service._format_vector(np.array([0.5, -0.5]))
         assert out == "[0.5000000,-0.5000000]"
+
+    def test_serialize_full_384_dim_vector(self):
+        """Cas reel : vecteur de dimension prod (384). Verifie le prefixe."""
+        vec = [0.0] * 384
+        out = corpus_service._format_vector(vec)
+        assert out.startswith("[0.0000000,")
+        assert out.endswith("]")
+        # 384 valeurs separees par 383 virgules
+        assert out.count(",") == 383
+
+    def test_raises_when_dim_mismatch(self):
+        """Fix #184 : len(vec) != 384 doit lever ValueError clair."""
+        with pytest.raises(ValueError, match="Embedding dim mismatch.*100.*384"):
+            corpus_service._format_vector([0.0] * 100)
+
+    def test_raises_when_empty_vector(self):
+        """Fix #184 : un vecteur vide doit aussi etre rejete (defense profonde)."""
+        with pytest.raises(ValueError, match="Embedding dim mismatch.*0.*384"):
+            corpus_service._format_vector([])
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -329,3 +353,39 @@ class TestInitialiserVdb:
         ):
             corpus_service._get_engine.cache_clear()
             corpus_service.initialiser_vdb()  # ne doit pas lever
+
+    def test_happy_path_counts_entries_and_preloads_model(self):
+        """Issue #183 : happy path engine OK + count + precharge modele (R3).
+
+        Verifie que :
+        1. _get_engine() est appele et la connexion ouverte
+        2. SELECT count(*) FROM corpus_entries est execute
+        3. _get_model() est appele (precharge R3 mitigation double-charge memoire
+           en mode dual avec Chroma simultane)
+        """
+        mock_result = MagicMock()
+        mock_result.scalar.return_value = 162
+
+        mock_conn = MagicMock()
+        mock_conn.execute.return_value = mock_result
+        mock_conn.__enter__.return_value = mock_conn
+        mock_conn.__exit__.return_value = False
+
+        mock_engine = MagicMock()
+        mock_engine.connect.return_value = mock_conn
+
+        mock_model = MagicMock()
+
+        corpus_service._get_engine.cache_clear()
+        corpus_service._get_model.cache_clear()
+        with patch.object(corpus_service, "_get_engine", return_value=mock_engine), \
+             patch.object(corpus_service, "_get_model", return_value=mock_model) as mock_get_model:
+            corpus_service.initialiser_vdb()
+
+        # R3 mitigation : modele precharge
+        mock_get_model.assert_called_once()
+        # SELECT count(*) execute
+        mock_conn.execute.assert_called_once()
+        sql_arg = mock_conn.execute.call_args[0][0]
+        assert "count" in str(sql_arg).lower()
+        assert "corpus_entries" in str(sql_arg).lower()
