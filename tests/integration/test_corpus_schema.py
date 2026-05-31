@@ -55,19 +55,36 @@ def engine():
 
 @pytest.fixture(scope="module")
 def imported_corpus(engine):
-    """Garantit que le corpus est importé (idempotence)."""
+    """Garantit que le corpus est importé (idempotence).
+
+    Fix #179 §3 : timeout abaisse de 600s a 240s. Le script importe 162
+    entrees + calcule 162 embeddings 384-dim. Sur CI Linux : ~30-60s.
+    Sur dev Windows : ~120-180s observe (subprocess Python complet + warmup
+    torch CPU). 240s laisse une marge tout en evitant l'attente 10 min de
+    l'ancien 600s si le modele est absent du cache.
+    """
     script = _PROJECT_ROOT / "scripts" / "import_corpus_ivr.py"
     env = os.environ.copy()
     env["POSTGRES_URL"] = _URL
-    result = subprocess.run(
-        [sys.executable, str(script)],
-        cwd=str(_PROJECT_ROOT),
-        env=env,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=600,
-    )
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script)],
+            cwd=str(_PROJECT_ROOT),
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=240,
+        )
+    except subprocess.TimeoutExpired as e:
+        pytest.fail(
+            f"import_corpus_ivr.py a dépassé 240s (#179 §3). "
+            f"Cause probable : modèle SentenceTransformer absent du cache "
+            f"local (modeles_manuels/) → tentative de download HF qui peut "
+            f"durer plusieurs minutes. Verifier que "
+            f"`modeles_manuels/paraphrase-multilingual-MiniLM-L12-v2/` existe.\n"
+            f"Exception: {e}"
+        )
     assert result.returncode == 0, (
         f"import_corpus_ivr.py a échoué :\nstdout:\n{result.stdout}\n"
         f"stderr:\n{result.stderr}"
@@ -141,6 +158,96 @@ class TestSchemaIntegrity:
         }
         missing = expected - names
         assert not missing, f"Index manquants : {missing}"
+
+    def test_score_validation_check_rejects_out_of_range(self, engine):
+        """Fix #178 : la CHECK constraint chk_score_validation_range refuse
+        toute valeur hors [0.0, 1.0].
+
+        Migration 0003 ADD CONSTRAINT alignement ADR-0008 §Phase B.
+        """
+        from sqlalchemy import text
+        from sqlalchemy.exc import IntegrityError
+
+        vec = "[" + ",".join(["0"] * 384) + "]"
+
+        with engine.connect() as conn:
+            trans = conn.begin()
+            try:
+                with pytest.raises(IntegrityError) as exc_info:
+                    conn.execute(
+                        text(
+                            "INSERT INTO corpus_entries "
+                            "(id, intent, reponse_bambara, document_text, "
+                            " embedding, score_validation) "
+                            "VALUES ('test_chk_score_001', 'TEST', 'x', 'x', "
+                            "        CAST(:vec AS vector), 1.5)"
+                        ),
+                        {"vec": vec},
+                    )
+                assert "chk_score_validation_range" in str(exc_info.value), (
+                    f"L'erreur ne mentionne pas la contrainte: {exc_info.value}"
+                )
+            finally:
+                trans.rollback()
+
+    def test_score_validation_check_rejects_negative(self, engine):
+        """Fix #178 : la borne basse 0.0 est aussi rejetee (-0.1 → IntegrityError)."""
+        from sqlalchemy import text
+        from sqlalchemy.exc import IntegrityError
+
+        vec = "[" + ",".join(["0"] * 384) + "]"
+
+        with engine.connect() as conn:
+            trans = conn.begin()
+            try:
+                with pytest.raises(IntegrityError):
+                    conn.execute(
+                        text(
+                            "INSERT INTO corpus_entries "
+                            "(id, intent, reponse_bambara, document_text, "
+                            " embedding, score_validation) "
+                            "VALUES ('test_chk_score_002', 'TEST', 'x', 'x', "
+                            "        CAST(:vec AS vector), -0.1)"
+                        ),
+                        {"vec": vec},
+                    )
+            finally:
+                trans.rollback()
+
+    def test_reponse_fr_accepts_null(self, engine):
+        """Fix #178 : reponse_fr est desormais nullable (alignement ADR §Phase B).
+
+        Migration 0003 DROP NOT NULL. Avant : NOT NULL DEFAULT ''. Apres :
+        nullable, ce qui permet de distinguer NULL (information manquante)
+        d'une chaine vide (information presente mais vide).
+        """
+        from sqlalchemy import text
+
+        vec = "[" + ",".join(["0"] * 384) + "]"
+
+        with engine.connect() as conn:
+            trans = conn.begin()
+            try:
+                conn.execute(
+                    text(
+                        "INSERT INTO corpus_entries "
+                        "(id, intent, reponse_bambara, reponse_fr, "
+                        " document_text, embedding) "
+                        "VALUES ('test_null_fr_001', 'TEST', 'x', NULL, "
+                        "        'x', CAST(:vec AS vector))"
+                    ),
+                    {"vec": vec},
+                )
+                row = conn.execute(
+                    text(
+                        "SELECT reponse_fr FROM corpus_entries "
+                        "WHERE id = 'test_null_fr_001'"
+                    )
+                ).first()
+                assert row is not None
+                assert row[0] is None, f"reponse_fr aurait du etre NULL, got {row[0]!r}"
+            finally:
+                trans.rollback()
 
     def test_fk_phrases_to_entries_cascade(self, engine):
         from sqlalchemy import text
@@ -271,6 +378,96 @@ class TestVectorSearch:
                 )
             ).scalar()
         assert count is not None and count >= 1
+
+    def test_array_search_by_culture_uses_gin_index(self, imported_corpus, engine):
+        """Fix #179 §1 : prouve que l'index GIN est *reellement* utilise.
+
+        Avec 162 lignes, le planner peut preferer un seqscan (moins cher en
+        cold cache). On force `enable_seqscan=off` et on inspecte le plan via
+        `EXPLAIN (FORMAT JSON)` : un noeud `Bitmap Index Scan` doit apparaitre.
+        """
+        from sqlalchemy import text
+        import json
+
+        with engine.connect() as conn:
+            conn.execute(text("SET LOCAL enable_seqscan = off"))
+            plan = conn.execute(
+                text(
+                    "EXPLAIN (FORMAT JSON) "
+                    "SELECT id FROM corpus_entries "
+                    "WHERE cultures && ARRAY['*']::text[]"
+                )
+            ).scalar()
+
+        # plan est une string JSON ou deja une list (selon driver)
+        if isinstance(plan, str):
+            plan = json.loads(plan)
+        plan_str = json.dumps(plan)
+        # Bitmap Index Scan = signature GIN/B-tree utilise
+        assert "Bitmap Index Scan" in plan_str or "Index Scan" in plan_str, (
+            f"GIN index non utilise. Plan complet:\n{plan_str}"
+        )
+        # Verification supplementaire : index name doit etre dans le plan
+        assert "ix_corpus_entries_cultures" in plan_str, (
+            f"L'index ix_corpus_entries_cultures n'apparait pas dans le plan:\n{plan_str}"
+        )
+
+    def test_ivfflat_search_uses_index(self, imported_corpus, engine):
+        """Fix #179 §1 (variante ivfflat) : prouve que ivfflat est utilise.
+
+        Avec 162 lignes et `lists=10`, le seuil pgvector (rows >= lists*3 = 30)
+        est largement franchi → ivfflat devrait etre choisi pour ORDER BY <=>.
+        """
+        from sqlalchemy import text
+        import json
+
+        # Vecteur arbitraire pour la recherche (384 zeros)
+        vec = "[" + ",".join(["0"] * 384) + "]"
+
+        with engine.connect() as conn:
+            conn.execute(text("SET LOCAL enable_seqscan = off"))
+            plan = conn.execute(
+                text(
+                    "EXPLAIN (FORMAT JSON) "
+                    "SELECT id FROM corpus_entries "
+                    "ORDER BY embedding <=> CAST(:vec AS vector) LIMIT 5"
+                ),
+                {"vec": vec},
+            ).scalar()
+
+        if isinstance(plan, str):
+            plan = json.loads(plan)
+        plan_str = json.dumps(plan)
+        assert "ix_corpus_entries_embedding_ivfflat" in plan_str, (
+            f"L'index ivfflat n'apparait pas dans le plan:\n{plan_str}"
+        )
+
+    def test_array_columns_are_text_array_type(self, engine):
+        """Fix #179 §2 : verrouille que cultures/conditions/tags sont bien TEXT[].
+
+        Si une migration future modifie ces colonnes en JSONB, le code corpus
+        casse silencieusement (operateur `&&` n'existe pas sur JSONB). Ce test
+        garantit que la regression sera detectee.
+        """
+        from sqlalchemy import text
+
+        with engine.connect() as conn:
+            rows = conn.execute(
+                text(
+                    "SELECT attname, format_type(atttypid, atttypmod) "
+                    "FROM pg_attribute "
+                    "WHERE attrelid = 'public.corpus_entries'::regclass "
+                    "  AND attname IN ('cultures','conditions','tags') "
+                    "ORDER BY attname"
+                )
+            ).all()
+
+        types_by_name = {r[0]: r[1] for r in rows}
+        assert types_by_name == {
+            "conditions": "text[]",
+            "cultures": "text[]",
+            "tags": "text[]",
+        }, f"Types divergents: {types_by_name}"
 
 
 # ─────────────────────────────────────────────────────────────────────────
