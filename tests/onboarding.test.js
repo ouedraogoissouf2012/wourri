@@ -525,3 +525,111 @@ describe("OnboardingMachine — fix bug #260 substring collision feedback", () =
         );
     });
 });
+
+
+// ─────────────────────────────────────────────
+// Edge cases coverage — followup session 2026-05-30
+// Note : 2 tests "te ɲuman" et "pas bon" → endpoint negatif deja
+// inclus dans PR #264 (fix bug #260). Ce bloc ajoute 6 tests
+// complementaires sur d'autres branches non couvertes.
+// ─────────────────────────────────────────────
+
+describe("OnboardingMachine — edge cases coverage (followup)", () => {
+    test("processStep : step inconnu (typo) → { handled: null } pass-through defensif", async () => {
+        const sock = makeSockMock();
+        const m = makeMachine({ sock });
+        const prefs = { step: "TYPO_INEXISTANT_STEP", language: "french" };
+
+        const result = await m.processStep(prefs, "hello", "u1", {
+            isAudioMessage: false,
+            isVoiceInput: false,
+        });
+        assert.strictEqual(result.handled, null);
+        assert.strictEqual(sock.sent.length, 0);
+    });
+
+    test("_handleWaitingLanguage : input '  1  ' (avec espaces) → trim ok → french", async () => {
+        const sock = makeSockMock();
+        const m = makeMachine({ sock });
+        const prefs = {
+            step: STEPS.WAITING_LANGUAGE,
+            city: "Abidjan",
+            pendingQuestion: null,
+        };
+
+        const result = await m.processStep(prefs, "  1  ", "u1", {
+            isAudioMessage: false,
+            isVoiceInput: false,
+        });
+        assert.strictEqual(result.handled, true);
+        assert.strictEqual(prefs.language, "french");
+        assert.strictEqual(prefs.step, STEPS.COMPLETE);
+    });
+
+    test("_handleWaitingFeedback : 'mauvais' (FR negatif sans collision) → endpoint negatif", async () => {
+        const sock = makeSockMock();
+        const axios = makeAxiosMock([{ status: 200, data: {} }]);
+        const { userPrefs } = makeUserPrefs();
+        const m = new OnboardingMachine({
+            userPrefs,
+            axios,
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({ "X-API-Key": "test" }),
+            randomDelay: noDelay,
+            sock,
+            logger: silentLogger,
+        });
+        const prefs = {
+            step: STEPS.WAITING_FEEDBACK,
+            pendingFeedback: { intent: "X" },
+        };
+
+        const result = await m.processStep(prefs, "C'est mauvais", "u1", {
+            isAudioMessage: false,
+            isVoiceInput: false,
+        });
+        assert.strictEqual(result.handled, true);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/negatif$/);
+    });
+
+    test("_handleWaitingFeedback : 'super' (FR positif) → endpoint positif", async () => {
+        const sock = makeSockMock();
+        const axios = makeAxiosMock([{ status: 200, data: {} }]);
+        const { userPrefs } = makeUserPrefs();
+        const m = new OnboardingMachine({
+            userPrefs,
+            axios,
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({ "X-API-Key": "test" }),
+            randomDelay: noDelay,
+            sock,
+            logger: silentLogger,
+        });
+        const prefs = {
+            step: STEPS.WAITING_FEEDBACK,
+            pendingFeedback: { intent: "X" },
+        };
+
+        const result = await m.processStep(prefs, "Super merci !", "u1", {
+            isAudioMessage: false,
+            isVoiceInput: false,
+        });
+        assert.strictEqual(result.handled, true);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/positif$/);
+    });
+
+    test("_handleNew : messageText vide → pendingQuestion='' + WELCOME envoye sans crash", async () => {
+        const sock = makeSockMock();
+        const m = makeMachine({ sock });
+        const prefs = { step: STEPS.NEW };
+
+        const result = await m.processStep(prefs, "", "u1", {
+            isAudioMessage: false,
+            isVoiceInput: false,
+        });
+        assert.strictEqual(result.handled, true);
+        assert.strictEqual(prefs.step, STEPS.WAITING_CITY);
+        assert.strictEqual(prefs.pendingQuestion, "");
+        assert.strictEqual(sock.sent.length, 1);
+    });
+});
