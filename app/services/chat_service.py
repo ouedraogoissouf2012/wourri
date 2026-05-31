@@ -208,7 +208,10 @@ class ChatService:
         return await search_ivr_by_concept(concepts)
 
     # ------------------------------------------------------------------
-    # Étape 5 : Fallback DeepSeek (dioula)
+    # Étapes 5-6 : Fallback DeepSeek (PR 5/5 refactor P2-09 Sprint L #204)
+    #
+    # 2 méthodes DeepSeek extraites vers app/services/chat/deepseek_router.py
+    # (~105 lignes module pur). Wrappers 1-line preservent l'API publique.
     # ------------------------------------------------------------------
 
     async def _try_deepseek_dioula(
@@ -220,38 +223,11 @@ class ChatService:
         language: Language,
         user_id: Optional[str],
     ) -> ChatResult:
-        """Fallback DeepSeek pour le dioula : réponse FR → traduction → TTS."""
-        from app.services.deepseek import chat_with_deepseek
-        from app.services.tts_dioula import synthesize_dioula
-
-        logger.info("[ChatService] DeepSeek fallback (intent=%s)", nlu.intent)
-
-        deepseek_response = await chat_with_deepseek(
-            message=nlu.message_for_deepseek,
-            weather_data=weather_data,
-            language=Language.DIOULA,
-            user_id=user_id,
+        """Wrapper compat (PR 5/5) : delegue a deepseek_router.try_deepseek_dioula()."""
+        from app.services.chat.deepseek_router import try_deepseek_dioula
+        return await try_deepseek_dioula(
+            nlu, weather_data, city, include_audio, language, user_id,
         )
-
-        audio_url = None
-        bambara_translated = deepseek_response
-        if include_audio:
-            audio_url, bambara_translated = await synthesize_dioula(deepseek_response)
-
-        cultures = [k for k in nlu.concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
-        return ChatResult(
-            response=deepseek_response,
-            response_dioula=bambara_translated or deepseek_response,
-            audio_url=audio_url,
-            city=city,
-            language=language.value,
-            audio_language="Dioula" if audio_url else None,
-            meta={"intent": nlu.intent, "cultures": cultures, "source": "deepseek_open"},
-        )
-
-    # ------------------------------------------------------------------
-    # Étape 6 : Chemin français
-    # ------------------------------------------------------------------
 
     async def _try_deepseek_french(
         self,
@@ -262,27 +238,10 @@ class ChatService:
         language: Language,
         user_id: Optional[str],
     ) -> ChatResult:
-        """Chemin français uniquement via DeepSeek."""
-        from app.services.deepseek import chat_with_deepseek
-        from app.services.tts_french import synthesize_french
-
-        response_text = await chat_with_deepseek(
-            message=nlu.message_for_deepseek,
-            weather_data=weather_data,
-            language=Language.FRENCH,
-            user_id=user_id,
-        )
-
-        audio_url = None
-        if include_audio:
-            audio_url = await synthesize_french(response_text)
-
-        return ChatResult(
-            response=response_text,
-            audio_url=audio_url,
-            city=city,
-            language=language.value,
-            audio_language="Français" if audio_url else None,
+        """Wrapper compat (PR 5/5) : delegue a deepseek_router.try_deepseek_french()."""
+        from app.services.chat.deepseek_router import try_deepseek_french
+        return await try_deepseek_french(
+            nlu, weather_data, city, include_audio, language, user_id,
         )
 
     # ------------------------------------------------------------------
