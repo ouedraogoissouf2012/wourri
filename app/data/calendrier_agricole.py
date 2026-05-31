@@ -3,7 +3,10 @@ WOURRI - Calendrier Agricole Côte d'Ivoire / Mali
 Conseils adaptés au mois actuel, par culture et intent.
 """
 
+import logging
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 # ============================================================
 # CALENDRIER PAR CULTURE
@@ -243,9 +246,9 @@ def get_conseil_saisonnier(cultures: list[str], intent: str = "") -> dict | None
         conseil_bam = CONSEILS_BAMBARA[phase].format(culture=nom_bam)
         conseil_fr = CONSEILS_FR[phase].format(culture=nom_fr)
 
-        print(f"[CALENDRIER] {culture} en {mois_fr} → phase: {phase}")
-        print(f"[CALENDRIER BAM] {conseil_bam}")
-        print(f"[CALENDRIER FR]  {conseil_fr}")
+        logger.debug("[CALENDRIER] %s en %s → phase: %s", culture, mois_fr, phase)
+        logger.debug("[CALENDRIER BAM] %s", conseil_bam)
+        logger.debug("[CALENDRIER FR]  %s", conseil_fr)
 
         return {
             "bambara": conseil_bam,
@@ -305,5 +308,8 @@ def get_cultures_du_mois(city: str = "Abidjan", month: int = None, max_cultures:
         if len(cultures_actives) >= max_cultures:
             break
 
-    print(f"[ZONE CULTURES] {city} / mois {month} → {[c['fr'] for c in cultures_actives]}")
+    logger.debug(
+        "[ZONE CULTURES] %s / mois %s → %s",
+        city, month, [c["fr"] for c in cultures_actives],
+    )
     return cultures_actives
