@@ -5,6 +5,7 @@ import logging
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
+from app.models.schemas import Language
 from app.services import stt_whisper
 from app.services.deepseek import correct_stt_transcription
 from app.security import require_api_key, limiter
@@ -12,6 +13,26 @@ from app.security import require_api_key, limiter
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/stt", tags=["Speech-to-Text"])
+
+
+# Mapping ISO 639 (code court) → Language enum interne.
+# Registre OCP : ajouter une langue future = 1 entrée dans ce dict.
+# Si le code n'est pas mappé → fallback Language.FRENCH (compat existant).
+_ISO_TO_LANGUAGE: dict[str, Language] = {
+    "fr": Language.FRENCH,
+    "en": Language.ENGLISH,
+    "bam": Language.DIOULA,  # codes ISO bambara
+    "dyu": Language.DIOULA,  # codes ISO dioula
+}
+
+
+def _map_iso_to_language(iso_code: str) -> Language:
+    """Mappe un code ISO 639 ('fr', 'en', 'bam', 'dyu') vers Language enum.
+
+    Fallback sur FRENCH si le code n'est pas reconnu (defense en profondeur :
+    permet l'ajout d'un code futur sans crash, juste avec correction FR par défaut).
+    """
+    return _ISO_TO_LANGUAGE.get(iso_code, Language.FRENCH)
 
 
 @router.post("/transcribe", dependencies=[Depends(require_api_key)])
@@ -59,9 +80,14 @@ async def transcribe_audio(
         logger.error("[STT] Resultat None - transcription echouee")
         raise HTTPException(status_code=500, detail="Erreur lors de la transcription - resultat vide")
 
-    # Correction intelligente via DeepSeek (corrige villes et termes agricoles)
+    # Correction intelligente via DeepSeek (corrige villes et termes agricoles).
+    # Passe `language` au correcteur : si la langue n'a pas de prompt
+    # enregistré dans STT_CORRECTION_PROMPTS (ex: ENGLISH), la correction
+    # est skippée silencieusement (le texte brut Whisper est conservé).
+    # Fix anti-hardcoding 2026-06-02 (cf. feedback_no_hardcoding).
     raw_text = result["text"]
-    corrected_text = await correct_stt_transcription(raw_text)
+    user_language = _map_iso_to_language(language)
+    corrected_text = await correct_stt_transcription(raw_text, language=user_language)
 
     # Vérifier si l'audio était probablement en Dioula
     likely_dioula = result.get("likely_dioula_input", False)

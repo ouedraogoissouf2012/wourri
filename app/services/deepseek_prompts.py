@@ -148,3 +148,87 @@ def get_deepseek_params(language: Language) -> dict:
     nouvelle Enum ajoutee sans entree dans DEEPSEEK_PARAMS).
     """
     return DEEPSEEK_PARAMS.get(language, _DEFAULT_PARAMS)
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Correction STT par langue (anti-hardcoding — feedback_no_hardcoding)
+# ─────────────────────────────────────────────────────────────────────────
+#
+# Prompt de correction post-transcription Whisper. Le LLM (DeepSeek) corrige
+# les erreurs phonetiques du STT en contexte agricole. Chaque langue a son
+# propre prompt (villes, cultures, expressions specifiques).
+#
+# Si la langue n'a pas de prompt enregistre (valeur None ou absente), la
+# correction est silencieusement SKIPPEE (le caller utilise le raw_text de
+# Whisper tel quel). Permet d'ajouter ENGLISH sans prompt EN tout de suite
+# (graceful degradation) et de garder une cible OCP (futures langues).
+#
+# Avant ADR-0015 + cette PR, le prompt FR etait hardcoded inline dans
+# correct_stt_transcription() — anti-pattern detecte par Ruben (feedback
+# memory feedback_no_hardcoding). Cette externalisation aligne le code
+# sur le pattern SYSTEM_PROMPTS / DEEPSEEK_PARAMS.
+
+FRENCH_STT_CORRECTION = """Tu es un correcteur de transcription vocale pour une application agricole en Côte d'Ivoire.
+
+CONTEXTE: Un agriculteur ivoirien parle de cultures et météo. La transcription automatique fait des erreurs.
+
+CORRECTIONS OBLIGATOIRES:
+
+1. CULTURES (le mot est souvent coupé ou déformé):
+   - "signes d'igname", "signe igname", "cygne" → igname
+   - "Paname", "panama", "bannan" → banane
+   - "pégole", "pégo", "des goles" → période
+   - "maniac", "maniaque" → manioc
+   - "maize", "mais" → maïs
+   - "rie", "ri" → riz
+
+2. VILLES IVOIRIENNES:
+   - "coraux go", "koro go", "korogho", "corps au go" → Korhogo
+   - "bouquet", "bois ké", "bouaquer" → Bouaké
+   - "main", "mane", "ment", "mène", "manne", "mans", "mont", "ment", "menthe", "ma", "mam", "mang", "en main", "le mans", "laman" → Man (ville de l'ouest)
+   - "fer ké", "ferques", "fair ké" → Ferkessédougou
+   - "yam ou soukro", "yamoussokro" → Yamoussoukro
+   - "bono", "bonnois", "beau noix" → Bonoua
+   - "dallois", "da lois" → Daloa
+   - "gagne oui", "gagnois" → Gagnoa
+
+3. EXPRESSIONS AGRICOLES:
+   - "faire des signes" dans contexte agricole → cultiver/planter
+   - "quelle est la meilleure" + culture → période de plantation
+
+RÈGLES STRICTES:
+- Retourne UNIQUEMENT le texte corrigé, rien d'autre
+- Garde la structure de la phrase originale
+- Comprends le SENS: si quelqu'un parle d'igname, il ne parle pas de "signes"
+- Pas de guillemets, pas d'explication"""
+
+
+# Registre des prompts de correction STT par langue.
+#
+# Valeur `str` : prompt actif → correction appliquée via DeepSeek.
+# Valeur `None` : pas de prompt pour cette langue → skip silencieux
+# (le caller retourne le raw_text de Whisper tel quel).
+#
+# Mode DIOULA/BOTH utilise le prompt FR car la cascade dioula passe par DeepSeek
+# en français avant traduction NLLB → la correction des noms de villes / termes
+# agricoles FR reste utile.
+#
+# Mode ENGLISH = None pour l'instant : éviter de polluer une transcription EN
+# avec un prompt FR (bug observé 2026-06-02 avant fix). Si export commercial
+# EN confirme (ADR-0016), ajouter ici un ENGLISH_STT_CORRECTION dédié.
+STT_CORRECTION_PROMPTS: dict[Language, str | None] = {
+    Language.FRENCH:  FRENCH_STT_CORRECTION,
+    Language.DIOULA:  FRENCH_STT_CORRECTION,
+    Language.BOTH:    FRENCH_STT_CORRECTION,
+    Language.ENGLISH: None,
+}
+
+
+def get_stt_correction_prompt(language: Language) -> str | None:
+    """Retourne le prompt de correction STT pour la langue, ou None.
+
+    Defense en profondeur : si la langue n'est pas dans `STT_CORRECTION_PROMPTS`
+    (cas d'une future Language oubliée), retourne `None` au lieu de KeyError.
+    Le caller `correct_stt_transcription()` skip alors la correction.
+    """
+    return STT_CORRECTION_PROMPTS.get(language)
