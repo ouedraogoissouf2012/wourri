@@ -73,44 +73,37 @@ class ChatService:
         include_audio: bool = True,
         user_id: Optional[str] = None,
     ) -> ChatResult:
-        """Pipeline complet : message → NLU → IVR/DeepSeek → TTS → résultat."""
+        """Pipeline complet : message → NLU → handler[language] → résultat.
+
+        Strategy Pattern (ADR-0015 PR 3/4) : dispatcher pur sur le registre
+        `HANDLERS`. Chaque langue (FRENCH, DIOULA, BOTH, futurement ENGLISH)
+        a son propre handler implementant le Protocol `LanguageHandler`.
+
+        Ajouter une langue future = 1 nouveau handler + 1 entree dans HANDLERS.
+        **Zero modification** de cette methode (OCP strict).
+        """
         try:
-            # 1. Détection de ville
+            # Etape 1 : detection ville
             detected_city = self._detect_city(message)
             city = detected_city or city
 
-            # 2. NLU preprocessing (si dioula)
+            # Etape 2 : NLU preprocessing
             nlu = self._preprocess_nlu(message, bambara_text, language)
 
-            # 3. Météo
+            # Etape 3 : meteo
             from app.services.weather import get_weather
             weather_data = await get_weather(city)
 
-            # 4. Chercher réponse selon la langue
-            if language in (Language.DIOULA, Language.BOTH) and nlu.intent:
-                # Chemin IVR exact
-                result = await self._try_ivr_exact(
-                    nlu, city, weather_data, include_audio, language,
-                )
-                if result:
-                    return result
-
-            # 5. Fallback IVR par concept
-            if language in (Language.DIOULA, Language.BOTH):
-                result = await self._try_ivr_concept(
-                    nlu, city, include_audio, language,
-                )
-                if result:
-                    return result
-
-                # 6. Fallback DeepSeek (dioula)
-                return await self._try_deepseek_dioula(
-                    nlu, weather_data, city, include_audio, language, user_id,
-                )
-
-            # 7. Chemin français uniquement
-            return await self._try_deepseek_french(
-                nlu, weather_data, city, include_audio, language, user_id,
+            # Etape 4 : dispatch via Strategy Pattern
+            from app.services.chat.handlers import HANDLERS
+            handler = HANDLERS[language]
+            return await handler.process(
+                nlu=nlu,
+                weather_data=weather_data,
+                city=city,
+                include_audio=include_audio,
+                language=language,
+                user_id=user_id,
             )
 
         except Exception as e:
