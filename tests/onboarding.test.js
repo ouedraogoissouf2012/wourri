@@ -177,7 +177,7 @@ describe("OnboardingMachine — STEPS.WAITING_CITY", () => {
 });
 
 describe("OnboardingMachine — STEPS.WAITING_LANGUAGE", () => {
-    test("input '1' → language=french, step=COMPLETE, envoie PREFS_SAVED", async () => {
+    test("input '1' → language=french, step=COMPLETE, envoie PREFS_SAVED en FR pur", async () => {
         const sock = makeSockMock();
         const m = makeMachine({ sock });
         const prefs = { step: STEPS.WAITING_LANGUAGE, city: "Abidjan", language: null, pendingQuestion: null };
@@ -185,7 +185,13 @@ describe("OnboardingMachine — STEPS.WAITING_LANGUAGE", () => {
         assert.strictEqual(result.handled, true);
         assert.strictEqual(prefs.language, "french");
         assert.strictEqual(prefs.step, STEPS.COMPLETE);
-        assert.match(sock.sent[0].msg.text, /Faransi/);
+        // ADR-0015 + i18n variants : mode FR pur affiche "Préférences enregistrées"
+        // (le mot "Faransi" qui apparaissait avant etait du dioula — incoherent)
+        assert.match(sock.sent[0].msg.text, /Préférences enregistrées/);
+        assert.match(sock.sent[0].msg.text, /Ville : Abidjan/);
+        // Ne doit PAS contenir le dioula (mode FR pur, pas bilingue)
+        assert.ok(!sock.sent[0].msg.text.includes("Dɔ sɔrɔla"),
+            "Mode FR pur ne doit pas contenir du dioula");
     });
 
     test("input '2' → language=dioula", async () => {
@@ -212,6 +218,21 @@ describe("OnboardingMachine — STEPS.WAITING_LANGUAGE", () => {
         assert.strictEqual(result.handled, true);
         assert.strictEqual(prefs.language, "english");
         assert.strictEqual(prefs.step, STEPS.COMPLETE);
+    });
+
+    test("[i18n english variants] input '4' → confirmation PREFS_SAVED en EN pur", async () => {
+        const sock = makeSockMock();
+        const m = makeMachine({ sock });
+        const prefs = { step: STEPS.WAITING_LANGUAGE, city: "Bouake", language: null, pendingQuestion: null };
+        await m.processStep(prefs, "4", "u1", { isAudioMessage: false, isVoiceInput: false });
+        assert.match(sock.sent[0].msg.text, /Preferences saved/);
+        assert.match(sock.sent[0].msg.text, /City: Bouake/);
+        assert.match(sock.sent[0].msg.text, /Language: English/);
+        // Ne doit PAS contenir le dioula ou le francais (mode EN pur)
+        assert.ok(!sock.sent[0].msg.text.includes("Dɔ sɔrɔla"),
+            "Mode EN pur ne doit pas contenir du dioula");
+        assert.ok(!sock.sent[0].msg.text.includes("Préférences enregistrées"),
+            "Mode EN pur ne doit pas contenir du francais");
     });
 
     test("[ADR-0015 PR 4/4] input 'english' (mot complet) → language=english", async () => {
