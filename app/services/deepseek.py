@@ -111,20 +111,27 @@ Données météo actuelles pour {weather_data['city']}:
         return f"Erreur: {str(e)}"
 
 
-async def correct_stt_transcription(raw_text: str) -> str:
+async def correct_stt_transcription(
+    raw_text: str,
+    language: Language = Language.FRENCH,
+) -> str:
     """
     Corrige une transcription STT potentiellement erronée en utilisant DeepSeek.
 
-    Le modèle comprend le contexte agricole ivoirien et peut corriger:
-    - Noms de villes mal transcrits (ex: "coraux go" -> "Korhogo")
-    - Termes agricoles confondus (ex: "Paname" -> "banane")
-    - Erreurs phonétiques courantes
+    Le prompt est sélectionné selon `language` depuis le registre
+    `STT_CORRECTION_PROMPTS` (cf. `deepseek_prompts.py`). Si la langue n'a
+    pas de prompt enregistré (ex: ENGLISH avant ADR-0016), la correction
+    est silencieusement skippée et `raw_text` est retourné tel quel.
+
+    Avant 2026-06-02 : prompt FR hardcoded inline → bug "Quand je peux planter
+    l'igname" généré pour des vocaux EN. Fix anti-hardcoding via registre.
 
     Args:
         raw_text: Texte brut de la transcription Whisper
+        language: Langue de l'utilisateur (défaut FRENCH = compat)
 
     Returns:
-        Texte corrigé
+        Texte corrigé si un prompt existe pour la langue, sinon raw_text.
     """
     if not raw_text or len(raw_text.strip()) < 3:
         return raw_text
@@ -133,40 +140,17 @@ async def correct_stt_transcription(raw_text: str) -> str:
         logger.warning("[STT Correction] Pas de clé DeepSeek, retour texte brut")
         return raw_text
 
-    # Prompt spécialisé pour la correction STT
-    system_prompt = """Tu es un correcteur de transcription vocale pour une application agricole en Côte d'Ivoire.
+    # Lookup OCP-compliant dans le registre de prompts. Si None pour cette
+    # langue, on skip la correction (graceful — évite de traduire un EN vers FR).
+    from app.services.deepseek_prompts import get_stt_correction_prompt
 
-CONTEXTE: Un agriculteur ivoirien parle de cultures et météo. La transcription automatique fait des erreurs.
-
-CORRECTIONS OBLIGATOIRES:
-
-1. CULTURES (le mot est souvent coupé ou déformé):
-   - "signes d'igname", "signe igname", "cygne" → igname
-   - "Paname", "panama", "bannan" → banane
-   - "pégole", "pégo", "des goles" → période
-   - "maniac", "maniaque" → manioc
-   - "maize", "mais" → maïs
-   - "rie", "ri" → riz
-
-2. VILLES IVOIRIENNES:
-   - "coraux go", "koro go", "korogho", "corps au go" → Korhogo
-   - "bouquet", "bois ké", "bouaquer" → Bouaké
-   - "main", "mane", "ment", "mène", "manne", "mans", "mont", "ment", "menthe", "ma", "mam", "mang", "en main", "le mans", "laman" → Man (ville de l'ouest)
-   - "fer ké", "ferques", "fair ké" → Ferkessédougou
-   - "yam ou soukro", "yamoussokro" → Yamoussoukro
-   - "bono", "bonnois", "beau noix" → Bonoua
-   - "dallois", "da lois" → Daloa
-   - "gagne oui", "gagnois" → Gagnoa
-
-3. EXPRESSIONS AGRICOLES:
-   - "faire des signes" dans contexte agricole → cultiver/planter
-   - "quelle est la meilleure" + culture → période de plantation
-
-RÈGLES STRICTES:
-- Retourne UNIQUEMENT le texte corrigé, rien d'autre
-- Garde la structure de la phrase originale
-- Comprends le SENS: si quelqu'un parle d'igname, il ne parle pas de "signes"
-- Pas de guillemets, pas d'explication"""
+    system_prompt = get_stt_correction_prompt(language)
+    if system_prompt is None:
+        logger.info(
+            "[STT Correction] Pas de prompt enregistré pour language=%s, skip correction",
+            language.value,
+        )
+        return raw_text
 
     url = f"{settings.deepseek_base_url}/chat/completions"
     headers = {

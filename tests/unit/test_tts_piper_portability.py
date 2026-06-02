@@ -64,27 +64,41 @@ class TestPiperCwdDerivation:
 class TestPiperSettings:
     """Vérifie que les chemins sont lus depuis config, pas hardcoded."""
 
-    def test_default_piper_path_is_portable(self):
-        """Defaut `piper` = binaire dans PATH (universellement portable)."""
+    def _isolated_settings(self, monkeypatch):
+        """Construit Settings en ignorant le .env du dev local.
+
+        Sans cette isolation, les tests lisent le .env de Ruben (qui contient
+        `PIPER_MODEL_FR=C:\\piper-tts\\...`) et les assertions sur les defaults
+        Pydantic echouent. Solution : clear les env vars + `_env_file=None`
+        pour court-circuiter le chargement .env.
+        """
+        for var in ("PIPER_PATH", "PIPER_MODEL_FR", "PIPER_MODEL_EN", "PIPER_MODEL"):
+            monkeypatch.delenv(var, raising=False)
         from app.config import Settings
-        s = Settings()
+        return Settings(_env_file=None)
+
+    def test_default_piper_path_is_portable(self, monkeypatch):
+        """Defaut `piper` = binaire dans PATH (universellement portable)."""
+        s = self._isolated_settings(monkeypatch)
         # Le defaut doit etre portable (pas un chemin Windows hardcoded)
         assert s.piper_path == "piper" or s.piper_path == ""
         assert "C:\\" not in s.piper_path
         assert ":\\" not in s.piper_path
 
-    def test_default_piper_model_fr_is_empty(self):
-        """Modele FR vide par defaut = graceful degradation (pas crash)."""
-        from app.config import Settings
-        s = Settings()
-        # Le defaut doit etre vide (pas de chemin Windows hardcoded)
-        assert "C:\\" not in s.piper_model_fr
+    def test_default_piper_model_fr_is_empty(self, monkeypatch):
+        """Modele FR vide par defaut = graceful degradation (pas crash).
 
-    def test_default_piper_model_en_is_empty(self):
+        Isole le .env local pour tester le VRAI defaut Pydantic.
+        """
+        s = self._isolated_settings(monkeypatch)
+        assert s.piper_model_fr == "", \
+            f"Defaut piper_model_fr doit etre vide, got {s.piper_model_fr!r}"
+
+    def test_default_piper_model_en_is_empty(self, monkeypatch):
         """Modele EN vide par defaut = graceful degradation."""
-        from app.config import Settings
-        s = Settings()
-        assert "C:\\" not in s.piper_model_en
+        s = self._isolated_settings(monkeypatch)
+        assert s.piper_model_en == "", \
+            f"Defaut piper_model_en doit etre vide, got {s.piper_model_en!r}"
 
 
 # ─────────────────────────────────────────────
