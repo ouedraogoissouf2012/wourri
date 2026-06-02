@@ -2,32 +2,48 @@
 WOURI - TTS Français (Piper TTS)
 100% GRATUIT - Voix locale haute qualité
 Conversion en OGG Opus pour compatibilité WhatsApp
+
+Portabilité : tous les chemins sont lus depuis `app.config.Settings`
+(Pydantic Settings) avec defaults universellement portables (binaire dans
+PATH système + modèles via env explicite). Aucun chemin Windows hardcoded.
+Voir app/config.py section "Piper TTS" pour la documentation des env vars.
 """
 import asyncio
-import uuid
+import logging
 import os
 import re
 import subprocess
-import logging
-from app.config import get_settings
+import uuid
+from pathlib import Path
 
-logger = logging.getLogger(__name__)
+from app.config import get_settings
 from app.services._ffmpeg import get_ffmpeg
 
-settings = get_settings()
+logger = logging.getLogger(__name__)
 
-# Chemins Piper TTS (configurables via .env)
-PIPER_PATH = os.getenv("PIPER_PATH", r"C:\piper-tts\piper.exe")
-PIPER_MODEL = os.getenv("PIPER_MODEL", r"C:\piper-tts\fr_FR-tom-medium.onnx")
 
-# Chemin vers ffmpeg — résolu dynamiquement via _ffmpeg.py
 def _get_ffmpeg_path() -> str:
+    """Chemin ffmpeg résolu dynamiquement (PATH système, fallback "ffmpeg")."""
     try:
         return get_ffmpeg()
     except RuntimeError:
         return "ffmpeg"
 
-FFMPEG_PATH = _get_ffmpeg_path()
+
+def _piper_cwd(piper_path: str) -> str | None:
+    """Retourne le cwd à utiliser pour le subprocess Piper.
+
+    Si `piper_path` est un chemin absolu (avec un dossier parent existant),
+    on retourne ce parent comme cwd (utile sur Windows où Piper a parfois
+    besoin de trouver des DLLs adjacentes). Sinon, on retourne None — le
+    subprocess hérite du cwd du process parent, comportement standard POSIX.
+
+    JAMAIS de chemin hardcodé : on dérive automatiquement depuis l'env var.
+    """
+    p = Path(piper_path)
+    if p.is_absolute() and p.parent.exists():
+        return str(p.parent)
+    return None
 
 
 def clean_text(text: str) -> str:
@@ -53,79 +69,88 @@ def clean_text(text: str) -> str:
 
 async def synthesize_french(text: str) -> str | None:
     """
-    Génère un fichier audio OGG Opus à partir de texte français avec Piper TTS
-    Format OGG Opus = format natif WhatsApp pour meilleure compatibilité
+    Génère un fichier audio OGG Opus à partir de texte français avec Piper TTS.
+    Format OGG Opus = format natif WhatsApp pour meilleure compatibilité.
 
     Returns:
         str: URL relative du fichier audio (/static/audio/xxx.ogg)
+        None: si TTS échoue, modèle absent ou conversion ffmpeg échoue.
     """
     if not text:
         return None
 
-    # Nettoyer le texte
+    settings = get_settings()
+    piper_path = settings.piper_path
+    piper_model = settings.piper_model_fr
+
+    # Graceful degradation : si modèle FR pas configuré, on désactive le TTS
+    # sans crash — le caller affiche le texte sans audio.
+    if not piper_model:
+        logger.warning(
+            "[TTS-FR] PIPER_MODEL_FR vide dans .env — TTS français désactivé"
+        )
+        return None
+
     clean = clean_text(text)
     if not clean:
         return None
 
     try:
-        # Générer les noms de fichiers
+        # Chemins de sortie (toujours absolus, basés sur le chemin du module)
         file_id = uuid.uuid4()
         wav_filename = f"fr_{file_id}_temp.wav"
         ogg_filename = f"fr_{file_id}.ogg"
 
-        # Utiliser des chemins absolus pour Piper
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        audio_dir = os.path.join(base_dir, settings.audio_output_dir)
-        wav_filepath = os.path.join(audio_dir, wav_filename)
-        ogg_filepath = os.path.join(audio_dir, ogg_filename)
+        base_dir = Path(__file__).resolve().parent.parent.parent
+        audio_dir = base_dir / settings.audio_output_dir
+        audio_dir.mkdir(parents=True, exist_ok=True)
+        wav_filepath = audio_dir / wav_filename
+        ogg_filepath = audio_dir / ogg_filename
 
-        # Créer le dossier si nécessaire
-        os.makedirs(audio_dir, exist_ok=True)
-
-        # Générer l'audio avec Piper TTS (chemins absolus obligatoires)
-        piper_process = await asyncio.to_thread(
+        # Générer l'audio avec Piper TTS. cwd dérivé du chemin du binaire (None
+        # si binaire dans PATH, parent dir si chemin absolu fourni — utile sur
+        # Windows pour les DLLs adjacentes). JAMAIS de chemin hardcoded.
+        await asyncio.to_thread(
             subprocess.run,
-            [PIPER_PATH, '--model', PIPER_MODEL, '--output_file', wav_filepath],
-            input=clean.encode('utf-8'),
+            [piper_path, "--model", piper_model, "--output_file", str(wav_filepath)],
+            input=clean.encode("utf-8"),
             capture_output=True,
             timeout=30,
-            cwd=r"C:\piper-tts"
+            cwd=_piper_cwd(piper_path),
         )
 
-        # Convertir WAV en OGG Opus pour WhatsApp
-        if os.path.exists(wav_filepath) and os.path.getsize(wav_filepath) > 0:
+        # Conversion WAV -> OGG Opus (format natif WhatsApp)
+        if wav_filepath.exists() and wav_filepath.stat().st_size > 0:
             try:
-                # Conversion WAV -> OGG Opus (format WhatsApp)
-                result = await asyncio.to_thread(
+                await asyncio.to_thread(
                     subprocess.run,
                     [
-                        FFMPEG_PATH,
-                        '-i', wav_filepath,
-                        '-c:a', 'libopus',
-                        '-b:a', '64k',
-                        '-ar', '48000',
-                        '-ac', '1',
-                        '-y',
-                        ogg_filepath
+                        _get_ffmpeg_path(),
+                        "-i", str(wav_filepath),
+                        "-c:a", "libopus",
+                        "-b:a", "64k",
+                        "-ar", "48000",
+                        "-ac", "1",
+                        "-y",
+                        str(ogg_filepath),
                     ],
                     capture_output=True,
                     timeout=30,
                 )
 
-                # Supprimer le fichier WAV temporaire
-                os.remove(wav_filepath)
+                wav_filepath.unlink(missing_ok=True)
 
-                if os.path.exists(ogg_filepath) and os.path.getsize(ogg_filepath) > 0:
+                if ogg_filepath.exists() and ogg_filepath.stat().st_size > 0:
                     return f"/static/audio/{ogg_filename}"
 
             except Exception as conv_err:
-                logger.error(f"Erreur conversion ffmpeg: {conv_err}")
-                # Fallback: retourner le WAV si conversion échoue
-                if os.path.exists(wav_filepath):
+                logger.error("Erreur conversion ffmpeg (FR): %s", conv_err)
+                # Fallback : retourner le WAV si conversion ffmpeg échoue
+                if wav_filepath.exists():
                     return f"/static/audio/{wav_filename}"
 
     except Exception as e:
-        logger.error(f"Erreur TTS français Piper: {e}")
+        logger.error("Erreur TTS français Piper: %s", e)
 
     return None
 
