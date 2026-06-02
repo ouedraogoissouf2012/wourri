@@ -142,6 +142,28 @@ class Settings(BaseSettings):
     # Plan de rollback : `corpus_storage_mode=chroma` dans `.env` → restart immédiat.
     corpus_storage_mode: Literal["chroma", "dual", "pgvector"] = "chroma"
 
+    # ========== Piper TTS (FR + EN) — portabilité OS ==========
+    # Tous les chemins sont configurables via env var. Defaults universellement
+    # portables (binaire dans PATH système + modèles via env explicite). Aucun
+    # chemin Windows hardcoded.
+    #
+    # Exemples par OS :
+    #   Linux/Mac (binaire installé via package ou wget) :
+    #     PIPER_PATH=piper
+    #     PIPER_MODEL_FR=/opt/piper-voices/fr_FR-tom-medium.onnx
+    #     PIPER_MODEL_EN=/opt/piper-voices/en_US-amy-medium.onnx
+    #   Windows :
+    #     PIPER_PATH=C:\piper-tts\piper.exe
+    #     PIPER_MODEL_FR=C:\piper-tts\fr_FR-tom-medium.onnx
+    #     PIPER_MODEL_EN=C:\piper-tts\en_US-amy-medium.onnx
+    #
+    # Comportement défaut (env vars vides) : le binaire est cherché dans PATH
+    # via "piper" et les modèles non configurés désactivent silencieusement le
+    # TTS de la langue concernée (graceful degradation — pas de crash).
+    piper_path: str = "piper"
+    piper_model_fr: str = ""
+    piper_model_en: str = ""
+
     # ========== Omnilingual ASR (ADR-0002, ADR-0003) ==========
     # Provider Omnilingual créé en Phase 2 mais NON activé dans la chain
     # (sera activé en Phase 4 après benchmark Phase 3).
