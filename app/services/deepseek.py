@@ -37,47 +37,12 @@ Données météo actuelles pour {weather_data['city']}:
 - Conditions: {weather_data['weather_description']}
 """
 
-    # Instructions selon la langue
-    if language in (Language.DIOULA, Language.BOTH):
-        language_instruction = """
-RÔLE: Tu es Wourri, conseiller agricole du village pour les paysans de Côte d'Ivoire.
-Tu parles comme un ami expert — direct, concret, bienveillant.
+    # Lookup OCP-compliant dans le registre de prompts (ADR-0015 PR 3/4).
+    # Ajouter une langue future = 1 entree dans SYSTEM_PROMPTS, jamais
+    # de modification ici.
+    from app.services.deepseek_prompts import SYSTEM_PROMPTS
 
-STRUCTURE OBLIGATOIRE — EXACTEMENT 3 PHRASES:
-• Phrase 1 (max 12 mots) : La réponse directe. Quand faire ou quoi faire.
-• Phrase 2 (max 12 mots) : La condition clé. Quel sol, quelle pluie, ou pourquoi c'est important.
-• Phrase 3 (max 12 mots) : L'action immédiate. Ce que le paysan doit faire MAINTENANT.
-
-VOCABULAIRE AUTORISÉ (mots simples qui se traduisent bien en bambara/dioula):
-✓ planter, semer, arroser, préparer, labourer, récolter, attendre, mélanger, couvrir
-✓ maintenant, bientôt, en mai, en juin, avant la pluie, après la pluie
-✓ terre noire, sol mou, sol humide, champ, eau, pluie, soleil, chaleur
-✓ bon, mauvais, chaud, sec, humide, fort, faible
-
-VOCABULAIRE INTERDIT (jargon qui traduit mal):
-✗ pluviométrie, NPK, fertilisant, espacement intercalaire, surveillance, assurez-vous
-✗ optimal, recommandé, régulièrement, simultanément, cependant
-
-STYLE:
-- Tutoie toujours (tu, ton, tes, toi)
-- Pas de listes, pas de tirets, pas de numéros, pas de markdown
-- Si l'utilisateur salue, commence par "Bonjour !" avant tes 3 phrases
-- Parle de la ville de l'agriculteur quand tu mentionnes la météo
-
-EXEMPLE PARFAIT pour "je veux semer du riz à Bouaké":
-"Sème ton riz en mai quand les pluies commencent à Bouaké. Ton champ doit avoir une terre noire et molle, pas trop sableuse. Commence à préparer et labourer ton champ maintenant."
-
-EXEMPLE À ÉVITER:
-"La période optimale pour la culture du riz à Bouaké se situe entre mai et juillet, correspondant à la saison pluvieuse principale. Assurez-vous d'un espacement adéquat."
-"""
-    else:
-        language_instruction = """
-LANGUE: Réponds en français clair et accessible.
-- Utilise un langage simple adapté aux agriculteurs
-- Évite le jargon technique
-- Pas de markdown (pas de **, *, #, etc.)
-- Max 4-5 phrases courtes
-"""
+    language_instruction = SYSTEM_PROMPTS[language]
 
     system_prompt = f"""Tu es WOURI, un assistant agricole expert pour les agriculteurs de Côte d'Ivoire et du Mali.
 
@@ -105,20 +70,18 @@ LANGUE: Réponds en français clair et accessible.
     # Ajouter le message actuel
     messages.append({"role": "user", "content": message})
 
-    # En mode dioula/both, réponses complètes mais en français simple
-    if language in (Language.DIOULA, Language.BOTH):
-        max_tok = 150  # 3-5 phrases utiles
-        temp = 0.5     # Naturel
-    else:
-        max_tok = 200
-        temp = 0.5
+    # Lookup OCP-compliant dans le registre de parametres d'inference
+    # (ADR-0015 PR 3/4). Ajouter une langue future = 1 entree dans
+    # DEEPSEEK_PARAMS, jamais de modification ici.
+    from app.services.deepseek_prompts import get_deepseek_params
 
+    params = get_deepseek_params(language)
     payload = {
         "model": settings.deepseek_model,
         "messages": messages,
-        "temperature": temp,
-        "max_tokens": max_tok,
-        "top_p": 0.9
+        "temperature": params["temperature"],
+        "max_tokens": params["max_tokens"],
+        "top_p": 0.9,
     }
 
     try:

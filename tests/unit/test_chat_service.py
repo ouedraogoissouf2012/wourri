@@ -407,3 +407,90 @@ class TestIVRResponseContract:
         bam_out, fr_out = inject_meteo(bam_in, fr_in, None, "Abidjan")
         assert bam_out == bam_in
         assert fr_out == fr_in
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Process dispatcher (ADR-0015 PR 3/4)
+#
+# Verifie que `ChatService.process()` est devenu un thin dispatcher pur qui
+# delegue a `HANDLERS[language]`. Plus de cascade if/elif legacy.
+# ─────────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+class TestProcessDispatcher:
+    """ADR-0015 PR 3/4 : process() est un dispatcher pur sur HANDLERS."""
+
+    async def _run(self, language: Language, message: str = "test"):
+        """Helper : appelle process() avec tous les externes mockes."""
+        service = ChatService()
+        fake_result = ChatResult(
+            response=f"response {language.value}",
+            city="Abidjan",
+            language=language.value,
+        )
+        with patch(
+            "app.services.chat_service.ChatService._detect_city",
+            return_value=None,
+        ), patch(
+            "app.services.chat_service.ChatService._preprocess_nlu",
+            return_value=NLUResult(message_for_deepseek=message),
+        ), patch(
+            "app.services.weather.get_weather",
+            new=AsyncMock(return_value={"city": "Abidjan", "temperature": 28}),
+        ), patch.dict(
+            "app.services.chat.handlers.HANDLERS",
+            clear=False,
+        ) as _:
+            from app.services.chat.handlers import HANDLERS
+
+            mock_handler = MagicMock()
+            mock_handler.process = AsyncMock(return_value=fake_result)
+            original = HANDLERS[language]
+            HANDLERS[language] = mock_handler
+            try:
+                result = await service.process(message=message, language=language)
+            finally:
+                HANDLERS[language] = original
+
+        return result, mock_handler, fake_result
+
+    async def test_dispatches_to_french_handler(self):
+        result, handler, expected = await self._run(Language.FRENCH)
+        assert result is expected
+        handler.process.assert_called_once()
+
+    async def test_dispatches_to_dioula_handler(self):
+        result, handler, expected = await self._run(Language.DIOULA)
+        assert result is expected
+        handler.process.assert_called_once()
+
+    async def test_dispatches_to_both_handler(self):
+        result, handler, expected = await self._run(Language.BOTH)
+        assert result is expected
+        handler.process.assert_called_once()
+
+    async def test_passes_required_kwargs_to_handler(self):
+        """Verifie que les bons parametres sont relayes au handler."""
+        result, handler, _ = await self._run(Language.FRENCH, message="ma question")
+        kwargs = handler.process.call_args.kwargs
+        assert "nlu" in kwargs
+        assert "weather_data" in kwargs
+        assert "city" in kwargs
+        assert "include_audio" in kwargs
+        assert "language" in kwargs
+        assert "user_id" in kwargs
+        assert kwargs["language"] == Language.FRENCH
+
+    async def test_returns_error_chat_result_on_exception(self):
+        """Si le pipeline leve, retour ChatResult d'erreur graceful (pas de crash)."""
+        service = ChatService()
+        with patch(
+            "app.services.chat_service.ChatService._detect_city",
+            side_effect=RuntimeError("boom"),
+        ):
+            result = await service.process(message="test", language=Language.FRENCH)
+        assert isinstance(result, ChatResult)
+        assert "problèmes de connexion" in result.response.lower() or \
+               "désolé" in result.response.lower()
+        assert result.language == "french"
