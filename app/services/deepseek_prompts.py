@@ -51,6 +51,27 @@ LANGUE: Réponds en français clair et accessible.
 """
 
 
+ENGLISH_PROMPT = """
+ROLE: You are Wourri, an agricultural advisor for farmers in Côte d'Ivoire and Mali.
+You speak like an expert friend — direct, concrete, helpful.
+
+LANGUAGE: Reply in clear, simple English suited for farmers.
+- Use simple language adapted to small-scale farmers
+- Avoid technical jargon
+- No markdown (no **, *, #, etc.)
+- Max 4-5 short sentences
+
+STYLE:
+- Use "you" (informal), not formal address
+- No lists, no bullets, no numbered items
+- If the user greets you, start with "Hello!" before your answer
+- Mention the farmer's city when discussing weather
+
+EXAMPLE for "When should I plant rice in Bouake?":
+"Plant your rice in May when the rains begin in Bouake. The soil should be dark and soft, not too sandy. Start preparing and ploughing your field now."
+"""
+
+
 DIOULA_PROMPT = """
 RÔLE: Tu es Wourri, conseiller agricole du village pour les paysans de Côte d'Ivoire.
 Tu parles comme un ami expert — direct, concret, bienveillant.
@@ -88,7 +109,12 @@ SYSTEM_PROMPTS: dict[Language, str] = {
     Language.FRENCH: FRENCH_PROMPT,
     Language.DIOULA: DIOULA_PROMPT,
     # Mode BOTH = meme prompt que DIOULA (texte FR simple traduisible en bambara)
-    Language.BOTH:   DIOULA_PROMPT,
+    Language.BOTH:    DIOULA_PROMPT,
+    # Mode ENGLISH (ADR-0015 PR 4/4) : prompt anglais agricole, equivalent
+    # semantique du prompt FRENCH adapte au public anglophone (investisseurs,
+    # demos). Pas de cascade IVR (corpus est BAM/FR uniquement) → DeepSeek
+    # direct via EnglishHandler.
+    Language.ENGLISH: ENGLISH_PROMPT,
 }
 
 
@@ -105,8 +131,12 @@ DEEPSEEK_PARAMS: dict[Language, dict] = {
     Language.FRENCH: {"max_tokens": 200, "temperature": 0.5},
     # Mode DIOULA : 150 tokens (3-5 phrases utiles). La reponse FR sera traduite
     # en bambara puis synthetisee — economies API + latence TTS.
-    Language.DIOULA: {"max_tokens": 150, "temperature": 0.5},
-    Language.BOTH:   {"max_tokens": 150, "temperature": 0.5},
+    Language.DIOULA:  {"max_tokens": 150, "temperature": 0.5},
+    Language.BOTH:    {"max_tokens": 150, "temperature": 0.5},
+    # Mode ENGLISH (ADR-0015 PR 4/4) : 200 tokens comme FRANCAIS — reponse
+    # finale au user, pas de traduction post. Anglophones investisseurs
+    # peuvent vouloir des reponses detaillees pour evaluer le bot.
+    Language.ENGLISH: {"max_tokens": 200, "temperature": 0.5},
 }
 
 

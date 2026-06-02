@@ -7,10 +7,16 @@ from typing import Optional
 
 
 class Language(str, Enum):
-    """Langues supportées pour les réponses"""
+    """Langues supportées pour les réponses.
+
+    Ajout ENGLISH (ADR-0015 PR 4/4) : mode passthrough via DeepSeek direct,
+    pour démos investisseurs et préparation expansion anglophone. Cf. ADR
+    docs/adr/0015-strategy-pattern-cascade-chat-et-anglais.md.
+    """
     FRENCH = "french"
     DIOULA = "dioula"
     BOTH = "both"  # Français ET Dioula
+    ENGLISH = "english"  # ADR-0015 PR 4/4 : passthrough DeepSeek direct + Piper TTS EN
 
 
 class IvorianLanguage(str, Enum):

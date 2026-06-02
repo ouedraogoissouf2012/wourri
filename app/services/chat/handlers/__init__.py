@@ -26,13 +26,16 @@ from app.models.schemas import Language
 from app.services.chat.handlers._protocol import LanguageHandler
 from app.services.chat.handlers.both_handler import BothHandler
 from app.services.chat.handlers.dioula_handler import DioulaHandler
+from app.services.chat.handlers.english_handler import EnglishHandler
 from app.services.chat.handlers.french_handler import FrenchHandler
 
 
 HANDLERS: dict[Language, LanguageHandler] = {
-    Language.FRENCH: FrenchHandler(),
-    Language.DIOULA: DioulaHandler(),
-    Language.BOTH: BothHandler(),
+    Language.FRENCH:  FrenchHandler(),
+    Language.DIOULA:  DioulaHandler(),
+    Language.BOTH:    BothHandler(),
+    # ADR-0015 PR 4/4 : EnglishHandler — pure extension du pattern Strategy
+    Language.ENGLISH: EnglishHandler(),
 }
 
 
@@ -42,4 +45,5 @@ __all__ = [
     "FrenchHandler",
     "DioulaHandler",
     "BothHandler",
+    "EnglishHandler",
 ]
