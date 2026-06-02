@@ -205,6 +205,29 @@ describe("OnboardingMachine — STEPS.WAITING_LANGUAGE", () => {
         assert.strictEqual(prefs.language, "both");
     });
 
+    test("[ADR-0015 PR 4/4] input '4' → language=english", async () => {
+        const m = makeMachine();
+        const prefs = { step: STEPS.WAITING_LANGUAGE, city: "Abidjan", language: null, pendingQuestion: null };
+        const result = await m.processStep(prefs, "4", "u1", { isAudioMessage: false, isVoiceInput: false });
+        assert.strictEqual(result.handled, true);
+        assert.strictEqual(prefs.language, "english");
+        assert.strictEqual(prefs.step, STEPS.COMPLETE);
+    });
+
+    test("[ADR-0015 PR 4/4] input 'english' (mot complet) → language=english", async () => {
+        const m = makeMachine();
+        const prefs = { step: STEPS.WAITING_LANGUAGE, city: "Bouake", language: null, pendingQuestion: null };
+        await m.processStep(prefs, "english please", "u1", { isAudioMessage: false, isVoiceInput: false });
+        assert.strictEqual(prefs.language, "english");
+    });
+
+    test("[ADR-0015 PR 4/4] input 'anglais' (mot FR) → language=english", async () => {
+        const m = makeMachine();
+        const prefs = { step: STEPS.WAITING_LANGUAGE, city: "Korhogo", language: null, pendingQuestion: null };
+        await m.processStep(prefs, "anglais", "u1", { isAudioMessage: false, isVoiceInput: false });
+        assert.strictEqual(prefs.language, "english");
+    });
+
     test("input 'français' (mot complet) → language=french", async () => {
         const m = makeMachine();
         const prefs = { step: STEPS.WAITING_LANGUAGE, city: "Korhogo", language: null, pendingQuestion: null };
