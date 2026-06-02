@@ -421,6 +421,13 @@ async function connectWhatsApp() {
         auth: state,
         logger: pino({ level: 'silent' }),
         browser: ['WOURI Assistant', 'Chrome', '120.0.0'],
+        // Cf. lib/skip_old_messages.js : on ignore les messages recus pendant
+        // le downtime serveur. Ces options Baileys reduisent drastiquement le
+        // volume de messages anciens pousses par WhatsApp au reconnect
+        // (sessions Signal desynchronisees -> erreurs libsignal MessageCounterError
+        // / Bad MAC, voir issue #287 contexte ADR-0015 post-deploiement).
+        syncFullHistory: false,
+        shouldSyncHistoryMessage: () => false,
     });
 
     // Sprint D.2 — propager le sock au ResponseSender (sock est mutable post-reconnect)
@@ -794,4 +801,18 @@ app.listen(PORT, () => {
     logger.info('========================================\n');
 
     connectWhatsApp();
+
+    // Log periodique des messages anciens ignores (downtime serveur).
+    // Voir lib/skip_old_messages.js. Intervalle 5min pour eviter le spam.
+    const { getIgnoredCount, resetCounter, BOOT_TS } = require('./lib/skip_old_messages');
+    setInterval(() => {
+        const n = getIgnoredCount();
+        if (n > 0) {
+            logger.info(
+                { ignored: n, bootTimestamp: BOOT_TS },
+                `[OLD_MSG] ${n} messages recus pendant downtime ignores`
+            );
+            resetCounter();
+        }
+    }, 5 * 60 * 1000);
 });
