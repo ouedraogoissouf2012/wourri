@@ -78,28 +78,22 @@ async def try_deepseek_french(
     language: Language,
     user_id: Optional[str],
 ) -> ChatResult:
-    """Chemin francais uniquement via DeepSeek.
+    """Wrapper retrocompat (ADR-0015 PR 1/4) : delegue a HANDLERS[FRENCH].process().
 
-    Pas de traduction (deja FR), TTS via Edge TTS francais.
+    La logique a ete extraite vers `app.services.chat.handlers.french_handler.FrenchHandler`
+    dans le cadre du refactor Strategy Pattern. Cette fonction reste pour preserver
+    l'API utilisee par les tests existants (test_deepseek_router.py) et par le
+    wrapper `ChatService._try_deepseek_french` (chat_service.py).
+
+    Sera supprimee en PR 3/4 quand le dispatcher pur sera en place.
     """
-    from app.services.deepseek import chat_with_deepseek
-    from app.services.tts_french import synthesize_french
+    from app.services.chat.handlers import HANDLERS
 
-    response_text = await chat_with_deepseek(
-        message=nlu.message_for_deepseek,
+    return await HANDLERS[Language.FRENCH].process(
+        nlu=nlu,
         weather_data=weather_data,
-        language=Language.FRENCH,
-        user_id=user_id,
-    )
-
-    audio_url = None
-    if include_audio:
-        audio_url = await synthesize_french(response_text)
-
-    return ChatResult(
-        response=response_text,
-        audio_url=audio_url,
         city=city,
-        language=language.value,
-        audio_language="Français" if audio_url else None,
+        include_audio=include_audio,
+        language=language,
+        user_id=user_id,
     )
