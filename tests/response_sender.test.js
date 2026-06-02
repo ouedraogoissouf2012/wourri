@@ -182,6 +182,92 @@ describe("ResponseSender — sendResponse (FRANCAIS)", () => {
     });
 });
 
+// ─────────────────────────────────────────────
+// ENGLISH (ADR-0015 PR 4/4 + hotfix)
+// ─────────────────────────────────────────────
+
+describe("ResponseSender — sendResponse (ENGLISH)", () => {
+    test("texte entrant → 1 message texte EN avec préfixe 🇬🇧", async () => {
+        const sock = makeSockMock();
+        const rs = makeSender({ sock });
+        await rs.sendResponse({
+            data: { response: "Plant rice in May" },
+            prefs: { language: "english" },
+            isVoiceInput: false,
+            userNumber: "u1",
+            saveFn: () => {},
+        });
+        assert.strictEqual(sock.sent.length, 1);
+        assert.match(sock.sent[0].msg.text, /🇬🇧 Plant rice in May/);
+    });
+
+    test("vocal entrant + audio_url → audio EN téléchargé et envoyé", async () => {
+        const sock = makeSockMock();
+        const audioBuf = Buffer.from("en-audio");
+        const axios = makeAxiosMock([{ data: audioBuf }]);
+        const rs = makeSender({ sock, axios });
+        await rs.sendResponse({
+            data: { response: "Hello", audio_url: "/static/audio/en_xxx.ogg" },
+            prefs: { language: "english" },
+            isVoiceInput: true,
+            userNumber: "u1",
+            saveFn: () => {},
+        });
+        assert.strictEqual(axios.calls[0].url, "http://localhost:8000/static/audio/en_xxx.ogg");
+        assert.strictEqual(sock.sent.length, 1);
+        assert.ok(sock.sent[0].msg.audio);
+    });
+
+    test("vocal entrant + audio_url absent → fallback texte EN (Piper EN model absent)", async () => {
+        const sock = makeSockMock();
+        const rs = makeSender({ sock });
+        await rs.sendResponse({
+            data: { response: "Hello" },
+            prefs: { language: "english" },
+            isVoiceInput: true,
+            userNumber: "u1",
+            saveFn: () => {},
+        });
+        assert.strictEqual(sock.sent.length, 1);
+        assert.match(sock.sent[0].msg.text, /🇬🇧 Hello/);
+    });
+
+    test("vocal entrant + axios.get échoue → fallback texte EN (pas d'exception propagée)", async () => {
+        const sock = makeSockMock();
+        const axios = makeAxiosMock([new Error("connect ECONNREFUSED")]);
+        const rs = makeSender({ sock, axios });
+        await rs.sendResponse({
+            data: { response: "Hello", audio_url: "/static/audio/en_xxx.ogg" },
+            prefs: { language: "english" },
+            isVoiceInput: true,
+            userNumber: "u1",
+            saveFn: () => {},
+        });
+        assert.strictEqual(sock.sent.length, 1);
+        assert.match(sock.sent[0].msg.text, /🇬🇧 Hello/);
+    });
+
+    test("mode english : pas de prompt feedback C4 envoye (reserve dioula/both)", async () => {
+        const sock = makeSockMock();
+        const rs = makeSender({ sock });
+        const prefs = { language: "english" };
+        await rs.sendResponse({
+            data: {
+                response: "Plant rice in May",
+                meta: { intent: "QUESTION_SAISON_PLANTATION", source: "deepseek_english" },
+            },
+            prefs,
+            isVoiceInput: false,
+            userNumber: "u1",
+            saveFn: () => {},
+        });
+        // 1 seul message envoye : le texte EN. Pas de prompt feedback C4 derriere.
+        assert.strictEqual(sock.sent.length, 1);
+        assert.match(sock.sent[0].msg.text, /🇬🇧/);
+        assert.strictEqual(prefs.pendingFeedback, undefined);
+    });
+});
+
 describe("ResponseSender — sendResponse (DIOULA)", () => {
     test("audio_url présent → audio dioula envoyé (ptt=true)", async () => {
         const sock = makeSockMock();
