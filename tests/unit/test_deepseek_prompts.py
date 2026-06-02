@@ -21,6 +21,7 @@ from app.models.schemas import Language
 from app.services.deepseek_prompts import (
     DEEPSEEK_PARAMS,
     DIOULA_PROMPT,
+    ENGLISH_PROMPT,
     FRENCH_PROMPT,
     SYSTEM_PROMPTS,
     get_deepseek_params,
@@ -36,10 +37,11 @@ class TestSystemPromptsRegistry:
     """Verifie le registre des system prompts."""
 
     def test_contains_all_current_languages(self):
-        """FRENCH + DIOULA + BOTH doivent etre enregistres."""
+        """FRENCH + DIOULA + BOTH + ENGLISH doivent etre enregistres."""
         assert Language.FRENCH in SYSTEM_PROMPTS
         assert Language.DIOULA in SYSTEM_PROMPTS
         assert Language.BOTH in SYSTEM_PROMPTS
+        assert Language.ENGLISH in SYSTEM_PROMPTS
 
     def test_all_prompts_are_non_empty_strings(self):
         for lang, prompt in SYSTEM_PROMPTS.items():
@@ -63,10 +65,25 @@ class TestSystemPromptsRegistry:
         assert SYSTEM_PROMPTS[Language.FRENCH] is not SYSTEM_PROMPTS[Language.DIOULA]
 
     def test_constants_match_registry(self):
-        """Les constantes FRENCH_PROMPT et DIOULA_PROMPT doivent etre les memes
+        """Les constantes FRENCH/DIOULA/ENGLISH_PROMPT doivent etre les memes
         objets que ceux enregistres (pas de copie cachee)."""
         assert SYSTEM_PROMPTS[Language.FRENCH] is FRENCH_PROMPT
         assert SYSTEM_PROMPTS[Language.DIOULA] is DIOULA_PROMPT
+        assert SYSTEM_PROMPTS[Language.ENGLISH] is ENGLISH_PROMPT
+
+    def test_english_prompt_is_in_english(self):
+        """Le prompt ENGLISH doit etre redige en anglais (markers basiques)."""
+        prompt = SYSTEM_PROMPTS[Language.ENGLISH]
+        assert "English" in prompt
+        assert "ROLE" in prompt or "LANGUAGE" in prompt
+        # Pas de directive francaise dans le prompt EN
+        assert "Réponds" not in prompt
+        assert "français" not in prompt
+
+    def test_english_distinct_from_other_prompts(self):
+        """ENGLISH_PROMPT doit etre un objet distinct des autres prompts."""
+        assert SYSTEM_PROMPTS[Language.ENGLISH] is not SYSTEM_PROMPTS[Language.FRENCH]
+        assert SYSTEM_PROMPTS[Language.ENGLISH] is not SYSTEM_PROMPTS[Language.DIOULA]
 
 
 # ─────────────────────────────────────────────
@@ -81,19 +98,30 @@ class TestDeepseekParamsRegistry:
         assert Language.FRENCH in DEEPSEEK_PARAMS
         assert Language.DIOULA in DEEPSEEK_PARAMS
         assert Language.BOTH in DEEPSEEK_PARAMS
+        assert Language.ENGLISH in DEEPSEEK_PARAMS
 
-    @pytest.mark.parametrize("lang", [Language.FRENCH, Language.DIOULA, Language.BOTH])
+    @pytest.mark.parametrize(
+        "lang",
+        [Language.FRENCH, Language.DIOULA, Language.BOTH, Language.ENGLISH],
+    )
     def test_params_have_required_keys(self, lang):
         params = DEEPSEEK_PARAMS[lang]
         assert "max_tokens" in params
         assert "temperature" in params
 
-    @pytest.mark.parametrize("lang", [Language.FRENCH, Language.DIOULA, Language.BOTH])
+    @pytest.mark.parametrize(
+        "lang",
+        [Language.FRENCH, Language.DIOULA, Language.BOTH, Language.ENGLISH],
+    )
     def test_params_are_sensible(self, lang):
         params = DEEPSEEK_PARAMS[lang]
         # Bornes raisonnables
         assert 1 <= params["max_tokens"] <= 1000
         assert 0.0 <= params["temperature"] <= 2.0
+
+    def test_english_has_full_token_budget(self):
+        """ENGLISH : 200 tokens (reponse finale au user, pas de traduction post)."""
+        assert DEEPSEEK_PARAMS[Language.ENGLISH]["max_tokens"] == 200
 
     def test_french_has_more_tokens_than_dioula(self):
         """FR : 200 tokens (4-5 phrases detaillees) > DIOULA : 150 tokens
@@ -124,7 +152,10 @@ class TestDeepseekParamsRegistry:
 class TestGetDeepseekParams:
     """Verifie le helper get_deepseek_params avec fallback defaults."""
 
-    @pytest.mark.parametrize("lang", [Language.FRENCH, Language.DIOULA, Language.BOTH])
+    @pytest.mark.parametrize(
+        "lang",
+        [Language.FRENCH, Language.DIOULA, Language.BOTH, Language.ENGLISH],
+    )
     def test_returns_registered_params(self, lang):
         result = get_deepseek_params(lang)
         assert result == DEEPSEEK_PARAMS[lang]
