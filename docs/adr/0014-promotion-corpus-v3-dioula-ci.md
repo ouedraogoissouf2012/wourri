@@ -1,9 +1,62 @@
 # ADR-0014 — Promotion corpus v3 dioula CI vers production
 
-**Statut** : proposé
-**Date** : 2026-05-30
+**Statut** : accepté
+**Date** : 2026-05-30 (analyse) — accepté 2026-06-03
 **Auteur** : Claude (sous direction Ruben)
-**Valideur** : Ruben (en attente — cet ADR documente l'analyse pour décision)
+**Valideur** : Ruben (validé le 2026-06-03)
+
+---
+
+## Décision (2026-06-03)
+
+Les **14 PRs ouvertes** (#69, #70, #71, #72, #73, #74, #75, #76, #77, #78, #79,
+#80, #82, #84) listées dans cet ADR sont **fermées sans merge**.
+
+### Justification
+
+Investigation 2026-06-03 :
+
+| Fichier | Version | Entrées | Statut |
+|---|---|---|---|
+| `dictionnaires/corpus_ivr.json` | v2.3 | **162** | ✅ Production actuelle (intacte) |
+| `dictionnaires/archive/corpus_ivr_v3_full_draft.json` | v3.0-full | **162** | 📦 **Consolidation complète déjà archivée** (validation 84.9 %) |
+| branche `fix/p3-feedback-deepseek-finetune` | v3.0 | 46 | 🚧 WIP avril 2026, abandonnée |
+| Les 14 PRs (ciblent la branche WIP ci-dessus) | — | — | Travail **déjà capturé** dans `corpus_ivr_v3_full_draft.json` |
+
+Le travail linguistique de réécriture par culture (arachide, igname, manioc,
+cacao, mil, coton, banane, tomate, haricot/niébé, gombo, oignon + sésame/café/
+ananas/mangue/néré/agrumes + corrections karo→kalo et format mois TTS) **est
+déjà intégré** dans le draft consolidé archivé. Les 14 PRs ne sont qu'un
+historique de leur production initiale ; les merger dans la branche WIP ne
+ferait rien pour la production.
+
+### Action 2026-06-03
+
+- 14 PRs **closed** avec commentaire standardisé pointant vers ce ADR et le
+  full_draft archivé. Aucune perte d'historique (commentaires, contexte
+  linguistique). Pas de `delete` — `close` uniquement.
+- Aucune modification de la production (`corpus_ivr.json` v2.3 reste actif).
+- Le full_draft archivé reste prêt pour future promotion via PR dédiée.
+
+### Critères pour la **vraie** promotion future v3 → production
+
+Une PR de promotion `archive/corpus_ivr_v3_full_draft.json` →
+`dictionnaires/corpus_ivr.json` sera créée séparément quand **TOUS** ces
+critères seront remplis :
+
+1. **Validation locuteur natif** : au moins un locuteur natif dioula CI a
+   relu et validé les 162 entrées (score ≥ 95 % selon l'échelle de validation
+   de [#89](https://github.com/ouedraogoissouf2012/wourri/issues/89)).
+2. **Staging déployé** (Sprint J #202) : la v3 peut être testée sur un
+   environnement staging avant rollout prod.
+3. **Tests E2E de cascade IVR** verts en staging : envoi d'un audio dioula
+   réel → réponse fidèle au draft v3.
+4. **Plan de rollback documenté** : `corpus_ivr.json` v2.3 backupé pour
+   retour immédiat si la v3 dégrade les réponses.
+
+Tant que ces 4 critères ne sont pas tous remplis, le draft v3 reste archivé.
+
+---
 
 ---
 
