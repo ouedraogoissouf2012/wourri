@@ -67,9 +67,24 @@ def _load_tts_bambara():
     return model, tokenizer
 
 
-def get_tts_model():
-    """Charge le modele TTS Bambara (lazy loading via ModelRegistry)"""
+def is_mms_bam_enabled() -> bool:
+    """Combine torch disponible + flag ENABLE_MMS_BAM (issue #42)."""
     if not TORCH_AVAILABLE:
+        return False
+    try:
+        from app.config import get_settings
+        return get_settings().enable_mms_bam
+    except Exception:
+        return TORCH_AVAILABLE
+
+
+def get_tts_model():
+    """Charge le modele TTS Bambara (lazy loading via ModelRegistry).
+
+    Respect du flag ENABLE_MMS_BAM (issue #42) : si False, retourne
+    (None, None) immédiatement sans tenter le chargement.
+    """
+    if not is_mms_bam_enabled():
         return None, None
 
     return registry.get("tts_bambara", loader=_load_tts_bambara)

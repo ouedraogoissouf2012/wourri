@@ -52,9 +52,28 @@ def _load_tts_dioula():
     return model, tokenizer
 
 
-def get_tts_model_dioula():
-    """Charge le modèle TTS Dioula (lazy loading via ModelRegistry)"""
+def is_mms_dyu_enabled() -> bool:
+    """Combine torch disponible + flag ENABLE_MMS_DYU (issue #42).
+
+    Lecture lazy de get_settings() pour permettre le monkeypatch en tests
+    et la prise en compte d'un éventuel rechargement de config.
+    """
     if not TORCH_AVAILABLE:
+        return False
+    try:
+        from app.config import get_settings
+        return get_settings().enable_mms_dyu
+    except Exception:
+        return TORCH_AVAILABLE
+
+
+def get_tts_model_dioula():
+    """Charge le modèle TTS Dioula (lazy loading via ModelRegistry).
+
+    Respect du flag ENABLE_MMS_DYU (issue #42) : si False, retourne (None, None)
+    immédiatement sans tenter le chargement (économise ~3.8 GB RAM).
+    """
+    if not is_mms_dyu_enabled():
         return None, None
 
     return registry.get("tts_dioula", loader=_load_tts_dioula)
