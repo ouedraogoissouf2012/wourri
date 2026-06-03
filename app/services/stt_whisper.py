@@ -153,7 +153,7 @@ def convert_audio_to_wav(input_path: str) -> str | None:
         logger.error(f"[STT] Erreur conversion: {e}")
         return None
 
-# Verifier si faster-whisper est disponible
+# Verifier si faster-whisper est disponible (import check)
 WHISPER_AVAILABLE = False
 WhisperModel = None
 
@@ -165,6 +165,27 @@ try:
 except ImportError:
     logger.info("INFO: faster-whisper non installe - STT desactive")
     logger.info("Pour activer: pip install faster-whisper")
+
+
+def is_whisper_enabled() -> bool:
+    """Combine import disponible + flag `ENABLE_WHISPER` (issue #42).
+
+    Lecture lazy de `get_settings().enable_whisper` à chaque appel pour
+    permettre le monkeypatch en tests et la prise en compte d'un éventuel
+    rechargement de config sans redémarrage.
+
+    Cette fonction est utilisée par les endpoints/services qui doivent
+    respecter le flag (ex: stt.py router 503 si désactivé). Le constant
+    `WHISPER_AVAILABLE` reste à la valeur import-time pour la rétrocompat
+    des tests existants qui le monkeypatchent directement.
+    """
+    if not WHISPER_AVAILABLE:
+        return False
+    try:
+        from app.config import get_settings
+        return get_settings().enable_whisper
+    except Exception:
+        return WHISPER_AVAILABLE
 
 # Modele Faster-Whisper (constante de configuration)
 # Note: "large-v3-turbo" est 6-8x plus rapide que large-v3, précision équivalente à large-v2
@@ -201,8 +222,11 @@ def get_whisper_model(model_name: str = None):
 
     L'argument `model_name` est conservé pour rétrocompatibilité de l'API
     publique mais ignoré : le modèle utilisé est `_MODEL_NAME` (constante).
+
+    Respect du flag `ENABLE_WHISPER` (issue #42) : si False, retourne None
+    immédiatement sans tenter le chargement (économise ~3 GB RAM).
     """
-    if not WHISPER_AVAILABLE:
+    if not is_whisper_enabled():
         return None
     if model_name and model_name != _MODEL_NAME:
         logger.warning(

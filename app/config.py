@@ -164,6 +164,31 @@ class Settings(BaseSettings):
     piper_model_fr: str = ""
     piper_model_en: str = ""
 
+    # ========== Performance — feature flags + lazy load (issue #42) ==========
+    # Permet de désactiver entièrement ou de différer le chargement des modèles
+    # ML lourds pour réduire la RAM au démarrage. Indispensable sur Windows
+    # 8 GB (page file limité → crashes mkl_malloc avec ~7-8 GB de modèles
+    # chargés simultanément).
+    #
+    # ## Flags d'activation (enable_*) : désactive complètement le modèle
+    # Si False : le modèle n'est ni pré-chargé ni chargeable. Les endpoints
+    # concernés retournent 503 (Service Unavailable).
+    #
+    # ## Flags de pré-chargement (preload_*) : différe le chargement
+    # Si False : le modèle reste « chargeable » mais n'est pas pré-chargé au
+    # démarrage. Il est chargé au premier appel (via `model_registry`) avec
+    # un coût latence de premier appel (~5-30s selon le modèle).
+    #
+    # ## Profils mémoire typiques (estimation après mesures empiriques)
+    #   - Minimal (EN/FR + dioula lazy)        : ~3-4 GB  (whisper off, mms_dyu lazy)
+    #   - Standard (config actuelle)            : ~7-8 GB
+    #   - Full (tous pré-chargés)               : ~9-10 GB
+    enable_whisper: bool = True
+    enable_mms_dyu: bool = True
+    enable_mms_bam: bool = True
+    preload_tts_dioula: bool = True
+    preload_tts_bambara: bool = True
+
     # ========== Omnilingual ASR (ADR-0002, ADR-0003) ==========
     # Provider Omnilingual créé en Phase 2 mais NON activé dans la chain
     # (sera activé en Phase 4 après benchmark Phase 3).

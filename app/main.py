@@ -84,23 +84,39 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error("[PRELOAD] TranslationService: ERREUR - %s", e)
 
-    # 3. Précharger TTS Bambara
-    try:
-        from app.services.tts_bambara import get_tts_model
-        logger.info("[PRELOAD] Chargement du TTS Bambara (mms-tts-bam)...")
-        get_tts_model()
-        logger.info("[PRELOAD] TTS Bambara: OK")
-    except Exception as e:
-        logger.error("[PRELOAD] TTS Bambara: ERREUR - %s", e)
+    # 3. Précharger TTS Bambara (selon flags issue #42)
+    #
+    # enable_mms_bam=False : ne charge JAMAIS (économise ~3 GB RAM, mais le
+    #   TTS Bambara devient indisponible — pour profils Linux/Mac avec
+    #   contraintes RAM strictes)
+    # preload_tts_bambara=False : ne pré-charge pas, charge au 1er appel
+    #   (différe la charge mais reste fonctionnel)
+    if settings.enable_mms_bam and settings.preload_tts_bambara:
+        try:
+            from app.services.tts_bambara import get_tts_model
+            logger.info("[PRELOAD] Chargement du TTS Bambara (mms-tts-bam)...")
+            get_tts_model()
+            logger.info("[PRELOAD] TTS Bambara: OK")
+        except Exception as e:
+            logger.error("[PRELOAD] TTS Bambara: ERREUR - %s", e)
+    elif not settings.enable_mms_bam:
+        logger.info("[PRELOAD] TTS Bambara: DESACTIVE (ENABLE_MMS_BAM=false)")
+    else:
+        logger.info("[PRELOAD] TTS Bambara: LAZY (PRELOAD_TTS_BAMBARA=false — chargement au 1er appel)")
 
-    # 3b. Précharger TTS Dioula (voix ivoirienne pour utilisateurs en mode dioula)
-    try:
-        from app.services.tts_dioula import get_tts_model_dioula
-        logger.info("[PRELOAD] Chargement du TTS Dioula (mms-tts-dyu)...")
-        get_tts_model_dioula()
-        logger.info("[PRELOAD] TTS Dioula: OK")
-    except Exception as e:
-        logger.error("[PRELOAD] TTS Dioula: ERREUR - %s", e)
+    # 3b. Précharger TTS Dioula (voix ivoirienne) — flags identiques
+    if settings.enable_mms_dyu and settings.preload_tts_dioula:
+        try:
+            from app.services.tts_dioula import get_tts_model_dioula
+            logger.info("[PRELOAD] Chargement du TTS Dioula (mms-tts-dyu)...")
+            get_tts_model_dioula()
+            logger.info("[PRELOAD] TTS Dioula: OK")
+        except Exception as e:
+            logger.error("[PRELOAD] TTS Dioula: ERREUR - %s", e)
+    elif not settings.enable_mms_dyu:
+        logger.info("[PRELOAD] TTS Dioula: DESACTIVE (ENABLE_MMS_DYU=false — economise ~3.8 GB)")
+    else:
+        logger.info("[PRELOAD] TTS Dioula: LAZY (PRELOAD_TTS_DIOULA=false — chargement au 1er appel)")
 
     # 4. Whisper STT français : lazy-load (ADR-0011 Phase 3)
     # Chargement à la 1re requête vocale FR (mode `french` minoritaire selon
@@ -190,6 +206,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # Inclure les routers
+from app.routers import health_memory
+app.include_router(health_memory.router)
 app.include_router(weather.router)
 app.include_router(chat.router)
 app.include_router(tts.router)
