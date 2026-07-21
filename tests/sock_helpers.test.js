@@ -16,6 +16,7 @@ const {
     sendAudioBuffer,
     AUDIO_MIMETYPE,
 } = require("../lib/sock_helpers");
+const { getDelays } = require("../lib/human_delays");
 const { makeSockMock } = require("./_helpers");
 
 describe("sock_helpers — sendTextWithPause", () => {
@@ -57,9 +58,11 @@ describe("sock_helpers — sendAudioBuffer", () => {
         assert.strictEqual(sock.presence.length, 2);
         assert.strictEqual(sock.presence[0].state, "recording");
         assert.strictEqual(sock.presence[1].state, "paused");
-        // delay invoqué une fois avec (1000, 2000)
+        // delay invoqué une fois avec les bornes beforeAudio du profil actif
+        // (valeurs centralisées dans lib/human_delays.js — plus de hardcode)
+        const [expectedMin, expectedMax] = getDelays().beforeAudio;
         assert.strictEqual(delayCalls.length, 1);
-        assert.deepStrictEqual(delayCalls[0], { min: 1000, max: 2000 });
+        assert.deepStrictEqual(delayCalls[0], { min: expectedMin, max: expectedMax });
         // sendMessage avec le buffer + mimetype + ptt
         assert.strictEqual(sock.sent.length, 1);
         assert.strictEqual(sock.sent[0].msg.audio, buffer);

@@ -308,6 +308,7 @@ node --test tests/circuit_breaker.test.js tests/message_queue.test.js tests/reco
 | `WOURI_API_URL` | `http://localhost:8000` | non | URL de l'API backend |
 | `WOURI_API_KEY` | (vide) | **oui en prod** | Clé partagée avec backend (header `X-API-Key`) |
 | `NODE_ENV` | `development` | non | `production` active certains warnings sécurité |
+| `HUMAN_DELAY_PROFILE` | `fast` | non | Profil des délais "simulation humaine" (`fast` \| `natural` \| `off`, cf. `lib/human_delays.js`). `natural` = valeurs historiques anti-ban, rollback en 1 env var |
 
 ## Troubleshooting
 
