@@ -772,8 +772,9 @@ app.post('/logout', async (req, res) => {
 async function gracefulShutdown(signal) {
     logger.info(`\n[SHUTDOWN] Signal ${signal} recu — sauvegarde des préférences...`);
     try {
-        // Ecriture synchrone bloquante au shutdown (pas de race condition possible ici)
-        fs.writeFileSync(userPrefs.filePath, JSON.stringify(userPrefs.data, null, 2));
+        // Ecriture synchrone bloquante au shutdown, atomique via tmp+rename
+        // (encapsulee dans UserPrefs — meme garantie que save() async)
+        userPrefs.saveSync();
         logger.info(`[SHUTDOWN] Préférences sauvegardées (${Object.keys(userPrefs.data).length} utilisateurs)`);
     } catch (err) {
         logger.error(`[SHUTDOWN] Erreur sauvegarde: ${err.message}`);
