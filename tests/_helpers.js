@@ -62,14 +62,17 @@ function makeSockMock() {
  * @param {object} [options]
  * @param {object} [options.initial] - Contenu initial du "filesystem" virtuel ({ "/path": "content" })
  * @param {Error}  [options.writeFailsWith] - Si fourni, `writeFile` rappelle son callback avec cette erreur
- * @returns Mock avec existsSync, readFileSync, writeFile (async), writeFileSync
+ * @param {Error}  [options.renameFailsWith] - Si fourni, `rename` rappelle son callback avec cette erreur
+ * @returns Mock avec existsSync, readFileSync, writeFile (async), writeFileSync, rename, renameSync
  */
-function makeFsMock({ initial = {}, writeFailsWith = null } = {}) {
+function makeFsMock({ initial = {}, writeFailsWith = null, renameFailsWith = null } = {}) {
     const files = { ...initial };
     const writeCalls = [];
+    const renameCalls = [];
     return {
         files,
         writeCalls,
+        renameCalls,
         existsSync: (p) => p in files,
         readFileSync: (p) => {
             if (!(p in files)) {
@@ -91,7 +94,25 @@ function makeFsMock({ initial = {}, writeFailsWith = null } = {}) {
             });
         },
         writeFileSync: (p, content) => {
+            writeCalls.push({ path: p, content });
             files[p] = content;
+        },
+        rename: (from, to, cb) => {
+            renameCalls.push({ from, to });
+            setImmediate(() => {
+                if (renameFailsWith) {
+                    cb(renameFailsWith);
+                    return;
+                }
+                files[to] = files[from];
+                delete files[from];
+                cb(null);
+            });
+        },
+        renameSync: (from, to) => {
+            renameCalls.push({ from, to });
+            files[to] = files[from];
+            delete files[from];
         },
     };
 }

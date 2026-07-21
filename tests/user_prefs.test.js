@@ -120,14 +120,20 @@ describe("UserPrefs — get()", () => {
     });
 });
 
+/** Attend n ticks setImmediate (chaque save = write + rename = 2 hops async). */
+async function flushAsync(n = 6) {
+    for (let i = 0; i < n; i++) {
+        await new Promise((resolve) => setImmediate(resolve));
+    }
+}
+
 describe("UserPrefs — save() (verrou débounce)", () => {
     test("save() simple écrit une fois le JSON", async () => {
         const fs = makeFsMock();
         const prefs = new UserPrefs({ fs, filePath: "/tmp/prefs.json", logger: silentLogger });
         prefs.get("user1").city = "Abidjan";
         prefs.save();
-        // Attendre que le callback async s'exécute
-        await new Promise((resolve) => setImmediate(resolve));
+        await flushAsync();
         assert.strictEqual(fs.writeCalls.length, 1);
         assert.match(fs.writeCalls[0].content, /Abidjan/);
     });
@@ -139,8 +145,7 @@ describe("UserPrefs — save() (verrou débounce)", () => {
         prefs.save(); // 1er appel → _saveInProgress = true
         prefs.get("user1").city = "Bouake"; // mutation entre les 2 appels
         prefs.save(); // 2e appel → _savePending = true (pas d'écriture immédiate)
-        await new Promise((resolve) => setImmediate(resolve));
-        await new Promise((resolve) => setImmediate(resolve));
+        await flushAsync();
         assert.strictEqual(fs.writeCalls.length, 2);
         // Le 2e write doit contenir la mutation "Bouake"
         assert.match(fs.writeCalls[1].content, /Bouake/);
@@ -153,8 +158,7 @@ describe("UserPrefs — save() (verrou débounce)", () => {
         prefs.save();
         prefs.save();
         prefs.save();
-        await new Promise((resolve) => setImmediate(resolve));
-        await new Promise((resolve) => setImmediate(resolve));
+        await flushAsync();
         // 1er = exécuté direct, 2e et 3e → _savePending=true (déduplication), donc 2 writes total
         assert.strictEqual(fs.writeCalls.length, 2);
     });
@@ -168,10 +172,76 @@ describe("UserPrefs — save() (verrou débounce)", () => {
             logger: { ...silentLogger, error: (msg) => errors.push(msg) },
         });
         prefs.save();
-        await new Promise((resolve) => setImmediate(resolve));
+        await flushAsync();
         assert.strictEqual(errors.length, 1);
         assert.match(errors[0], /disk full/);
         assert.strictEqual(prefs._saveInProgress, false);
+    });
+});
+
+describe("UserPrefs — save() atomique (tmp + rename)", () => {
+    test("save() écrit vers .tmp puis rename vers le fichier final", async () => {
+        const fs = makeFsMock();
+        const prefs = new UserPrefs({ fs, filePath: "/tmp/prefs.json", logger: silentLogger });
+        prefs.get("user1").city = "Abidjan";
+        prefs.save();
+        await flushAsync();
+        // L'écriture cible le .tmp, jamais directement le fichier final
+        assert.strictEqual(fs.writeCalls[0].path, "/tmp/prefs.json.tmp");
+        // Le rename déplace .tmp → final
+        assert.strictEqual(fs.renameCalls.length, 1);
+        assert.deepStrictEqual(fs.renameCalls[0], {
+            from: "/tmp/prefs.json.tmp",
+            to: "/tmp/prefs.json",
+        });
+        // Résultat : contenu dans le fichier final, pas de .tmp résiduel
+        assert.match(fs.files["/tmp/prefs.json"], /Abidjan/);
+        assert.strictEqual("/tmp/prefs.json.tmp" in fs.files, false);
+    });
+
+    test("échec writeFile → fichier final JAMAIS touché (pas de corruption)", async () => {
+        const initial = { "/tmp/prefs.json": '{"user1":{"city":"Abidjan"}}' };
+        const fs = makeFsMock({ initial, writeFailsWith: new Error("disk full") });
+        const prefs = new UserPrefs({ fs, filePath: "/tmp/prefs.json", logger: silentLogger });
+        prefs.load();
+        prefs.get("user1").city = "Bouake";
+        prefs.save();
+        await flushAsync();
+        // Le fichier final garde son contenu d'origine intact
+        assert.strictEqual(fs.files["/tmp/prefs.json"], '{"user1":{"city":"Abidjan"}}');
+        assert.strictEqual(fs.renameCalls.length, 0);
+    });
+
+    test("échec rename → log error, état reset, fichier final intact", async () => {
+        const initial = { "/tmp/prefs.json": '{"user1":{"city":"Abidjan"}}' };
+        const fs = makeFsMock({ initial, renameFailsWith: new Error("EPERM") });
+        const errors = [];
+        const prefs = new UserPrefs({
+            fs,
+            filePath: "/tmp/prefs.json",
+            logger: { ...silentLogger, error: (msg) => errors.push(msg) },
+        });
+        prefs.load();
+        prefs.save();
+        await flushAsync();
+        assert.strictEqual(errors.length, 1);
+        assert.match(errors[0], /EPERM/);
+        assert.strictEqual(prefs._saveInProgress, false);
+        assert.strictEqual(fs.files["/tmp/prefs.json"], '{"user1":{"city":"Abidjan"}}');
+    });
+
+    test("saveSync() atomique : writeFileSync .tmp + renameSync final (shutdown path)", () => {
+        const fs = makeFsMock();
+        const prefs = new UserPrefs({ fs, filePath: "/tmp/prefs.json", logger: silentLogger });
+        prefs.get("user1").city = "Divo";
+        prefs.saveSync();
+        assert.strictEqual(fs.writeCalls[0].path, "/tmp/prefs.json.tmp");
+        assert.deepStrictEqual(fs.renameCalls[0], {
+            from: "/tmp/prefs.json.tmp",
+            to: "/tmp/prefs.json",
+        });
+        assert.match(fs.files["/tmp/prefs.json"], /Divo/);
+        assert.strictEqual("/tmp/prefs.json.tmp" in fs.files, false);
     });
 });
 
