@@ -13,6 +13,7 @@ from typing import Optional
 from app.models.schemas import Language
 from app.config import get_settings
 from app.data.calendrier_agricole import get_conseil_saisonnier
+from app.services.deepseek import DeepSeekUnavailableError
 # Note (PR 2/5 refactor #204) : `IVORIAN_CITIES` n'est plus importe ici —
 # la detection de ville est deleguee a `app/services/chat/city_detector.py`
 # qui importe IVORIAN_CITIES directement depuis app.data.cities.
@@ -106,6 +107,14 @@ class ChatService:
                 user_id=user_id,
             )
 
+        except DeepSeekUnavailableError:
+            # DeepSeek down : propager → FastAPI 500 → le whatsapp-server
+            # enregistre l'échec (circuit breaker) et envoie l'audio d'excuse
+            # dans la langue de l'utilisateur. Avant ce re-raise, le catch
+            # générique ci-dessous renvoyait un texte FR en HTTP 200 : le
+            # breaker ne s'ouvrait jamais et le mode dioula vocalisait le
+            # message d'erreur (audit 2026-07-21).
+            raise
         except Exception as e:
             logger.error("Erreur ChatService: %s", e, exc_info=True)
             return ChatResult(

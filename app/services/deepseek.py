@@ -13,6 +13,22 @@ from app.services.conversation_history import get_history_for_deepseek, add_mess
 settings = get_settings()
 
 
+class DeepSeekUnavailableError(RuntimeError):
+    """DeepSeek API indisponible (clé absente, erreur HTTP, timeout, réseau).
+
+    Levée au lieu de retourner une string d'erreur. Avant ce fix (audit
+    2026-07-21), les messages "Erreur API: 500..." étaient retournés comme
+    réponse normale, puis traduits en dioula via NLLB et VOCALISÉS pour
+    l'agriculteur en note vocale. L'exception doit remonter jusqu'à FastAPI
+    (HTTP 500) : le whatsapp-server enregistre l'échec dans son circuit
+    breaker et envoie l'audio d'excuse pré-généré (audio_cache) dans la
+    langue de l'utilisateur — le chemin d'erreur conçu pour ça.
+
+    Ne PAS attraper cette exception dans les handlers de langue ni dans
+    ChatService (re-raise explicite dans `ChatService.process`).
+    """
+
+
 async def chat_with_deepseek(
     message: str,
     weather_data: dict | None = None,
@@ -23,7 +39,9 @@ async def chat_with_deepseek(
     Envoie un message à DeepSeek et retourne la réponse
     """
     if not settings.deepseek_api_key:
-        return "Erreur: Clé API DeepSeek non configurée. Ajoutez DEEPSEEK_API_KEY dans .env"
+        raise DeepSeekUnavailableError(
+            "Clé API DeepSeek non configurée (DEEPSEEK_API_KEY absente du .env)"
+        )
 
     # Construire le contexte météo
     weather_context = ""
@@ -100,15 +118,21 @@ Données météo actuelles pour {weather_data['city']}:
 
                 return response_text
             else:
+                # Pas de response.text dans le message d'exception : le corps
+                # d'erreur DeepSeek peut contenir des détails internes (fuite).
                 logger.error(f"[DeepSeek] Erreur API: {response.status_code}")
-                return f"Erreur API: {response.status_code} - {response.text}"
+                raise DeepSeekUnavailableError(f"DeepSeek HTTP {response.status_code}")
 
+    except DeepSeekUnavailableError:
+        raise
     except httpx.TimeoutException:
         logger.warning("[DeepSeek] Timeout après 20s")
-        return "Désolé, le service met trop de temps à répondre. Réessayez."
+        raise DeepSeekUnavailableError("Timeout DeepSeek (20s)") from None
     except Exception as e:
-        logger.error(f"[DeepSeek] Erreur: {e}")
-        return f"Erreur: {str(e)}"
+        # Type-only (pattern FIX-6 projet) : les exceptions httpx peuvent
+        # embarquer l'URL complète avec query params dans leurs args.
+        logger.error(f"[DeepSeek] Erreur: {type(e).__name__}")
+        raise DeepSeekUnavailableError(f"Erreur réseau DeepSeek: {type(e).__name__}") from e
 
 
 async def correct_stt_transcription(
