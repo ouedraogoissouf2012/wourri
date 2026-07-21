@@ -37,6 +37,25 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+def _chroma_importable() -> bool:
+    """chromadb 0.5.0 (legacy) utilise `np.float_`, supprimé en NumPy 2.0.
+
+    Sur un environnement numpy>=2 (réinstall 2026-07-21), l'import chromadb
+    échoue → le backend legacy est indisponible. La prod tourne en mode
+    `pgvector` (ADR-0008, dépréciation chroma planifiée Phase E) : les tests
+    qui comparent les DEUX backends sont skippés avec raison explicite,
+    ceux qui mockent vdb_service restent verts.
+    """
+    try:
+        import chromadb  # noqa: F401
+        return True
+    except Exception:
+        return False
+
+
+_CHROMA_OK = _chroma_importable()
+
+
 # ─────────────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────
@@ -133,6 +152,15 @@ class TestModeRouting:
 # ─────────────────────────────────────────────────────────────────────────
 
 
+@pytest.mark.skipif(
+    not _CHROMA_OK,
+    reason=(
+        "chromadb non importable (numpy>=2 a retiré np.float_, chromadb 0.5.0 "
+        "legacy incompatible). Comparaison chroma↔pgvector impossible ; le "
+        "backend prod (pgvector) reste testé par le reste de la suite. "
+        "Dépréciation chroma : ADR-0008 Phase E."
+    ),
+)
 class TestChromaVsPgvectorConsistency:
     """Critère ADR §Phase C #5 : 50+ queries retournent le même `id`.
 
