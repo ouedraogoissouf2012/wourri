@@ -405,28 +405,32 @@ async def transcribe_audio_bytes(audio_bytes: bytes, filename: str = "audio.wav"
     # Sauvegarder temporairement
     temp_path = os.path.join(tempfile.gettempdir(), f"whisper_{uuid.uuid4()}{ext}")
 
-    # DEBUG: Sauvegarder une copie pour analyse
-    debug_dir = os.getenv("WOURRI_DEBUG_AUDIO_DIR", os.path.join(tempfile.gettempdir(), "wourri_debug_audio"))
-    if not os.path.exists(debug_dir):
-        os.makedirs(debug_dir)
-    debug_path = os.path.join(debug_dir, f"audio_{uuid.uuid4()}{ext}")
+    # Dump debug OPT-IN uniquement (fix PII audit 2026-07-21) : les vocaux
+    # utilisateurs sont des donnees personnelles (conformite ARTCI). Avant ce
+    # fix, CHAQUE vocal etait copie inconditionnellement dans un dossier
+    # jamais nettoye. Desormais : aucun dump sauf si l'operateur definit
+    # explicitement WOURRI_DEBUG_AUDIO_DIR (diagnostic ponctuel, a purger).
+    debug_dir = os.getenv("WOURRI_DEBUG_AUDIO_DIR")
 
     try:
         with open(temp_path, "wb") as f:
             f.write(audio_bytes)
 
-        # DEBUG: Copier pour analyse
-        with open(debug_path, "wb") as f:
-            f.write(audio_bytes)
-        logger.info(f"[STT DEBUG] Audio sauvegarde: {debug_path} ({len(audio_bytes)} bytes)")
+        if debug_dir:
+            os.makedirs(debug_dir, exist_ok=True)
+            debug_path = os.path.join(debug_dir, f"audio_{uuid.uuid4()}{ext}")
+            with open(debug_path, "wb") as f:
+                f.write(audio_bytes)
+            logger.info(f"[STT DEBUG] Audio sauvegarde: {debug_path} ({len(audio_bytes)} bytes)")
 
         result = await asyncio.to_thread(transcribe_audio, temp_path, language)
 
-        # DEBUG: Log le resultat
+        # Log longueur seulement, pas le contenu (discipline PII Sprint H.1b :
+        # la transcription est de la parole utilisateur en clair)
         if result:
-            logger.info(f"[STT DEBUG] Resultat transcription: '{result['text']}'")
+            logger.info(f"[STT] Transcription OK ({len(result['text'])} chars)")
         else:
-            logger.warning(f"[STT DEBUG] Transcription echouee (None)")
+            logger.warning("[STT] Transcription echouee (None)")
 
         return result
 
