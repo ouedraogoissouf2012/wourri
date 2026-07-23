@@ -11,7 +11,7 @@
 "duration_predictor_flow_bins": 10,
 "duration_predictor_kernel_size": 3,
 "duration_predictor_num_flows": 4,
-"duration_predictor_tail_bound": 5,
+"duration_predictor_tail_bound": 5.0,
 "ffn_dim": 768,
 "ffn_kernel_size": 3,
 "flow_size": 192,
