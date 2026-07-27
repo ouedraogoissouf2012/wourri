@@ -32,6 +32,11 @@ transformers>=4.36.0
 torch>=2.1.0
 scipy>=1.11.4
 soundfile>=0.12.1
+# faster-whisper : STT francais (app/services/stt_whisper.py:161). Meme cause
+# root que slowapi/rapidfuzz : importe au runtime mais absent du requirements
+# (dette revelee par la reinstall Python 2026-07 — issue #313). Pin 1.2.1 =
+# version validee localement (compatible ctranslate2 4.8.1 + numpy 2.4).
+faster-whisper==1.2.1
 
 # Audio conversion
 pydub>=0.25.1
