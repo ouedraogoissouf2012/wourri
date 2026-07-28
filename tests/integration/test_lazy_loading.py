@@ -15,8 +15,10 @@ Note : on utilise `unittest.mock.patch` comme spy. Les loaders sont mockés
 pour éviter de charger les vrais modèles (overhead inutile en test), mais
 on vérifie ensuite si le mock a été appelé ou pas.
 """
-import pytest
+import logging
 from unittest.mock import patch, MagicMock
+
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -32,14 +34,14 @@ def lifespan_spies():
     with patch("app.services.stt_whisper.get_whisper_model",
                return_value=None) as spy_whisper, \
          patch("app.services.asr_soloni_nemo.get_nemo_model",
-               return_value=None) as spy_nemo, \
+               return_value=object()) as spy_nemo, \
          patch("app.services.tts_bambara.get_tts_model",
-               return_value=(None, None)) as spy_tts_bam, \
+               return_value=(object(), object())) as spy_tts_bam, \
          patch("app.services.tts_dioula.get_tts_model_dioula",
-               return_value=(None, None)) as spy_tts_dyu, \
+               return_value=(object(), object())) as spy_tts_dyu, \
          patch("app.services.translation.get_translation_service") as mock_ts, \
-         patch("app.services.nlu.get_nlu_service", return_value=None), \
-         patch("app.services.vdb_service.initialiser_vdb"), \
+         patch("app.services.nlu.get_nlu_service") as mock_nlu, \
+         patch("app.services.corpus_facade.initialiser_vdb"), \
          patch("app.services.audio_cleanup.start_cleanup_scheduler"), \
          patch("app.services.audio_cleanup.stop_cleanup_scheduler"):
         # mock_ts est appelé pour récupérer le service. On configure le mock
@@ -49,6 +51,10 @@ def lifespan_spies():
         mock_svc.preload_nllb = MagicMock(return_value=None)
         mock_svc.get_stats.return_value = {"dictionnaire": {"total_mots": 0}}
         mock_ts.return_value = mock_svc
+        mock_nlu.return_value.get_stats.return_value = {
+            "total_concepts": 0,
+            "total_keywords": 0,
+        }
 
         from app.main import app
         # Le context manager `with TestClient(app)` déclenche le lifespan
@@ -134,3 +140,34 @@ class TestLazyLoadingPolicyDetails:
         assert spy.call_count == 1, (
             f"get_nemo_model a été appelé {spy.call_count} fois (attendu : 1)."
         )
+
+
+def test_lifespan_reports_nemo_unavailable_without_false_success(caplog):
+    """Un loader NeMo qui renvoie None ne doit jamais être annoncé comme OK."""
+    with patch("app.services.asr_soloni_nemo.get_nemo_model",
+               return_value=None), \
+         patch("app.services.nlu.get_nlu_service") as mock_nlu, \
+         patch("app.services.translation.get_translation_service") as mock_ts, \
+         patch("app.services.tts_bambara.get_tts_model",
+               return_value=(object(), object())), \
+         patch("app.services.tts_dioula.get_tts_model_dioula",
+               return_value=(object(), object())), \
+         patch("app.services.corpus_facade.initialiser_vdb"), \
+         patch("app.services.audio_cleanup.start_cleanup_scheduler"), \
+         patch("app.services.audio_cleanup.stop_cleanup_scheduler"):
+        mock_nlu.return_value.get_stats.return_value = {
+            "total_concepts": 0,
+            "total_keywords": 0,
+        }
+        mock_ts.return_value.get_stats.return_value = {
+            "dictionnaire": {"total_mots": 0},
+        }
+
+        from app.main import app
+        with caplog.at_level(logging.INFO):
+            with TestClient(app):
+                pass
+
+    assert "[PRELOAD] ASR NeMo Soloni: INDISPONIBLE" in caplog.text
+    assert "[PRELOAD] ASR NeMo Soloni: OK" not in caplog.text
+    assert "service(s) indisponible(s): ASR NeMo Soloni" in caplog.text

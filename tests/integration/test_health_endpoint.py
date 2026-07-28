@@ -64,6 +64,20 @@ class TestHealthEndpoint:
                     "stt_whisper", "rag_knowledge"):
             assert key in services, f"Clé manquante dans services: {key}"
 
+    def test_health_exposes_nemo_status(self, client):
+        """/health expose la disponibilité, le modèle et son chargement NeMo."""
+        expected = {
+            "nemo_available": False,
+            "model_path_exists": True,
+            "model_loaded": False,
+        }
+        with patch("app.main.check_deepseek_status",
+                   AsyncMock(return_value=True)), \
+             patch("app.main.check_nemo_asr_status",
+                   return_value=expected):
+            response = client.get("/health")
+        assert response.json()["services"]["asr_nemo"] == expected
+
     def test_health_models_block_structure(self, client):
         """Le bloc `models` a la structure attendue."""
         with patch("app.main.check_deepseek_status",
