@@ -30,6 +30,11 @@ def strip_tones(text: str) -> str:
     return ''.join(result)
 
 
+def normalize_phrase(text: str) -> str:
+    """Normalise une clé de phrase de la même façon au chargement et au lookup."""
+    return text.lower().strip().rstrip(".!?;:,").strip()
+
+
 class DictionaryRepository(IDictionaryRepository):
     """Accès au dictionnaire Bambara-Français depuis les fichiers JSON.
     Double indexation: avec tons (original) et sans tons (pour matching ASR).
@@ -45,6 +50,9 @@ class DictionaryRepository(IDictionaryRepository):
         self._phrases_bam_fr: dict[str, str] = {}
         self._phrases_bam_fr_notone: dict[str, str] = {}
         self._phrases_fr_bam: dict[str, str] = {}
+        self._leading_phrases_bam_fr: dict[str, str] = {}
+        self._leading_phrases_bam_fr_notone: dict[str, str] = {}
+        self._leading_phrases_fr_bam: dict[str, str] = {}
         self._patterns_bam_fr: dict[str, str] = {}
         self._patterns_fr_bam: dict[str, str] = {}
         self._loaded = False
@@ -183,16 +191,49 @@ class DictionaryRepository(IDictionaryRepository):
         with open(phrases_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
+        loaded_entries: list[tuple[str, str]] = []
         for entry in data.get("phrases", []):
-            bam = entry.get("bam", "").lower().strip()
+            bam_original = entry.get("bam", "").strip()
+            bam = normalize_phrase(bam_original)
             fr = entry.get("fr", "").strip()
+            fr_key = normalize_phrase(fr)
             if bam and fr:
-                self._phrases_bam_fr[bam] = fr
+                # La première forme est la forme BAM->FR de référence. Les
+                # variantes suivantes restent reconnues sans écraser celle-ci.
+                self._phrases_bam_fr.setdefault(bam, fr)
                 # Indexer aussi sans tons pour matching ASR
                 bam_notone = strip_tones(bam)
                 if bam_notone != bam:
-                    self._phrases_bam_fr_notone[bam_notone] = fr
-                self._phrases_fr_bam[fr.lower()] = entry.get("bam", "")
+                    self._phrases_bam_fr_notone.setdefault(bam_notone, fr)
+
+                # Seules les formes manuelles validées peuvent être générées.
+                # Les variantes ASR/NeMo servent uniquement à reconnaître une
+                # entrée et ne doivent jamais remplacer la forme canonique.
+                if entry.get("source") == "manuel":
+                    self._phrases_fr_bam.setdefault(fr_key, bam_original)
+
+                loaded_entries.append((bam, fr))
+
+        # Les expressions de tête sont déclarées dans le fichier de données
+        # afin que TranslationService et les deux services TTS partagent la
+        # même source linguistique.
+        leading_fr_keys = {
+            normalize_phrase(phrase)
+            for phrase in data.get("leading_french_phrases", [])
+            if normalize_phrase(phrase)
+        }
+        for fr_key in leading_fr_keys:
+            canonical_bam = self._phrases_fr_bam.get(fr_key)
+            if canonical_bam:
+                self._leading_phrases_fr_bam[fr_key] = canonical_bam
+
+        for bam, fr in loaded_entries:
+            if normalize_phrase(fr) not in leading_fr_keys:
+                continue
+            self._leading_phrases_bam_fr.setdefault(bam, fr)
+            bam_notone = strip_tones(bam)
+            if bam_notone != bam:
+                self._leading_phrases_bam_fr_notone.setdefault(bam_notone, fr)
 
         self._stats["total_phrases"] = len(self._phrases_bam_fr)
         logger.info(f"[DictRepo] {len(self._phrases_bam_fr)} phrases parallèles chargées")
@@ -211,7 +252,7 @@ class DictionaryRepository(IDictionaryRepository):
 
     def lookup_phrase(self, phrase: str, direction: Direction) -> Optional[str]:
         self._ensure_loaded()
-        key = phrase.lower().strip()
+        key = normalize_phrase(phrase)
         if direction == Direction.BAM_TO_FR:
             result = self._phrases_bam_fr.get(key)
             if result is None:
@@ -219,6 +260,55 @@ class DictionaryRepository(IDictionaryRepository):
             return result
         else:
             return self._phrases_fr_bam.get(key)
+
+    @staticmethod
+    def _extract_from_index(
+        text: str,
+        normalized_text: str,
+        phrases: dict[str, str],
+    ) -> Optional[tuple[str, str]]:
+        """Trouve la plus longue expression complète placée en tête du texte."""
+        boundaries = " \t\r\n,!.;:?"
+        for phrase in sorted(phrases, key=len, reverse=True):
+            if not normalized_text.startswith(phrase):
+                continue
+            if len(normalized_text) > len(phrase):
+                next_character = normalized_text[len(phrase)]
+                if next_character not in boundaries:
+                    continue
+            rest = text[len(phrase):].lstrip(boundaries)
+            return phrases[phrase], rest
+        return None
+
+    def extract_leading_phrase(
+        self,
+        text: str,
+        direction: Direction,
+    ) -> Optional[tuple[str, str]]:
+        """Traduit une expression validée placée au début du texte."""
+        self._ensure_loaded()
+        stripped = text.strip()
+        normalized = stripped.lower()
+
+        if direction == Direction.FR_TO_BAM:
+            return self._extract_from_index(
+                stripped,
+                normalized,
+                self._leading_phrases_fr_bam,
+            )
+
+        result = self._extract_from_index(
+            stripped,
+            normalized,
+            self._leading_phrases_bam_fr,
+        )
+        if result is not None:
+            return result
+        return self._extract_from_index(
+            stripped,
+            strip_tones(normalized),
+            self._leading_phrases_bam_fr_notone,
+        )
 
     def get_all_words(self, direction: Direction) -> dict[str, DictionaryEntry]:
         """Accès direct à l'index complet (pour le WordTranslator)"""

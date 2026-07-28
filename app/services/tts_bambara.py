@@ -302,31 +302,14 @@ def clean_bambara_text(text: str) -> str:
     return text
 
 
-# Salutations bambara à injecter quand le contexte le demande
-_BAMBARA_GREETINGS = {
-    "bonjour": "Nba, i ni ce!",
-    "bonsoir": "Nba, i ni su!",
-    "salut": "Nba, i ni ce!",
-    "merci": "Nba, i ni ce!",
-}
-
-
 def _detect_and_strip_greeting(text: str) -> tuple[str, str]:
-    """Détecte une salutation française au début du texte.
-    Retourne (salutation_bambara, texte_sans_salutation).
-    Si pas de salutation, retourne ("", texte_original).
-    """
-    text_stripped = text.strip()
-    text_lower = text_stripped.lower()
-    for fr_greet, bam_greet in _BAMBARA_GREETINGS.items():
-        if text_lower.startswith(fr_greet):
-            # Enlever la salutation du texte pour ne pas la traduire par NLLB
-            rest = text_stripped[len(fr_greet):].lstrip(" ,!.;:")
-            if rest:
-                return bam_greet, rest
-            else:
-                return bam_greet, ""
-    return "", text_stripped
+    """Extrait une expression française validée depuis le dictionnaire commun."""
+    from app.services.translation import Direction, get_translation_service
+
+    return get_translation_service().translate_leading_phrase(
+        text,
+        Direction.FR_TO_BAM,
+    )
 
 
 def translate_to_bambara(french_text: str) -> str:
@@ -344,6 +327,18 @@ def translate_to_bambara(french_text: str) -> str:
     """
     if not french_text or not french_text.strip():
         return french_text
+
+    from app.services.translation import Direction, get_translation_service
+    service = get_translation_service()
+
+    # Une phrase complète validée est prioritaire sur l'extraction de son
+    # éventuelle salutation initiale.
+    exact_translation = service.translate_exact_phrase(
+        french_text,
+        Direction.FR_TO_BAM,
+    )
+    if exact_translation:
+        return exact_translation
 
     # 0. Détecter et extraire la salutation (sera ajoutée en bambara pur)
     greeting_bam, remaining_text = _detect_and_strip_greeting(french_text)
@@ -365,10 +360,6 @@ def translate_to_bambara(french_text: str) -> str:
     sentences = split_into_sentences(preprocessed)
     if not sentences:
         sentences = [preprocessed]
-
-    from app.services.translation import get_translation_service
-    from app.services.translation.interfaces import Direction
-    service = get_translation_service()
 
     translated_parts = []
     for sentence in sentences:
@@ -394,9 +385,9 @@ def translate_to_bambara(french_text: str) -> str:
     if city_map:
         result = restore_city_names(result, city_map)
 
-    # Préfixer avec la salutation bambara (dictionnaire pur, jamais NLLB)
+    # Préfixer avec l'expression bambara validée (dictionnaire pur, jamais NLLB)
     if greeting_bam:
-        result = f"{greeting_bam} {result}"
+        result = f"{greeting_bam}, {result}"
 
     try:
         logger.info(f"[Bambara] Traduit: {len(french_text)} chars -> {len(result)} chars")
@@ -406,68 +397,14 @@ def translate_to_bambara(french_text: str) -> str:
     return result
 
 
-# Préfixes de salutations bambara collées par l'ASR (sans espaces)
-# L'ASR MMS-1B-ALL transcrit souvent "i ni sɔgɔma" comme "inisɔgɔma" ou "inisɔgɔ ma"
-_BAM_GREETING_PREFIXES = [
-    # Avec diacritiques - collées
-    "inisɔgɔma", "inisɔgɔ ma",  # i ni sɔgɔma (bonjour matin)
-    "anisɔgɔma", "anisɔgɔ ma",  # a ni sɔgɔma
-    "inice", "anice",            # i ni ce / a ni ce (bonjour)
-    "iniwula", "ini wula",       # i ni wula (bonsoir)
-    "inisu", "ini su",           # i ni su (bonne nuit)
-    "inibaara", "ini baara",     # i ni baara (merci pour ton travail)
-    # Sans diacritiques - collées (ASR peut omettre les ɔ)
-    "inisogoma", "inisogo ma",   # i ni sogoma
-    "anisogoma", "anisogo ma",   # a ni sogoma
-    # Avec espaces (salutation pas collée mais en variante ASR)
-    "i ni sɔgɔma", "a ni sɔgɔma",
-    "i ni sogoma", "a ni sogoma",
-    "ani sɔgɔma", "ani sogoma",  # "ani" = variante ASR de "a ni" / "i ni"
-    "an ni sɔgɔma", "an ni sogoma",  # "an ni" = variante NeMo TDT (bonjour matin)
-    "i ni ce", "a ni ce", "ani ce",
-    "i ni wula", "a ni wula",
-    "i ni su", "a ni su",
-]
-
-# Mapping préfixe collé -> salutation française propre
-_BAM_GREETING_TO_FR = {
-    # Collées
-    "inisɔgɔma": "Bonjour, ", "inisɔgɔ ma": "Bonjour, ",
-    "anisɔgɔma": "Bonjour, ", "anisɔgɔ ma": "Bonjour, ",
-    "inisogoma": "Bonjour, ", "inisogo ma": "Bonjour, ",
-    "anisogoma": "Bonjour, ", "anisogo ma": "Bonjour, ",
-    "inice": "Bonjour, ", "anice": "Bonjour, ",
-    "iniwula": "Bonsoir, ", "ini wula": "Bonsoir, ",
-    "inisu": "Bonne nuit, ", "ini su": "Bonne nuit, ",
-    "inibaara": "Merci, ", "ini baara": "Merci, ",
-    # Avec espaces
-    "i ni sɔgɔma": "Bonjour, ", "a ni sɔgɔma": "Bonjour, ",
-    "i ni sogoma": "Bonjour, ", "a ni sogoma": "Bonjour, ",
-    "ani sɔgɔma": "Bonjour, ", "ani sogoma": "Bonjour, ",
-    "an ni sɔgɔma": "Bonjour, ", "an ni sogoma": "Bonjour, ",
-    "i ni ce": "Bonjour, ", "a ni ce": "Bonjour, ", "ani ce": "Bonjour, ",
-    "i ni wula": "Bonsoir, ", "a ni wula": "Bonsoir, ",
-    "i ni su": "Bonne nuit, ", "a ni su": "Bonne nuit, ",
-}
-
-
 def _split_bam_greeting(text: str) -> tuple[str, str]:
-    """Détecte et sépare une salutation bambara collée au début du texte ASR.
-    Retourne (salutation_fr, reste_du_texte).
-    Ex: 'inisɔgɔ ma ne bɛ fɛ ka malo sɛnɛ' -> ('Bonjour, ', 'ne bɛ fɛ ka malo sɛnɛ')
-    """
-    text_lower = text.lower().strip()
-    # Trier par longueur décroissante pour matcher le préfixe le plus long d'abord
-    for prefix in sorted(_BAM_GREETING_PREFIXES, key=len, reverse=True):
-        if text_lower.startswith(prefix):
-            rest = text_lower[len(prefix):].lstrip(" ,!.;:")
-            if rest:
-                fr_greeting = _BAM_GREETING_TO_FR.get(prefix, "Bonjour, ")
-                return fr_greeting, rest
-            else:
-                fr_greeting = _BAM_GREETING_TO_FR.get(prefix, "Bonjour")
-                return fr_greeting.rstrip(", "), ""
-    return "", text
+    """Extrait une expression bambara validée depuis le dictionnaire commun."""
+    from app.services.translation import Direction, get_translation_service
+
+    return get_translation_service().translate_leading_phrase(
+        text,
+        Direction.BAM_TO_FR,
+    )
 
 
 def translate_to_french(bambara_text: str) -> str:
@@ -479,11 +416,18 @@ def translate_to_french(bambara_text: str) -> str:
     if not bambara_text or not bambara_text.strip():
         return bambara_text
 
+    from app.services.translation import Direction, get_translation_service
+    service = get_translation_service()
+
+    exact_translation = service.translate_exact_phrase(
+        bambara_text,
+        Direction.BAM_TO_FR,
+    )
+    if exact_translation:
+        return exact_translation
+
     # Détecter et séparer une salutation collée par l'ASR
     greeting_fr, remaining = _split_bam_greeting(bambara_text)
-
-    from app.services.translation import get_translation_service
-    service = get_translation_service()
 
     if remaining:
         result = service.translate_to_french(remaining)
@@ -495,9 +439,9 @@ def translate_to_french(bambara_text: str) -> str:
     if result and result[0].islower():
         result = result[0].upper() + result[1:]
 
-    # Préfixer avec la salutation française
+    # Préfixer avec l'expression française
     if greeting_fr:
-        result = f"{greeting_fr}{result}"
+        result = f"{greeting_fr}, {result}"
 
     return result
 

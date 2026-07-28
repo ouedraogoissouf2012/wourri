@@ -115,6 +115,25 @@ class TranslationService:
         result = self.translate(french_text, Direction.FR_TO_BAM)
         return result.text
 
+    def translate_exact_phrase(
+        self,
+        text: str,
+        direction: Direction,
+    ) -> Optional[str]:
+        """Retourne uniquement une traduction exacte validée du dictionnaire."""
+        return self._repository.lookup_phrase(text, direction)
+
+    def translate_leading_phrase(
+        self,
+        text: str,
+        direction: Direction,
+    ) -> tuple[str, str]:
+        """Traduit une expression validée au début du texte, sans appeler NLLB."""
+        result = self._repository.extract_leading_phrase(text, direction)
+        if result is None:
+            return "", text.strip()
+        return result
+
     def preload_nllb(self):
         """Pré-charge NLLB au démarrage pour éviter OOM pendant les requêtes"""
         if self._nllb:

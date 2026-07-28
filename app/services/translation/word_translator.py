@@ -189,9 +189,9 @@ class WordTranslator(ITranslator):
         if total == 0:
             return None
 
-        # 1. Chercher une phrase complete (enlever ponctuation finale pour le matching)
-        phrase_key = text_lower.rstrip('.!?;:,')
-        phrase_result = self._repo.lookup_phrase(phrase_key, direction)
+        # 1. Chercher une phrase complète. Le repository applique la même
+        # normalisation au chargement et au lookup.
+        phrase_result = self._repo.lookup_phrase(text_lower, direction)
         if phrase_result:
             return TranslationResult(
                 text=phrase_result,
