@@ -6,6 +6,7 @@ Mutualise la conversion WAV 16kHz + gestion des fichiers temporaires.
 import asyncio
 import logging
 import os
+import re
 import subprocess
 import tempfile
 import uuid
@@ -64,7 +65,10 @@ async def transcribe_with_temp_files(
     os.makedirs(_TEMP_DIR, exist_ok=True)
 
     temp_id = uuid.uuid4()
-    prefix = provider_name.lower().replace(" ", "_")
+    # Le nom lisible d'un provider peut contenir des séparateurs de chemin
+    # (ex. "MMS-generic (Bambara/Dioula)"). Ils doivent être neutralisés
+    # avant de construire les noms de fichiers temporaires.
+    prefix = re.sub(r"[^a-z0-9]+", "_", provider_name.lower()).strip("_")
     temp_path = os.path.join(_TEMP_DIR, f"{prefix}_{temp_id}.{file_extension}")
     wav_path = os.path.join(_TEMP_DIR, f"{prefix}_{temp_id}.wav")
 

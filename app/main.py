@@ -19,6 +19,7 @@ from app.core.logging_config import setup_logging
 from app.config import get_settings
 from app.routers import weather, chat, tts, stt, rag, asr, feedback, admin
 from app.services.deepseek import check_deepseek_status
+from app.services.asr_soloni_nemo import check_nemo_asr_status
 from app.services.tts_bambara import check_models_status
 from app.services.stt_whisper import check_whisper_status
 from app.services.rag_knowledge import check_rag_status
@@ -40,6 +41,8 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestion du cycle de vie de l'application"""
+    preload_issues = []
+
     logger.info("=" * 50)
     logger.info("WOURI - Démarrage")
     logger.info("=" * 50)
@@ -58,17 +61,27 @@ async def lifespan(app: FastAPI):
             logger.info("[PRELOAD] NLU: OK (%d concepts, %d mots-clés)", stats['total_concepts'], stats['total_keywords'])
         else:
             logger.warning("[PRELOAD] NLU: désactivé (fichier nlu_concepts.json non trouvé)")
+            preload_issues.append("NLU")
     except Exception as e:
         logger.error("[PRELOAD] NLU: ERREUR - %s", e)
+        preload_issues.append("NLU")
 
     # 1. Précharger ASR NeMo Soloni (decodeur TDT complet, bambara)
     try:
         from app.services.asr_soloni_nemo import get_nemo_model
         logger.info("[PRELOAD] Chargement ASR NeMo Soloni (TDT, bambara)...")
-        get_nemo_model()
-        logger.info("[PRELOAD] ASR NeMo Soloni: OK")
+        nemo_model = get_nemo_model()
+        if nemo_model is None:
+            logger.warning(
+                "[PRELOAD] ASR NeMo Soloni: INDISPONIBLE "
+                "(ASRChain utilisera les providers de fallback)"
+            )
+            preload_issues.append("ASR NeMo Soloni")
+        else:
+            logger.info("[PRELOAD] ASR NeMo Soloni: OK")
     except Exception as e:
         logger.error("[PRELOAD] ASR NeMo Soloni: ERREUR - %s", e)
+        preload_issues.append("ASR NeMo Soloni")
 
     # 2. Précharger le TranslationService (dictionnaire seul)
     # NLLB-200 lazy-load (ADR-0011 Phase 3) : chargement à la 1re traduction
@@ -83,6 +96,7 @@ async def lifespan(app: FastAPI):
         logger.info("[PRELOAD] Dictionnaire: OK (%d mots)", stats['dictionnaire']['total_mots'])
     except Exception as e:
         logger.error("[PRELOAD] TranslationService: ERREUR - %s", e)
+        preload_issues.append("TranslationService")
 
     # 3. Précharger TTS Bambara (selon flags issue #42)
     #
@@ -95,10 +109,15 @@ async def lifespan(app: FastAPI):
         try:
             from app.services.tts_bambara import get_tts_model
             logger.info("[PRELOAD] Chargement du TTS Bambara (mms-tts-bam)...")
-            get_tts_model()
-            logger.info("[PRELOAD] TTS Bambara: OK")
+            tts_bambara = get_tts_model()
+            if not tts_bambara or not all(tts_bambara):
+                logger.warning("[PRELOAD] TTS Bambara: INDISPONIBLE")
+                preload_issues.append("TTS Bambara")
+            else:
+                logger.info("[PRELOAD] TTS Bambara: OK")
         except Exception as e:
             logger.error("[PRELOAD] TTS Bambara: ERREUR - %s", e)
+            preload_issues.append("TTS Bambara")
     elif not settings.enable_mms_bam:
         logger.info("[PRELOAD] TTS Bambara: DESACTIVE (ENABLE_MMS_BAM=false)")
     else:
@@ -109,10 +128,15 @@ async def lifespan(app: FastAPI):
         try:
             from app.services.tts_dioula import get_tts_model_dioula
             logger.info("[PRELOAD] Chargement du TTS Dioula (mms-tts-dyu)...")
-            get_tts_model_dioula()
-            logger.info("[PRELOAD] TTS Dioula: OK")
+            tts_dioula = get_tts_model_dioula()
+            if not tts_dioula or not all(tts_dioula):
+                logger.warning("[PRELOAD] TTS Dioula: INDISPONIBLE")
+                preload_issues.append("TTS Dioula")
+            else:
+                logger.info("[PRELOAD] TTS Dioula: OK")
         except Exception as e:
             logger.error("[PRELOAD] TTS Dioula: ERREUR - %s", e)
+            preload_issues.append("TTS Dioula")
     elif not settings.enable_mms_dyu:
         logger.info("[PRELOAD] TTS Dioula: DESACTIVE (ENABLE_MMS_DYU=false — economise ~3.8 GB)")
     else:
@@ -134,6 +158,7 @@ async def lifespan(app: FastAPI):
         initialiser_vdb()
     except Exception as e:
         logger.error("[PRELOAD] BD vectorielle IVR: ERREUR - %s", e)
+        preload_issues.append("BD vectorielle IVR")
 
     # 6. Démarrer le nettoyage automatique des fichiers audio
     try:
@@ -142,8 +167,16 @@ async def lifespan(app: FastAPI):
         logger.info("[PRELOAD] Nettoyage audio: OK (fichiers > 7j supprimés automatiquement)")
     except Exception as e:
         logger.error("[PRELOAD] Nettoyage audio: ERREUR - %s", e)
+        preload_issues.append("Nettoyage audio")
 
-    logger.info("[PRELOAD] Tous les modeles charges!")
+    if preload_issues:
+        logger.warning(
+            "[PRELOAD] Demarrage termine avec %d service(s) indisponible(s): %s",
+            len(preload_issues),
+            ", ".join(preload_issues),
+        )
+    else:
+        logger.info("[PRELOAD] Tous les prechargements requis ont reussi!")
     logger.info("=" * 50)
 
     yield
@@ -247,6 +280,7 @@ async def health():
     hf_status = check_models_status()
     whisper_status = check_whisper_status()
     rag_status = check_rag_status()
+    nemo_status = check_nemo_asr_status()
 
     # Observabilité ML (ADR-0011 Phase 4)
     loaded_keys = sorted(registry.list_loaded())
@@ -261,6 +295,7 @@ async def health():
             "weather": True,  # Open-Meteo est toujours disponible
             "tts_french": True,  # Edge-TTS est toujours disponible
             "tts_bambara": hf_status,
+            "asr_nemo": nemo_status,
             "stt_whisper": whisper_status,
             "rag_knowledge": rag_status
         },
