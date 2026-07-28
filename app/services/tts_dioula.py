@@ -85,34 +85,14 @@ def _get_nllb():
     return get_translation_service().get_nllb_model_and_tokenizer()
 
 
-# Salutations françaises → Dioula (dictionnaire pur, jamais NLLB)
-# NLLB traduit "Bonjour" par "Barokun nin na" au lieu de "i ni ce"
-_FR_TO_DIOULA_GREETINGS = {
-    "bonjour": "i ni ce,",
-    "bonsoir": "i ni wula,",
-    "bonne nuit": "i ni su,",
-    "salut": "i ni ce,",
-    "merci": "i ni ce,",
-}
-
-
 def _extract_french_greeting(text: str) -> tuple[str, str]:
-    """Détecte une salutation française au début du texte.
-    Retourne (salutation_dioula, texte_sans_salutation).
-    Ex: 'Bonjour ! Il y a...' -> ('i ni ce,', 'Il y a...')
-    """
-    text_stripped = text.strip()
-    text_lower = text_stripped.lower()
-    # Trier par longueur décroissante pour matcher "bonne nuit" avant "bonjour"
-    for fr_greet in sorted(_FR_TO_DIOULA_GREETINGS, key=len, reverse=True):
-        if text_lower.startswith(fr_greet):
-            dyu_greet = _FR_TO_DIOULA_GREETINGS[fr_greet]
-            rest = text_stripped[len(fr_greet):].lstrip(" ,!.;:")
-            if rest:
-                return dyu_greet, rest
-            else:
-                return dyu_greet.rstrip(","), ""
-    return "", text_stripped
+    """Extrait une expression française validée depuis le dictionnaire commun."""
+    from app.services.translation import Direction, get_translation_service
+
+    return get_translation_service().translate_leading_phrase(
+        text,
+        Direction.FR_TO_BAM,
+    )
 
 
 def _nllb_translate(text: str) -> str:
@@ -153,8 +133,15 @@ def translate_to_dioula(french_text: str) -> str:
     2. Traduit le reste via NLLB
     3. Préfixe avec la salutation dioula correcte
     """
-    if not TORCH_AVAILABLE:
-        return french_text
+    from app.services.translation import Direction, get_translation_service
+    service = get_translation_service()
+
+    exact_translation = service.translate_exact_phrase(
+        french_text,
+        Direction.FR_TO_BAM,
+    )
+    if exact_translation:
+        return exact_translation
 
     # 1. Extraire la salutation avant NLLB
     greeting_dyu, remaining = _extract_french_greeting(french_text)
@@ -162,6 +149,9 @@ def translate_to_dioula(french_text: str) -> str:
     if not remaining:
         # Texte = juste une salutation
         return greeting_dyu if greeting_dyu else french_text
+
+    if not TORCH_AVAILABLE:
+        return french_text
 
     # 2. Traduire le reste via NLLB
     result = _nllb_translate(remaining)
@@ -171,7 +161,7 @@ def translate_to_dioula(french_text: str) -> str:
 
     # 4. Préfixer avec la salutation dioula
     if greeting_dyu:
-        result = f"{greeting_dyu} {result}"
+        result = f"{greeting_dyu}, {result}"
 
     return result
 

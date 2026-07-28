@@ -77,6 +77,15 @@ class IDictionaryRepository(ABC):
         pass
 
     @abstractmethod
+    def extract_leading_phrase(
+        self,
+        text: str,
+        direction: Direction,
+    ) -> Optional[tuple[str, str]]:
+        """Traduit une expression validée en début de texte et retourne le reste."""
+        pass
+
+    @abstractmethod
     def get_patterns(self, direction: Direction) -> dict[str, str]:
         """Récupère les patterns grammaticaux"""
         pass
