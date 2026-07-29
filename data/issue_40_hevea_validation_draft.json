@@ -1,0 +1,210 @@
+{
+  "schema_version": "1.0",
+  "issue": 40,
+  "date": "2026-07-29",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_HEVEA",
+  "validated_crop_terms": [
+    "mana su",
+    "mána yiri"
+  ],
+  "warning": "Ces 15 formulations dioula sont des brouillons à corriger ou valider par un locuteur natif dioula de Côte d'Ivoire. Elles ne font pas partie du corpus IVR de production.",
+  "production_state": {
+    "corpus_version": "2.4",
+    "corpus_entry_count": 197,
+    "hevea_entry_count": 0
+  },
+  "source_codes": {
+    "CNRA-HEV-2006": {
+      "title": "Bien cultiver l'hévéa en Côte d'Ivoire",
+      "organization": "CNRA Côte d'Ivoire",
+      "url": "https://cnra.ci/download/bien-cultiver-lhevea-en-cote-divoire/",
+      "publication_date": "2006-04",
+      "pages": 4
+    },
+    "CNRA-HEV-ENC-2011": {
+      "title": "Bien diagnostiquer l'encoche sèche chez l'hévéa en Côte d'Ivoire",
+      "organization": "CNRA Côte d'Ivoire",
+      "url": "https://cnra.ci/download/bien-diagnostiquer-lencoche-seche-chez-lhevea-en-cote-divoire/",
+      "publication_date": "2011-06",
+      "pages": 2
+    },
+    "CNRA-HEV-FOM-2013": {
+      "title": "Bien détecter le Fomès de l'hévéa et réduire son incidence en Côte d'Ivoire",
+      "organization": "CNRA Côte d'Ivoire",
+      "url": "https://cnra.ci/download/bien-detecter-le-fomes-de-lhevea-et-reduire-son-incidence-en-cote-divoire/",
+      "publication_date": "2013",
+      "pages": 2
+    }
+  },
+  "linguistic_basis": {
+    "crop_terms": "mana su et mána yiri validés comme synonymes par le propriétaire du projet le 2026-07-29",
+    "sentence_patterns": "réemploi contrôlé de structures déjà validées dans le corpus v2.4, notamment les entrées anacarde et palmier à huile de l'issue #40",
+    "technical_loans_to_validate": [
+      "greffé",
+      "phosphaté",
+      "herbicide",
+      "saignée",
+      "latex",
+      "coagulum",
+      "claie",
+      "encoche sèche",
+      "mycélium",
+      "santimɛtiri",
+      "CNRA",
+      "ANADER"
+    ]
+  },
+  "items": [
+    {
+      "id": "hevea_validation_001",
+      "culture": "CULTURE_HEVEA",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Choisissez un sol profond, bien drainé et non gorgé d'eau pour planter l'hévéa.",
+      "dioula_draft": "Aw ye dugukolo dunman min bɛ ji boli ka ɲi woloma ka mana su sɛnɛ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 1,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_002",
+      "culture": "CULTURE_HEVEA",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "Plantez l'hévéa au début de la saison des pluies.",
+      "dioula_draft": "Aw ye mána yiri turu samiya daminɛ na.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_003",
+      "culture": "CULTURE_HEVEA",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Utilisez des plants greffés provenant de clones sélectionnés par la recherche.",
+      "dioula_draft": "Aw ye mana su jiri den greffé ɲuman san CNRA fɛ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 1,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_004",
+      "culture": "CULTURE_HEVEA",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Espacez les lignes de six mètres et les plants de trois mètres.",
+      "dioula_draft": "Aw ye mána yiri sɛnɛ mɛtiri wɔɔrɔ siraw cɛ ani mɛtiri saba yiriw cɛ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 1,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_005",
+      "culture": "CULTURE_HEVEA",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Après les premières pluies, creusez des trous de quarante centimètres sur quarante et de soixante centimètres de profondeur.",
+      "dioula_draft": "Sanji fɔlɔ kɔfɛ, aw ye dingɛ kɛ santimɛtiri bi naani ni bi naani, a dunyɔrɔ kɛ santimɛtiri bi wɔɔrɔ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_006",
+      "culture": "CULTURE_HEVEA",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "L'année de plantation, mettez l'engrais phosphaté dans le trou de plantation.",
+      "dioula_draft": "Sɛnɛli san fɔlɔ, aw ye nɔgɔ phosphaté don mana su dingɛ kɔnɔ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_007",
+      "culture": "CULTURE_HEVEA",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Pendant les deux premières années, sarclez les lignes six fois par an et n'utilisez pas d'herbicide.",
+      "dioula_draft": "San fila fɔlɔ kɔnɔ, aw ye mána yiri siraw kɔrɔci siɲɛ wɔɔrɔ san kɔnɔ. Aw kana herbicide kɛ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_008",
+      "culture": "CULTURE_HEVEA",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Pendant les trois à quatre premières années, vous pouvez cultiver du riz, du maïs, de la banane ou de l'igname entre les lignes.",
+      "dioula_draft": "San saba walima naani fɔlɔ kɔnɔ, aw bɛ se ka malo, kaba, bàrànda walima ku sɛnɛ mana su siraw cɛ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_009",
+      "culture": "CULTURE_HEVEA",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Commencez la saignée quand l'arbre a six ans et au moins cinquante centimètres de circonférence à un mètre du sol.",
+      "dioula_draft": "Mana su san wɔɔrɔ mana bɔ, n'a lamini sera santimɛtiri bi duuru ma mɛtiri kelen yɔrɔ la, aw ye saignée daminɛ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_010",
+      "culture": "CULTURE_HEVEA",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Faites la saignée aux heures fraîches, entre cinq heures et dix heures du matin.",
+      "dioula_draft": "Aw ye mána yiri saignée kɛ sogoma lɛri duuru ni tan cɛ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_011",
+      "culture": "CULTURE_HEVEA",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Récoltez le latex quatre heures après la saignée ou le coagulum deux jours après.",
+      "dioula_draft": "Aw ye latex ta lɛri naani saignée kɔfɛ, walima coagulum ta tile fila kɔfɛ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_012",
+      "culture": "CULTURE_HEVEA",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Transportez aussitôt le latex à l'usine pour la première transformation.",
+      "dioula_draft": "Aw ye latex ta ka taga usine la joona, walasa ka a fɔlɔ furakɛ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_013",
+      "culture": "CULTURE_HEVEA",
+      "intent": "QUESTION_VENTE",
+      "french": "Laissez sécher le coagulum sur une claie et livrez-le à l'usine au plus tard trois semaines après la récolte.",
+      "dioula_draft": "Aw ye coagulum laja claie kan, ka a ta ka taga usine la sani lɔgɔkun saba ka tɛmɛ.",
+      "source": "CNRA-HEV-2006",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_014",
+      "culture": "CULTURE_HEVEA",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si le latex ne s'écoule plus sur une partie ou toute l'encoche après la saignée, il peut s'agir d'une encoche sèche; ce n'est pas une maladie.",
+      "dioula_draft": "Ni latex tɛ bɔ mana su la saignée kɔfɛ, encoche sèche bɛ se ka kɛ. Bana tɛ.",
+      "source": "CNRA-HEV-ENC-2011",
+      "source_page": 1,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "hevea_validation_015",
+      "culture": "CULTURE_HEVEA",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les feuilles deviennent brun-rouges, sèchent et tombent, faites vérifier le pied et les racines pour rechercher les signes du Fomès.",
+      "dioula_draft": "Ni mána yiri folonw kɛra bilen nɛrɛman ye ka ja ka bin, aw ye jiri juw ni a sen filɛ mycélium jɛ kama. Aw ye ANADER mɔgɔ wele.",
+      "source": "CNRA-HEV-FOM-2013",
+      "source_page": 1,
+      "status": "pending_native_validation"
+    }
+  ]
+}
