@@ -13,6 +13,8 @@ on:
   pull_request:
     branches: [whatsappServeur]
     paths:
+      - 'Dockerfile.prod'
+      - '.dockerignore'
       - 'app-baileys.js'
       - 'lib/**'
       - 'tests/**'
@@ -21,6 +23,22 @@ on:
       - '.github/workflows/ci-wa.yml'
 
 jobs:
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Build complet volontaire : le check statique Dockerfile ne detecte pas
+      # les conflits UID/GID de l'image de base (cause de la panne #39).
+      - name: Build production image
+        run: docker build --file Dockerfile.prod --tag wourri-whatsapp:ci .
+
+      - name: Verify runtime user is non-root
+        run: test "$(docker run --rm --entrypoint id wourri-whatsapp:ci -u)" != "0"
+
   test:
     runs-on: ubuntu-latest
     # Guard-rail anti hang (cohérent avec ci-api.yml). 10 min largement
