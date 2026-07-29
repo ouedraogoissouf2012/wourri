@@ -16,6 +16,7 @@ pour éviter de charger les vrais modèles (overhead inutile en test), mais
 on vérifie ensuite si le mock a été appelé ou pas.
 """
 import logging
+from types import SimpleNamespace
 from unittest.mock import patch, MagicMock
 
 import pytest
@@ -43,7 +44,8 @@ def lifespan_spies():
          patch("app.services.nlu.get_nlu_service") as mock_nlu, \
          patch("app.services.corpus_facade.initialiser_vdb"), \
          patch("app.services.audio_cleanup.start_cleanup_scheduler"), \
-         patch("app.services.audio_cleanup.stop_cleanup_scheduler"):
+         patch("app.services.audio_cleanup.stop_cleanup_scheduler"), \
+         patch("app.core.logging_config.setup_logging"):
         # mock_ts est appelé pour récupérer le service. On configure le mock
         # pour qu'il ait un attribut preload_nllb (que /lifespan ne doit
         # PAS appeler).
@@ -171,3 +173,69 @@ def test_lifespan_reports_nemo_unavailable_without_false_success(caplog):
     assert "[PRELOAD] ASR NeMo Soloni: INDISPONIBLE" in caplog.text
     assert "[PRELOAD] ASR NeMo Soloni: OK" not in caplog.text
     assert "service(s) indisponible(s): ASR NeMo Soloni" in caplog.text
+
+
+def test_lifespan_minimal_dioula_profile_loads_only_required_models():
+    """Le profil 4 GB garde le parcours Dioula et évite les modèles inutiles.
+
+    T6 issue #42 est alignée sur l'ADR-0011 : NLLB reste lazy, il ne doit pas
+    être réintroduit au démarrage. Le profil minimal précharge donc NeMo et
+    MMS-Dioula, désactive MMS-Bambara et ne charge jamais Whisper au boot.
+    """
+    with patch(
+        "app.services.stt_whisper.get_whisper_model", return_value=None
+    ) as spy_whisper, patch(
+        "app.services.asr_soloni_nemo.get_nemo_model", return_value=object()
+    ) as spy_nemo, patch(
+        "app.services.tts_bambara.get_tts_model",
+        return_value=(object(), object()),
+    ) as spy_tts_bam, patch(
+        "app.services.tts_dioula.get_tts_model_dioula",
+        return_value=(object(), object()),
+    ) as spy_tts_dyu, patch(
+        "app.services.translation.get_translation_service"
+    ) as mock_ts, patch(
+        "app.services.nlu.get_nlu_service"
+    ) as mock_nlu, patch(
+        "app.services.corpus_facade.initialiser_vdb"
+    ), patch(
+        "app.services.audio_cleanup.start_cleanup_scheduler"
+    ), patch(
+        "app.services.audio_cleanup.stop_cleanup_scheduler"
+    ), patch(
+        "app.core.logging_config.setup_logging"
+    ):
+        mock_svc = MagicMock()
+        mock_svc.preload_nllb = MagicMock(return_value=None)
+        mock_svc.get_stats.return_value = {
+            "dictionnaire": {"total_mots": 0},
+        }
+        mock_ts.return_value = mock_svc
+        mock_nlu.return_value.get_stats.return_value = {
+            "total_concepts": 0,
+            "total_keywords": 0,
+        }
+
+        from app import main as main_module
+
+        minimal_settings = SimpleNamespace(
+            app_name="WOURI",
+            app_version="test",
+            debug=False,
+            enable_whisper=False,
+            enable_mms_bam=False,
+            preload_tts_bambara=False,
+            enable_mms_dyu=True,
+            preload_tts_dioula=True,
+            is_production=False,
+        )
+
+        with patch.object(main_module, "settings", minimal_settings):
+            with TestClient(main_module.app):
+                pass
+
+    spy_nemo.assert_called_once()
+    spy_tts_dyu.assert_called_once()
+    spy_tts_bam.assert_not_called()
+    spy_whisper.assert_not_called()
+    mock_svc.preload_nllb.assert_not_called()
