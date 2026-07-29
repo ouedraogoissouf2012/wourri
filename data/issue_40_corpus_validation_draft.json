@@ -1,0 +1,376 @@
+{
+  "schema_version": "1.0",
+  "issue": 40,
+  "date": "2026-07-29",
+  "status": "pending_native_validation",
+  "warning": "Ces formulations dioula sont des propositions à corriger. Elles ne font pas partie du corpus IVR de production.",
+  "source_codes": {
+    "CNRA-ANA-2008": {
+      "title": "Bien cultiver l'anacardier en Côte d'Ivoire",
+      "organization": "CNRA Côte d'Ivoire",
+      "url": "https://cnra.ci/download/bien-cultiver-lanacardier-en-cote-divoire/?wpdmdl=902"
+    },
+    "CNRA-ANA-2025": {
+      "title": "Bien connaître les phénophases chez l'anacardier pour une meilleure gestion des principales maladies",
+      "organization": "CNRA Côte d'Ivoire",
+      "url": "https://cnra.ci/wp-content/uploads/2025/07/bien-connaitre-les-phenophases-chez-lanacardier.pdf"
+    },
+    "CNRA-PALM-2006": {
+      "title": "Bien cultiver le palmier à huile en Côte d'Ivoire",
+      "organization": "CNRA Côte d'Ivoire",
+      "url": "https://cnra.ci/download/bien-cultiver-le-palmier-a-huile-en-cote-divoire/?wpdmdl=949"
+    }
+  },
+  "items": [
+    {
+      "id": "anacarde_validation_001",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "Plantez l'anacardier au début de la saison des pluies.",
+      "dioula_draft": "Aw ye sɔ̀mɔ sɛnɛ sanji tuma daminɛ la.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_002",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Commencez la pépinière avant la saison des pluies.",
+      "dioula_draft": "Aw ye sɔ̀mɔ deen foro labɛn sani sanji ka na.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 1,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_003",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Choisissez des plants vigoureux et sains.",
+      "dioula_draft": "Aw ye sɔ̀mɔ jiri den kɛnɛman ani fanga manin woloma.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_004",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Choisissez un sol profond qui évacue bien l'eau.",
+      "dioula_draft": "Aw ye dugukolo dunman min bɛ ji boli ka ɲi woloma.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_005",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "Ne plantez pas l'anacardier là où l'eau reste.",
+      "dioula_draft": "Aw kana sɔ̀mɔ sɛnɛ ji bɛ to yɔrɔ min na.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_006",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Préparez le terrain deux à trois mois avant la plantation.",
+      "dioula_draft": "Aw ye foro labɛn kalo fila walima saba sani sɛnɛli.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_007",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "Mettez de la fumure dans le trou avant de planter.",
+      "dioula_draft": "Aw ye nɔgɔ don dunbu kɔnɔ sani sɛnɛli.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_008",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Espacez les grands anacardiers de dix mètres sur dix mètres.",
+      "dioula_draft": "Aw ye sɔ̀mɔ sɛnɛ mɛtiri tan tan.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_009",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Sarclez le verger deux à trois fois par an pendant les deux premières années.",
+      "dioula_draft": "Aw ye sɔ̀mɔ foro kɔrɔci siɲɛ fila walima saba san fila fɔlɔ kɔnɔ.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_010",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Avant les pluies, coupez les branches trop basses ou horizontales.",
+      "dioula_draft": "Sani sanji ka na, aw ye jiribolo minnu ka duguma tigɛ.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_011",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Enlevez les branches mortes ou fortement malades.",
+      "dioula_draft": "Aw ye jiribolo salen walima banabagatɔ tigɛ ka bɔ.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_012",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Protégez chaque année le verger contre les feux de brousse.",
+      "dioula_draft": "Aw ye sɔ̀mɔ foro kana san bɛɛ kungojeni ma.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_013",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "Apportez l'engrais lorsque les pluies sont bien installées, pas pendant une forte pluie.",
+      "dioula_draft": "Aw ye nɔgɔ don sanji tuma na. Aw kana a don sanji caman bin tuma.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_014",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "QUESTION_RECOLTE",
+      "french": "L'anacardier commence à produire après trois à quatre ans.",
+      "dioula_draft": "Sɔ̀mɔ bɛ fɔlɔ ka jiriden bɔ san saba walima naani kɔfɛ.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_015",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Ramassez chaque jour les noix tombées sous l'arbre.",
+      "dioula_draft": "Aw ye sɔ̀mɔ kisɛ minnu binna jiri kɔrɔ tɔmɔ tile o tile.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_016",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Faites sécher les noix pendant trois à quatre jours dans un endroit aéré.",
+      "dioula_draft": "Aw ye sɔ̀mɔ kisɛw laja tile saba walima naani fiɲɛ bɛ yɔrɔ min na.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_017",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Gardez les noix en sac dans un local sec, propre et aéré.",
+      "dioula_draft": "Aw ye sɔ̀mɔ kisɛw don saku la ka mara yɔrɔ jalen ani fiɲɛman na.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_018",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Une poudre blanche sur les feuilles, les fleurs ou les fruits peut signaler l'oïdium.",
+      "dioula_draft": "Ni buguri jɛ bɛ folonw, furaw walima jiridenw kan, o bɛ se ka kɛ oidium ye.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_019",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Des taches brunes qui noircissent sur la pomme de cajou peuvent signaler l'anthracnose.",
+      "dioula_draft": "Ni tɔɔ nɛrɛmanw bɛ sɔ̀mɔ jiriden kan ka kɛ finman ye, o bɛ se ka kɛ anthracnose ye.",
+      "source": "CNRA-ANA-2008",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "anacarde_validation_020",
+      "culture": "CULTURE_ANACARDE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Ne traitez pas pendant la floraison afin de protéger les insectes pollinisateurs.",
+      "dioula_draft": "Aw kana furakɛ kɛ fura bɔ tuma, walasa ka limogow nafamaw kana halaki.",
+      "source": "CNRA-ANA-2025",
+      "source_page": 1,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_001",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Utilisez des graines germées améliorées fournies par le CNRA.",
+      "dioula_draft": "Aw ye ntèntulu kisɛ ɲuman falen san CNRA fɛ.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 1,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_002",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "N'utilisez pas les graines de palmiers en production pour créer une nouvelle parcelle.",
+      "dioula_draft": "Aw kana ntèntulu kisɛ ta yiri bɔlen na ka foro kura sɛnɛ.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 1,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_003",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Gardez les plants neuf à dix mois en pépinière.",
+      "dioula_draft": "Aw ye ntèntulu denw mara deen foro la kalo kɔnɔntɔn walima tan.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 1,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_004",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "Arrosez la pépinière trois fois par semaine.",
+      "dioula_draft": "Aw ye jì don ntèntulu denw na siɲɛ saba lɔgɔkun kɔnɔ.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_005",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "Plantez en mai ou juin, quand les pluies sont bien installées.",
+      "dioula_draft": "Aw ye ntèntulu sɛnɛ mɛ walima juin kalo, sanji mana sigi ka ɲi.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_006",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Espacez les palmiers de neuf mètres en triangle.",
+      "dioula_draft": "Aw ye ntèntulu sɛnɛ mɛtiri kɔnɔntɔn kɔnɔntɔn, a sigicogo kɛ saba cogo la.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 2,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_007",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Nettoyez autour des jeunes palmiers quatre fois par an.",
+      "dioula_draft": "Aw ye ntèntulu den kelen kelen kɔrɔci siɲɛ naani san kɔnɔ.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_008",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "Apportez l'engrais aux jeunes palmiers en avril et en juillet.",
+      "dioula_draft": "Aw ye nɔgɔ don ntèntulu denw na avrili ni juillet kalo.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_009",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "Faites un diagnostic des feuilles avant de choisir la dose de potasse.",
+      "dioula_draft": "Aw ye folonw filɛ labɔratuwari la sani ka potasi hakɛ woloma.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_010",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "QUESTION_RECOLTE",
+      "french": "La première récolte est généralement prévue après trois ans.",
+      "dioula_draft": "Ntèntulu bɛ fɔlɔ ka jiriden bɔ san saba kɔfɛ.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 3,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_011",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Récoltez lorsqu'au moins un fruit se détache et tombe du régime.",
+      "dioula_draft": "Ni jiriden kelen bɔra ntèntulu denba la k'a bin, tilalen tuma ye.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_012",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Récoltez les régimes toutes les deux semaines.",
+      "dioula_draft": "Aw ye ntèntulu denbaw tigɛ lɔgɔkun fila fila.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_013",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Transportez les régimes à l'huilerie le plus vite possible.",
+      "dioula_draft": "Aw ye ntèntulu denbaw ta ka taga tulu dabɔyɔrɔ la joona.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_014",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Ne dépassez pas quarante-huit heures entre la coupe et le traitement à l'usine.",
+      "dioula_draft": "Aw kana a to lɛri bi naani ni seegin ka tɛmɛ tigɛli ni usine furakɛli cɛ.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    },
+    {
+      "id": "palmier_huile_validation_015",
+      "culture": "CULTURE_PALMIER_HUILE",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les feuilles jaunissent puis sèchent, la fusariose est possible; retirez l'arbre malade et replantez du matériel tolérant.",
+      "dioula_draft": "Ni folonw yellenma ka ja, fusariose bɛ se ka kɛ. Aw ye jiri banalen bɔ ka kisɛ muɲunin sɛnɛ.",
+      "source": "CNRA-PALM-2006",
+      "source_page": 4,
+      "status": "pending_native_validation"
+    }
+  ]
+}

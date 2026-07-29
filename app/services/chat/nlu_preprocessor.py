@@ -63,7 +63,9 @@ CULTURE_LABELS = {
     "CULTURE_HARICOT": "haricot", "CULTURE_COTON": "coton", "CULTURE_SESAME": "sésame",
     "CULTURE_BANANE": "banane", "CULTURE_TOMATE": "tomate", "CULTURE_OIGNON": "oignon",
     "CULTURE_PATATE": "patate douce", "CULTURE_GOMBO": "gombo", "CULTURE_CACAO": "cacao",
-    "CULTURE_CAFE": "café", "CULTURE_ANANAS": "ananas",
+    "CULTURE_CAFE": "café", "CULTURE_ANANAS": "ananas", "CULTURE_MANGUE": "mangue",
+    "CULTURE_AGRUMES": "agrumes", "CULTURE_NERE": "néré",
+    "CULTURE_ANACARDE": "anacarde", "CULTURE_PALMIER_HUILE": "palmier à huile",
 }
 
 ANIMAL_LABELS = {

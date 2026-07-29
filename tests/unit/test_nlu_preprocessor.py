@@ -201,6 +201,40 @@ def test_culture_labels_non_vide_et_format():
     assert all(k.startswith("CULTURE_") for k in CULTURE_LABELS)
 
 
+def test_culture_labels_cover_all_configured_nlu_cultures():
+    """Toute culture NLU doit pouvoir enrichir le prompt DeepSeek."""
+    import json
+    from pathlib import Path
+
+    config_path = Path(__file__).parents[2] / "dictionnaires" / "nlu_concepts.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    configured = {
+        name for name in config["concepts"]
+        if name.startswith("CULTURE_")
+    }
+
+    assert configured <= set(CULTURE_LABELS)
+
+
+@pytest.mark.parametrize(
+    ("concept", "expected_label"),
+    (
+        ("CULTURE_ANACARDE", "anacarde"),
+        ("CULTURE_PALMIER_HUILE", "palmier à huile"),
+        ("CULTURE_MANGUE", "mangue"),
+        ("CULTURE_AGRUMES", "agrumes"),
+        ("CULTURE_NERE", "néré"),
+    ),
+)
+def test_enrich_supporte_toutes_les_cultures_ajoutees(
+    concept: str,
+    expected_label: str,
+):
+    result = enrich_for_deepseek("Comment cultiver ?", {concept: True})
+
+    assert result == f"[Paysan cultive: {expected_label}] Comment cultiver ?"
+
+
 def test_animal_labels_non_vide():
     """ANIMAL_LABELS contient les animaux principaux."""
     assert len(ANIMAL_LABELS) >= 5

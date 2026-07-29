@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0",
+  "issue": 40,
+  "date": "2026-07-29",
+  "status": "partial",
+  "scope": "Validation des nouvelles cultures avant enrichissement du corpus IVR",
+  "terms": [
+    {
+      "concept": "CULTURE_ANACARDE",
+      "french": "anacarde",
+      "selected_term": "sɔ̀mɔ",
+      "untoned_variant": "sɔmɔ",
+      "native_validation": {
+        "status": "validated",
+        "source": "confirmation du propriétaire du projet",
+        "date": "2026-07-29"
+      },
+      "local_sources": {
+        "bamadaba": {
+          "status": "attested",
+          "file": "dictionnaires/bambara_francais.json",
+          "gloss": "pommier-cajou"
+        },
+        "findora": {
+          "status": "not_found",
+          "file": "data/hf_datasets/findora_fr_dioula.json",
+          "rows_checked": 20513
+        },
+        "koumankan": {
+          "status": "not_found",
+          "file": "data/hf_datasets/koumankan_dyu_fr.json",
+          "rows_checked": 10929
+        },
+        "common_voice": {
+          "status": "not_found_in_embedded_sample",
+          "source": "common_voice_dyu_v24",
+          "phrases_checked": 99
+        }
+      },
+      "decision": "accepted"
+    },
+    {
+      "concept": "CULTURE_PALMIER_HUILE",
+      "french": "palmier à huile",
+      "selected_term": "ntèntulu",
+      "untoned_variant": "ntentulu",
+      "native_validation": {
+        "status": "validated",
+        "source": "confirmation du propriétaire du projet",
+        "date": "2026-07-29"
+      },
+      "local_sources": {
+        "bamadaba": {
+          "status": "attested_with_gloss_difference",
+          "file": "dictionnaires/bambara_francais.json",
+          "selected_term_gloss": "huile de palme",
+          "tree_term": "ntèn",
+          "tree_term_gloss": "palmier à huile"
+        },
+        "francophonia": {
+          "status": "attested_in_compounds",
+          "file": "data/hf_datasets/francophonia_bambara_french.json",
+          "examples": [
+            {
+              "term": "ntentuluboyoro",
+              "french_context": "extraction de l'huile de palme"
+            },
+            {
+              "term": "ntentulubolaw",
+              "french_context": "producteurs d'huile de palme"
+            }
+          ]
+        },
+        "findora": {
+          "status": "not_found",
+          "file": "data/hf_datasets/findora_fr_dioula.json",
+          "rows_checked": 20513
+        },
+        "koumankan": {
+          "status": "not_found",
+          "file": "data/hf_datasets/koumankan_dyu_fr.json",
+          "rows_checked": 10929
+        },
+        "common_voice": {
+          "status": "not_found_in_embedded_sample",
+          "source": "common_voice_dyu_v24",
+          "phrases_checked": 99
+        }
+      },
+      "decision": "accepted_exactly_as_native_validation"
+    },
+    {
+      "concept": "CULTURE_HEVEA",
+      "french": "hévéa",
+      "native_validation": {
+        "status": "deferred",
+        "source": "décision du propriétaire du projet",
+        "date": "2026-07-29"
+      },
+      "decision": "not_implemented"
+    }
+  ],
+  "access_agriculture": {
+    "catalogue_language": "Dioula",
+    "catalogue_url": "https://www.accessagriculture.org/search?language=dla",
+    "catalogue_items_found": 33,
+    "download_requires_login": true,
+    "prior_project_issue": 10,
+    "prior_issue_title": "Corpus dioula validé — Access Agriculture (33 vidéos)",
+    "decision": "do_not_count_existing_catalogue_as_10_new_videos",
+    "status": "blocked_pending_new_sources"
+  },
+  "agronomic_sources": [
+    {
+      "organization": "CNRA Côte d'Ivoire",
+      "url": "https://cnra.ci/nos-fiches-techniques/",
+      "usage": "références techniques pour les futures réponses agricoles"
+    },
+    {
+      "organization": "FAO",
+      "url": "https://www.fao.org/family-farming/detail/fr/c/1619106/",
+      "usage": "référence post-récolte anacarde"
+    }
+  ],
+  "limitations": [
+    "L'absence dans Findora, Koumankan ou l'échantillon Common Voice ne prouve pas qu'un terme est invalide.",
+    "Les réponses complètes du corpus IVR ne sont pas ajoutées avant validation de leur formulation dioula.",
+    "L'hévéa reste volontairement hors périmètre jusqu'à une validation ultérieure."
+  ]
+}
