@@ -1,5 +1,5 @@
 {
-  "version": "2.0",
+  "version": "3.1",
   "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
   "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
   "correction_v1.1": "2026-03-03 — termes bambara corrigés: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ, coton fini→kɔrɔni",
@@ -1022,6 +1022,44 @@
         "sumbala"
       ],
       "note": "nɛrɛ ajouté v2.9 — Parkia biglobosa (néré/locust bean), ~80 Baye + ~30 Jeli. ATTENTION: nɛrɛ ≠ baobab (baobab=sira en bambara). La pulpe du fruit de néré est jaune → nɛrɛmùgùman=jaune (couleur). Contextes Baye: 'Ni nɛrɛ ma nɔɔni, musokɔrɔ nɛkunjan tɛ dɔn' (proverbe néré), 'Ale bɛ sɔrɔ jirila n'o ye nɛrɛ ye. Sumbala ye an k'a sigida najini ye'=issu du néré, le sumbala est le cube local. sumbala ajouté v2.9 — condiment fermenté (~120 Baye + ~50 Jeli). Valeur économique: 'sa collecte et transformation génère des revenus pour les femmes rurales'. sumbala → conseil sur culture/conservation du néré. Source: Access Agriculture 153 (sumbala de soja)."
+    },
+    "CULTURE_ANACARDE": {
+      "label_fr": "anacarde / noix de cajou",
+      "keywords": [
+        "sɔ̀mɔ",
+        "sɔmɔ",
+        "sɔ̀mɔ foro",
+        "sɔmɔ foro",
+        "sɔ̀mɔ sɛnɛ",
+        "sɔmɔ sɛnɛ",
+        "anacarde",
+        "anacardier",
+        "cajou",
+        "noix de cajou"
+      ],
+      "partial": [
+        "sɔmɔ",
+        "anacard"
+      ],
+      "note": "sɔ̀mɔ=anacarde validé par le locuteur natif utilisateur le 2026-07-29. Correspondance lexicale également attestée dans Bamadaba. Variantes sans tons incluses pour l'ASR."
+    },
+    "CULTURE_PALMIER_HUILE": {
+      "label_fr": "palmier à huile",
+      "keywords": [
+        "ntèntulu",
+        "ntentulu",
+        "ntèntulu foro",
+        "ntentulu foro",
+        "ntèntulu sɛnɛ",
+        "ntentulu sɛnɛ",
+        "palmier à huile",
+        "palmier a huile",
+        "huile de palme"
+      ],
+      "partial": [
+        "ntentulu"
+      ],
+      "note": "ntèntulu=palmier à huile validé par le locuteur natif utilisateur le 2026-07-29. Variante sans tons incluse pour l'ASR. L'hévéa reste explicitement différé faute de terme dioula CI validé."
     }
   },
   "intents": [
@@ -1286,6 +1324,15 @@
   "correction_v1.7": "2026-03-13 — ENGRAIS_FERTILISANT nettoyé (dolo/furakɛ duguma/natiri/dɔgɔw RETIRÉS). Ajout: nɔgɔfin(engrais organique), nafanma fɛnw(nutriments), kɔmpɔsi(compost). Source: Access Agriculture 230 + validation Bayelemabaga.",
   "correction_v1.8": "2026-03-13 — PROBLEME_INSECTE: limɔgɔ/limogo (mouche, 8 Baye). Nouvelle culture CULTURE_MANGUE: maŋoro (15 Baye + 30 Jeli). dunmuni CONFIRMÉ = manger/nourriture (PAS insecte). Source: Access Agriculture 130.",
   "changelog": [
+    {
+      "version": "3.1",
+      "date": "2026-07-29",
+      "changes": [
+        "Nouveau concept CULTURE_ANACARDE — sɔ̀mɔ validé par le locuteur natif utilisateur. Variantes ASR sans tons et termes français anacarde/anacardier/cajou ajoutés.",
+        "Nouveau concept CULTURE_PALMIER_HUILE — ntèntulu validé par le locuteur natif utilisateur. Variantes ASR sans tons et termes français palmier à huile/huile de palme ajoutés.",
+        "Hévéa non ajouté : traitement reporté explicitement jusqu'à validation d'un terme dioula CI."
+      ]
+    },
     {
       "version": "3.0",
       "date": "2026-03-15",

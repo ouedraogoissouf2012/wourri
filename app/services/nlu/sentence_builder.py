@@ -35,6 +35,11 @@ CULTURE_LABELS = {
     "CULTURE_CACAO": "cacao",
     "CULTURE_CAFE": "café",
     "CULTURE_ANANAS": "ananas",
+    "CULTURE_MANGUE": "mangue",
+    "CULTURE_AGRUMES": "agrumes",
+    "CULTURE_NERE": "néré",
+    "CULTURE_ANACARDE": "anacarde",
+    "CULTURE_PALMIER_HUILE": "palmier à huile",
 }
 
 # Labels français pour les animaux
@@ -67,6 +72,11 @@ CULTURE_ARTICLES = {
     "cacao": "du",
     "café": "du",
     "ananas": "de l'",
+    "mangue": "de la",
+    "agrumes": "des",
+    "néré": "du",
+    "anacarde": "de l'",
+    "palmier à huile": "du",
 }
 
 

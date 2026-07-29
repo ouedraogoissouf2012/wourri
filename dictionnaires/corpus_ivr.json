@@ -3685,7 +3685,7 @@
     },
     {
       "id": "mangue_limogo_diagnostic_001",
-      "intent": "DIAGNOSTIQUE_PROBLEME",
+      "intent": "DIAGNOSTIC_PROBLEME",
       "cultures": [
         "CULTURE_MANGUE",
         "PROBLEME_INSECTE"
