@@ -1,0 +1,8 @@
+[run]
+source = app/services
+
+[report]
+fail_under = 60.0
+precision = 1
+show_missing = True
+skip_covered = True

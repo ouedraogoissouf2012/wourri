@@ -79,7 +79,12 @@ async def transcribe_audio(
     if extension not in ["wav", "ogg", "mp3", "webm", "m4a"]:
         extension = "ogg"
 
-    transcription = await transcribe_audio_bytes(audio_bytes, language, extension)
+    if language == "bam":
+        chain = get_asr_chain()
+    else:
+        chain = get_generic_asr_chain(language)
+
+    transcription = await chain.transcribe(audio_bytes, extension)
 
     if transcription is None:
         raise HTTPException(
