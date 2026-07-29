@@ -22,6 +22,7 @@ du projet. Chaque décision passe par cet index et par le workflow du skill
 | [ADR-0012](0012-securite-whatsapp-server.md) | Sécurité whatsapp-server (CORS + rate limit + npm audit) | **complété** | 2026-05-10 | Sprint A du programme dette technique : 0 vulnérabilité npm (vs 12 avant), CORS strict via `ALLOWED_ORIGINS`, rate limiting 60 req/min/IP. PRs #141, #142, #143. |
 | [ADR-0013](0013-ssh-deploy-hardening-options.md) | Durcissement déploiement SSH (3 options) | **proposé** | 2026-05-30 | Analyse 3 options pour remplacer la clé SSH statique CI (BLOCKER B1-SEC issue #221) : self-hosted runner, Tailscale SSH, Scaleway OIDC. Recommandation : **Option B (Tailscale)** — meilleur ratio coût/bénéfice, audit logs centralisés synergiques avec ARTCI (#215). En attente validation Ruben. |
 | [ADR-0016](0016-migration-promtail-grafana-alloy.md) | Migration Promtail → Grafana Alloy | **accepté** | 2026-07-29 | Remplace le collecteur Promtail arrivé en fin de vie par Alloy 1.18.0, corrige la découverte Docker staging et conserve le pipeline Loki existant. |
+| [ADR-0017](0017-dashboard-observabilite-sans-pii.md) | Dashboard d’observabilité sans contenu PII | **accepté** | 2026-07-29 | Dashboard #41 sur PostgreSQL, métriques techniques sans messages/transcriptions, données protégées par `X-API-Key`. |
 
 ## ADRs à rédiger (roadmap, issus de [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md))
 

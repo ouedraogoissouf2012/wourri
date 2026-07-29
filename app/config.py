@@ -142,6 +142,13 @@ class Settings(BaseSettings):
     # Plan de rollback : `corpus_storage_mode=chroma` dans `.env` → restart immédiat.
     corpus_storage_mode: Literal["chroma", "dual", "pgvector"] = "chroma"
 
+    # ========== Dashboard opérateur sans PII (issue #41, ADR-0017) ==========
+    # Enregistre dans PostgreSQL uniquement des métadonnées techniques :
+    # route normalisée, statut, durée, intent/culture/source internes et
+    # indicateurs ASR/NLU. Aucun message, transcription, user_id ou IP.
+    # Best-effort : si PostgreSQL est absent, les routes restent fonctionnelles.
+    admin_metrics_enabled: bool = True
+
     # ========== Piper TTS (FR + EN) — portabilité OS ==========
     # Tous les chemins sont configurables via env var. Defaults universellement
     # portables (binaire dans PATH système + modèles via env explicite). Aucun

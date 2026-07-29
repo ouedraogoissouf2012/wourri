@@ -17,6 +17,7 @@ import psutil
 
 from app.core.logging_config import setup_logging
 from app.config import get_settings
+from app.middleware.admin_metrics import AdminMetricsMiddleware
 from app.routers import weather, chat, tts, stt, rag, asr, feedback, admin
 from app.services.deepseek import check_deepseek_status
 from app.services.asr_soloni_nemo import check_nemo_asr_status
@@ -220,6 +221,10 @@ app = FastAPI(
 # Rate limiting — 10 req/min par IP
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Dashboard #41 / ADR-0017 : métadonnées techniques uniquement, jamais le
+# corps, les headers, l'IP, le user_id, la transcription ou la query string.
+app.add_middleware(AdminMetricsMiddleware)
 
 # CORS — permissif uniquement en dev (test interface locale showcase.html)
 # En production, restreindre via une allow-list explicite (ADR-0011 futur).

@@ -5,13 +5,15 @@ Toute la logique métier est dans ChatService.
 Ce routeur ne fait que valider l'input et retourner le résultat.
 """
 import logging
-from fastapi import APIRouter, Request, Depends
+
+from fastapi import APIRouter, Depends, Request
+
+from app.middleware.admin_metrics import set_request_metric_context
+from app.models.schemas import ChatRequest, ChatResponse, Language
+from app.security import limiter, require_api_key
 from app.services.chat_service import get_chat_service
 from app.services.deepseek import chat_with_deepseek
 from app.services.weather import get_weather
-from app.services.tts_french import synthesize_french
-from app.models.schemas import ChatRequest, ChatResponse, Language
-from app.security import require_api_key, limiter
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,22 @@ async def chat(request: Request, body: ChatRequest):
         bambara_text=body.bambara_text,
         include_audio=body.include_audio,
         user_id=getattr(body, "user_id", None),
+    )
+
+    meta = result.meta or {}
+    cultures = meta.get("cultures")
+    culture = (
+        cultures[0]
+        if isinstance(cultures, list) and cultures and isinstance(cultures[0], str)
+        else None
+    )
+    intent = meta.get("intent") if isinstance(meta.get("intent"), str) else None
+    set_request_metric_context(
+        request,
+        intent=intent,
+        culture=culture,
+        source=meta.get("source"),
+        nlu_out_of_scope=(intent == "HORS_SUJET") if intent else None,
     )
 
     return ChatResponse(

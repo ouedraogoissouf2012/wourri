@@ -206,6 +206,38 @@ chaque push intégré à cette branche. Elle échoue si la couverture de
 
 ## API Endpoints
 
+### Dashboard opérateur
+
+Le dashboard d'observabilité est disponible sur :
+
+```text
+http://localhost:8000/admin/dashboard
+```
+
+La page demande la valeur de `API_SECRET_KEY` et l'envoie uniquement dans le
+header `X-API-Key` vers `/admin/dashboard/data`. La clé reste dans le
+`sessionStorage` du navigateur et n'apparaît jamais dans l'URL.
+
+Le dashboard utilise PostgreSQL et affiche :
+
+- nombre de requêtes et taux de succès HTTP ;
+- taux de succès ASR et taux NLU dans le périmètre ;
+- latence moyenne et p95 du pipeline total ;
+- requêtes et erreurs par jour ;
+- principaux intents, cultures et endpoints ;
+- requêtes et erreurs récentes sans contenu utilisateur.
+
+Conformément à l'[ADR-0017](docs/adr/0017-dashboard-observabilite-sans-pii.md),
+la table `admin_request_metrics` ne contient ni message, ni transcription, ni
+numéro de téléphone, ni `user_id`, ni adresse IP. Appliquer les migrations
+avant utilisation :
+
+```bash
+alembic upgrade head
+```
+
+---
+
 ### Chat Principal
 
 #### POST /api/chat/
@@ -512,6 +544,8 @@ Base de connaissances agricoles avec Sentence Transformers.
 | DEEPSEEK_API_KEY | Oui | - | Cle API DeepSeek |
 | DEBUG | Non | True | Mode debug |
 | DEFAULT_CITY | Non | Abidjan | Ville par defaut |
+| POSTGRES_URL | Pour le dashboard | - | Connexion PostgreSQL SQLAlchemy |
+| ADMIN_METRICS_ENABLED | Non | True | Active les métriques techniques sans PII |
 
 ---
 

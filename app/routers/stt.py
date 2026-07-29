@@ -3,12 +3,14 @@ WOURI - Routes Speech-to-Text (Whisper)
 """
 import logging
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Request
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
+
+from app.middleware.admin_metrics import set_request_metric_context
 from app.models.schemas import Language
+from app.security import limiter, require_api_key
 from app.services import stt_whisper
 from app.services.deepseek import correct_stt_transcription
-from app.security import require_api_key, limiter
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +68,7 @@ async def transcribe_audio(
     # Transcrire
     logger.info(f"[STT] Transcription demandee: {len(audio_bytes)} bytes, langue={language}, fichier={audio.filename}")
 
+    set_request_metric_context(request, asr_success=False)
     try:
         result = await stt_whisper.transcribe_audio_bytes(
             audio_bytes,
@@ -80,6 +83,8 @@ async def transcribe_audio(
         logger.error("[STT] Resultat None - transcription echouee")
         raise HTTPException(status_code=500, detail="Erreur lors de la transcription - resultat vide")
 
+    set_request_metric_context(request, asr_success=True, source="whisper")
+
     # Correction intelligente via DeepSeek (corrige villes et termes agricoles).
     # Passe `language` au correcteur : si la langue n'a pas de prompt
     # enregistré dans STT_CORRECTION_PROMPTS (ex: ENGLISH), la correction
@@ -92,7 +97,7 @@ async def transcribe_audio(
     # Vérifier si l'audio était probablement en Dioula
     likely_dioula = result.get("likely_dioula_input", False)
     if likely_dioula:
-        logger.info(f"[STT] Audio détecté comme Dioula - transcription peut être incorrecte")
+        logger.info("[STT] Audio détecté comme Dioula - transcription peut être incorrecte")
 
     return JSONResponse(content={
         "success": True,

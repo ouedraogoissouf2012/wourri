@@ -3,17 +3,19 @@ WOURI - Router ASR (Automatic Speech Recognition)
 Reconnaissance vocale pour langues ivoiriennes via MMS-1B-ALL + NLLB-200
 """
 import asyncio
-from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
-import re
-from app.services.asr import get_asr_chain, get_generic_asr_chain
-from app.data.constants import get_asr_languages
-
-IVORIAN_ASR_LANGUAGES = get_asr_languages()
-from app.services.tts_bambara import translate_to_french
-from app.security import require_api_key, limiter
 import logging
 
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+
+from app.data.constants import get_asr_languages
+from app.middleware.admin_metrics import set_request_metric_context
+from app.security import limiter, require_api_key
+from app.services.asr import get_asr_chain, get_generic_asr_chain
+from app.services.tts_bambara import translate_to_french
+
 logger = logging.getLogger(__name__)
+
+IVORIAN_ASR_LANGUAGES = get_asr_languages()
 
 router = APIRouter(prefix="/api/asr", tags=["ASR"])
 
@@ -84,6 +86,7 @@ async def transcribe_audio(
     else:
         chain = get_generic_asr_chain(language)
 
+    set_request_metric_context(request, asr_success=False)
     transcription = await chain.transcribe(audio_bytes, extension)
 
     if transcription is None:
@@ -92,6 +95,7 @@ async def transcribe_audio(
             detail="Echec de la transcription. Verifiez que le modele ASR est charge."
         )
 
+    set_request_metric_context(request, asr_success=True, source="asr")
     lang_name = IVORIAN_ASR_LANGUAGES[language][0]
     return {
         "transcription": transcription,
@@ -148,6 +152,7 @@ async def transcribe_and_translate(
     else:
         chain = get_generic_asr_chain(language)
 
+    set_request_metric_context(request, asr_success=False)
     transcription = await chain.transcribe(audio_bytes, extension)
 
     if transcription is None:
@@ -178,6 +183,25 @@ async def transcribe_and_translate(
         nlu_data = _run_nlu(transcription)
         if nlu_data.get("nlu_message"):
             logger.info("[ASR] NLU → phrase reconstruite: '%s'", nlu_data['nlu_message'])
+
+    concepts = nlu_data.get("nlu_concepts", [])
+    culture = next(
+        (
+            concept
+            for concept in concepts
+            if isinstance(concept, str) and concept.startswith("CULTURE_")
+        ),
+        None,
+    )
+    intent = nlu_data.get("nlu_intent")
+    set_request_metric_context(
+        request,
+        asr_success=True,
+        intent=intent,
+        culture=culture,
+        source="asr_nlu" if nlu_data else "asr",
+        nlu_out_of_scope=nlu_data.get("nlu_is_out_of_scope") if nlu_data else None,
+    )
 
     return {
         "transcription": transcription,
