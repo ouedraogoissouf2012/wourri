@@ -7,6 +7,25 @@
 
 ---
 
+## Clarification — enrichissement issue #40 (2026-07-29)
+
+L'ADR-0014 gouverne la promotion globale de la **réécriture v3 des 162 entrées
+historiques**. Il n'interdit pas l'ajout de nouvelles réponses agricoles
+validées nativement dans la source de vérité v2.
+
+À la suite de la validation native de l'issue #40, 35 nouvelles réponses
+documentées par des fiches CNRA ont été ajoutées au corpus courant :
+
+- 20 réponses anacarde ;
+- 15 réponses palmier à huile ;
+- corpus de production porté de v2.3 / 162 entrées à v2.4 / 197 entrées.
+
+Cette extension ne constitue **pas** une promotion du draft v3 archivé : les
+quatre critères de promotion ci-dessous restent inchangés pour les 162
+réécritures historiques.
+
+---
+
 ## Décision (2026-06-03)
 
 Les **14 PRs ouvertes** (#69, #70, #71, #72, #73, #74, #75, #76, #77, #78, #79,
@@ -412,7 +431,7 @@ L'option A reste **proposée** jusqu'à validation des 6 prérequis :
 
 - **Branche WIP draft** : `fix/p3-feedback-deepseek-finetune` (base des 14 PRs)
 - **Fichier draft** : `dictionnaires/archive/corpus_ivr_v3_full_draft.json` (162 entrées, v3, 84,9% validation)
-- **Fichier prod actuel** : `dictionnaires/corpus_ivr.json` (162 entrées, v2.3, source de vérité)
+- **Fichier prod actuel** : `dictionnaires/corpus_ivr.json` (197 entrées, v2.4 après validation issue #40, source de vérité)
 - **Archive doc** : [`dictionnaires/archive/README.md`](../../dictionnaires/archive/README.md)
 - **Règles dioula** : [`data/GRAMMAIRE_DIOULA_REGLES.md`](../../../data/GRAMMAIRE_DIOULA_REGLES.md) (SOV, marqueurs `bɛ`/`ye`/`ma`, `nɔgɔ` vs `saraka`, etc.)
 - **Issues liées** :

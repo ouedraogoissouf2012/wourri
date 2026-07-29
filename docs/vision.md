@@ -115,7 +115,7 @@ production-ready (qualité non sacrifiée, métriques WER/BLEU validées).
 - NLU → cascade IVR exact → IVR concept → DeepSeek+NLLB → fallback
 - TTS dioula CI (MMS-tts-dyu)
 - Météo temps réel (Open-Meteo)
-- Corpus IVR agricole structuré (162 entrées bambara/dioula)
+- Corpus IVR agricole structuré (197 entrées bambara/dioula)
 
 ### Cible (P2-P3)
 

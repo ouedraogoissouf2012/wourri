@@ -92,12 +92,20 @@
     {
       "concept": "CULTURE_HEVEA",
       "french": "hévéa",
+      "selected_terms": [
+        "mana su",
+        "mána yiri"
+      ],
+      "untoned_variants": [
+        "mana su",
+        "mana yiri"
+      ],
       "native_validation": {
-        "status": "deferred",
-        "source": "décision du propriétaire du projet",
+        "status": "validated_synonyms",
+        "source": "confirmation du propriétaire du projet",
         "date": "2026-07-29"
       },
-      "decision": "not_implemented"
+      "decision": "accepted_synonyms"
     }
   ],
   "access_agriculture": {
@@ -125,6 +133,6 @@
   "limitations": [
     "L'absence dans Findora, Koumankan ou l'échantillon Common Voice ne prouve pas qu'un terme est invalide.",
     "Les réponses complètes du corpus IVR ne sont pas ajoutées avant validation de leur formulation dioula.",
-    "L'hévéa reste volontairement hors périmètre jusqu'à une validation ultérieure."
+    "Les termes hévéa sont validés pour le NLU, mais les 15 réponses agricoles hévéa restent à rédiger et à faire valider."
   ]
 }

@@ -15,6 +15,9 @@ AUDIT_PATH = Path(__file__).parents[2] / "data" / "issue_40_source_audit.json"
 DRAFT_PATH = (
     Path(__file__).parents[2] / "data" / "issue_40_corpus_validation_draft.json"
 )
+VALIDATION_PATH = (
+    Path(__file__).parents[2] / "data" / "issue_40_native_validation_2026-07-29.json"
+)
 
 
 @pytest.fixture(scope="module")
@@ -41,6 +44,9 @@ def nlu_components():
             "CULTURE_PALMIER_HUILE",
             "palmier à huile",
         ),
+        ("N bɛ mana su sɛnɛ", "CULTURE_HEVEA", "hévéa"),
+        ("N bɛ mána yiri sɛnɛ", "CULTURE_HEVEA", "hévéa"),
+        ("Je veux planter de l'hévéa", "CULTURE_HEVEA", "hévéa"),
     ),
 )
 def test_validated_crop_terms_reach_sentence_builder(
@@ -84,36 +90,64 @@ def test_native_validation_audit_matches_nlu_scope(nlu_components):
 
     assert decisions["CULTURE_ANACARDE"] == "accepted"
     assert decisions["CULTURE_PALMIER_HUILE"] == "accepted_exactly_as_native_validation"
-    assert decisions["CULTURE_HEVEA"] == "not_implemented"
+    assert decisions["CULTURE_HEVEA"] == "accepted_synonyms"
     assert "CULTURE_ANACARDE" in config["concepts"]
     assert "CULTURE_PALMIER_HUILE" in config["concepts"]
-    assert "CULTURE_HEVEA" not in config["concepts"]
+    assert "CULTURE_HEVEA" in config["concepts"]
 
 
-def test_corpus_drafts_stay_out_of_production_until_native_validation():
+def test_35_native_validated_items_are_promoted_exactly():
     draft = json.loads(DRAFT_PATH.read_text(encoding="utf-8"))
+    validation = json.loads(VALIDATION_PATH.read_text(encoding="utf-8"))
     corpus = json.loads(CORPUS_PATH.read_text(encoding="utf-8"))
     items = draft["items"]
     counts = {
         culture: sum(item["culture"] == culture for item in items)
         for culture in ("CULTURE_ANACARDE", "CULTURE_PALMIER_HUILE")
     }
-    production_ids = {entry["id"] for entry in corpus["entries"]}
+    production = {entry["id"]: entry for entry in corpus["entries"]}
+    corrections = validation["corrections"]
 
-    assert draft["status"] == "pending_native_validation"
+    assert draft["status"] == "native_validation_completed"
+    assert validation["status"] == "validated"
+    assert validation["summary"]["validated_total"] == 35
     assert counts == {
         "CULTURE_ANACARDE": 20,
         "CULTURE_PALMIER_HUILE": 15,
     }
     assert all(item["status"] == "pending_native_validation" for item in items)
-    assert production_ids.isdisjoint(item["id"] for item in items)
+    assert corpus["version"] == "2.4"
+    assert len(corpus["entries"]) == 197
+
+    for item in items:
+        promoted = production[item["id"]]
+        expected_dioula = corrections.get(item["id"], item["dioula_draft"])
+        assert promoted["intent"] == item["intent"]
+        assert promoted["cultures"] == [item["culture"]]
+        assert promoted["reponse_bambara"] == expected_dioula
+        assert promoted["reponse_fr"] == item["french"]
+        assert promoted["score_validation"] == 1.0
+        assert promoted["source"] == item["source"]
 
 
-def test_hevea_remains_deferred(nlu_components):
+def test_hevea_synonyms_are_nlu_only_until_responses_are_validated(nlu_components):
     config, extractor, _, _ = nlu_components
+    corpus = json.loads(CORPUS_PATH.read_text(encoding="utf-8"))
 
-    assert "CULTURE_HEVEA" not in config["concepts"]
+    assert "CULTURE_HEVEA" in config["concepts"]
+    assert extractor.extract("N bɛ mana su sɛnɛ")["CULTURE_HEVEA"] == 1.0
+    assert extractor.extract("N bɛ mána yiri sɛnɛ")["CULTURE_HEVEA"] == 1.0
     assert not any(
-        name.startswith("CULTURE_HEVEA")
-        for name in extractor.extract("Je veux planter de l'hévéa")
+        "CULTURE_HEVEA" in entry.get("cultures", [])
+        for entry in corpus["entries"]
     )
+
+
+def test_hevea_mana_su_does_not_match_mana_surunya(nlu_components):
+    _, extractor, _, _ = nlu_components
+
+    concepts = extractor.extract(
+        "Samiya mana surunya, Bakari b'a ka foro labɛn."
+    )
+
+    assert "CULTURE_HEVEA" not in concepts

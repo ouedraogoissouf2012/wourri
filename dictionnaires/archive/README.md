@@ -1,10 +1,14 @@
 # Archive — versions historiques du corpus IVR
 
-**Dernière mise à jour** : 2026-05-30 (session ADR-0014 formalisation)
+**Dernière mise à jour** : 2026-07-29 (validation native issue #40)
 
 Ce dossier contient des versions historiques ou exploratoires du corpus IVR
 qui **ne sont plus utilisées par le code applicatif**. La source de vérité
-actuelle reste `dictionnaires/corpus_ivr.json` (v2.3, 162 entrées).
+actuelle reste `dictionnaires/corpus_ivr.json` (v2.4, 197 entrées).
+
+La version v2.4 ajoute 35 réponses nouvelles validées nativement (20
+anacarde, 15 palmier à huile). Elle ne promeut pas les réécritures historiques
+du draft v3 et ne modifie donc pas les conditions de l'ADR-0014.
 
 ## ⚠️ État du draft v3 dioula CI (mai 2026)
 

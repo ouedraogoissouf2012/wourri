@@ -9,17 +9,17 @@ Couvre les 4 fonctions extraites de ChatService :
 """
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 
 from app.models.schemas import Language
 from app.services.chat._types import ChatResult
 from app.services.chat.ivr_searcher import (
-    try_ivr_exact,
-    try_ivr_concept,
     clarify_missing_culture,
     search_ivr_by_concept,
+    try_ivr_concept,
+    try_ivr_exact,
 )
 from app.services.chat.nlu_preprocessor import NLUResult
 
@@ -68,6 +68,70 @@ async def test_try_ivr_exact_pas_de_resultat_retourne_none():
     ):
         result = await try_ivr_exact(nlu, "Abidjan", None, False, Language.DIOULA)
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_try_ivr_exact_rejette_une_reponse_dune_autre_culture():
+    """Un hévéa sans entrée dédiée ne doit jamais recevoir un conseil riz."""
+    nlu = _make_nlu(
+        intent="CONSEIL_PRODUCTION",
+        concepts={"CULTURE_HEVEA": True},
+    )
+    wrong_crop = {
+        "id": "riz_conseil_001",
+        "cultures": "CULTURE_RIZ",
+        "reponse_bambara": "Conseil riz",
+        "reponse_fr": "Conseil riz",
+    }
+
+    with patch(
+        "app.services.corpus_facade.chercher_reponse_ivr",
+        return_value=wrong_crop,
+    ):
+        result = await try_ivr_exact(
+            nlu,
+            "Abidjan",
+            None,
+            False,
+            Language.DIOULA,
+        )
+
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_try_ivr_exact_accepte_une_reponse_generique():
+    nlu = _make_nlu(
+        intent="CONSEIL_PRODUCTION",
+        concepts={"CULTURE_HEVEA": True},
+    )
+    generic = {
+        "id": "conseil_generique",
+        "cultures": "*",
+        "reponse_bambara": "Conseil général",
+        "reponse_fr": "Conseil général",
+    }
+
+    with patch(
+        "app.services.corpus_facade.chercher_reponse_ivr",
+        return_value=generic,
+    ), patch(
+        "app.services.corpus_facade.get_phrases_for_intent",
+        return_value=[],
+    ), patch(
+        "app.services.chat.ivr_searcher.get_conseil_saisonnier",
+        return_value=None,
+    ):
+        result = await try_ivr_exact(
+            nlu,
+            "Abidjan",
+            None,
+            False,
+            Language.DIOULA,
+        )
+
+    assert result is not None
+    assert result.response == "Conseil général"
 
 
 @pytest.mark.asyncio
@@ -251,6 +315,25 @@ async def test_search_ivr_by_concept_fallback_conseil_production():
     ):
         result = await search_ivr_by_concept(concepts)
     assert result == {"reponse_bambara": "Conseil", "reponse_fr": "Conseil FR"}
+
+
+@pytest.mark.asyncio
+async def test_search_ivr_by_concept_rejette_un_fallback_inter_culture():
+    concepts = {"CULTURE_HEVEA": True}
+    wrong_crop = {
+        "id": "anacarde_conseil_001",
+        "cultures": "CULTURE_ANACARDE",
+        "reponse_bambara": "Conseil anacarde",
+        "reponse_fr": "Conseil anacarde",
+    }
+
+    with patch(
+        "app.services.corpus_facade.chercher_reponse_ivr",
+        return_value=wrong_crop,
+    ):
+        result = await search_ivr_by_concept(concepts)
+
+    assert result is None
 
 
 # ─────────────────────────────────────────────

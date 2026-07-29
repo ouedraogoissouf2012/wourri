@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "issue": 40,
+  "date": "2026-07-29",
+  "status": "validated",
+  "source_document": "issue-40-validation-corpus-dioula-remplissable correction.pdf",
+  "validation_source": "formulaire rempli et confirmations explicites du propriétaire du projet",
+  "summary": {
+    "validated_total": 35,
+    "anacarde": 20,
+    "palmier_huile": 15,
+    "validated_as_draft": 33,
+    "corrected": 2
+  },
+  "validated_as_draft_ids": [
+    "anacarde_validation_002",
+    "anacarde_validation_003",
+    "anacarde_validation_004",
+    "anacarde_validation_005",
+    "anacarde_validation_006",
+    "anacarde_validation_008",
+    "anacarde_validation_009",
+    "anacarde_validation_010",
+    "anacarde_validation_011",
+    "anacarde_validation_012",
+    "anacarde_validation_013",
+    "anacarde_validation_014",
+    "anacarde_validation_015",
+    "anacarde_validation_016",
+    "anacarde_validation_017",
+    "anacarde_validation_018",
+    "anacarde_validation_019",
+    "anacarde_validation_020",
+    "palmier_huile_validation_001",
+    "palmier_huile_validation_002",
+    "palmier_huile_validation_003",
+    "palmier_huile_validation_004",
+    "palmier_huile_validation_005",
+    "palmier_huile_validation_006",
+    "palmier_huile_validation_007",
+    "palmier_huile_validation_008",
+    "palmier_huile_validation_009",
+    "palmier_huile_validation_010",
+    "palmier_huile_validation_011",
+    "palmier_huile_validation_012",
+    "palmier_huile_validation_013",
+    "palmier_huile_validation_014",
+    "palmier_huile_validation_015"
+  ],
+  "corrections": {
+    "anacarde_validation_001": "Aw ye  sɔ̀mɔɔ turu samiya daminɛ na",
+    "anacarde_validation_007": "Aw ye nɔgɔ don dingɛ kɔnɔ sani ka sɔ̀mɔ turu."
+  },
+  "confirmed_ambiguous_fields": {
+    "anacarde_validation_001": "correction acceptée malgré les deux cases non cochées dans le PDF",
+    "anacarde_validation_002": "brouillon validé; la double case cochée était involontaire",
+    "palmier_huile_validation_003": "brouillon validé malgré les deux cases non cochées"
+  },
+  "validated_crop_terms": {
+    "CULTURE_HEVEA": {
+      "french": "hévéa",
+      "synonyms": [
+        "mana su",
+        "mána yiri"
+      ],
+      "decision": "both_are_valid_synonyms"
+    }
+  },
+  "promotion": {
+    "target": "dictionnaires/corpus_ivr.json",
+    "target_version": "2.4",
+    "promoted_entry_count": 35
+  }
+}

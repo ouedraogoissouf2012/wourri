@@ -1,10 +1,11 @@
 """Wourri — Import du corpus IVR dans PostgreSQL + pgvector.
 
-Sprint F Phase B (ADR-0008). Lit `dictionnaires/corpus_ivr.json` (162 entrées,
-v2.3), calcule l'embedding `paraphrase-multilingual-MiniLM-L12-v2` (384 dims)
+Sprint F Phase B (ADR-0008). Lit la version courante de
+`dictionnaires/corpus_ivr.json`, calcule l'embedding
+`paraphrase-multilingual-MiniLM-L12-v2` (384 dims)
 de chaque entrée et persiste le tout dans :
 
-- `corpus_entries`           : 162 lignes (une par entrée IVR)
+- `corpus_entries`           : une ligne par entrée IVR
 - `corpus_phrases_attestees` : ~157 lignes (phrases bambara CI attestées)
 - `corpus_metadata`          : 4 clés (version, source, imported_at, entries_count)
 
@@ -29,7 +30,6 @@ Usage :
 from __future__ import annotations
 
 import json
-import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path

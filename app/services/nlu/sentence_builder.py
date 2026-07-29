@@ -14,7 +14,6 @@ Cette phrase est ensuite envoyée à DeepSeek qui peut répondre précisément.
 """
 from typing import Dict, Optional
 
-
 # Labels français pour les cultures
 CULTURE_LABELS = {
     "CULTURE_RIZ": "riz",
@@ -40,6 +39,7 @@ CULTURE_LABELS = {
     "CULTURE_NERE": "néré",
     "CULTURE_ANACARDE": "anacarde",
     "CULTURE_PALMIER_HUILE": "palmier à huile",
+    "CULTURE_HEVEA": "hévéa",
 }
 
 # Labels français pour les animaux
@@ -77,6 +77,7 @@ CULTURE_ARTICLES = {
     "néré": "du",
     "anacarde": "de l'",
     "palmier à huile": "du",
+    "hévéa": "de l'",
 }
 
 

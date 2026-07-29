@@ -7,7 +7,7 @@ dans `HANDLERS`. Valide que le pattern Strategy installe en PRs 1-3 fonctionne.
 
 ## Pipeline (pas de cascade IVR)
 
-Le corpus IVR contient uniquement des entrees bambara/francais (162 entrees,
+Le corpus IVR contient uniquement des entrees bambara/francais,
 adaptees agriculteurs CI/Mali). L'utiliser pour des requetes anglaises serait
 soit inutile (pas de match) soit incorrect (traduction machine FR→EN de
 qualite degradee). On bypasse donc la cascade :
