@@ -118,6 +118,9 @@ services:
       # URL Postgres : host = nom du service Docker (`postgres`, pas localhost).
       # Driver `+psycopg` requis (psycopg 3.x utilisé par requirements.txt).
       POSTGRES_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-wourri_prod}
+      # Active les garde-fous Settings : secret API obligatoire, debug force off
+      # et CORS production. Sans cette valeur, l'application restait en mode dev.
+      ENV: production
       # Sprint I.c.1 review ARCH M1 : valeur EXPLICITE obligatoire (fail-fast
       # `${VAR:?...}` au lieu de défaut). ADR-0008 Phase E exige que la bascule
       # `pgvector` soit décidée explicitement après ≥7j staging en `dual`.

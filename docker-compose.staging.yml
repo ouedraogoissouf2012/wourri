@@ -3,7 +3,7 @@
 #
 # Environnement de staging dedie (VM separee de la prod) avec :
 #   - 3 services applicatifs : postgres + wouri-api + whatsapp-server
-#   - 2 services monitoring : Loki (agregation logs) + Promtail (collecte)
+#   - 2 services monitoring : Loki (agregation logs) + Alloy (collecte)
 #
 # Differences VS docker-compose.prod.yml :
 #   * Container names suffixes `_staging` (collisions exclues si meme VM)
@@ -103,6 +103,9 @@ services:
       - "127.0.0.1:8001:8000"
     environment:
       POSTGRES_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-wourri_staging}
+      # Settings ne connait que development/production. Le staging execute la
+      # configuration securisee de production (secret obligatoire, debug force off).
+      ENV: production
       # STAGING par defaut en mode DUAL pour valider pgvector en conditions reelles
       # avant bascule Phase E (cf. ADR-0008 §Phase E + issue #203). Override
       # possible via .env.staging si besoin de tester un autre mode.
@@ -219,18 +222,17 @@ services:
       - wourri_staging_net
 
   # ╭──────────────────────────────────────────────────────────────────────╮
-  # │ Promtail — collecte logs Docker pour Loki                            │
+  # │ Grafana Alloy — collecte logs Docker pour Loki (ADR-0016)            │
   # ╰──────────────────────────────────────────────────────────────────────╯
-  # Promtail lit les fichiers de logs JSON ecrits par le daemon Docker
-  # (cf. logging: driver: json-file sur chaque service) et les push vers
-  # Loki avec les labels {job, container_name, ...}.
+  # Alloy decouvre les containers via l'API Docker, lit leur flux de logs et
+  # le pousse vers Loki avec les labels {job, container_name, stack}.
   #
-  # IMPORTANT : Promtail necessite l'acces au socket Docker pour decouvrir
-  # les containers. Pas de probleme securite ici car Promtail tourne en
-  # read-only sur le socket (cf. config/promtail/promtail-config.yml).
-  promtail:
-    image: grafana/promtail:3.3.2
-    container_name: wourri_promtail_staging
+  # Le montage :ro empeche la modification directe du fichier socket, mais
+  # n'en fait pas une API Docker read-only. Risque accepte sur VM staging
+  # dediee et documente dans ADR-0016.
+  alloy:
+    image: grafana/alloy:v1.18.0
+    container_name: wourri_alloy_staging
     restart: unless-stopped
     security_opt:
       - "no-new-privileges:true"
@@ -244,14 +246,16 @@ services:
     depends_on:
       loki:
         condition: service_healthy
-    command: -config.file=/etc/promtail/promtail-config.yml
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
     volumes:
-      - ./config/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
-      # Lecture seule des logs Docker host (chemin standard sur Linux)
-      - /var/log:/var/log:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      # Position file pour Promtail (memorise ou il en est dans chaque fichier)
-      - promtail_positions:/tmp/promtail
+      - ./config/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Etat interne/WAL Alloy persistant entre redemarrages.
+      - alloy_data:/var/lib/alloy/data
     networks:
       - wourri_staging_net
 
@@ -273,8 +277,8 @@ volumes:
     name: wourri_staging_wa_data
   wa_logs:
     name: wourri_staging_wa_logs
-  promtail_positions:
-    name: wourri_staging_promtail_positions
+  alloy_data:
+    name: wourri_staging_alloy_data
 
 # ╭──────────────────────────────────────────────────────────────────────╮
 # │ Docker secrets — fichiers dans /srv/wourri-staging/secrets/         │
