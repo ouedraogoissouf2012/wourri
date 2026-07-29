@@ -1,5 +1,8 @@
 # WOURI API
 
+[![ci-api](https://github.com/ouedraogoissouf2012/wourri/actions/workflows/ci-api.yml/badge.svg?branch=APIPy)](https://github.com/ouedraogoissouf2012/wourri/actions/workflows/ci-api.yml)
+[![couverture services](https://img.shields.io/badge/couverture%20services-%E2%89%A560%25-brightgreen)](https://github.com/ouedraogoissouf2012/wourri/actions/workflows/ci-api.yml)
+
 ## Assistant Agricole IA - Backend Python FastAPI
 
 **Version:** 1.0.0
@@ -182,6 +185,22 @@ les feature flags actifs. Pour refaire un profil detaille :
 ```bash
 python tools/profile_preload.py --skip whisper,nllb,tts_bam
 ```
+
+---
+
+## Tests et couverture
+
+Installer les dépendances de développement puis lancer la même vérification
+que la CI :
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q --cov=app/services --cov-config=.coveragerc --cov-report=term-missing:skip-covered --cov-fail-under=60
+```
+
+La CI exécute toute la suite sur chaque pull request vers `APIPy` ainsi que sur
+chaque push intégré à cette branche. Elle échoue si la couverture de
+`app/services` descend sous 60 %.
 
 ---
 
