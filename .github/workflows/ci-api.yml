@@ -25,6 +25,8 @@ on:
       - '.env.staging.template'
       - 'config/**'
       - 'app/**'
+      - 'templates/**'
+      - 'static/**'
       - 'alembic/**'
       - 'alembic.ini'
       - 'db-init/**'

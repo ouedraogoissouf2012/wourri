@@ -48,7 +48,10 @@ def test_chat_delegates_to_chat_service(client):
         )
     )
 
-    with patch("app.routers.chat.get_chat_service", return_value=service):
+    with (
+        patch("app.routers.chat.get_chat_service", return_value=service),
+        patch("app.routers.chat.set_request_metric_context") as metric_context,
+    ):
         response = client.post(
             "/api/chat/",
             json={
@@ -80,6 +83,13 @@ def test_chat_delegates_to_chat_service(client):
         include_audio=True,
         user_id="farmer-48",
     )
+    metric_fields = metric_context.call_args.kwargs
+    assert metric_fields == {
+        "intent": "agriculture",
+        "culture": None,
+        "source": "ivr",
+        "nlu_out_of_scope": False,
+    }
 
 
 def test_asr_transcribe_bambara_uses_default_chain(client):
@@ -87,7 +97,10 @@ def test_asr_transcribe_bambara_uses_default_chain(client):
     chain = MagicMock()
     chain.transcribe = AsyncMock(return_value="malo sɛnɛ")
 
-    with patch("app.routers.asr.get_asr_chain", return_value=chain) as factory:
+    with (
+        patch("app.routers.asr.get_asr_chain", return_value=chain) as factory,
+        patch("app.routers.asr.set_request_metric_context") as metric_context,
+    ):
         response = client.post(
             "/api/asr/transcribe",
             files={"audio": ("question.ogg", io.BytesIO(b"fake-audio"), "audio/ogg")},
@@ -102,6 +115,10 @@ def test_asr_transcribe_bambara_uses_default_chain(client):
     }
     factory.assert_called_once_with()
     chain.transcribe.assert_awaited_once_with(b"fake-audio", "ogg")
+    assert [call.kwargs for call in metric_context.call_args_list] == [
+        {"asr_success": False},
+        {"asr_success": True, "source": "asr"},
+    ]
 
 
 def test_asr_transcribe_local_language_uses_generic_chain(client):
@@ -109,10 +126,13 @@ def test_asr_transcribe_local_language_uses_generic_chain(client):
     chain = MagicMock()
     chain.transcribe = AsyncMock(return_value="transcription attié")
 
-    with patch(
-        "app.routers.asr.get_generic_asr_chain",
-        return_value=chain,
-    ) as factory:
+    with (
+        patch(
+            "app.routers.asr.get_generic_asr_chain",
+            return_value=chain,
+        ) as factory,
+        patch("app.routers.asr.set_request_metric_context") as metric_context,
+    ):
         response = client.post(
             "/api/asr/transcribe",
             files={"audio": ("question.mp3", io.BytesIO(b"generic-audio"), "audio/mpeg")},
@@ -127,3 +147,7 @@ def test_asr_transcribe_local_language_uses_generic_chain(client):
     }
     factory.assert_called_once_with("ati")
     chain.transcribe.assert_awaited_once_with(b"generic-audio", "mp3")
+    assert [call.kwargs for call in metric_context.call_args_list] == [
+        {"asr_success": False},
+        {"asr_success": True, "source": "asr"},
+    ]
