@@ -5,8 +5,8 @@
 # Stratégie tranchée par le code-architect (cf. plan Sprint I) :
 #   D1 — base python:3.11-slim-bookworm (PyTorch CPU compatible, taille minimale)
 #   D3 — multi-stage build (builder = wheels, runtime = venv copié)
-#   D4 — modèles ML téléchargés au DÉMARRAGE via cache HuggingFace persistant
-#        sur volume `wouri_model_cache` (évite +3-4 GB par image push/pull)
+#   D4 — modèles ML essentiels préchargés au BUILD dans le cache HuggingFace
+#        puis initialisés depuis le volume persistant au runtime
 #
 # Pas de secret dans l'image (toute injection via `--env-file .env.prod`
 # au runtime, cf. décision D9).
@@ -74,13 +74,11 @@ RUN useradd --create-home --shell /bin/bash --uid 1000 wourri
 
 WORKDIR /app
 
-# Copie du venv depuis le stage builder.
-# Sprint I.a review MAJOR-3 : chown vers `wourri` pour permettre aux libs
-# Python qui écrivent dans site-packages (triton cache, .pth files dynamiques)
-# de fonctionner. Pas de risque sécurité : `wourri` n'a pas plus de droits
-# qu'une lib qui s'auto-modifierait au runtime (comportement courant pip).
-COPY --from=builder /opt/venv /opt/venv
-RUN chown -R wourri:wourri /opt/venv
+# Copie du venv depuis le stage builder avec le bon proprietaire directement.
+# IMPORTANT : un `RUN chown -R /opt/venv` apres le COPY duplique le contenu du
+# venv dans une nouvelle couche overlay (5,98 GB mesures lors de l'issue #39).
+# `COPY --chown` applique les metadonnees pendant la copie, sans couche doublon.
+COPY --from=builder --chown=wourri:wourri /opt/venv /opt/venv
 
 # Copie du code source (sélective — .dockerignore exclut le reste).
 # Ordre par fréquence de changement : moins fréquent d'abord = meilleur cache.
@@ -105,9 +103,9 @@ USER wourri
 
 # Issue #217 : préload des modèles HuggingFace essentiels pendant le build.
 # Cold-start passe de ~15 min à ~30 s (lecture depuis l'image vs download HF).
-# Trade-off : image ~+1 GB (3 → 4 GB) mais soutenable :
-#   - Pull Scaleway : ~+1 min négligeable
-#   - Stockage ghcr.io : OK dans la limite gratuite (10 GB par image)
+# Trade-off : les poids fp32 occupent plusieurs GB dans l'image. La taille
+# doit etre mesuree apres chaque changement de modele avec `docker image
+# inspect` et `docker history` (ne pas confondre "600M parametres" et 600 MB).
 #   - Build CI : ~+5 min (download HF + tar layer cached)
 # Modèles NON-préchargés (lazy on-demand) :
 #   - Whisper large-v3-turbo (~1.5 GB) : utilisé seulement par mode `french`
@@ -133,11 +131,15 @@ VitsModel.from_pretrained('facebook/mms-tts-dyu'); \
 AutoTokenizer.from_pretrained('facebook/mms-tts-dyu'); \
 print('[BUILD] mms-tts-dyu preloaded')"
 
-# 3. NLLB-200-distilled-600M (~600 MB) — traduction FR → bambara/dioula
+# 3. NLLB-200-distilled-600M (600M parametres, ~2,5 GB en fp32) —
+#    traduction FR → bambara/dioula. `huggingface_hub` peut conserver en plus
+#    un cache Xet temporaire de taille comparable : le supprimer DANS le meme
+#    RUN evite qu'il soit fige dans la couche finale (4,94 GB mesures avant fix).
 RUN python -c "from transformers import AutoModelForSeq2SeqLM, AutoTokenizer; \
 AutoModelForSeq2SeqLM.from_pretrained('facebook/nllb-200-distilled-600M'); \
 AutoTokenizer.from_pretrained('facebook/nllb-200-distilled-600M'); \
-print('[BUILD] nllb-200-distilled-600M preloaded')"
+print('[BUILD] nllb-200-distilled-600M preloaded')" \
+    && rm -rf "${HF_HOME}/xet"
 
 # 4. Embedding multilingue — utilisé par scripts/import_corpus_ivr.py + tests
 #    (issue #229) et lié à vdb_service.py (Phase E ADR-0008).

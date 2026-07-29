@@ -45,7 +45,7 @@
 │         │ stdout                                                    │
 │         ▼                                                           │
 │  ┌──────────────────┐    ┌──────────────────┐                     │
-│  │  promtail        │───►│  loki            │                     │
+│  │  alloy           │───►│  loki            │                     │
 │  │  scrape Docker   │    │  :3100 (interne) │                     │
 │  │  logs            │    │  retention 14j   │                     │
 │  └──────────────────┘    └──────────────────┘                     │
@@ -64,7 +64,7 @@
 | **VM** | DEV1-M (4 GB RAM) | DEV1-S (2 GB RAM) |
 | **CORPUS_STORAGE_MODE** | `dual` ou `pgvector` | **`dual`** (mesure Phase E) |
 | **LOG_LEVEL** | `info` | **`debug`** (plus de signal) |
-| **Monitoring** | healthchecks.io seul | healthchecks.io + Loki + Promtail |
+| **Monitoring** | healthchecks.io seul | healthchecks.io + Loki + Alloy |
 | **Ports host** | 8000 / 3001 | 8001 / 3002 |
 | **Tag image** | `:latest` | `:staging` |
 | **Container names** | `wourri_*_prod` | `wourri_*_staging` |
@@ -330,7 +330,7 @@ Les 5 images sont téléchargées :
 - `ghcr.io/ouedraogoissouf2012/wourri-api:staging` (~3-4 GB avec modèles ML)
 - `ghcr.io/ouedraogoissouf2012/wourri-whatsapp:staging` (~200 MB)
 - `grafana/loki:3.3.2` (~80 MB)
-- `grafana/promtail:3.3.2` (~120 MB)
+- `grafana/alloy:v1.18.0` (~100 MB)
 
 **Premier pull lent** (~5-10 min selon bande passante VM). Suivants
 incrémentaux (~30s).
@@ -377,6 +377,10 @@ docker compose -f docker-compose.staging.yml ps
 curl http://127.0.0.1:8001/health    # wouri-api
 curl http://127.0.0.1:3002/health    # whatsapp-server
 curl http://127.0.0.1:3100/ready     # loki
+
+# Configuration et pipeline Alloy
+docker compose exec alloy alloy validate /etc/alloy/config.alloy
+docker compose logs --tail=100 alloy
 
 # Test Postgres
 docker compose exec postgres psql -U wourri -d wourri_staging -c "SELECT version();"
@@ -578,7 +582,7 @@ self-host Scaleway = économie 50-75 % avec contrôle total.
 - [x] `docker-compose.staging.yml` créé
 - [x] `.env.staging.template` créé
 - [x] `config/loki/loki-config.yml` créé
-- [x] `config/promtail/promtail-config.yml` créé
+- [x] `config/alloy/config.alloy` créé et validé (ADR-0016)
 - [x] `docs/staging-deployment.md` (ce fichier) créé
 - [ ] PR mergée
 
@@ -613,7 +617,7 @@ self-host Scaleway = économie 50-75 % avec contrôle total.
 
 ### Critère de sortie Sprint J (#202)
 - [ ] Bot WhatsApp staging répond à message vocal bambara avec audio dioula
-- [ ] 3 endpoints `/health` répondent OK
+- [ ] 3 endpoints de santé répondent OK
 - [ ] Logs consultables à distance (via Loki + tunnel SSH)
 - [ ] Un dev distant peut redéployer en < 30 min via runbook
 
@@ -629,4 +633,5 @@ self-host Scaleway = économie 50-75 % avec contrôle total.
 - ADR-0008 : [migration ChromaDB → pgvector](adr/0008-plan-migration-chromadb-pgvector.md)
 - Docs Scaleway : https://www.scaleway.com/en/docs/compute/instances/
 - Docs Loki : https://grafana.com/docs/loki/latest/
-- Docs Promtail : https://grafana.com/docs/loki/latest/send-data/promtail/
+- ADR-0016 : [migration Promtail → Grafana Alloy](adr/0016-migration-promtail-grafana-alloy.md)
+- Docs Alloy : https://grafana.com/docs/alloy/latest/

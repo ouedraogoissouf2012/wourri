@@ -16,6 +16,11 @@ on:
     paths:
       - 'Dockerfile.prod'
       - '.dockerignore'
+      - 'docker-compose.prod.yml'
+      - 'docker-compose.staging.yml'
+      - '.env.prod.template'
+      - '.env.staging.template'
+      - 'config/**'
       - 'app/**'
       - 'alembic/**'
       - 'alembic.ini'
@@ -28,6 +33,30 @@ on:
       - '.github/workflows/ci-api.yml'
 
 jobs:
+  infra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate production Dockerfile
+        run: docker build --check --file Dockerfile.prod .
+
+      - name: Validate production Compose
+        run: docker compose --env-file .env.prod.template --file docker-compose.prod.yml config --quiet
+
+      - name: Validate staging Compose
+        run: docker compose --env-file .env.staging.template --file docker-compose.staging.yml config --quiet
+
+      - name: Validate Grafana Alloy configuration
+        run: >-
+          docker run --rm
+          --volume "$PWD/config/alloy/config.alloy:/etc/alloy/config.alloy:ro"
+          grafana/alloy:v1.18.0
+          validate /etc/alloy/config.alloy
+
   test:
     runs-on: ubuntu-latest
     # Sprint I.c.1 review OPS M9 : guard-rail anti hang (job qui tourne 6h

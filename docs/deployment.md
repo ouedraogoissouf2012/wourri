@@ -767,18 +767,18 @@ graceful : si `HEALTHCHECKS_BACKUP_URL` est vide, le backup tourne quand même.
 ##### d) Cron de ping `/health` toutes les 5 min
 
 Ces 2 pings remontent l'état applicatif (Postgres → wouri-api → whatsapp-server).
-Si `/health` répond non-200 ou ne répond pas dans la fenêtre, alerte
-healthchecks.io.
+Si la sonde attendue (`/health` pour l'API, `/ready` pour WhatsApp) répond
+non-200 ou ne répond pas dans la fenêtre, alerte healthchecks.io.
 
 ```bash
 sudo crontab -u wourri -e
 # Ajouter (en plus de la ligne backup déjà présente) :
 */5 * * * * set -a && . /srv/wourri/.env.prod && set +a && [ -n "$HEALTHCHECKS_API_URL" ] && curl -fsS -m 5 http://127.0.0.1:8000/health >/dev/null && curl -fsS -m 5 "$HEALTHCHECKS_API_URL" >/dev/null
-*/5 * * * * set -a && . /srv/wourri/.env.prod && set +a && [ -n "$HEALTHCHECKS_WA_URL" ] && curl -fsS -m 5 http://127.0.0.1:3001/health >/dev/null && curl -fsS -m 5 "$HEALTHCHECKS_WA_URL" >/dev/null
+*/5 * * * * set -a && . /srv/wourri/.env.prod && set +a && [ -n "$HEALTHCHECKS_WA_URL" ] && curl -fsS -m 5 http://127.0.0.1:3001/ready >/dev/null && curl -fsS -m 5 "$HEALTHCHECKS_WA_URL" >/dev/null
 ```
 
-Logique : on n'envoie le ping QUE si `/health` répond 200. Si `/health` est
-KO, healthchecks.io détecte l'absence de ping en 10 min (grace time) et alerte.
+Logique : on n'envoie le ping QUE si la sonde du service répond 200. Sinon,
+healthchecks.io détecte l'absence de ping en 10 min (grace time) et alerte.
 
 ##### e) Vérifier le setup
 
