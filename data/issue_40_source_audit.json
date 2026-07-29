@@ -125,14 +125,39 @@
       "usage": "références techniques pour les futures réponses agricoles"
     },
     {
+      "organization": "CNRA Côte d'Ivoire",
+      "title": "Bien cultiver l'hévéa en Côte d'Ivoire",
+      "url": "https://cnra.ci/download/bien-cultiver-lhevea-en-cote-divoire/",
+      "usage": "source des réponses hévéa 001 à 013"
+    },
+    {
+      "organization": "CNRA Côte d'Ivoire",
+      "title": "Bien diagnostiquer l'encoche sèche chez l'hévéa en Côte d'Ivoire",
+      "url": "https://cnra.ci/download/bien-diagnostiquer-lencoche-seche-chez-lhevea-en-cote-divoire/",
+      "usage": "source de la réponse hévéa 014"
+    },
+    {
+      "organization": "CNRA Côte d'Ivoire",
+      "title": "Bien détecter le Fomès de l'hévéa et réduire son incidence en Côte d'Ivoire",
+      "url": "https://cnra.ci/download/bien-detecter-le-fomes-de-lhevea-et-reduire-son-incidence-en-cote-divoire/",
+      "usage": "source de la réponse hévéa 015"
+    },
+    {
       "organization": "FAO",
       "url": "https://www.fao.org/family-farming/detail/fr/c/1619106/",
       "usage": "référence post-récolte anacarde"
     }
   ],
+  "hevea_response_validation": {
+    "draft_file": "data/issue_40_hevea_validation_draft.json",
+    "fillable_form": "output/pdf/issue-40-validation-hevea-dioula-remplissable.pdf",
+    "draft_count": 15,
+    "status": "pending_native_validation",
+    "production_promotion": "forbidden_until_native_validation"
+  },
   "limitations": [
     "L'absence dans Findora, Koumankan ou l'échantillon Common Voice ne prouve pas qu'un terme est invalide.",
     "Les réponses complètes du corpus IVR ne sont pas ajoutées avant validation de leur formulation dioula.",
-    "Les termes hévéa sont validés pour le NLU, mais les 15 réponses agricoles hévéa restent à rédiger et à faire valider."
+    "Les termes hévéa sont validés pour le NLU. Les 15 réponses agricoles hévéa sont rédigées comme brouillons sourcés et restent à faire valider avant toute intégration au corpus IVR."
   ]
 }
