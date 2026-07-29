@@ -66,6 +66,7 @@ CULTURE_LABELS = {
     "CULTURE_CAFE": "café", "CULTURE_ANANAS": "ananas", "CULTURE_MANGUE": "mangue",
     "CULTURE_AGRUMES": "agrumes", "CULTURE_NERE": "néré",
     "CULTURE_ANACARDE": "anacarde", "CULTURE_PALMIER_HUILE": "palmier à huile",
+    "CULTURE_HEVEA": "hévéa",
 }
 
 ANIMAL_LABELS = {

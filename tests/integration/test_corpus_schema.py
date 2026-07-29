@@ -2,7 +2,7 @@
 
 Ces tests valident :
 - la migration Alembic `0001_create_corpus_schema` (tables, colonnes, index, FK),
-- l'idempotence du script `scripts/import_corpus_ivr.py` (162 entrées),
+- l'idempotence du script `scripts/import_corpus_ivr.py` (corpus courant),
 - la recherche vectorielle (`<=>` cosine) via l'index ivfflat,
 - l'intégrité référentielle (FK + ON DELETE CASCADE).
 
@@ -14,6 +14,7 @@ Référence : ADR-0008 §Phase B (5 critères de sortie).
 """
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -22,6 +23,11 @@ from pathlib import Path
 import pytest
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+_CORPUS = json.loads(
+    (_PROJECT_ROOT / "dictionnaires" / "corpus_ivr.json").read_text(encoding="utf-8")
+)
+_EXPECTED_COUNT = len(_CORPUS["entries"])
+_EXPECTED_VERSION = _CORPUS["version"]
 
 # Source unique partagée avec alembic/env.py, scripts/import_corpus_ivr.py,
 # app/services/corpus_service.py. `raise_on_missing=False` est la divergence
@@ -57,8 +63,8 @@ def engine():
 def imported_corpus(engine):
     """Garantit que le corpus est importé (idempotence).
 
-    Fix #179 §3 : timeout abaisse de 600s a 240s. Le script importe 162
-    entrees + calcule 162 embeddings 384-dim. Sur CI Linux : ~30-60s.
+    Fix #179 §3 : timeout abaisse de 600s a 240s. Le script importe le corpus
+    courant et calcule un embedding 384-dim par entrée. Sur CI Linux : ~30-60s.
     Sur dev Windows : ~120-180s observe (subprocess Python complet + warmup
     torch CPU). 240s laisse une marge tout en evitant l'attente 10 min de
     l'ancien 600s si le modele est absent du cache.
@@ -270,14 +276,14 @@ class TestSchemaIntegrity:
 
 
 class TestImportIdempotence:
-    """Critère ADR-0008 §Phase B #4 (162 entrées importées + reproductible)."""
+    """Critère ADR-0008 §Phase B #4 (corpus complet + import reproductible)."""
 
-    def test_import_inserts_162_entries(self, imported_corpus, engine):
+    def test_import_inserts_every_current_entry(self, imported_corpus, engine):
         from sqlalchemy import text
 
         with engine.connect() as conn:
             count = conn.execute(text("SELECT count(*) FROM corpus_entries")).scalar()
-        assert count == 162
+        assert count == _EXPECTED_COUNT
 
     def test_metadata_version_matches_corpus(self, imported_corpus, engine):
         from sqlalchemy import text
@@ -287,14 +293,14 @@ class TestImportIdempotence:
                 text("SELECT value FROM corpus_metadata WHERE key = 'version'")
             ).first()
         assert row is not None
-        # corpus_ivr.json v2.3 (cf. MEMORY.md "Fichiers clés")
-        assert row[0] == "2.3"
+        assert row[0] == _EXPECTED_VERSION
 
     def test_import_idempotent(self, imported_corpus, engine):
         """Une seconde exécution doit produire le même count (pas de doublons).
 
-        Vérifie à la fois `corpus_entries` (162) ET `corpus_phrases_attestees`
-        (≥ 100, valeur de référence corpus v2.3 ≈ 157) — le TRUNCATE CASCADE
+        Vérifie à la fois `corpus_entries` (taille du JSON courant) ET
+        `corpus_phrases_attestees` (≥ 100, référence historique ≈ 157) —
+        le TRUNCATE CASCADE
         doit avoir vidé proprement les phrases avant la 2e insertion.
         """
         script = _PROJECT_ROOT / "scripts" / "import_corpus_ivr.py"
@@ -320,9 +326,9 @@ class TestImportIdempotence:
             count_phrases = conn.execute(
                 text("SELECT count(*) FROM corpus_phrases_attestees")
             ).scalar()
-        assert count_entries == 162, (
-            "import non idempotent : count corpus_entries != 162 "
-            "après ré-exécution"
+        assert count_entries == _EXPECTED_COUNT, (
+            "import non idempotent : count corpus_entries != taille du corpus "
+            "JSON après ré-exécution"
         )
         # Lower-bound défensif : la valeur exacte (~157) peut évoluer avec
         # le corpus, mais une double-insertion (> 200) ou une suppression
@@ -382,12 +388,13 @@ class TestVectorSearch:
     def test_array_search_by_culture_uses_gin_index(self, imported_corpus, engine):
         """Fix #179 §1 : prouve que l'index GIN est *reellement* utilise.
 
-        Avec 162 lignes, le planner peut preferer un seqscan (moins cher en
-        cold cache). On force `enable_seqscan=off` et on inspecte le plan via
+        Avec un petit corpus, le planner peut preferer un seqscan (moins cher
+        en cold cache). On force `enable_seqscan=off` et inspecte le plan via
         `EXPLAIN (FORMAT JSON)` : un noeud `Bitmap Index Scan` doit apparaitre.
         """
-        from sqlalchemy import text
         import json
+
+        from sqlalchemy import text
 
         with engine.connect() as conn:
             conn.execute(text("SET LOCAL enable_seqscan = off"))
@@ -415,11 +422,13 @@ class TestVectorSearch:
     def test_ivfflat_search_uses_index(self, imported_corpus, engine):
         """Fix #179 §1 (variante ivfflat) : prouve que ivfflat est utilise.
 
-        Avec 162 lignes et `lists=10`, le seuil pgvector (rows >= lists*3 = 30)
-        est largement franchi → ivfflat devrait etre choisi pour ORDER BY <=>.
+        Avec le corpus courant et `lists=10`, le seuil pgvector
+        (rows >= lists*3 = 30) est largement franchi → ivfflat devrait etre
+        choisi pour ORDER BY <=>.
         """
-        from sqlalchemy import text
         import json
+
+        from sqlalchemy import text
 
         # Vecteur arbitraire pour la recherche (384 zeros)
         vec = "[" + ",".join(["0"] * 384) + "]"

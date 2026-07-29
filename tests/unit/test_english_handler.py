@@ -9,7 +9,7 @@ Couvre le handler ENGLISH du Strategy Pattern :
     - audio_language = "English" si audio genere
 
 Note importante : EnglishHandler bypasse la cascade IVR car le corpus IVR
-est uniquement BAM/FR (162 entrees). La logique est donc plus simple que
+est uniquement BAM/FR. La logique est donc plus simple que
 DioulaHandler (juste DeepSeek + TTS), symetrique a FrenchHandler.
 
 Ref : ADR-0015 docs/adr/0015-strategy-pattern-cascade-chat-et-anglais.md

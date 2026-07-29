@@ -38,7 +38,7 @@ services:
       - "no-new-privileges:true"
     # Sprint I.c.1 review OPS M1 : limite mémoire stricte. Postgres tient
     # confortablement en 512m pour ~30 utilisateurs (heuristique pgvector
-    # léger sur 162 entrées corpus IVR + tables annexes).
+    # léger sur le corpus IVR courant + tables annexes).
     mem_limit: 512m
     mem_reservation: 256m
     # Sprint I.c.1 review OPS M2 : rotation logs Docker pour éviter

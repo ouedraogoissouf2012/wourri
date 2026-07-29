@@ -10,6 +10,7 @@ Stratégie de matching (ordre de priorité):
 Robustesse NeMo TDT: les tons sont strippés avant comparaison
 (NeMo transcrit souvent sans tons: sɛnɛ → sene, kɔrɔ → koro, etc.)
 """
+import re
 import unicodedata
 from typing import Dict, List, Tuple
 
@@ -96,7 +97,10 @@ class ConceptExtractor:
             key=lambda x: len(x[0]),
             reverse=True
         ):
-            if kw_norm in text_norm:
+            # Limites de mots obligatoires : `mana su` (hévéa) ne doit pas
+            # matcher le marqueur temporel courant dans `mana surunya`.
+            pattern = rf"(?<!\w){re.escape(kw_norm)}(?!\w)"
+            if re.search(pattern, text_norm):
                 for cn in concept_names:
                     if cn not in found:
                         found[cn] = 1.0

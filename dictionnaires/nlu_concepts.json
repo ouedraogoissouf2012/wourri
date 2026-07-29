@@ -1,5 +1,5 @@
 {
-  "version": "3.1",
+  "version": "3.2",
   "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
   "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
   "correction_v1.1": "2026-03-03 — termes bambara corrigés: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ, coton fini→kɔrɔni",
@@ -1059,7 +1059,21 @@
       "partial": [
         "ntentulu"
       ],
-      "note": "ntèntulu=palmier à huile validé par le locuteur natif utilisateur le 2026-07-29. Variante sans tons incluse pour l'ASR. L'hévéa reste explicitement différé faute de terme dioula CI validé."
+      "note": "ntèntulu=palmier à huile validé par le locuteur natif utilisateur le 2026-07-29. Variante sans tons incluse pour l'ASR."
+    },
+    "CULTURE_HEVEA": {
+      "label_fr": "hévéa / caoutchouc",
+      "keywords": [
+        "mana su",
+        "mána yiri",
+        "hévéa",
+        "hevea",
+        "caoutchouc"
+      ],
+      "partial": [
+        "hevea"
+      ],
+      "note": "mana su et mána yiri sont deux synonymes de l'hévéa validés par le locuteur natif utilisateur le 2026-07-29. Le matching NLU retire les tons pour tolérer les sorties ASR, tandis que seules les deux expressions validées sont conservées comme mots-clés."
     }
   },
   "intents": [
@@ -1324,6 +1338,14 @@
   "correction_v1.7": "2026-03-13 — ENGRAIS_FERTILISANT nettoyé (dolo/furakɛ duguma/natiri/dɔgɔw RETIRÉS). Ajout: nɔgɔfin(engrais organique), nafanma fɛnw(nutriments), kɔmpɔsi(compost). Source: Access Agriculture 230 + validation Bayelemabaga.",
   "correction_v1.8": "2026-03-13 — PROBLEME_INSECTE: limɔgɔ/limogo (mouche, 8 Baye). Nouvelle culture CULTURE_MANGUE: maŋoro (15 Baye + 30 Jeli). dunmuni CONFIRMÉ = manger/nourriture (PAS insecte). Source: Access Agriculture 130.",
   "changelog": [
+    {
+      "version": "3.2",
+      "date": "2026-07-29",
+      "changes": [
+        "Nouveau concept CULTURE_HEVEA — mana su et mána yiri validés comme synonymes par le locuteur natif utilisateur.",
+        "Ajout des variantes françaises hévéa/hevea/caoutchouc sans partial dangereux sur le mot fréquent mana."
+      ]
+    },
     {
       "version": "3.1",
       "date": "2026-07-29",

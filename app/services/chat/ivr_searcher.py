@@ -24,13 +24,32 @@ import logging
 import re
 from typing import Optional
 
-from app.models.schemas import Language
 from app.data.calendrier_agricole import get_conseil_saisonnier
+from app.models.schemas import Language
 from app.services.chat._types import ChatResult
 from app.services.chat.meteo_injector import inject_meteo
 from app.services.chat.nlu_preprocessor import ACTION_TO_INTENT, NLUResult
 
 logger = logging.getLogger(__name__)
+
+
+def _result_matches_requested_cultures(result: dict, cultures: list[str]) -> bool:
+    """Refuse qu'un fallback `intent seul` réponde pour une autre culture.
+
+    Les backends retournent `cultures` comme chaîne CSV (Chroma) ou comme
+    première culture (pgvector). Une entrée générique `*` reste autorisée.
+    L'absence du champ est tolérée pour les anciens adapters et les tests.
+    """
+    raw_cultures = result.get("cultures")
+    if not raw_cultures:
+        return True
+
+    returned = {
+        culture.strip()
+        for culture in str(raw_cultures).split(",")
+        if culture.strip()
+    }
+    return "*" in returned or bool(returned.intersection(cultures))
 
 
 async def _synthesize_dioula(text: str) -> Optional[str]:
@@ -90,6 +109,15 @@ async def try_ivr_exact(
     if not result:
         return None
 
+    if not _result_matches_requested_cultures(result, cultures):
+        logger.warning(
+            "[IVR] Réponse inter-culture rejetée: id=%s demandées=%s retournée=%s",
+            result.get("id"),
+            cultures,
+            result.get("cultures"),
+        )
+        return None
+
     logger.info("[IVR] exact: %s (intent=%s)", result["id"], nlu.intent)
     ivr_bambara = result["reponse_bambara"]
     ivr_fr = result.get("reponse_fr", "")
@@ -121,7 +149,7 @@ async def try_ivr_exact(
 
     return ChatResult(
         # response = FR par contrat (cf. #167). Fallback bambara uniquement si
-        # l'entree corpus n'a pas reponse_fr (0/162 actuellement, garde-fou).
+        # l'entree corpus n'a pas reponse_fr (aucune actuellement, garde-fou).
         response=ivr_fr or ivr_bambara,
         response_dioula=ivr_bambara,
         audio_url=audio_url,
@@ -258,7 +286,7 @@ async def search_ivr_by_concept(concepts: dict) -> Optional[dict]:
             result = await asyncio.to_thread(
                 chercher_reponse_ivr, intent_candidat, cultures, []
             )
-            if result:
+            if result and _result_matches_requested_cultures(result, cultures):
                 logger.info("[IVR] concept: %s (intent=%s)", result["id"], intent_candidat)
                 return {
                     "reponse_bambara": result["reponse_bambara"],
@@ -268,7 +296,7 @@ async def search_ivr_by_concept(concepts: dict) -> Optional[dict]:
         result = await asyncio.to_thread(
             chercher_reponse_ivr, "CONSEIL_PRODUCTION", cultures, []
         )
-        if result:
+        if result and _result_matches_requested_cultures(result, cultures):
             logger.info("[IVR] concept: %s (CONSEIL_PRODUCTION)", result["id"])
             return {
                 "reponse_bambara": result["reponse_bambara"],

@@ -21,14 +21,13 @@ import pytest
 
 from app.models.schemas import Language
 from app.services.chat.nlu_preprocessor import (
-    NLUResult,
-    CULTURE_LABELS,
-    ANIMAL_LABELS,
     ACTION_TO_INTENT,
-    preprocess_nlu,
+    ANIMAL_LABELS,
+    CULTURE_LABELS,
+    NLUResult,
     enrich_for_deepseek,
+    preprocess_nlu,
 )
-
 
 # ─────────────────────────────────────────────
 # enrich_for_deepseek — 3 branches
@@ -221,6 +220,7 @@ def test_culture_labels_cover_all_configured_nlu_cultures():
     (
         ("CULTURE_ANACARDE", "anacarde"),
         ("CULTURE_PALMIER_HUILE", "palmier à huile"),
+        ("CULTURE_HEVEA", "hévéa"),
         ("CULTURE_MANGUE", "mangue"),
         ("CULTURE_AGRUMES", "agrumes"),
         ("CULTURE_NERE", "néré"),
@@ -268,7 +268,11 @@ def test_back_compat_nlu_result_import_chat_service():
 
 def test_back_compat_dicts_import_chat_service():
     """Les dicts re-exportes depuis chat_service avec prefixe `_` doivent matcher."""
-    from app.services.chat_service import _CULTURE_LABELS, _ANIMAL_LABELS, _ACTION_TO_INTENT
+    from app.services.chat_service import (
+        _ACTION_TO_INTENT,
+        _ANIMAL_LABELS,
+        _CULTURE_LABELS,
+    )
     assert _CULTURE_LABELS is CULTURE_LABELS
     assert _ANIMAL_LABELS is ANIMAL_LABELS
     assert _ACTION_TO_INTENT is ACTION_TO_INTENT

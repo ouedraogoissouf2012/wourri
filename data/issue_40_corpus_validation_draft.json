@@ -2,8 +2,20 @@
   "schema_version": "1.0",
   "issue": 40,
   "date": "2026-07-29",
-  "status": "pending_native_validation",
-  "warning": "Ces formulations dioula sont des propositions à corriger. Elles ne font pas partie du corpus IVR de production.",
+  "status": "native_validation_completed",
+  "warning": "Ce fichier conserve les propositions initiales. Les décisions natives et les deux corrections sont tracées dans data/issue_40_native_validation_2026-07-29.json.",
+  "validation_result": {
+    "date": "2026-07-29",
+    "status": "validated",
+    "validated_total": 35,
+    "corrected_ids": [
+      "anacarde_validation_001",
+      "anacarde_validation_007"
+    ],
+    "evidence": "data/issue_40_native_validation_2026-07-29.json",
+    "promoted_to": "dictionnaires/corpus_ivr.json",
+    "target_version": "2.4"
+  },
   "source_codes": {
     "CNRA-ANA-2008": {
       "title": "Bien cultiver l'anacardier en Côte d'Ivoire",
