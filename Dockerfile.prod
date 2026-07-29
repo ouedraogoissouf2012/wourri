@@ -54,21 +54,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Utilisateur non-root pour réduire la surface d'attaque
-# (pattern aligné sur wouri-api Sprint I.a)
-RUN groupadd --gid 1000 wourri \
-    && useradd --uid 1000 --gid wourri --shell /bin/bash --create-home wourri
+# L'image officielle node:20-slim fournit deja l'utilisateur/groupe `node`
+# (UID/GID 1000). Le reutiliser evite le conflit `GID '1000' already exists`
+# observe dans GitHub Actions et conserve une execution non-root.
 
 WORKDIR /app
 
 # Copie des dépendances depuis le stage builder
-COPY --from=builder --chown=wourri:wourri /app/node_modules ./node_modules
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 
 # Copie du code source (sélective — .dockerignore exclut le reste)
 # Ordre par fréquence de changement : package.json moins fréquent d'abord
-COPY --chown=wourri:wourri package.json package-lock.json ./
-COPY --chown=wourri:wourri lib/ ./lib/
-COPY --chown=wourri:wourri app-baileys.js ./
+COPY --chown=node:node package.json package-lock.json ./
+COPY --chown=node:node lib/ ./lib/
+COPY --chown=node:node app-baileys.js ./
 
 # Prépare les dossiers runtime persistants (DOIVENT être montés sur volumes
 # nommés en prod — cf. docker-compose.prod.yml Sprint I.c).
@@ -77,7 +76,7 @@ COPY --chown=wourri:wourri app-baileys.js ./
 #   - audio_cache/ : 4 audios d'excuse re-générés à chaque démarrage
 #   - data/ : user_preferences.json + pending_messages.json perdus
 RUN mkdir -p /app/auth_baileys /app/audio_cache /app/temp_audio /app/data /app/logs \
-    && chown -R wourri:wourri /app
+    && chown -R node:node /app
 
 # Déclaration explicite des volumes attendus en runtime.
 # Si l'opérateur lance `docker run` sans monter ces volumes, Docker crée
@@ -85,7 +84,7 @@ RUN mkdir -p /app/auth_baileys /app/audio_cache /app/temp_audio /app/data /app/l
 # silencieuse où auth_baileys disparaît à chaque `docker compose down -v`.
 VOLUME ["/app/auth_baileys", "/app/audio_cache", "/app/data", "/app/logs"]
 
-USER wourri
+USER node
 
 # Healthcheck applicatif — start-period court car whatsapp-server démarre
 # rapidement (Baileys + Express ~5-10s). Pas de modèle ML lourd ici.

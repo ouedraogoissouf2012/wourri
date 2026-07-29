@@ -58,9 +58,12 @@ function authHeaders() {
     return WOURI_API_KEY ? { 'X-API-Key': WOURI_API_KEY } : {};
 }
 
-// Avertissement demarrage si API_KEY manquante en production
+// Fail-fast : un bot de production sans cle ne peut appeler aucun endpoint
+// backend protege. Le laisser demarrer donnerait un container "healthy" mais
+// fonctionnellement inutilisable.
 if (process.env.NODE_ENV === 'production' && !WOURI_API_KEY) {
-    logger.warn('[SECURITY] WOURI_API_KEY non definie en production — les appels backend echoueront si API_SECRET_KEY y est configuree');
+    logger.fatal('[SECURITY] WOURI_API_KEY non definie en production — demarrage refuse');
+    process.exit(1);
 }
 
 // Creer le dossier temporaire pour les audios
