@@ -39,7 +39,7 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye maa loo sɛnɛ mɛɛɛ karo la sanjiii tuma na. Aw ye dugukoloo jiman ɲini, ji ka se ka don a la. Aw ye sɛnɛ santimɛtiri mugan mugan.",
+      "reponse_bambara": "Aw ye maa loo sɛnɛ mɛɛɛ kalo la sanjiii tuma na. Aw ye dugukoloo jiman ɲini, ji ka se ka don a la. Aw ye sɛnɛ santimɛtiri mugan mugan.",
       "reponse_fr": "Plante ton riz en mai pendant la saison des pluies. Cherche une terre humide où l'eau peut rester. Plante avec 20 centimètres d'écart.",
       "score_validation": 0.7,
       "tags": [
@@ -90,7 +90,7 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "malo sɛnɛli tuma ɲuman ye mɛɛɛ karo ye. Sanjiii bɛ na o tuma la ka foroo ɲɛ. Aw ye foroo labɛn sisan ka kɛ ɲɔgɔn na.",
+      "reponse_bambara": "malo sɛnɛli tuma ɲuman ye mɛɛɛ kalo ye. Sanjiii bɛ na o tuma la ka foroo ɲɛ. Aw ye foroo labɛn sisan ka kɛ ɲɔgɔn na.",
       "reponse_fr": "Le meilleur moment pour planter le riz c'est en mai. Les pluies arrivent à ce moment pour bien arroser. Prépare ton champ maintenant pour être prêt.",
       "score_validation": 0.72,
       "tags": [
@@ -128,7 +128,7 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "malo filɛli tuma ye karo saba ye sɛnɛli kɔfɛ. Aw ye maa loo filɛ ni maa loo cɛɛn gɛlɛn ye ka wuli. Aw ye joona kɛ sanjiii sanni na.",
+      "reponse_bambara": "malo filɛli tuma ye kalo saba ye sɛnɛli kɔfɛ. Aw ye maa loo filɛ ni maa loo cɛɛn gɛlɛn ye ka wuli. Aw ye joona kɛ sanjiii sanni na.",
       "reponse_fr": "Le riz se récolte 3 mois après la plantation. Récolte quand les épis de riz sont bien secs et courbés. Fais-le vite avant les pluies.",
       "score_validation": 0.73,
       "tags": [
@@ -146,7 +146,7 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "malo b a fɛ ji caman. Aw ye ji don foroo la tile o tile. Ni ji ma sɔrɔ karo fɔlɔ na, maa loo bɛ tɛmɛ.",
+      "reponse_bambara": "malo b a fɛ ji caman. Aw ye ji don foroo la tile o tile. Ni ji ma sɔrɔ kalo fɔlɔ na, maa loo bɛ tɛmɛ.",
       "reponse_fr": "Le riz a besoin de beaucoup d'eau. Arrose ton champ tous les jours. Sans eau dans le premier mois, le riz mourra.",
       "score_validation": 0.74,
       "tags": [
@@ -262,7 +262,7 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye kabaa sɛnɛ awiriliiii karo la sanjiii dɔɔni kɔ. Aw ye foroo cɛ ka ɲɛ duguma la. Sɛnɛ ka kɛ santimɛtiri bi wɔɔrɔ wɔɔrɔ.",
+      "reponse_bambara": "Aw ye kabaa sɛnɛ awiriliiii kalo la sanjiii dɔɔni kɔ. Aw ye foroo cɛ ka ɲɛ duguma la. Sɛnɛ ka kɛ santimɛtiri bi wɔɔrɔ wɔɔrɔ.",
       "reponse_fr": "Plante ton maïs en avril après les premières pluies. Laboure bien la terre en profondeur. Plante à 80 centimètres d'écart entre rangées.",
       "score_validation": 0.7,
       "tags": [
@@ -897,7 +897,7 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Kabaa sɔngɔ ka ca ni karo wɔɔrɔ na. Dugukoloo mɔgɔw bɛ kabaa san foroo la. Aw ye kabaa mara dɔɔni sani aw ka a fara lɔgɔ ma.",
+      "reponse_bambara": "Kabaa sɔngɔ ka ca ni kalo wɔɔrɔ na. Dugukoloo mɔgɔw bɛ kabaa san foroo la. Aw ye kabaa mara dɔɔni sani aw ka a fara lɔgɔ ma.",
       "reponse_fr": "Le prix du maïs monte en juin. Les acheteurs viennent directement dans les champs. Garde ton maïs un peu avant de le vendre au marché.",
       "score_validation": 0.68,
       "tags": [
@@ -1000,7 +1000,7 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye ti ga sɛnɛ mɛɛɛ karo la sanjiii tuma na. Aw ye dugukoloo fɔlɔ ɲini, ji tɛ to a la. Sɛnɛ ka kɛ santimɛtiri bi naani naani.",
+      "reponse_bambara": "Aw ye ti ga sɛnɛ mɛɛɛ kalo la sanjiii tuma na. Aw ye dugukoloo fɔlɔ ɲini, ji tɛ to a la. Sɛnɛ ka kɛ santimɛtiri bi naani naani.",
       "reponse_fr": "Plante tes arachides en mai pendant la saison des pluies. Cherche une terre sableuse où l'eau ne reste pas. Plante à 40 centimètres d'écart.",
       "score_validation": 0.71,
       "tags": [
@@ -1060,7 +1060,7 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ti ga filɛli tuma ye karo saba ye sɛnɛli kɔfɛ. Aw ye ti ga bɔ dugukoloo la ni fɔrɔ ye joona. Aw ye ti ga ja tile o tile ka ɲɛ.",
+      "reponse_bambara": "Ti ga filɛli tuma ye kalo saba ye sɛnɛli kɔfɛ. Aw ye ti ga bɔ dugukoloo la ni fɔrɔ ye joona. Aw ye ti ga ja tile o tile ka ɲɛ.",
       "reponse_fr": "L'arachide se récolte 3 mois après la plantation. Arrache les plants délicatement et rapidement. Fais sécher les arachides chaque jour au soleil.",
       "score_validation": 0.72,
       "tags": [
@@ -1225,7 +1225,7 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku sɛnɛ tuma ɲuman ye zanwuye karo ni marisiii karo tɛmɛnen. Sanjiii bɛ wuli o tuma la ka foroo ɲɛ. Aw ye dunbu labɛn sisan ka kɛ ɲɔgɔn na.",
+      "reponse_bambara": "Ku sɛnɛ tuma ɲuman ye zanwuye kalo ni marisiii kalo tɛmɛnen. Sanjiii bɛ wuli o tuma la ka foroo ɲɛ. Aw ye dunbu labɛn sisan ka kɛ ɲɔgɔn na.",
       "reponse_fr": "Le meilleur moment pour planter l'igname c'est entre janvier et mars. Les pluies arrivent à ce moment. Prépare tes buttes maintenant pour être prêt.",
       "score_validation": 0.8,
       "tags": [
@@ -1245,7 +1245,7 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku tigɛlen tuma ye karo 7 ni 9 cɛ. Ni sira bɛ la, ku ɲɛ ka bɔ. Aw ye ku bɔ ni hɛrɛ ye.",
+      "reponse_bambara": "Ku tigɛlen tuma ye kalo 7 ni 9 cɛ. Ni sira bɛ la, ku ɲɛ ka bɔ. Aw ye ku bɔ ni hɛrɛ ye.",
       "reponse_fr": "L'igname est prête à récolter 7 à 9 mois après la plantation. Quand les feuilles sèchent, c'est le bon moment. Déterrez avec soin pour ne pas abîmer les tubercules.",
       "score_validation": 0.8,
       "tags": [
@@ -1283,7 +1283,7 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku sɛnɛ la, nɔgɔ bɔlen kɛ dunbu labɛn ɲɛ. karo fila kɔfɛ, NPK dɔɔni fara a kan. Nɔgɔ caman bɛ sira bɔ ka ku yɔrɔ ta.",
+      "reponse_bambara": "Ku sɛnɛ la, nɔgɔ bɔlen kɛ dunbu labɛn ɲɛ. kalo fila kɔfɛ, NPK dɔɔni fara a kan. Nɔgɔ caman bɛ sira bɔ ka ku yɔrɔ ta.",
       "reponse_fr": "Pour l'igname, mettez de la fumure organique avant de former les buttes. Ajoutez un peu d'engrais NPK après 2 mois. Trop d'azote favorise les feuilles au détriment des tubercules.",
       "score_validation": 0.8,
       "tags": [
@@ -1303,7 +1303,7 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku bɛ se ka sɔrɔ karo 3 ni 6 cɛ. Aw ye u bila yɔrɔ kɔnɔnin la, ji tɛ kɔnɔ. Ku ma fini ka ji don.",
+      "reponse_bambara": "Ku bɛ se ka sɔrɔ kalo 3 ni 6 cɛ. Aw ye u bila yɔrɔ kɔnɔnin la, ji tɛ kɔnɔ. Ku ma fini ka ji don.",
       "reponse_fr": "L'igname peut se conserver 3 à 6 mois dans un endroit ventilé. Gardez-les à l'ombre dans un lieu sec. Ne les lavez pas avant de stocker.",
       "score_validation": 0.8,
       "tags": [
@@ -1360,7 +1360,7 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Banankuuu sɛnɛ bɛ se ka kɛ foroo sɔgɔ bɛɛ la. Aw ye bolo kɛ mɛtiri kelen sɔngɔ. Banankuuu bɛ bɔ karo 8 ni 18 cɛ.",
+      "reponse_bambara": "Banankuuu sɛnɛ bɛ se ka kɛ foroo sɔgɔ bɛɛ la. Aw ye bolo kɛ mɛtiri kelen sɔngɔ. Banankuuu bɛ bɔ kalo 8 ni 18 cɛ.",
       "reponse_fr": "Le manioc pousse dans tous types de sols. Plantez les boutures à 1 mètre de distance. Le manioc peut se récolter après 8 à 18 mois selon la variété.",
       "score_validation": 0.8,
       "tags": [
@@ -1416,7 +1416,7 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Banankuuu bɛ se ka to ji tɛ la karo 3. O ye a ka sɔn ye caman. Ni sanjiii tɛ caman, ji dɔɔni bɛ a dɛmɛ.",
+      "reponse_bambara": "Banankuuu bɛ se ka to ji tɛ la kalo 3. O ye a ka sɔn ye caman. Ni sanjiii tɛ caman, ji dɔɔni bɛ a dɛmɛ.",
       "reponse_fr": "Le manioc résiste bien à la sécheresse, il tient 3 mois sans pluie. Si la sécheresse est longue, un arrosage léger aide.",
       "score_validation": 0.8,
       "tags": [
@@ -1454,7 +1454,7 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Banankuuu kura bɛ bɔrɔ tile fila ni saba cɛ. Aw ye a jɛ ka fu wala gari kɛ. Banankuuu jɛlen bɛ sɔrɔ karo caman.",
+      "reponse_bambara": "Banankuuu kura bɛ bɔrɔ tile fila ni saba cɛ. Aw ye a jɛ ka fu wala gari kɛ. Banankuuu jɛlen bɛ sɔrɔ kalo caman.",
       "reponse_fr": "Le manioc frais ne se conserve pas longtemps, 2 à 3 jours maximum. Pour conserver, faites-le sécher ou transformez-le en gari. Le manioc séché peut durer plusieurs mois.",
       "score_validation": 0.8,
       "tags": [
@@ -1532,7 +1532,7 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo sɛnɛ tuma ɲuman ye Avirili ni mɛɛɛ karo, sanjiii tuma fɔlɔ. Kakawo juruni bɛ jɛ ji tuma bɛɛ. Aw ye den foroo labɛn fɔlɔ sɛnɛ ɲɛ.",
+      "reponse_bambara": "Kakawo sɛnɛ tuma ɲuman ye Avirili ni mɛɛɛ kalo, sanjiii tuma fɔlɔ. Kakawo juruni bɛ jɛ ji tuma bɛɛ. Aw ye den foroo labɛn fɔlɔ sɛnɛ ɲɛ.",
       "reponse_fr": "Le meilleur moment pour planter le cacao c'est en avril ou mai, au début de la grande saison des pluies. Les jeunes plants ont besoin d'humidité constante. Préparez une pépinière d'abord.",
       "score_validation": 0.72,
       "tags": [
@@ -1572,7 +1572,7 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo bɛ sanjiii ye caman. Ni sanjiii tɛ dɔɔni a bɛ se. Ni sanjiii tɛ karo 3 san, aw ye ji bila.",
+      "reponse_bambara": "Kakawo bɛ sanjiii ye caman. Ni sanjiii tɛ dɔɔni a bɛ se. Ni sanjiii tɛ kalo 3 san, aw ye ji bila.",
       "reponse_fr": "Le cacao a besoin de beaucoup de pluie. Il résiste à une courte sécheresse. Si pas de pluie pendant 3 mois, arrosez.",
       "score_validation": 0.7,
       "tags": [
@@ -1611,7 +1611,7 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo jɛlen ka fu bɛ se ka sɔrɔ karo caman. Kana a bila ji yɔrɔ la. Kakawo ɲuman bɛ fere.",
+      "reponse_bambara": "Kakawo jɛlen ka fu bɛ se ka sɔrɔ kalo caman. Kana a bila ji yɔrɔ la. Kakawo ɲuman bɛ fere.",
       "reponse_fr": "Après séchage, le cacao peut se garder plusieurs mois dans des sacs propres. L'humidité fait moisir, ne stockez pas dans un endroit humide. Un cacao bien séché se vend mieux.",
       "score_validation": 0.72,
       "tags": [
@@ -1672,7 +1672,7 @@
       "conditions": [
         "TEMPS_SAISON_SECHE"
       ],
-      "reponse_bambara": "Maa loo sɛnɛ tuma ɲuman ye mɛɛɛ karo ye. Sanjiii bɛ na o tuma la ka foroo ɲɛ. Aw ye foroo labɛn sisan.",
+      "reponse_bambara": "Maa loo sɛnɛ tuma ɲuman ye mɛɛɛ kalo ye. Sanjiii bɛ na o tuma la ka foroo ɲɛ. Aw ye foroo labɛn sisan.",
       "reponse_fr": "Le meilleur moment pour planter le riz est en mai. La pluie arrive à ce moment pour arroser le champ. Préparez votre champ maintenant.",
       "score_validation": 0.73,
       "tags": [
@@ -1693,7 +1693,7 @@
       "conditions": [
         "TEMPS_SAISON_SECHE"
       ],
-      "reponse_bambara": "Ni sanjiii tɛ, kabaa sɛnɛ tɛ ɲɛ ji ma. Aw ye to ka sanjiii tuma sɔrɔ. Marisi wala awiriliiii karo sanjiii bɛ na ka foroo ɲɛ.",
+      "reponse_bambara": "Ni sanjiii tɛ, kabaa sɛnɛ tɛ ɲɛ ji ma. Aw ye to ka sanjiii tuma sɔrɔ. Marisi wala awiriliiii kalo sanjiii bɛ na ka foroo ɲɛ.",
       "reponse_fr": "Sans pluie, le maïs ne pousse pas bien. Attendez la saison des pluies. En mars ou avril les pluies arrivent pour arroser le champ.",
       "score_validation": 0.72,
       "tags": [
@@ -1746,7 +1746,7 @@
       "conditions": [
         "TEMPS_SAISON_SECHE"
       ],
-      "reponse_bambara": "Ni sanjiii tɛ, ti ga sɛnɛ tɛ ɲɛ. Aw ye sanjiii tuma sɔrɔ, mɛ wala sɛtanburuuu karo. Ti ga bɛ sanjiii ye ka sɛnɛ.",
+      "reponse_bambara": "Ni sanjiii tɛ, ti ga sɛnɛ tɛ ɲɛ. Aw ye sanjiii tuma sɔrɔ, mɛ wala sɛtanburuuu kalo. Ti ga bɛ sanjiii ye ka sɛnɛ.",
       "reponse_fr": "Sans pluie, l arachide ne pousse pas. Attendez la saison des pluies, en mai ou septembre. L arachide a besoin de pluie pour démarrer.",
       "score_validation": 0.72,
       "tags": [
@@ -1909,7 +1909,7 @@
         "CULTURE_MIL"
       ],
       "conditions": [],
-      "reponse_bambara": "Nyɔ sɛnɛ tuma ɲuman ye sanjiii fɔlɔ tuma na. Mɛ wala sɛtanburuuu karo, nyɔ bɛ se ka sɛnɛ. Aw ye to sanjiii ka wili ka fɔlɔ.",
+      "reponse_bambara": "Nyɔ sɛnɛ tuma ɲuman ye sanjiii fɔlɔ tuma na. Mɛ wala sɛtanburuuu kalo, nyɔ bɛ se ka sɛnɛ. Aw ye to sanjiii ka wili ka fɔlɔ.",
       "reponse_fr": "Le meilleur moment pour planter le mil c'est au début des pluies. En mai ou septembre le mil peut être planté. Attends que les pluies commencent d'abord.",
       "score_validation": 0.75,
       "tags": [
@@ -1928,7 +1928,7 @@
         "CULTURE_MIL"
       ],
       "conditions": [],
-      "reponse_bambara": "Nyɔ tigɛlen tuma ye karo naani sɛnɛ kɔfɛ. Ni nyɔ jiri bɛ la, nyɔ bɛ ɲɛ ka bɔ. Aw ye tigɛlen kɛ ka jigi kɛ joona.",
+      "reponse_bambara": "Nyɔ tigɛlen tuma ye kalo naani sɛnɛ kɔfɛ. Ni nyɔ jiri bɛ la, nyɔ bɛ ɲɛ ka bɔ. Aw ye tigɛlen kɛ ka jigi kɛ joona.",
       "reponse_fr": "Le mil est prêt à récolter 4 mois après la plantation. Quand les tiges sèchent, le mil est mûr. Faites la récolte vite avant les pluies.",
       "score_validation": 0.75,
       "tags": [
@@ -2057,7 +2057,7 @@
         "CULTURE_COTON"
       ],
       "conditions": [],
-      "reponse_bambara": "Kɔrɔni sɛnɛ tuma ye sanjiii bɛ wuli tuma. Mɛ wala sɛtanburuuu karo bɛ ɲɛ. Aw ye kɔrɔni sɛnɛ sanjiii fɔlɔ na.",
+      "reponse_bambara": "Kɔrɔni sɛnɛ tuma ye sanjiii bɛ wuli tuma. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Aw ye kɔrɔni sɛnɛ sanjiii fɔlɔ na.",
       "reponse_fr": "La saison de plantation du coton c'est quand les pluies commencent. Mai ou septembre c'est bien. Plante le coton au début des pluies.",
       "score_validation": 0.75,
       "tags": [
@@ -2076,7 +2076,7 @@
         "CULTURE_COTON"
       ],
       "conditions": [],
-      "reponse_bambara": "Kɔrɔni tigɛlen tuma ye karo kɔnɔntɔn ni karo tan sɛnɛ kɔfɛ. Ni kɔrɔni bɛ la ka fara, tigɛlen tuma ye. Aw ye tigɛlen kɛ ka jigi kɛ joona.",
+      "reponse_bambara": "Kɔrɔni tigɛlen tuma ye kalo kɔnɔntɔn ni kalo tan sɛnɛ kɔfɛ. Ni kɔrɔni bɛ la ka fara, tigɛlen tuma ye. Aw ye tigɛlen kɛ ka jigi kɛ joona.",
       "reponse_fr": "Le coton est prêt à récolter 9 à 10 mois après la plantation. Quand les capsules s'ouvrent, c'est le bon moment. Faites la récolte vite pour éviter les pertes.",
       "score_validation": 0.75,
       "tags": [
@@ -2243,7 +2243,7 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda tigɛlen tuma ye karo kɔnɔntɔn ni tan cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ. tigɛlen kɛ joona.",
+      "reponse_bambara": "Bàrànda tigɛlen tuma ye kalo kɔnɔntɔn ni tan cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ. tigɛlen kɛ joona.",
       "reponse_fr": "La banane est prête 9 à 10 mois après la plantation. Quand les fruits grossissent et jaunissent légèrement, c'est le moment. Récoltez vite pour éviter la surmaturation.",
       "score_validation": 0.7,
       "tags": [
@@ -2297,7 +2297,7 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda bɛ potassium jɛ ka ɲɛ. NPK 0-0-60 wala nɔgɔ bɔlen kɛ ka ɲɛ. Aw ye furakɛ karo kelen kelen na.",
+      "reponse_bambara": "Bàrànda bɛ potassium jɛ ka ɲɛ. NPK 0-0-60 wala nɔgɔ bɔlen kɛ ka ɲɛ. Aw ye furakɛ kalo kelen kelen na.",
       "reponse_fr": "La banane a particulièrement besoin de potassium. Le NPK 0-0-60 ou du compost est bien. Faites le traitement chaque mois.",
       "score_validation": 0.7,
       "tags": [
@@ -2443,7 +2443,7 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ntomati tigɛlen tuma ye karo saba sɛnɛ kɔfɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ. tigɛlen kɛ tile kelen kelen.",
+      "reponse_bambara": "Ntomati tigɛlen tuma ye kalo saba sɛnɛ kɔfɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ. tigɛlen kɛ tile kelen kelen.",
       "reponse_fr": "La tomate est prête à récolter 3 mois après la plantation. Quand les fruits rougissent, c'est le moment. Récoltez chaque jour quand il y a des fruits mûrs.",
       "score_validation": 0.75,
       "tags": [
@@ -2576,7 +2576,7 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu karo bɛ ɲɛ. Aw ye to sanjiii ka wili ka fɔlɔ.",
+      "reponse_bambara": "Soso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Aw ye to sanjiii ka wili ka fɔlɔ.",
       "reponse_fr": "Le meilleur moment pour planter le haricot c'est la saison des pluies. Mai ou septembre c'est bien. Attends que les pluies commencent.",
       "score_validation": 0.7,
       "tags": [
@@ -2595,7 +2595,7 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso tigɛlen tuma ye karo saba ni naani cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ joona.",
+      "reponse_bambara": "Soso tigɛlen tuma ye kalo saba ni naani cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ joona.",
       "reponse_fr": "Le haricot est prêt à récolter 3 à 4 mois après la plantation. Quand les gousses sèchent, c'est le bon moment. Récoltez vite avant les pluies.",
       "score_validation": 0.7,
       "tags": [
@@ -2728,7 +2728,7 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu karo bɛ ɲɛ. Ni sanjiii tɛ fana, gan bɛ se ka sɛnɛ ni ji bɛ ɲɛ.",
+      "reponse_bambara": "Gan sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Ni sanjiii tɛ fana, gan bɛ se ka sɛnɛ ni ji bɛ ɲɛ.",
       "reponse_fr": "Le meilleur moment pour le gombo c est la saison des pluies. Mai ou septembre c est bien. Sans pluie aussi, le gombo peut pousser avec de l eau.",
       "score_validation": 0.7,
       "tags": [
@@ -2747,7 +2747,7 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan tigɛlen tuma ye karo fila ni saba cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ joona. tigɛlen kɛ tile kelen kelen.",
+      "reponse_bambara": "Gan tigɛlen tuma ye kalo fila ni saba cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ joona. tigɛlen kɛ tile kelen kelen.",
       "reponse_fr": "Le gombo est prêt à récolter 2 à 3 mois après la plantation. Quand les fruits sont tendres et bien formés, récoltez vite. Récoltez un jour sur deux pour garder la qualité.",
       "score_validation": 0.7,
       "tags": [
@@ -2785,7 +2785,7 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. nɔgɔ bɔlen kɛ fana ka gan dɛmɛ. Aw ye furakɛ karo kelen kelen na.",
+      "reponse_bambara": "Gan bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. nɔgɔ bɔlen kɛ fana ka gan dɛmɛ. Aw ye furakɛ kalo kelen kelen na.",
       "reponse_fr": "Le gombo a besoin de NPK 15-15-15 après la plantation. Du compost l'aide aussi à bien pousser. Faites le traitement chaque mois.",
       "score_validation": 0.7,
       "tags": [
@@ -2880,7 +2880,7 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba sɛnɛ tuma ɲuman ye sanjiii tɛ tuma na. Novanburu ni desanburu karo bɛ ɲɛ ka sɛnɛ. Aw ye den foroo kɛ fɔlɔ.",
+      "reponse_bambara": "Jaba sɛnɛ tuma ɲuman ye sanjiii tɛ tuma na. Novanburu ni desanburu kalo bɛ ɲɛ ka sɛnɛ. Aw ye den foroo kɛ fɔlɔ.",
       "reponse_fr": "Le meilleur moment pour l oignon c est quand il ne pleut pas. Novembre et décembre c est bien. Faites d abord la pépinière.",
       "score_validation": 0.7,
       "tags": [
@@ -2899,7 +2899,7 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba tigɛlen tuma ye karo saba ni naani cɛ. Ni jaba jiri bɛ la, aw ye tigɛlen kɛ. Aw ye jaba bɔ ni hɛrɛ ye.",
+      "reponse_bambara": "Jaba tigɛlen tuma ye kalo saba ni naani cɛ. Ni jaba jiri bɛ la, aw ye tigɛlen kɛ. Aw ye jaba bɔ ni hɛrɛ ye.",
       "reponse_fr": "L'oignon est prêt à récolter 3 à 4 mois après la plantation. Quand les fanes tombent, c'est le moment. Déterrez avec soin et mettez à sécher.",
       "score_validation": 0.7,
       "tags": [
@@ -2937,7 +2937,7 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. Potassium fana bɛ a dɛmɛ ka koro. Aw ye furakɛ karo kelen kelen na.",
+      "reponse_bambara": "Jaba bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. Potassium fana bɛ a dɛmɛ ka koro. Aw ye furakɛ kalo kelen kelen na.",
       "reponse_fr": "L'oignon a besoin de NPK 15-15-15 après la plantation. Le potassium l'aide aussi à se former. Faites le traitement chaque mois.",
       "score_validation": 0.7,
       "tags": [
@@ -2994,7 +2994,7 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba marali tuma ye karo wɔɔrɔ. Aw ye jaba mara yɔrɔ sumanin na wala lɔgɔ la. Aw ye jaba mɛ fɔlɔ.",
+      "reponse_bambara": "Jaba marali tuma ye kalo wɔɔrɔ. Aw ye jaba mara yɔrɔ sumanin na wala lɔgɔ la. Aw ye jaba mɛ fɔlɔ.",
       "reponse_fr": "L'oignon peut se conserver jusqu'à 6 mois. Stocke-le dans un endroit sec ou sur des claies. Fais-le bien sécher avant de stocker.",
       "score_validation": 0.7,
       "tags": [
@@ -3032,7 +3032,7 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu karo bɛ ɲɛ. Aw ye foroo labɛn sisan ka kɛ ɲɔgɔn na.",
+      "reponse_bambara": "Woso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Aw ye foroo labɛn sisan ka kɛ ɲɔgɔn na.",
       "reponse_fr": "Le meilleur moment pour planter la patate douce c'est la saison des pluies. Mai ou septembre c'est bon. Prépare ton champ maintenant pour être prêt.",
       "score_validation": 0.7,
       "tags": [
@@ -3050,7 +3050,7 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso tigɛlen tuma ye karo saba ni naani cɛ. Ni sira bɛ la ka gɛlɛn, tigɛlen tuma ye. Aw ye duguma cɛ ka woso bɔ.",
+      "reponse_bambara": "Woso tigɛlen tuma ye kalo saba ni naani cɛ. Ni sira bɛ la ka gɛlɛn, tigɛlen tuma ye. Aw ye duguma cɛ ka woso bɔ.",
       "reponse_fr": "La patate douce est prête à récolter 3 à 4 mois après la plantation. Quand les feuilles commencent à jaunir, c'est le signe. Creusez pour sortir les tubercules.",
       "score_validation": 0.7,
       "tags": [
@@ -3069,7 +3069,7 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso b a fɛ ji dɔɔni. Ni sanjiii tɛ, aw ye ji don foroo la. Woso bɛ se ka kɛ karo kelen.",
+      "reponse_bambara": "Woso b a fɛ ji dɔɔni. Ni sanjiii tɛ, aw ye ji don foroo la. Woso bɛ se ka kɛ kalo kelen.",
       "reponse_fr": "La patate douce a besoin d'eau mais ne supporte pas l'excès. Sans pluie, arrosez légèrement. La patate peut tenir un mois sans eau.",
       "score_validation": 0.7,
       "tags": [
@@ -3145,7 +3145,7 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso kura bɛ bɔrɔ karo kelen. Aw ye mara yɔrɔ sumanin wala kurun na. Aw ye woso mɛ ka jɛ ka mara.",
+      "reponse_bambara": "Woso kura bɛ bɔrɔ kalo kelen. Aw ye mara yɔrɔ sumanin wala kurun na. Aw ye woso mɛ ka jɛ ka mara.",
       "reponse_fr": "La patate douce fraîche ne se conserve qu'un mois environ. Stockez dans un endroit frais et ventilé. Faites sécher pour une meilleure conservation.",
       "score_validation": 0.7,
       "tags": [
@@ -3183,7 +3183,7 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ sɛnɛ tuma ɲuman ye sɛtanburu wala Ɔtɔburu karo. Sanjiii bɛ kɛ dɔɔni o tuma. Aw ye foroo labɛn joona ka sɛnɛ kɛ.",
+      "reponse_bambara": "Bɛnɛ sɛnɛ tuma ɲuman ye sɛtanburu wala Ɔtɔburu kalo. Sanjiii bɛ kɛ dɔɔni o tuma. Aw ye foroo labɛn joona ka sɛnɛ kɛ.",
       "reponse_fr": "Le meilleur moment pour planter le sésame c'est septembre ou octobre. Les pluies sont légères à ce moment. Prépare vite ton champ pour planter.",
       "score_validation": 0.65,
       "tags": [
@@ -3202,7 +3202,7 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ tigɛlen tuma ye karo saba sɛnɛ kɔfɛ. Ni fura bɛ bɔ ka koro, tigɛlen ye. Aw ye tigɛlen kɛ tile na fɔlɔ ka fura fali.",
+      "reponse_bambara": "Bɛnɛ tigɛlen tuma ye kalo saba sɛnɛ kɔfɛ. Ni fura bɛ bɔ ka koro, tigɛlen ye. Aw ye tigɛlen kɛ tile na fɔlɔ ka fura fali.",
       "reponse_fr": "Le sésame est prêt à récolter 3 mois après la plantation. Quand les capsules commencent à brunir, c'est le bon moment. Récoltez tôt le matin avant que les capsules s'ouvrent.",
       "score_validation": 0.65,
       "tags": [
@@ -3297,7 +3297,7 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ marali tuma la, aw ye a mɛ ka ɲɛ fɔlɔ. Aw ye bɛnɛ mara sak sumanin na. Bɛnɛ mɛnen bɛ se ka sɔrɔ karo caman.",
+      "reponse_bambara": "Bɛnɛ marali tuma la, aw ye a mɛ ka ɲɛ fɔlɔ. Aw ye bɛnɛ mara sak sumanin na. Bɛnɛ mɛnen bɛ se ka sɔrɔ kalo caman.",
       "reponse_fr": "Pour stocker le sésame, faites-le bien sécher d'abord. Mettez le sésame dans un sac bien sec. Le sésame bien séché peut se conserver plusieurs mois.",
       "score_validation": 0.65,
       "tags": [
@@ -3335,7 +3335,7 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala juin karo bɛ ɲɛ. Aw ye den foroo labɛn fɔlɔ sɛnɛ ɲɛ.",
+      "reponse_bambara": "Kafe sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala juin kalo bɛ ɲɛ. Aw ye den foroo labɛn fɔlɔ sɛnɛ ɲɛ.",
       "reponse_fr": "Le meilleur moment pour planter le café c'est la saison des pluies. Mai ou juin c'est bien. Prépare une pépinière avant de planter.",
       "score_validation": 0.65,
       "tags": [
@@ -3393,7 +3393,7 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe bɛ NPK 12-15-18 jɛ ka ɲi. Aw ye furakɛ karo kelen kelen na. maginesiyɔm fana bɛ kafe dɛmɛ.",
+      "reponse_bambara": "Kafe bɛ NPK 12-15-18 jɛ ka ɲi. Aw ye furakɛ kalo kelen kelen na. maginesiyɔm fana bɛ kafe dɛmɛ.",
       "reponse_fr": "Le café préfère le NPK 12-15-18. Faites le traitement chaque mois. Le magnésium aide aussi le caféier à bien produire.",
       "score_validation": 0.65,
       "tags": [
@@ -3451,7 +3451,7 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe marali tuma la, aw ye a mɛ ka ɲɛ caman. Aw ye mara yɔrɔ sumanin na ka ji kɛ. Kafe mɛnen bɛ se ka sɔrɔ karo caman.",
+      "reponse_bambara": "Kafe marali tuma la, aw ye a mɛ ka ɲɛ caman. Aw ye mara yɔrɔ sumanin na ka ji kɛ. Kafe mɛnen bɛ se ka sɔrɔ kalo caman.",
       "reponse_fr": "Pour stocker le café, faites-le bien sécher. Stockez dans un endroit frais et sec. Le café bien séché peut se conserver plusieurs mois.",
       "score_validation": 0.65,
       "tags": [
@@ -3489,7 +3489,7 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ananas bɛ se ka sɛnɛ karo bɛɛ la ni ji bɛ ɲɛ. Sanjiii tuma na sɛnɛ bɛ ɲɛ caman. Aw ye couronne labɛn fɔlɔ ka sɛnɛ.",
+      "reponse_bambara": "Ananas bɛ se ka sɛnɛ kalo bɛɛ la ni ji bɛ ɲɛ. Sanjiii tuma na sɛnɛ bɛ ɲɛ caman. Aw ye couronne labɛn fɔlɔ ka sɛnɛ.",
       "reponse_fr": "L'ananas peut se planter toute l'année avec de l'eau. La saison des pluies est la meilleure. Préparez bien vos couronnes avant de planter.",
       "score_validation": 0.65,
       "tags": [
@@ -3508,7 +3508,7 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ananas tigɛlen tuma ye karo bi ni naani sɛnɛ kɔfɛ. Ni ananas bɛ la ka gɛlɛn duguma fɛ, tigɛlen ye. Aw ye ananas bɔ ka fere kɛ joona.",
+      "reponse_bambara": "Ananas tigɛlen tuma ye kalo bi ni naani sɛnɛ kɔfɛ. Ni ananas bɛ la ka gɛlɛn duguma fɛ, tigɛlen ye. Aw ye ananas bɔ ka fere kɛ joona.",
       "reponse_fr": "L'ananas est prêt à récolter 14 à 18 mois après la plantation. Quand il commence à jaunir à la base, c'est prêt. Récoltez et vendez rapidement.",
       "score_validation": 0.65,
       "tags": [
@@ -3527,7 +3527,7 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ananas bɛ jiɲɛ la sɔn dɔɔni. Nka ji dɔɔni ka ɲi joona sɛnɛ kɔfɛ. Ni sanjiii ma na, aw ye ji don foroo la karo kelen.",
+      "reponse_bambara": "Ananas bɛ jiɲɛ la sɔn dɔɔni. Nka ji dɔɔni ka ɲi joona sɛnɛ kɔfɛ. Ni sanjiii ma na, aw ye ji don foroo la kalo kelen.",
       "reponse_fr": "L'ananas tolère assez bien la sécheresse. Mais un peu d'eau aide juste après la plantation. Sans pluie, arrosez une fois par mois.",
       "score_validation": 0.65,
       "tags": [
@@ -3669,7 +3669,7 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Ka banankuuu kisi, aw ye yiri kɛnɛya sɛnɛ. kɔrɔsi foroo karo kelen. Ni kosheni ye, bɔ yiri bana joona.",
+      "reponse_bambara": "Ka banankuuu kisi, aw ye yiri kɛnɛya sɛnɛ. kɔrɔsi foroo kalo kelen. Ni kosheni ye, bɔ yiri bana joona.",
       "reponse_fr": "Pour protéger ton manioc contre la cochenille, plante seulement des boutures saines. Surveille ton champ chaque mois. Si tu vois les premiers signes de cochenille, arrache immédiatement les plants malades.",
       "score_validation": 0.68,
       "tags": [
@@ -3691,7 +3691,7 @@
         "PROBLEME_INSECTE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni maŋoro bɛ bana, jiriden limɔgɔ bɛ o kɛ. Aw ye jiri banaw bɔ foroo la joona. kɔrɔsi foroo karo kelen kelen.",
+      "reponse_bambara": "Ni maŋoro bɛ bana, jiriden limɔgɔ bɛ o kɛ. Aw ye jiri banaw bɔ foroo la joona. kɔrɔsi foroo kalo kelen kelen.",
       "reponse_fr": "Si tu vois tes mangues pourrir, la mouche des fruits peut en être la cause. Cet insecte pénètre à l'intérieur du fruit et le fait pourrir. Retire rapidement les mangues abîmées de ton champ. Surveille ton champ chaque mois.",
       "score_validation": 0.62,
       "tags": [
@@ -3726,7 +3726,7 @@
         "CULTURE_MANGUE"
       ],
       "conditions": [],
-      "reponse_bambara": "Maŋoro sɛnɛ ɲuman ye zanwuye karo. Ni maŋoro bana ye, o bɔ foroo la joona. kɔrɔsi jiri tuma bɛɛ karo kelen kelen.",
+      "reponse_bambara": "Maŋoro sɛnɛ ɲuman ye zanwuye kalo. Ni maŋoro bana ye, o bɔ foroo la joona. kɔrɔsi jiri tuma bɛɛ kalo kelen kelen.",
       "reponse_fr": "Le manguier produit bien entre décembre et mars. Si tu vois des fruits pourris, retire-les du champ immédiatement. Surveille tes arbres et tes fruits régulièrement.",
       "score_validation": 0.6,
       "tags": [
@@ -3885,7 +3885,7 @@
       "conditions": [
         "saison_pluie"
       ],
-      "reponse_bambara": "Nɛrɛ jiridenw bɛna kɔkɔla zuwɛɛɛn karo ni zuluye karo la. Aw ye olu minɛ ni olu bɛ dan. Aw ye olu jukoro kà ban sumbala kɛ ɲɛ fɛ.",
+      "reponse_bambara": "Nɛrɛ jiridenw bɛna kɔkɔla zuwɛɛɛn kalo ni zuluye kalo la. Aw ye olu minɛ ni olu bɛ dan. Aw ye olu jukoro kà ban sumbala kɛ ɲɛ fɛ.",
       "reponse_fr": "Les graines de néré mûrissent en juin-juillet. Ramasse-les quand elles tombent. Sèche-les bien avant de faire le sumbala.",
       "score_validation": 0.8,
       "tags": [
@@ -3942,7 +3942,7 @@
       "conditions": [
         "saison_pluie"
       ],
-      "reponse_bambara": "Ka lemuru sɛnɛ, aw ye dunbu kɛ ka nɔgɔ don a kɔnɔ. Aw ye sɛnɛ sanjiii tuma. Aw ye ji don karo wɔɔrɔ kɔnɔ.",
+      "reponse_bambara": "Ka lemuru sɛnɛ, aw ye dunbu kɛ ka nɔgɔ don a kɔnɔ. Aw ye sɛnɛ sanjiii tuma. Aw ye ji don kalo wɔɔrɔ kɔnɔ.",
       "reponse_fr": "Pour planter des agrumes, creuse un grand trou et mets du compost dedans. Plante en début de saison des pluies. Arrose chaque jour pendant les six premiers mois.",
       "score_validation": 0.75,
       "tags": [
