@@ -9,15 +9,28 @@ Valide :
 - Pipeline complet normalize_asr_output()
 - Variantes phonétiques réelles observées en production
 """
+import json
+from pathlib import Path
+
 import pytest
 
 from app.services.asr_normalizer import (
-    normalize_asr_output,
     _apply_exact_corrections,
-    _apply_fuzzy_matching,
     _fuzzy_correct_word,
     _max_distance_for_word,
+    normalize_asr_output,
 )
+from app.services.nlu.concept_extractor import ConceptExtractor
+
+
+@pytest.fixture(scope="module")
+def concept_extractor() -> ConceptExtractor:
+    """Construit l'extracteur NLU avec le dictionnaire de production."""
+    concepts_path = (
+        Path(__file__).resolve().parents[2] / "dictionnaires" / "nlu_concepts.json"
+    )
+    concepts_config = json.loads(concepts_path.read_text(encoding="utf-8"))
+    return ConceptExtractor(concepts_config)
 
 
 class TestMaxDistanceForWord:
@@ -78,12 +91,12 @@ class TestFuzzyMatching:
     def test_kaban_already_in_nlu(self):
         """'kaban' est déjà dans le vocabulaire NLU → inchangé."""
         result = _fuzzy_correct_word("kaban")
-        assert result == "kaban", f"'kaban' est un mot NLU valide, ne pas corriger"
+        assert result == "kaban", "'kaban' est un mot NLU valide, ne pas corriger"
 
     def test_tigan_already_in_nlu(self):
         """'tigan' est déjà dans le vocabulaire NLU → inchangé."""
         result = _fuzzy_correct_word("tigan")
-        assert result == "tigan", f"'tigan' est un mot NLU valide, ne pas corriger"
+        assert result == "tigan", "'tigan' est un mot NLU valide, ne pas corriger"
 
     def test_foron_not_in_nlu(self):
         """'foron' : 'foro' n'est pas dans NLU. Fuzzy peut matcher 'faran' (distance 2)."""
@@ -118,7 +131,7 @@ class TestFuzzyMatching:
     def test_malon_already_in_nlu(self):
         """'malon' est déjà dans le vocabulaire NLU → inchangé."""
         result = _fuzzy_correct_word("malon")
-        assert result == "malon", f"'malon' est un mot NLU valide"
+        assert result == "malon", "'malon' est un mot NLU valide"
 
 
 class TestFullPipeline:
@@ -175,3 +188,47 @@ class TestProductionErrors:
         """Variantes de 'sɔgɔma' (matin)."""
         assert "sɔgɔma" in normalize_asr_output("sɔrɔma")
         assert "sɔgɔma" in normalize_asr_output("sagɔma")
+
+
+class TestIssue85CultureCorrections:
+    """Régressions des huit transcriptions NeMo documentées dans l'issue #85."""
+
+    @pytest.mark.parametrize(
+        (
+            "raw_text",
+            "expected_normalized",
+            "expected_culture",
+            "forbidden_cultures",
+        ),
+        (
+            ("ka ka aw sɛnɛ", "ka kakawo sɛnɛ", "CULTURE_CACAO", ()),
+            ("ka tigka sɛnɛ", "ka tiga sɛnɛ", "CULTURE_ARACHIDE", ()),
+            ("kaban kuru", "bananku", "CULTURE_MANIOC", ("CULTURE_MAIS",)),
+            (
+                "kabarada sɛnɛ",
+                "bàrànda sɛnɛ",
+                "CULTURE_BANANE",
+                ("CULTURE_MAIS",),
+            ),
+            ("ka mangogo sɛnɛ", "ka mangoro sɛnɛ", "CULTURE_MANGUE", ()),
+            ("ka kɔrɔ ni sɛnɛ", "ka kɔrɔni sɛnɛ", "CULTURE_COTON", ()),
+            ("ka gɛrɛ sɛnɛ", "ka gan sɛnɛ", "CULTURE_GOMBO", ()),
+            ("ka ga sɛnɛ", "ka gan sɛnɛ", "CULTURE_GOMBO", ()),
+        ),
+    )
+    def test_real_nemo_error_reaches_expected_nlu_culture(
+        self,
+        concept_extractor: ConceptExtractor,
+        raw_text: str,
+        expected_normalized: str,
+        expected_culture: str,
+        forbidden_cultures: tuple[str, ...],
+    ):
+        """Chaque erreur est normalisée puis reconnue sans faux positif connu."""
+        normalized = normalize_asr_output(raw_text)
+        concepts = concept_extractor.extract(normalized)
+
+        assert normalized == expected_normalized
+        assert concepts[expected_culture] == 1.0
+        for forbidden_culture in forbidden_cultures:
+            assert forbidden_culture not in concepts
