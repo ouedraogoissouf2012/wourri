@@ -52,12 +52,16 @@ def test_validated_responses_follow_issue_51_form_constraints():
 def test_terms_left_for_oral_confirmation_are_explicitly_confirmed():
     validation = _load(VALIDATION_PATH)
 
-    assert validation["confirmed_terms"] == {
-        "turu kɛlaw": "huileries",
-        "ji bɔli labɛn": "améliorer le drainage",
-    }
-    assert "Turu kɛlaw" in validation["corrections"]["arachide_vente_001"]
-    assert "ji bɔli labɛn" in validation["corrections"]["arachide_diagnostic_001"]
+    # Aligné sur le PDF FINAL du validateur natif (#328 avait mergé une
+    # PRÉ-version). Termes finaux attestés : « Tulu dilanyɔrɔw » (huileries),
+    # « jibolisira » (canal d'écoulement / drainage), « fɔsifati » (phosphate).
+    confirmed = validation["confirmed_terms"]
+    assert confirmed["Tulu dilanyɔrɔw"] == "huileries"
+    assert confirmed["jibolisira"] == "canal d'écoulement / drainage"
+    assert confirmed["fɔsifati"] == "phosphate"
+    assert "Tulu dilanyɔrɔw" in validation["corrections"]["arachide_vente_001"]
+    assert "jibolisira" in validation["corrections"]["arachide_diagnostic_001"]
+    assert "fɔsifati" in validation["corrections"]["arachide_engrais_001"]
 
 
 def test_adr_0014_keeps_the_validated_slice_out_of_production():

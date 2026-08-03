@@ -1078,7 +1078,7 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ti ga tɛ ji caman fɛ. Sanjiii dɔɔni tile saba o tile saba bɛ ɲɛ. Ni ji caman don dugukoloo la, ti ga bɛ toli.",
+      "reponse_bambara": "Ti ga tɛ ji caman fɛ. Sanjiii dɔɔni tile saba o tile saba ka kɛnɛ. Ni ji caman don dugukoloo la, ti ga bɛ toli.",
       "reponse_fr": "L'arachide ne veut pas trop d'eau. Un peu de pluie tous les 3 jours suffit. Si trop d'eau entre dans la terre, l'arachide pourrit.",
       "score_validation": 1.0,
       "tags": [
@@ -1096,7 +1096,7 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ti ga bɛ nɔgɔ dɔɔni dɔrɔn fɛ. Sɛnɛ tuma na aw ye fɔsifɔri don dugukoloo la. Ti ga bɛ azɔti kɛ a yɛrɛ, nɔgɔ caman man ɲi.",
+      "reponse_bambara": "Ti ga tɛ nɔgɔ caman fɛ. Sɛnɛ tuma, aw ye fɔsifati don dugukoloo la. Ti ga bɛ azɔti dilan a yɛrɛ ye; nɔgɔ caman man ɲi.",
       "reponse_fr": "L'arachide n'a besoin que de peu d'engrais. Mets du phosphore dans la terre au moment de planter. L'arachide fabrique son propre azote, trop d'engrais c'est mauvais.",
       "score_validation": 1.0,
       "tags": [
@@ -1115,7 +1115,7 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye ti ga ja ka ɲɛ sani ka a don jiginɛ la. Ti ga bɛ toli joona sumaya la. Aw ye a mara yɔrɔ jalen ani gbɛman na.",
+      "reponse_bambara": "Aw ye ti ga ja ka ɲɛ sani ka u don bɔn na. Sumaya bɛ ti ga tiɲɛ joona. Aw ye u mara yɔrɔ jalen ani saniyalen na.",
       "reponse_fr": "Sèche bien les arachides avant de les mettre au grenier. L'humidité abîme rapidement les arachides. Garde-les dans un endroit sec et propre.",
       "score_validation": 1.0,
       "tags": [
@@ -1134,7 +1134,7 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Sanjiii kɔ, ti ga sɔngɔ bɛ juguya. Aw ye ti ga tɔ ta ka taga lɔgɔfɛ la. Turu kɛlaw bɛ ti ga san sɔngɔ ɲuman na.",
+      "reponse_bambara": "Sanjiii tuma kɔ, ti ga sɔngɔ ka ca. Aw ye ti ga tɔ ta ka taa lɔgɔ la. Tulu dilanyɔrɔw bɛ ti ga san sɔngɔ ɲuman na.",
       "reponse_fr": "Le prix des arachides monte après la saison des pluies. Amène ton surplus au marché. Les huileries achètent les arachides à bon prix.",
       "score_validation": 1.0,
       "tags": [
@@ -1155,7 +1155,7 @@
       "conditions": [
         "PROBLEME_MALADIE"
       ],
-      "reponse_bambara": "Ni ti ga flaburuw bɛ ja ani u ka nɛrɛmugu, ji ka dɔgɔ. Aw ye u sɔn ni ji ye joona tile o tile. Ni ti ga bɛ toli, ji ka ca; aw ye ji bɔli labɛn.",
+      "reponse_bambara": "Ni ti ga furaw bɛ ja ka nɛrɛmuguya, ji ka dɔgɔ. Aw ye ji don joona tile o tile. Ni ti ga bɛ toli, ji ka ca; aw ye jibolisira labɛn ka ɲɛ.",
       "reponse_fr": "Si les feuilles d'arachide sèchent et jaunissent, c'est le manque d'eau. Arrose rapidement chaque jour. Si les arachides pourrissent, il y a trop d'eau — améliore le drainage.",
       "score_validation": 1.0,
       "tags": [
