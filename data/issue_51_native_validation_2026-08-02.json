@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "issue": 51,
+  "date": "2026-08-02",
+  "status": "validated",
+  "source_document": "issue-51-validation-arachide-precomplete COMPLET.pdf",
+  "validation_source": "formulaire retourné et confirmation explicite du propriétaire du projet",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 5,
+    "culture": "CULTURE_ARACHIDE",
+    "corrected": 5
+  },
+  "confirmed_terms": {
+    "turu kɛlaw": "huileries",
+    "ji bɔli labɛn": "améliorer le drainage"
+  },
+  "corrections": {
+    "arachide_irrigation_001": "Ti ga tɛ ji caman fɛ. Sanjiii dɔɔni tile saba o tile saba bɛ ɲɛ. Ni ji caman don dugukoloo la, ti ga bɛ toli.",
+    "arachide_engrais_001": "Ti ga bɛ nɔgɔ dɔɔni dɔrɔn fɛ. Sɛnɛ tuma na aw ye fɔsifɔri don dugukoloo la. Ti ga bɛ azɔti kɛ a yɛrɛ, nɔgɔ caman man ɲi.",
+    "arachide_stockage_001": "Aw ye ti ga ja ka ɲɛ sani ka a don jiginɛ la. Ti ga bɛ toli joona sumaya la. Aw ye a mara yɔrɔ jalen ani gbɛman na.",
+    "arachide_vente_001": "Sanjiii kɔ, ti ga sɔngɔ bɛ juguya. Aw ye ti ga tɔ ta ka taga lɔgɔfɛ la. Turu kɛlaw bɛ ti ga san sɔngɔ ɲuman na.",
+    "arachide_diagnostic_001": "Ni ti ga flaburuw bɛ ja ani u ka nɛrɛmugu, ji ka dɔgɔ. Aw ye u sɔn ni ji ye joona tile o tile. Ni ti ga bɛ toli, ji ka ca; aw ye ji bɔli labɛn."
+  }
+}

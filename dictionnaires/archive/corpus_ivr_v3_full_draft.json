@@ -1078,9 +1078,9 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ti ga ma b a fɛ ji caman. Sanjiii dɔɔni tile saba o tile saba ka kɛnɛ. Ni ji caman don dugukoloo la, ti ga bɛ bɔlɔ.",
+      "reponse_bambara": "Ti ga tɛ ji caman fɛ. Sanjiii dɔɔni tile saba o tile saba bɛ ɲɛ. Ni ji caman don dugukoloo la, ti ga bɛ toli.",
       "reponse_fr": "L'arachide ne veut pas trop d'eau. Un peu de pluie tous les 3 jours suffit. Si trop d'eau entre dans la terre, l'arachide pourrit.",
-      "score_validation": 0.73,
+      "score_validation": 1.0,
       "tags": [
         "arachide",
         "eau",
@@ -1096,9 +1096,9 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ti ga b a fɛ nɔgɔ dɔɔni dɔrɔn. Aw ye nɔgɔ don dugukoloo la sɛnɛ tuma la. Ti ga bɛ azɔti kɛ i yɛrɛ, nɔgɔ caman ma ɲɛ.",
+      "reponse_bambara": "Ti ga bɛ nɔgɔ dɔɔni dɔrɔn fɛ. Sɛnɛ tuma na aw ye fɔsifɔri don dugukoloo la. Ti ga bɛ azɔti kɛ a yɛrɛ, nɔgɔ caman man ɲi.",
       "reponse_fr": "L'arachide n'a besoin que de peu d'engrais. Mets du phosphore dans la terre au moment de planter. L'arachide fabrique son propre azote, trop d'engrais c'est mauvais.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "arachide",
         "engrais",
@@ -1115,9 +1115,9 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye ti ga ja ka ɲɛ sani aw ka a don bɔn la. ji bɛ ti ga halaki joona. Aw ye ti ga mara bɔlɔ tɛ yɔrɔ ni saniya la.",
+      "reponse_bambara": "Aw ye ti ga ja ka ɲɛ sani ka a don jiginɛ la. Ti ga bɛ toli joona sumaya la. Aw ye a mara yɔrɔ jalen ani gbɛman na.",
       "reponse_fr": "Sèche bien les arachides avant de les mettre au grenier. L'humidité abîme rapidement les arachides. Garde-les dans un endroit sec et propre.",
-      "score_validation": 0.73,
+      "score_validation": 1.0,
       "tags": [
         "arachide",
         "stockage",
@@ -1134,9 +1134,9 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ti ga sɔngɔ ka ca sanjiii kɔ. Aw ye ti ga caya fara lɔgɔ ma o tuma la. Dɔlɔ mɔgɔw bɛ ti ga san sɔngɔ ɲuman na.",
+      "reponse_bambara": "Sanjiii kɔ, ti ga sɔngɔ bɛ juguya. Aw ye ti ga tɔ ta ka taga lɔgɔfɛ la. Turu kɛlaw bɛ ti ga san sɔngɔ ɲuman na.",
       "reponse_fr": "Le prix des arachides monte après la saison des pluies. Amène ton surplus au marché. Les huileries achètent les arachides à bon prix.",
-      "score_validation": 0.69,
+      "score_validation": 1.0,
       "tags": [
         "arachide",
         "vente",
@@ -1155,9 +1155,9 @@
       "conditions": [
         "PROBLEME_MALADIE"
       ],
-      "reponse_bambara": "Ni ti ga fura gɛlɛn, ji gɛlɛn bɛ a kɔnɔ. Aw ye ji don tile o tile. Ni ti ga bɔlɔ, aw ye ji bɔli labɛn.",
+      "reponse_bambara": "Ni ti ga flaburuw bɛ ja ani u ka nɛrɛmugu, ji ka dɔgɔ. Aw ye u sɔn ni ji ye joona tile o tile. Ni ti ga bɛ toli, ji ka ca; aw ye ji bɔli labɛn.",
       "reponse_fr": "Si les feuilles d'arachide sèchent et jaunissent, c'est le manque d'eau. Arrose rapidement chaque jour. Si les arachides pourrissent, il y a trop d'eau — améliore le drainage.",
-      "score_validation": 0.67,
+      "score_validation": 1.0,
       "tags": [
         "arachide",
         "maladie",
@@ -4019,5 +4019,6 @@
   "ajout_v2.0": "Ajout CULTURE_NERE (5 entrées: conseil, diagnostic, récolte, stockage, vente) et CULTURE_AGRUMES (4 entrées: conseil, diagnostic, engrais, irrigation). Syntaxe CI v1.9 respectée.",
   "correction_v2.1": "2026-03-18 — Axe 1: réécriture 37 phrases > 28 mots. Sources: Findora (20k FR-dyu), Common Voice dyu (5028 phrases), proverbes dioula (194). Toutes phrases réduites à ≤ 26 mots.",
   "ajout_v2.2": "2026-03-19 — AXE-3: +99 phrases Common Voice dyu v24 ajoutées comme phrases_attestees dans 6 entrées",
-  "note_v3": "Corrections bambara Mali → dioula CI appliquées sur 162 entrées. Vérifié Findora 20k paires."
+  "note_v3": "Corrections bambara Mali → dioula CI appliquées sur 162 entrées. Vérifié Findora 20k paires.",
+  "validation_issue_51": "2026-08-02 — Les 5 réponses arachide de l'issue #51 ont été corrigées selon les choix C du formulaire puis validées explicitement. Elles restent dans le draft v3 conformément à l'ADR-0014."
 }
