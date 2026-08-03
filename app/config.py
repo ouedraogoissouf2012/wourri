@@ -52,9 +52,6 @@ class Settings(BaseSettings):
     deepseek_model: str = "deepseek-chat"
 
     # ========== CLOUD APIs (GRATUIT) ==========
-    # Groq API (Whisper ASR)
-    groq_api_key: str = ""
-
     # Note: Lingva Translate est utilise pour la traduction (pas de cle requise)
 
     # Open-Meteo (gratuit, pas de clé)
@@ -213,6 +210,11 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        # Tolère les variables du .env lues ailleurs via os.getenv (FFMPEG_PATH
+        # par app/services/_ffmpeg.py, HF_TOKEN par les services HuggingFace...)
+        # sans les redéclarer ici. Sans ça, Pydantic lève extra_forbidden et
+        # l'API ne démarre pas quand ces variables sont présentes dans .env.
+        extra = "ignore"
 
 
 @lru_cache()
