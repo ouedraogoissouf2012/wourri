@@ -1174,9 +1174,9 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ka ku sɛnɛ, aw ye foroo labɛn ka ɲɛ. Ku b a fɛ jɛn ka ɲɛ. Aw ye dunbu kɛ foroo la.",
+      "reponse_bambara": "Ka ku sɔrɔ caman, aw ye dugukolo labɛn ka ɲɛ. Ku bɛ bɔ ka ɲɛ dugukolo nɔgɔman na. Aw ye tugunw kɛ ka kuw bonya dɛmɛ.",
       "reponse_fr": "Pour un bon rendement en igname, prépare bien ton sol. L'igname pousse mieux dans un sol meuble. Fais des buttes pour aider la croissance des tubercules.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "igname",
         "ku",
@@ -1225,9 +1225,9 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku sɛnɛ tuma ɲuman ye zanwuye kalo ni marisiii kalo tɛmɛnen. Sanjiii bɛ wuli o tuma la ka foroo ɲɛ. Aw ye dunbu labɛn sisan ka kɛ ɲɔgɔn na.",
+      "reponse_bambara": "Ku sɛnɛ tuma ɲuman ye Zanviye kalo ni Marisi kalo cɛ. Sanjiii bɛ na o tuma la. Sisan, aw ye tugunw labɛn ka aw yɛrɛ labɛn.",
       "reponse_fr": "Le meilleur moment pour planter l'igname c'est entre janvier et mars. Les pluies arrivent à ce moment. Prépare tes buttes maintenant pour être prêt.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "igname",
         "ku",
@@ -1245,9 +1245,9 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku tigɛlen tuma ye kalo 7 ni 9 cɛ. Ni sira bɛ la, ku ɲɛ ka bɔ. Aw ye ku bɔ ni hɛrɛ ye.",
+      "reponse_bambara": "Sɛnɛli kɔfɛ kalo wolonfila ni kɔnɔntɔn cɛ, ku tigɛ tuma ye. Ni furaw bɛ ja, tigɛ tuma ɲuman ye. Aw ye kuw sogi dɔɔni dɔɔni, aw kana u tiɲɛ.",
       "reponse_fr": "L'igname est prête à récolter 7 à 9 mois après la plantation. Quand les feuilles sèchent, c'est le bon moment. Déterrez avec soin pour ne pas abîmer les tubercules.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "igname",
         "ku",
@@ -1264,9 +1264,9 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku b a fɛ ji sɛnɛ fɔlɔ. Ni sanjiii tɛ, aw ye ji don tile kelen kelen. ji caman bɛ ku bɔrɔ.",
+      "reponse_bambara": "Ku bɛ ji fɛ caman a bonya daminɛ tuma la. Ni sanjiii tɛ, aw ye ji don siɲɛ kelen tile o tile. Aw kana ji caman don; kuw bɛ toli o la.",
       "reponse_fr": "L'igname a besoin d'eau surtout au début de sa croissance. Si la pluie manque, arrosez une fois par jour. Évitez l'excès d'eau qui fait pourrir les tubercules.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "igname",
         "ku",
@@ -1283,9 +1283,9 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku sɛnɛ la, nɔgɔ bɔlen kɛ dunbu labɛn ɲɛ. kalo fila kɔfɛ, NPK dɔɔni fara a kan. Nɔgɔ caman bɛ sira bɔ ka ku yɔrɔ ta.",
+      "reponse_bambara": "Ku sɛnɛ la, aw ye nɔgɔ bɔlen don dugukolo la sani ka tugunw kɛ. Kalo fila kɔ, aw ye NPK dɔɔni fara a kan. Azɔti caman bɛ furaw caya, nga kuw tɛ bonya ka ɲɛ.",
       "reponse_fr": "Pour l'igname, mettez de la fumure organique avant de former les buttes. Ajoutez un peu d'engrais NPK après 2 mois. Trop d'azote favorise les feuilles au détriment des tubercules.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "igname",
         "ku",
@@ -1303,9 +1303,9 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku bɛ se ka sɔrɔ kalo 3 ni 6 cɛ. Aw ye u bila yɔrɔ kɔnɔnin la, ji tɛ kɔnɔ. Ku ma fini ka ji don.",
+      "reponse_bambara": "Ku bɛ se ka to kalo saba ka se wɔɔrɔ ma. Aw ye u mara suma la, yɔrɔ jalen min na fiɲɛ bɛ. Aw kana u ko sani ka u mara.",
       "reponse_fr": "L'igname peut se conserver 3 à 6 mois dans un endroit ventilé. Gardez-les à l'ombre dans un lieu sec. Ne les lavez pas avant de stocker.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "igname",
         "ku",
@@ -1322,9 +1322,9 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku fere tuma ɲuman ye tigɛlen kɔfɛ joona. Aw ye lɔgɔ ta ka joona tile wulanna. Aw ye ku ɲuman bɔ fere la ka fara ɲɔgɔn kan.",
+      "reponse_bambara": "Ku fere ka ɲi tigɛli kɔfɛ joona. Aw ye taa lɔgɔ la sɔgɔma joona. Aw ye ku ɲumanw sugandi fere kama.",
       "reponse_fr": "L'igname se vend bien juste après la récolte. Allez au marché tôt le matin. Sélectionnez les plus beaux tubercules pour la vente.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "igname",
         "ku",
@@ -1341,9 +1341,9 @@
         "CULTURE_IGNAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ku bana nunu bɛ kɛ: toli bɔrɔ ani sira dimi. Ni ku nɔgɔ bɛ ye, bɔ joona. ANADER sɛnɛbaga kɔnɔ ka sɔrɔ i dɛmɛ ka kɛ.",
+      "reponse_bambara": "Ku bɛ se ka toli, walima furaw bɛ kɛ kalakala ye. Ni aw ye ku magamanw ye, aw ye u bɔ joona. Aw ye ANADER sɛnɛbaga weele ka aw dɛmɛ.",
       "reponse_fr": "L'igname peut souffrir de pourriture des tubercules ou de taches sur les feuilles. Si vous voyez des tubercules mous, retirez-les vite. Contactez un agent ANADER pour vous aider.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "igname",
         "ku",
@@ -1416,9 +1416,9 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Banankuuu bɛ se ka to ji tɛ la kalo 3. O ye a ka sɔn ye caman. Ni sanjiii tɛ caman, ji dɔɔni bɛ a dɛmɛ.",
+      "reponse_bambara": "Banankuuu bɛ jitanya muɲu ka ɲɛ. A bɛ se ka to kalo saba sanjiii tɛ. Ni jitanya ka mɛn, ji dɔɔni bɛ a dɛmɛ.",
       "reponse_fr": "Le manioc résiste bien à la sécheresse, il tient 3 mois sans pluie. Si la sécheresse est longue, un arrosage léger aide.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",
@@ -1435,9 +1435,9 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Banankuuu ma nɔgɔ caman fɛ. NPK dɔɔni sɛnɛ tuma la ka ɲi. Duguma ɲuman na, banankuuu bɛ se nɔgɔ kelen ma.",
+      "reponse_bambara": "Banankuuu tɛ nɔgɔ caman fɛ. Sɛnɛ tuma, aw ye NPK dɔɔni don dugukoloo la. Dugukolo ɲuman na, banankuuu bɛ bɔ hali nɔgɔ tɛ.",
       "reponse_fr": "Le manioc n'a pas besoin de beaucoup d'engrais. Une petite dose de NPK au moment de la plantation suffit. Dans un bon sol, il pousse même sans engrais.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",
@@ -1454,9 +1454,9 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Banankuuu kura bɛ bɔrɔ tile fila ni saba cɛ. Aw ye a jɛ ka fu wala gari kɛ. Banankuuu jɛlen bɛ sɔrɔ kalo caman.",
+      "reponse_bambara": "Banankuuu kura bɛ cɛn tile fila walima saba kɔnɔ. Ka a mara, aw ye a ja walima gari kɛ. Banankuuu jalen bɛ se ka to kalo caman.",
       "reponse_fr": "Le manioc frais ne se conserve pas longtemps, 2 à 3 jours maximum. Pour conserver, faites-le sécher ou transformez-le en gari. Le manioc séché peut durer plusieurs mois.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",
@@ -1473,9 +1473,9 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Banankuuu fere bɛ ɲɛ gari ye wala mugu ye. Aw ye a fere kura wala aw ye a kɛ gari ye. lɔgɔ la banankuuu ɲuman fere bɛ ɲɛ.",
+      "reponse_bambara": "Banankuuu fere ka ɲi gari walima mugu ye. Aw ye a fere kura walima a yɛlɛma ka sɔngɔ bonya. Lɔgɔ bɛ banankuuu saniyalen ani sugandilen fɛ.",
       "reponse_fr": "Le manioc se vend bien sous forme de gari ou de farine. Vendez frais ou transformez pour plus de valeur. Le marché aime le manioc propre et bien sélectionné.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",
@@ -1493,9 +1493,9 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni banankuuu sira bɛ nɛrɛmuguman ka kɔ, bana bɛ a la. Aw ye yiri bana bɔ joona. TMS wala IITA jira bɛ bana jɔ.",
+      "reponse_bambara": "Mozayiki ye banankuuu ka bana jugu bɛɛ ye; a bɛ furaw nɛrɛmuguya ka u kuru. Ni furaw kuru ka nɛrɛmuguya, aw ye yiri bananenw bɔ joona. Aw ye TMS walima IITA siya fasanw sɛnɛ.",
       "reponse_fr": "La mosaïque du manioc est la maladie la plus grave — elle fait jaunir et tordre les feuilles. Si vous voyez des feuilles tordues et jaunes, arrachez les plants malades vite. Plantez des variétés résistantes comme TMS ou IITA.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",
@@ -1513,9 +1513,9 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo ye sɔrɔ fɛn fɔlɔ Kote d Ivoire la. Aw ye kakawo sɛnɛ jiri kɔrɔfɛ ka juruni lakisi. San 3 ni san 5 cɛ, kakawo tigɛlen bɛ sɔrɔ.",
+      "reponse_bambara": "Kakawo ye jagofɛnsɛnɛ fɔlɔ ye Kote Divwari la. Aw ye kakawo sɛnɛ yiriw suma la ka kakawo yiri denmisɛnw lakisi. San saba ni duuru cɛ, kakawo fɔlɔ bɛ bɔ.",
       "reponse_fr": "Le cacao est la principale culture de rente en Côte d'Ivoire. Plantez à l'ombre d'autres arbres pour protéger les jeunes plants. Le premier cacao arrive après 3 à 5 ans.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "cacao",
         "kakawo",
@@ -1532,9 +1532,9 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo sɛnɛ tuma ɲuman ye Avirili ni mɛɛɛ kalo, sanjiii tuma fɔlɔ. Kakawo juruni bɛ jɛ ji tuma bɛɛ. Aw ye den foroo labɛn fɔlɔ sɛnɛ ɲɛ.",
+      "reponse_bambara": "Awirili kalo ni mɛ kalo ye kakawo sɛnɛ tuma fisa ye. Sanjiii ba bɛ daminɛ; yiri denmisɛnw bɛ sumaya fɛ tuma bɛɛ. Aw ye kakawo yirifalenyɔrɔ labɛn fɔlɔ.",
       "reponse_fr": "Le meilleur moment pour planter le cacao c'est en avril ou mai, au début de la grande saison des pluies. Les jeunes plants ont besoin d'humidité constante. Préparez une pépinière d'abord.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "cacao",
         "kakawo",
@@ -1552,9 +1552,9 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni kakawo bɛ nɛrɛmuguman wala wulen, tigɛlen tuma ye. Aw ye a bɔ ni hɛrɛ ye. tigɛlen bɛ kɛ Ɔtɔburu ni marisi.",
+      "reponse_bambara": "Ni kakawo denw bɛ kɛ nɛrɛmuguman walima bilenman ye, tigɛ tuma ye. Aw ye u tigɛ ni muru duman ye, kakawo kala kana cɛn. Tigɛ siɲɛ fila: Ɔtɔburu-Desanburu ani Marisi-Zuwen.",
       "reponse_fr": "Le cacao se récolte quand les cabosses deviennent jaunes ou rouges. Coupez avec un outil tranchant sans abîmer la tige. Récoltez deux fois par an : octobre-décembre et mars-juin.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "cacao",
         "kakawo",
@@ -1572,9 +1572,9 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo bɛ sanjiii ye caman. Ni sanjiii tɛ dɔɔni a bɛ se. Ni sanjiii tɛ kalo 3 san, aw ye ji bila.",
+      "reponse_bambara": "Kakawo bɛ sanjiii caman fɛ. Ni jitanya tuma ka surun, a bɛ se ka muɲu. Ni sanjiii tɛ kalo saba, aw ye ji don.",
       "reponse_fr": "Le cacao a besoin de beaucoup de pluie. Il résiste à une courte sécheresse. Si pas de pluie pendant 3 mois, arrosez.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "cacao",
         "kakawo",
@@ -1591,9 +1591,9 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo bɛ nɔgɔ fɛ san bɛɛ. NPK wala potasse kɛ sanjiii tuma fɔlɔ ani laban. Foro ɲuman na kakawo bɛ sɔrɔ caman.",
+      "reponse_bambara": "Kakawo bɛ nɔgɔ fɛ san bɛɛ. Aw ye NPK walima sɛgɛnkata don siɲɛ fila, sanjiii daminɛ ni laban. Dugukolo yɔrɔdiman na, kakawo denw bɛ caya.",
       "reponse_fr": "Le cacao a besoin d'engrais chaque année. Mettez NPK ou potasse deux fois par an, au début et à la fin de la saison des pluies. Un sol bien fertilisé donne plus de cabosses.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "cacao",
         "kakawo",
@@ -1611,9 +1611,9 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo jɛlen ka fu bɛ se ka sɔrɔ kalo caman. Kana a bila ji yɔrɔ la. Kakawo ɲuman bɛ fere.",
+      "reponse_bambara": "Kakawo jalen bɛ se ka to kalo caman saki saniyalenw na. Sumaya bɛ a bugun; aw kana a mara yɔrɔ namanama la. Kakawo jalen ka ɲɛ, a fere ka ɲi.",
       "reponse_fr": "Après séchage, le cacao peut se garder plusieurs mois dans des sacs propres. L'humidité fait moisir, ne stockez pas dans un endroit humide. Un cacao bien séché se vend mieux.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "cacao",
         "kakawo",
@@ -1631,9 +1631,9 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye aw ta kakawo fere jɛkulun la ka sɔrɔ fere ɲuman. Gouvernement bɛ sɔngɔ sɛbɛn san bɛɛ. Aw ye to ka tɛmɛ tuma tuma la fere.",
+      "reponse_bambara": "Aw ye aw ka kakawo fere kooperativu la, sɔngɔ ɲuman bɛ sɔrɔ. Gofɛrɛnɛman bɛ sɔngɔ latigɛ san bɛɛ. Aw ye kanpaɲi sariyalen tuma makɔnɔ sani ka fere.",
       "reponse_fr": "Vendez votre cacao à une coopérative pour avoir le meilleur prix. Le gouvernement fixe le prix officiel chaque année. Attendez la campagne officielle pour vendre.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "cacao",
         "kakawo",
@@ -1650,9 +1650,9 @@
         "CULTURE_CACAO"
       ],
       "conditions": [],
-      "reponse_bambara": "Kakawo bana kɔrɔ bɛ toli kɛ ɲɔgɔn na. Ni toli bana ye, bɔ joona ka a jɛ. nɛgɛ furakɛ kɛ ani jiri kɛ yɔrɔ caman kɔnɔ.",
+      "reponse_bambara": "Toli bilen ye kakawo ka bana jugu bɛɛ ye; denw bɛ fin. Aw ye den bananenw bɔ joona ka u jɛni. Aw ye zira furakɛli kɛ, ka yiriw cɛ janya.",
       "reponse_fr": "La pourriture brune est la maladie la plus grave du cacao — les cabosses noircissent. Si vous voyez des cabosses malades, retirez et brûlez-les vite. Traitez au cuivre et espacez bien les arbres.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "cacao",
         "kakawo",
@@ -3624,9 +3624,9 @@
       "conditions": [
         "PROBLEME_INSECTE"
       ],
-      "reponse_bambara": "Ni kulun bɛ banankuuu fura kɔrɔ, kosheni bɛ a la. A bɛ sɛnɛ halaki joona. Aw ye yiri bana bɔ foroo la.",
+      "reponse_bambara": "Ni tomitomi jɛmanw bɛ banankuuu furaw kɔrɔ, kosheni bɛ a la. Kosheni bɛ furaw fɔsɔn ka yiri halaki joona. Aw ye yiri bananenw bɔ, ka furakɛli kɛ joona.",
       "reponse_fr": "Si tu vois des taches blanches sous les feuilles de ton manioc, c'est la cochenille. La cochenille fait flétrir les feuilles et détruit la plante rapidement. Arrache les plants malades et traite vite.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",
@@ -3648,9 +3648,9 @@
       "conditions": [
         "PROBLEME_INSECTE"
       ],
-      "reponse_bambara": "Aw ye yiri bana bɔ foroo la. O kɔ, aw ye furakɛli fara yiri tɔw la. Ni furakɛli tɛ, tulu ni ji cɛ dɛmɛ kɛna.",
+      "reponse_bambara": "Aw ye banankuuu bananenw bɔ foroo la ka u mabɔ. O kɔ, aw ye sosofagalan kɛ yiri tɔw la. Ni sosofagalan tɛ, tulu ni ji ɲagami bɛ se ka dɛmɛ.",
       "reponse_fr": "Pour traiter la cochenille sur ton manioc, arrache les plants malades et retire-les du champ. Ensuite, applique un insecticide sur les plants restants. Si tu n'as pas d'insecticide, un mélange d'huile et d'eau peut aider.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",
@@ -3669,9 +3669,9 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Ka banankuuu kisi, aw ye yiri kɛnɛya sɛnɛ. kɔrɔsi foroo kalo kelen. Ni kosheni ye, bɔ yiri bana joona.",
+      "reponse_bambara": "Ka banankuuu kisi kosheni ma, aw ye duguturu kɛnɛmanw dɔrɔn sɛnɛ. Kalo o kalo, aw ye foroo kɔrɔsi. Ni aw ye kosheni tagamasiɲɛ fɔlɔw ye, aw ye yiri bananenw bɔ joona.",
       "reponse_fr": "Pour protéger ton manioc contre la cochenille, plante seulement des boutures saines. Surveille ton champ chaque mois. Si tu vois les premiers signes de cochenille, arrache immédiatement les plants malades.",
-      "score_validation": 0.68,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",

@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "issue": 53,
+  "date": "2026-08-02",
+  "status": "validated",
+  "source_document": "issue-53-manioc-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné et confirmation explicite du propriétaire du projet",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_MANIOC",
+    "corrected": 8,
+    "draft_total": 11,
+    "note": "Le PDF de validation couvre 8 des 11 entrées manioc du draft. Non couvertes par ce formulaire (restent à valider) : manioc_conseil_001, manioc_saison_001, manioc_recolte_001."
+  },
+  "not_covered_pending_validation": [
+    "manioc_conseil_001",
+    "manioc_saison_001",
+    "manioc_recolte_001"
+  ],
+  "confirmed_terms": {
+    "jitanya": "sécheresse",
+    "mugu": "farine / poudre",
+    "lɔgɔ": "marché",
+    "kuru": "tordre",
+    "siya": "variété",
+    "fasan": "résistant",
+    "tomitomi jɛmanw": "taches blanches",
+    "fɔsɔn": "flétrir",
+    "sosofagalan": "insecticide",
+    "duguturu": "bouture de manioc"
+  },
+  "agronomic_reserves": [
+    "manioc_engrais_001 : dose de NPK à confirmer",
+    "manioc_kosheni_traitement_001 : NE PAS PUBLIER la 3e phrase (mélange huile+eau) sans dosage, émulsifiant et validation agronomique",
+    "manioc_kosheni_symptomes_001 : 'tomitomi jɛmanw' (taches blanches) à confirmer localement"
+  ],
+  "corrections": {
+    "manioc_irrigation_001": "Banankuuu bɛ jitanya muɲu ka ɲɛ. A bɛ se ka to kalo saba sanjiii tɛ. Ni jitanya ka mɛn, ji dɔɔni bɛ a dɛmɛ.",
+    "manioc_engrais_001": "Banankuuu tɛ nɔgɔ caman fɛ. Sɛnɛ tuma, aw ye NPK dɔɔni don dugukoloo la. Dugukolo ɲuman na, banankuuu bɛ bɔ hali nɔgɔ tɛ.",
+    "manioc_stockage_001": "Banankuuu kura bɛ cɛn tile fila walima saba kɔnɔ. Ka a mara, aw ye a ja walima gari kɛ. Banankuuu jalen bɛ se ka to kalo caman.",
+    "manioc_vente_001": "Banankuuu fere ka ɲi gari walima mugu ye. Aw ye a fere kura walima a yɛlɛma ka sɔngɔ bonya. Lɔgɔ bɛ banankuuu saniyalen ani sugandilen fɛ.",
+    "manioc_diagnostic_001": "Mozayiki ye banankuuu ka bana jugu bɛɛ ye; a bɛ furaw nɛrɛmuguya ka u kuru. Ni furaw kuru ka nɛrɛmuguya, aw ye yiri bananenw bɔ joona. Aw ye TMS walima IITA siya fasanw sɛnɛ.",
+    "manioc_kosheni_symptomes_001": "Ni tomitomi jɛmanw bɛ banankuuu furaw kɔrɔ, kosheni bɛ a la. Kosheni bɛ furaw fɔsɔn ka yiri halaki joona. Aw ye yiri bananenw bɔ, ka furakɛli kɛ joona.",
+    "manioc_kosheni_traitement_001": "Aw ye banankuuu bananenw bɔ foroo la ka u mabɔ. O kɔ, aw ye sosofagalan kɛ yiri tɔw la. Ni sosofagalan tɛ, tulu ni ji ɲagami bɛ se ka dɛmɛ.",
+    "manioc_kosheni_prevention_001": "Ka banankuuu kisi kosheni ma, aw ye duguturu kɛnɛmanw dɔrɔn sɛnɛ. Kalo o kalo, aw ye foroo kɔrɔsi. Ni aw ye kosheni tagamasiɲɛ fɔlɔw ye, aw ye yiri bananenw bɔ joona."
+  }
+}
