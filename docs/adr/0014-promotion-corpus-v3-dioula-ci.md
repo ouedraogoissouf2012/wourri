@@ -433,7 +433,7 @@ L'option A reste **proposée** jusqu'à validation des 6 prérequis :
 - **Fichier draft** : `dictionnaires/archive/corpus_ivr_v3_full_draft.json` (162 entrées, v3, 84,9% validation)
 - **Fichier prod actuel** : `dictionnaires/corpus_ivr.json` (197 entrées, v2.4 après validation issue #40, source de vérité)
 - **Archive doc** : [`dictionnaires/archive/README.md`](../../dictionnaires/archive/README.md)
-- **Règles dioula** : [`data/GRAMMAIRE_DIOULA_REGLES.md`](../../../data/GRAMMAIRE_DIOULA_REGLES.md) (SOV, marqueurs `bɛ`/`ye`/`ma`, `nɔgɔ` vs `saraka`, etc.)
+- **Règles dioula** : [`data/GRAMMAIRE_DIOULA_REGLES.md`](../../data/GRAMMAIRE_DIOULA_REGLES.md) (SOV, marqueurs `bɛ`/`ye`/`ma`, `nɔgɔ` vs `saraka`, etc. — versionné dans wouri-api/data/ depuis issue #87)
 - **Issues liées** :
   - [#49](https://github.com/ouedraogoissouf2012/wourri/issues/49) — Réécriture corpus en dioula CI SOV naturel (origine du draft v3)
   - [#89](https://github.com/ouedraogoissouf2012/wourri/issues/89) — Validation corpus v3 (78,1% → 84,9%)
