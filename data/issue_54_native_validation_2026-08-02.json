@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "issue": 54,
+  "date": "2026-08-02",
+  "status": "validated",
+  "source_document": "issue-54-cacao-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné et confirmation explicite du propriétaire du projet",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_CACAO",
+    "corrected": 8
+  },
+  "confirmed_terms": {
+    "jagofɛnsɛnɛ": "culture commerciale / de rente",
+    "yirifalenyɔrɔ": "pépinière",
+    "muru duman": "couteau aiguisé",
+    "kala": "tige",
+    "sɛgɛnkata": "potassium / potasse",
+    "bugun": "moisir",
+    "sumaya": "humidité",
+    "kooperativu": "coopérative (emprunt juridique)",
+    "zira": "cuivre",
+    "toli bilen": "pourriture brune"
+  },
+  "agronomic_reserves": [
+    "cacao_engrais_001 : recommandation NPK/potasse à confirmer avec la fiche CNRA",
+    "cacao_diagnostic_001 : traitement au cuivre et espacement à valider agronomiquement (CNRA pourriture brune)",
+    "cacao_conseil_001 : formulation 'jeunes plants' à valider oralement",
+    "cacao_saison_001 : rendu TTS de 'yirifalenyɔrɔ' à tester",
+    "cacao_vente_001 : usage local et TTS de 'kooperativu' à vérifier"
+  ],
+  "corrections": {
+    "cacao_conseil_001": "Kakawo ye jagofɛnsɛnɛ fɔlɔ ye Kote Divwari la. Aw ye kakawo sɛnɛ yiriw suma la ka kakawo yiri denmisɛnw lakisi. San saba ni duuru cɛ, kakawo fɔlɔ bɛ bɔ.",
+    "cacao_saison_001": "Awirili kalo ni mɛ kalo ye kakawo sɛnɛ tuma fisa ye. Sanjiii ba bɛ daminɛ; yiri denmisɛnw bɛ sumaya fɛ tuma bɛɛ. Aw ye kakawo yirifalenyɔrɔ labɛn fɔlɔ.",
+    "cacao_recolte_001": "Ni kakawo denw bɛ kɛ nɛrɛmuguman walima bilenman ye, tigɛ tuma ye. Aw ye u tigɛ ni muru duman ye, kakawo kala kana cɛn. Tigɛ siɲɛ fila: Ɔtɔburu-Desanburu ani Marisi-Zuwen.",
+    "cacao_irrigation_001": "Kakawo bɛ sanjiii caman fɛ. Ni jitanya tuma ka surun, a bɛ se ka muɲu. Ni sanjiii tɛ kalo saba, aw ye ji don.",
+    "cacao_engrais_001": "Kakawo bɛ nɔgɔ fɛ san bɛɛ. Aw ye NPK walima sɛgɛnkata don siɲɛ fila, sanjiii daminɛ ni laban. Dugukolo yɔrɔdiman na, kakawo denw bɛ caya.",
+    "cacao_stockage_001": "Kakawo jalen bɛ se ka to kalo caman saki saniyalenw na. Sumaya bɛ a bugun; aw kana a mara yɔrɔ namanama la. Kakawo jalen ka ɲɛ, a fere ka ɲi.",
+    "cacao_vente_001": "Aw ye aw ka kakawo fere kooperativu la, sɔngɔ ɲuman bɛ sɔrɔ. Gofɛrɛnɛman bɛ sɔngɔ latigɛ san bɛɛ. Aw ye kanpaɲi sariyalen tuma makɔnɔ sani ka fere.",
+    "cacao_diagnostic_001": "Toli bilen ye kakawo ka bana jugu bɛɛ ye; denw bɛ fin. Aw ye den bananenw bɔ joona ka u jɛni. Aw ye zira furakɛli kɛ, ka yiriw cɛ janya."
+  }
+}

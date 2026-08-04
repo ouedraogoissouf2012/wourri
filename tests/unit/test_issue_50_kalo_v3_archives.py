@@ -20,7 +20,7 @@ def load_json(path: Path) -> dict:
 
 
 @pytest.mark.parametrize(
-    ("path", "response_field", "expected_entries", "expected_kalo_count"),
+    ("path", "response_field", "expected_entries", "min_kalo_count"),
     [
         (PARTIAL_DRAFT_PATH, "new_bam", 38, 16),
         (FULL_DRAFT_PATH, "reponse_bambara", 162, 59),
@@ -30,8 +30,17 @@ def test_v3_archives_use_validated_kalo_spelling(
     path: Path,
     response_field: str,
     expected_entries: int,
-    expected_kalo_count: int,
+    min_kalo_count: int,
 ):
+    """Contrat #50 : le draft v3 n'emploie JAMAIS la forme malienne `karo`,
+    et emploie la forme dioula CI validée `kalo`.
+
+    Le compte de `kalo` est vérifié comme un *plancher* (>=) et non un snapshot
+    exact : chaque validation native (#51-#68) ajoute légitimement des `kalo`
+    (mois `Zanviye kalo`, durées `kalo saba`...). Figer le compte exact rendrait
+    ce test fragile et le ferait échouer à chaque promotion native correcte.
+    Le contrat de qualité (`karo` interdit) reste, lui, strict.
+    """
     draft = load_json(path)
     responses = " ".join(entry[response_field] for entry in draft["entries"])
 
@@ -39,7 +48,7 @@ def test_v3_archives_use_validated_kalo_spelling(
     assert not re.search(r"\bkaro\b", responses, flags=re.IGNORECASE)
     assert (
         len(re.findall(r"\bkalo\b", responses, flags=re.IGNORECASE))
-        == expected_kalo_count
+        >= min_kalo_count
     )
 
 

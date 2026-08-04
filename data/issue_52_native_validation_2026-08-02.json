@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "issue": 52,
+  "date": "2026-08-02",
+  "status": "validated",
+  "source_document": "issue-52-igname-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné et confirmation explicite du propriétaire du projet",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_IGNAME",
+    "corrected": 8
+  },
+  "confirmed_terms": {
+    "tugun": "butte",
+    "sogi": "déterrer",
+    "tiɲɛ": "abîmer",
+    "azɔti": "azote",
+    "kalakala": "tacheté",
+    "magaman": "mou"
+  },
+  "agronomic_reserves": [
+    "igname_engrais_001 : dose de NPK à confirmer par une source agronomique locale",
+    "igname_irrigation_001 : fréquence d'arrosage à valider agronomiquement",
+    "igname_diagnostic_001 : symptômes à confirmer par un agronome"
+  ],
+  "corrections": {
+    "igname_conseil_001": "Ka ku sɔrɔ caman, aw ye dugukolo labɛn ka ɲɛ. Ku bɛ bɔ ka ɲɛ dugukolo nɔgɔman na. Aw ye tugunw kɛ ka kuw bonya dɛmɛ.",
+    "igname_saison_001": "Ku sɛnɛ tuma ɲuman ye Zanviye kalo ni Marisi kalo cɛ. Sanjiii bɛ na o tuma la. Sisan, aw ye tugunw labɛn ka aw yɛrɛ labɛn.",
+    "igname_recolte_001": "Sɛnɛli kɔfɛ kalo wolonfila ni kɔnɔntɔn cɛ, ku tigɛ tuma ye. Ni furaw bɛ ja, tigɛ tuma ɲuman ye. Aw ye kuw sogi dɔɔni dɔɔni, aw kana u tiɲɛ.",
+    "igname_irrigation_001": "Ku bɛ ji fɛ caman a bonya daminɛ tuma la. Ni sanjiii tɛ, aw ye ji don siɲɛ kelen tile o tile. Aw kana ji caman don; kuw bɛ toli o la.",
+    "igname_engrais_001": "Ku sɛnɛ la, aw ye nɔgɔ bɔlen don dugukolo la sani ka tugunw kɛ. Kalo fila kɔ, aw ye NPK dɔɔni fara a kan. Azɔti caman bɛ furaw caya, nga kuw tɛ bonya ka ɲɛ.",
+    "igname_stockage_001": "Ku bɛ se ka to kalo saba ka se wɔɔrɔ ma. Aw ye u mara suma la, yɔrɔ jalen min na fiɲɛ bɛ. Aw kana u ko sani ka u mara.",
+    "igname_vente_001": "Ku fere ka ɲi tigɛli kɔfɛ joona. Aw ye taa lɔgɔ la sɔgɔma joona. Aw ye ku ɲumanw sugandi fere kama.",
+    "igname_diagnostic_001": "Ku bɛ se ka toli, walima furaw bɛ kɛ kalakala ye. Ni aw ye ku magamanw ye, aw ye u bɔ joona. Aw ye ANADER sɛnɛbaga weele ka aw dɛmɛ."
+  }
+}
