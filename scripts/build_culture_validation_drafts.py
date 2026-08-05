@@ -19,11 +19,17 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DRAFT_PATH = PROJECT_ROOT / "dictionnaires" / "archive" / "corpus_ivr_v3_full_draft.json"
 DATA_DIR = PROJECT_ROOT / "data"
+
+# Noyau de prévalidation (méthode Codex) : tables de règles + scoring + schéma.
+# Le module vit dans le même dossier scripts/ (hors package).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import prevalidation_rules as prev  # noqa: E402
 
 # Emplacement des diffs PR mis en cache (voir étape de cache gh pr diff).
 import os
@@ -38,19 +44,28 @@ SCRATCH = Path(
 )
 
 # Base d'audit commune (GRAMMAIRE_DIOULA_REGLES §12bis).
+#
+# Formes MALIENNES ABSOLUMENT bannies : aucun sens alternatif attesté en dioula
+# CI, donc toujours à corriger (cf. spec §3.1 + tests #56-#68 BANNED_TERMS).
 MOTS_MALIENS_BANNIS = {
     "karo": "→ kalo (mois) — PR #84",
-    "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
     "waati": "→ tuma (moment/temps) — validation native #51",
-    "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
-    "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native",
 }
 CORRECTIONS_CI = {
     "karo": "kalo",
-    "sugu": "lɔgɔ",
     "waati": "tuma",
-    "kosɛbɛ": "caman",
-    "sɛnnɛkɛla": "sɛnɛbaga",
+}
+
+# Formes CONDITIONNELLES (spec §3.1) : PAS bannies absolument. sugu (sorte/
+# espèce) et kosɛbɛ (beaucoup) sont attestés en dioula CI ; la substitution ne
+# vaut que si le SENS français l'exige (marché → lɔgɔ). sɛnnɛkɛla reste une
+# préférence éditoriale traitée par le module de règles. Ces formes ne sont
+# JAMAIS comptées comme « mot malien banni » — elles sont rappelées dans le
+# repère et gérées, au cas par cas, par la proposition pré-remplie.
+FORMES_CONDITIONNELLES = {
+    "sugu": "→ lɔgɔ SEULEMENT si sens « marché » (sinon sugu = sorte/espèce, valide)",
+    "kosɛbɛ": "→ caman (préférence WOURI « beaucoup ») ; kosɛbɛ non fautif",
+    "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent)",
 }
 
 # Métadonnées par culture. term/note d'après GRAMMAIRE_DIOULA_REGLES §12.
@@ -331,6 +346,179 @@ def build_repere(term_note: str, version_a: str, version_b: str | None) -> str:
     return " ".join(reminders)
 
 
+# --- Proposition pré-remplie (spec §7) ------------------------------------
+#
+# best_version : meilleure version dioula disponible (B si présente, sinon A).
+#   La spec §7 attend UNE proposition ; on part de la version la plus récente
+#   proposée (B = ancienne PR) quand elle existe, à défaut de A.
+#
+# La proposition n'applique QUE des corrections DÉTERMINISTES :
+#   1. normalisation orthographique de la table §3.2 (mots exacts) ;
+#   2. substitution lexicale §3.1 UNIQUEMENT si le sens français lève
+#      l'ambiguïté (sinon la forme part dans termes_a_confirmer).
+# Tout le reste (faux-amis §3.3, choix de synonyme, ravageur, naturalité…)
+# reste au natif : signalé, jamais résolu (spec §9).
+
+
+def build_proposition(
+    entry_id: str,
+    french: str,
+    version_a: str,
+    version_b: str | None,
+    crop_term: str,
+) -> dict:
+    """Produit la PROPOSITION pré-remplie au format §7 pour une entrée.
+
+    Retourne un dict conforme à `prev.PROPOSITION_SCHEMA`. Ne modifie pas les
+    données sources. `necessite_validation_native` est TOUJOURS True.
+    """
+    best_version = version_b if version_b else version_a
+    source_label = "VERSION B" if version_b else "VERSION A"
+
+    regles_appliquees: list[str] = []
+    termes_a_confirmer: list[str] = []
+
+    # 1) Normalisation orthographique déterministe (table §3.2 uniquement).
+    ortho = prev.apply_orthographic_map(best_version)
+    regles_appliquees.extend(ortho.applied_rules)
+
+    # 2) Substitution lexicale conditionnelle (§3.1), sur le texte normalisé.
+    lex = prev.apply_lexical_substitutions(ortho.text, french_reference=french)
+    regles_appliquees.extend(lex.applied_rules)
+    termes_a_confirmer.extend(lex.to_confirm)
+
+    proposition_text = lex.text
+
+    # 3) Faux-amis (§3.3) : SIGNALER, jamais remplacer.
+    semantic_alerts = prev.detect_semantic_alerts(proposition_text)
+    for alert in semantic_alerts:
+        verb = "rejeter" if alert["action"] == "reject" else "à confirmer"
+        termes_a_confirmer.append(
+            f"« {alert['form']} » : {verb} — sens attesté = "
+            f"{alert['attested_sense']} (usage visé : {alert['wrong_sense']})"
+        )
+
+    # 4) Choix de terme de culture (§9 : choix de synonyme non automatisable).
+    termes_a_confirmer.append(
+        f"Terme de culture « {crop_term} » : confirmer l'emploi dans la phrase."
+    )
+
+    # --- Scoring (§6) : score de PRÉPARATION, pas une probabilité. ---------
+    # Sous-scores heuristiques et PRUDENTS (score bas = plus de vérification) :
+    #   O (orthographe) : 1.0 si aucune correction orthographique restait à
+    #     faire n'est détectée après normalisation ; sinon 0.75.
+    #   S, G, Y : neutres-hauts (0.75) — le texte vient de propositions déjà
+    #     éditées, mais rien n'est vérifié nativement.
+    #   E (preuves lexicales) : 0.5 par défaut (2 sources CI non garanties).
+    #   A (agronomie) : 1.0 si aucune reco agronomique chiffrée détectée
+    #     (spec §6), sinon on plafonne via caps (non vérifié).
+    has_agronomy = _mentions_agronomy(french) or _mentions_agronomy(best_version)
+    caps = prev.ConfidenceCaps(
+        unconfirmed_technical_term=bool(termes_a_confirmer),
+        unverified_agronomy=has_agronomy,
+        pesticide_without_dosage=_pesticide_without_dosage(french, best_version),
+        possible_contresens=any(
+            a["action"] == "reject" for a in semantic_alerts
+        ),
+    )
+    confiance = prev.calculate_confidence(
+        S=0.75,
+        G=0.75,
+        Y=0.75,
+        O=1.0 if not ortho.applied_rules else 0.75,
+        A=1.0 if not has_agronomy else 0.75,
+        E=0.5,
+        caps=caps,
+    )
+
+    # --- Note concrète pour le natif (§7) ---------------------------------
+    note = _build_native_note(
+        source_label, semantic_alerts, lex.to_confirm, crop_term
+    )
+
+    proposition = {
+        "entry_id": entry_id,
+        "french_reference": french,
+        "proposition_dioula_ci": proposition_text,
+        "regles_appliquees": _dedupe_ordered(regles_appliquees),
+        "termes_a_confirmer": _dedupe_ordered(termes_a_confirmer),
+        "confiance": confiance,
+        "necessite_validation_native": True,
+        "note_pour_le_natif": note,
+    }
+    # Garde-fou : chaque proposition produite est validée contre le schéma §7.3.
+    prev.validate_proposition(proposition)
+    return proposition
+
+
+# Détecteurs agronomiques prudents (déclenchent des plafonds §6, pas des rejets).
+_AGRONOMY_RE = re.compile(
+    r"\b(npk|engrais|nɔgɔ|dose|cm|centim|kg|litre|traitement|pesticide|"
+    r"herbicide|fongicide|insecticide|urée|uree)\b",
+    re.IGNORECASE,
+)
+_PESTICIDE_RE = re.compile(
+    r"\b(pesticide|herbicide|fongicide|insecticide|traitement)\b", re.IGNORECASE
+)
+_DOSAGE_RE = re.compile(r"\d")  # présence d'un chiffre = dosage plausible.
+
+
+def _dedupe_ordered(values: list[str]) -> list[str]:
+    """Déduplique une liste en conservant l'ordre d'apparition."""
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for v in values:
+        if v not in seen:
+            seen.add(v)
+            ordered.append(v)
+    return ordered
+
+
+def _mentions_agronomy(text: str) -> bool:
+    return bool(_AGRONOMY_RE.search(text))
+
+
+def _pesticide_without_dosage(french: str, dioula: str) -> bool:
+    """True si un produit phyto est mentionné sans aucun chiffre de dosage."""
+    joined = f"{french} {dioula}"
+    return bool(_PESTICIDE_RE.search(joined)) and not _DOSAGE_RE.search(joined)
+
+
+def _build_native_note(
+    source_label: str,
+    semantic_alerts: list[dict[str, str]],
+    lexical_to_confirm: list[str],
+    crop_term: str,
+) -> str:
+    """Rédige une décision CONCRÈTE demandée au natif (spec §7)."""
+    decisions: list[str] = []
+    for alert in semantic_alerts:
+        if alert["action"] == "reject":
+            decisions.append(
+                f"Remplacer « {alert['form']} » (= {alert['attested_sense']}, "
+                f"faux-ami) par le bon terme pour « {alert['wrong_sense']} »"
+            )
+        else:
+            decisions.append(
+                f"Confirmer le sens de « {alert['form']} » "
+                f"({alert['attested_sense']})"
+            )
+    if lexical_to_confirm:
+        decisions.append(
+            "Trancher le sens des formes conditionnelles signalées "
+            "(sugu/kosɛbɛ) selon le contexte"
+        )
+    decisions.append(
+        f"Confirmer que « {crop_term} » est la bonne forme dans cette phrase"
+    )
+    return (
+        f"Base : {source_label} après normalisation orthographique déterministe. "
+        f"Décisions à trancher : {' ; '.join(decisions)}. "
+        "Vérifier l'ordre SOV (verbe en fin), l'impératif pluriel « Aw ye … » "
+        "et la naturalité orale avant intégration."
+    )
+
+
 def main() -> None:
     draft = json.loads(DRAFT_PATH.read_text(encoding="utf-8"))
     draft_entries = {e["id"]: e for e in draft["entries"]}
@@ -375,6 +563,9 @@ def main() -> None:
                 "version_a": version_a,
                 "alerte_audit": alerte,
                 "repere_verifie": repere,
+                "proposition": build_proposition(
+                    eid, french, version_a, version_b, meta["term"]
+                ),
             }
             if version_b:
                 item["version_b"] = version_b
