@@ -93,31 +93,15 @@ class Settings(BaseSettings):
     # Langue cible pour le gate ASR (filtre blocklist par langue).
     asr_language: str = "dyu"
 
-    # Sources de vocabulaire à charger dans VocabularyRegistry.
-    # Chaque entrée : {name, path (relatif à wouri-api/), schema (clé dans _EXTRACTORS)}.
-    # Override via .env en JSON : ASR_VOCAB_SOURCES='[{"name":"...","path":"...","schema":"..."}]'
-    asr_vocab_sources: list[dict] = [
-        {
-            "name": "koumankan",
-            "path": "data/hf_datasets/koumankan_dyu_fr.json",
-            "schema": "list_dict_translation_dyu",
-        },
-        {
-            "name": "findora",
-            "path": "data/hf_datasets/findora_fr_dioula.json",
-            "schema": "list_dict_flat_dioula",
-        },
-        {
-            "name": "ivr",
-            "path": "dictionnaires/corpus_ivr.json",
-            "schema": "ivr_entries_reponse_bambara",
-        },
-        {
-            "name": "nlu",
-            "path": "dictionnaires/nlu_concepts.json",
-            "schema": "nlu_concepts_keywords",
-        },
-    ]
+    # NOTE (issue #339) : le setting `asr_vocab_sources` a été RETIRÉ. C'était du
+    # dead config : aucun code ne le lisait, et le `VocabularyRegistry` / `_EXTRACTORS`
+    # décrits dans ses commentaires n'ont jamais existé. Le vocabulaire réellement
+    # utilisé est chargé par des chemins dédiés :
+    #   - normalisation post-ASR  → app/services/asr_normalizer.py (nlu_concepts.json)
+    #   - quality gate agricole   → app/services/asr/chain.py (AGRI_KEYWORDS hardcodés)
+    #   - filtre langue OOV       → app/services/validation/lm_filter.py (lexique en paramètre)
+    # Les datasets data/hf_datasets/{koumankan,findora}.json restent sur disque pour
+    # le fine-tuning ASR (cf. finetune/), pas pour le runtime.
 
     # Blocklist d'hallucinations ASR (fichier JSON éditable).
     asr_hallucinations_path: str = "data/asr_hallucinations_dyu.json"
