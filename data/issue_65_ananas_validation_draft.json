@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "issue": 65,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_ANANAS",
+  "crop_label": "ananas",
+  "crop_term": "ananas",
+  "crop_term_note": "ananas = ananas (loanword). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "ANANAS",
+  "footer_label": "Wourri - Issue #65 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 8,
+  "version_b_source_prs": [
+    82
+  ],
+  "warning": "Ce formulaire présente 8 entrées ananas. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "ananas_conseil_001",
+      "culture": "CULTURE_ANANAS",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "L'ananas se cultive très bien en Côte d'Ivoire. Plantez à 30 cm d'écart. On plante avec les couronnes ou les rejets.",
+      "version_a": "Ananas sɛnɛ la ka ɲi Kote d Ivoire la caman. Aw ye ananas sɛnɛ santimɛtiri bi ni bi na. Couronne wala bolo bɛ sɛnɛ la.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "ananas = ananas (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ananas bɛ bɔ ka ɲɛ Kote Divwari la. Aw ye a da santimɛtiri bi saba. Ananas kun wala den kɛ sɛnɛ ye.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "ananas_diagnostic_001",
+      "culture": "CULTURE_ANANAS",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les feuilles de l'ananas jaunissent ou tombent, ce sont les cochenilles. Traitez avec un insecticide rapidement. Retirez les plants très atteints du champ.",
+      "version_a": "Ni ananas jira bɛ jɛ ka jɔ wala bɛ la joona, kosheni bɛ a la. Aw ye furakɛ furakɛli la joona. Aw ye ananas cɛnna bɔ foroo la.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "ananas = ananas (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni ananas fura bɛ nɛrɛmugu wala bin, kulun bɛ a la. Aw ye furakɛli kɛ joona. Ananas bananen bɔ foroo la.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "ananas_engrais_001",
+      "culture": "CULTURE_ANANAS",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "L'ananas aime surtout le potassium. Apportez du NPK juste après la plantation. Le sulfate de potasse aide beaucoup l'ananas à grossir.",
+      "version_a": "Ananas bɛ potassium jɛ ka ɲi caman. Aw ye NPK don joona sɛnɛ kɔfɛ. potasi de potasse bɛ ananas dɛmɛ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI. Voyelles doublées/triplées non standard (orthographe à corriger) — B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "ananas = ananas (loanword). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ananas bɛ potasi fɛ kosɛbɛ. Sɛnɛ kɔ NPK don dugukoloo la. Potasi bɛ ananas dɛmɛ ka bon.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "ananas_irrigation_001",
+      "culture": "CULTURE_ANANAS",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "L'ananas tolère assez bien la sécheresse. Mais un peu d'eau aide juste après la plantation. Sans pluie, arrosez une fois par mois.",
+      "version_a": "Ananas bɛ jiɲɛ la sɔn dɔɔni. Nka ji dɔɔni ka ɲi joona sɛnɛ kɔfɛ. Ni sanjiii ma na, aw ye ji don foroo la kalo kelen.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « foroo » ; B : « sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "ananas = ananas (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ananas bɛ se ka sɔn ji tɛ ma dɔɔni. Nka sɛnɛ kɔ ji dɔɔni bɛ a dɛmɛ. Ni sanjiii tɛ, kalo o kalo ji don.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "ananas_recolte_001",
+      "culture": "CULTURE_ANANAS",
+      "intent": "QUESTION_RECOLTE",
+      "french": "L'ananas est prêt à récolter 14 à 18 mois après la plantation. Quand il commence à jaunir à la base, c'est prêt. Récoltez et vendez rapidement.",
+      "version_a": "Ananas tigɛlen tuma ye kalo bi ni naani sɛnɛ kɔfɛ. Ni ananas bɛ la ka gɛlɛn duguma fɛ, tigɛlen ye. Aw ye ananas bɔ ka fere kɛ joona.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "ananas = ananas (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kalo tan ni naani ni tan ni seginni cɛ ananas bɛ se ka tigɛ. Ni a bɛ nɛrɛmugu dɔɔni duguma, a mɔlen don. Aw ye tigɛ ka fere joona.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "ananas_saison_001",
+      "culture": "CULTURE_ANANAS",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "L'ananas peut se planter toute l'année avec de l'eau. La saison des pluies est la meilleure. Préparez bien vos couronnes avant de planter.",
+      "version_a": "Ananas bɛ se ka sɛnɛ kalo bɛɛ la ni ji bɛ ɲɛ. Sanjiii tuma na sɛnɛ bɛ ɲɛ caman. Aw ye couronne labɛn fɔlɔ ka sɛnɛ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « Sanjiii » ; B : « Sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "ananas = ananas (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ananas bɛ se ka sɛnɛ san bɛɛ ni ji bɛ yen. Sanjiii tuma ka ɲi. Aw ye ananas kun labɛn ka ɲɛ fɔlɔ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "ananas_stockage_001",
+      "culture": "CULTURE_ANANAS",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "L'ananas frais ne se conserve que 10 à 14 jours. Stockez dans un endroit frais. Récoltez au bon moment et vendez vite.",
+      "version_a": "Ananas kura bɛ bɔrɔ tile tan wala bi ni naani. Aw ye mara yɔrɔ sumanin na. Aw ye tigɛlen kɛ joona ka fere.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "ananas = ananas (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ananas kura bɛ se ka to tile tan ni naani. Aw ye a mara yɔrɔ surunya na. Aw ye tigɛ tuma ɲuman na ka fere joona.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "ananas_vente_001",
+      "culture": "CULTURE_ANANAS",
+      "intent": "QUESTION_VENTE",
+      "french": "Vendez l'ananas au marché ou à un commerçant. Vendez dans les 3 jours après récolte. L'exportation peut donner un meilleur prix.",
+      "version_a": "Ananas fere kɛ lɔgɔ la wala kɔlɔ la. Aw ye ananas fere joona tigɛlen kɔfɛ tile saba. dɛsɛ bɛ se ka sɔngɔ ɲuman sɔrɔ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « sugu » (B) → lɔgɔ (marché) — validation native #52/#53. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "ananas = ananas (loanword). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : sugu (Mali) → lɔgɔ (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye ananas fere sugu la wala julabaga fɛ. Tigɛ kɔ tile saba kɔnɔ aw ye fere. Dɛsɛ fana bɛ sɔngɔ ɲuman di.",
+      "version_b_pr": "PR #82"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "issue": 64,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_CAFE",
+  "crop_label": "café",
+  "crop_term": "kafe",
+  "crop_term_note": "café = kafe (loanword). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "CAFE",
+  "footer_label": "Wourri - Issue #64 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 8,
+  "version_b_source_prs": [
+    82
+  ],
+  "warning": "Ce formulaire présente 8 entrées café. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "cafe_conseil_001",
+      "culture": "CULTURE_CAFE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Le café est une culture importante en Côte d'Ivoire. Plantez le café à l'ombre d'autres arbres pour protéger les jeunes plants. La première récolte arrive après 3 ans.",
+      "version_a": "Kafe ye sɔrɔ fɛn fɔlɔ Kote d Ivoire la. Aw ye kafe sɛnɛ jiri kɔrɔfɛ ka juruni lakisi. San 3 kɔfɛ kafe tigɛlen bɛ sɔrɔ.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "café = kafe (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kafe ye Kote Divwari sɛnɛ kɔrɔ ye. Aw ye a sɛnɛ yiri kɔrɔ ka den kɛnɛw lakisi. San saba kɔ kafe fɔlɔ bɛ bɔ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "cafe_diagnostic_001",
+      "culture": "CULTURE_CAFE",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les feuilles du caféier tombent ou brunissent trop tôt, il y a une maladie. La CBD est la plus grave maladie du café. Traitez avec un fongicide rapidement.",
+      "version_a": "Ni kafe jira bɛ jɛ ka gɛlɛn wala bɛ la joona, bana bɛ a la. CBD bana bɛ kafe halaki caman. Aw ye furakɛ furakɛli la joona.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "café = kafe (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni kafe fura bɛ bin wala kɔgɔ joona, bana bɛ a la. Aw ye furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "cafe_engrais_001",
+      "culture": "CULTURE_CAFE",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "Le café préfère le NPK 12-15-18. Faites le traitement chaque mois. Le magnésium aide aussi le caféier à bien produire.",
+      "version_a": "Kafe bɛ NPK 12-15-18 jɛ ka ɲi. Aw ye furakɛ kalo kelen kelen na. maginesiyɔm fana bɛ kafe dɛmɛ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "café = kafe (loanword). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kafe bɛ NPK fɛ kosɛbɛ. Kalo o kalo furakɛli kɛ. Maginesiyɔm bɛ kafe dɛmɛ ka den caman bɔ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "cafe_irrigation_001",
+      "culture": "CULTURE_CAFE",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "Le café a besoin de beaucoup d'eau. Si les pluies tardent, arrosez vos caféiers. La sécheresse prolongée abîme le café.",
+      "version_a": "Kafe bɛ jɛ ji ye caman. Ni sanjiii ma na joona, aw ye ji don kafe la. Jiɲɛ jan bɛ kafe dɛmɛ kɛ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI. Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii » ; B : « sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "café = kafe (loanword). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kafe bɛ sanjiii fɛ kosɛbɛ. Ni sanjiii tɛ na, aw ye ji don. Ji tɛ tuma jan bɛ kafe halaki.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "cafe_recolte_001",
+      "culture": "CULTURE_CAFE",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Le café se récolte entre octobre et février. Quand les cerises sont bien rouges, c'est le bon moment. Récoltez tôt le matin.",
+      "version_a": "Kafe tigɛlen tuma ye Ɔtɔburu ni Fevuruye cɛ. Ni kafe bɛ la ka surun, tigɛlen tuma ye. Aw ye tigɛlen kɛ tile siran na.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "café = kafe (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ɔkitɔburu ni feburiye kalo cɛ kafe bɛ tigɛ. Ni kafe den bɛ bilenman, tigɛ tuma ye. Sɔgɔma joona aw ye tigɛ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "cafe_saison_001",
+      "culture": "CULTURE_CAFE",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "Le meilleur moment pour planter le café c'est la saison des pluies. Mai ou juin c'est bien. Prépare une pépinière avant de planter.",
+      "version_a": "Kafe sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala juin kalo bɛ ɲɛ. Aw ye den foroo labɛn fɔlɔ sɛnɛ ɲɛ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « foroo » ; B : « sanjiii », « Mɛɛɛ », « zuwɛɛɛn », « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "café = kafe (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kafe sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛɛɛ wala zuwɛɛɛn kalo ka ɲi. Aw ye den foroo labɛn fɔlɔ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "cafe_stockage_001",
+      "culture": "CULTURE_CAFE",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Pour stocker le café, faites-le bien sécher. Stockez dans un endroit frais et sec. Le café bien séché peut se conserver plusieurs mois.",
+      "version_a": "Kafe marali tuma la, aw ye a mɛ ka ɲɛ caman. Aw ye mara yɔrɔ sumanin na ka ji kɛ. Kafe mɛnen bɛ se ka sɔrɔ kalo caman.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "café = kafe (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye kafe ja ka ɲɛ fɔlɔ. Aw ye a mara yɔrɔ surunya jalen na. Kafe jalen bɛ se ka to kalo caman.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "cafe_vente_001",
+      "culture": "CULTURE_CAFE",
+      "intent": "QUESTION_VENTE",
+      "french": "Vendez le café à travers une coopérative. La coopérative vous obtient un meilleur prix. Faites bien sécher votre café avant de vendre.",
+      "version_a": "Kafe fere kɛ jɛkulun la. jɛkulun bɛ sɔngɔ ɲuman sɔrɔ i ye. Aw ye kafe mɛ ka ɲɛ fɔlɔ ka fere kɛ.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "café = kafe (loanword). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye kafe fere jɛkulun fɛ. Jɛkulun bɛ sɔngɔ ɲuman sɔrɔ aw ye. Aw ye kafe ja ka ɲɛ sani ka fere.",
+      "version_b_pr": "PR #82"
+    }
+  ]
+}

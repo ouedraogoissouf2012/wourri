@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "issue": 62,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_PATATE",
+  "crop_label": "patate",
+  "crop_term": "woso",
+  "crop_term_note": "patate douce = woso (An Ka Taa + Bamadaba). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "PATATE",
+  "footer_label": "Wourri - Issue #62 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 8,
+  "version_b_source_prs": [
+    81,
+    82
+  ],
+  "warning": "Ce formulaire présente 8 entrées patate. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "patate_conseil_001",
+      "culture": "CULTURE_PATATE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Pour bien cultiver la patate douce, prépare bien ton sol. Plante les boutures à 30 cm d'écart. La saison des pluies est le meilleur moment.",
+      "version_a": "Woso sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ. Aw ye woso sɛnɛ santimɛtiri bi ni bi na. Sanjiii tuma ye woso sɛnɛli tuma ɲuman.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo », « Sanjiii » ; B : « dugukoloo », « Sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "patate douce = woso (An Ka Taa + Bamadaba). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye dugukoloo labɛn ka ɲɛ. Aw ye woso bolo da santimɛtiri bi saba. Sanjiii tuma na sɛnɛ ka ɲi.",
+      "version_b_pr": "PR #81"
+    },
+    {
+      "id": "patate_diagnostic_001",
+      "culture": "CULTURE_PATATE",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les tiges de la patate douce se flétrisent ou tombent trop tôt, c'est le charançon. Traitez avec un insecticide rapidement. Arrachez les plants très atteints.",
+      "version_a": "Ni woso jiri bɛ gɛlɛn wala bɛ la joona, kulun bɛ a la. Aw ye furakɛ furakɛli la joona. Aw ye jira cɛnna bɛɛ bɔ foroo la.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "patate douce = woso (An Ka Taa + Bamadaba). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni woso bolo bɛ ja ka bin, kulun bɛ a la. Aw ye furakɛli kɛ joona. Woso bananen bɔ foroo la.",
+      "version_b_pr": "PR #81"
+    },
+    {
+      "id": "patate_engrais_001",
+      "culture": "CULTURE_PATATE",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "La patate douce aime la fumure organique avant la plantation. Un peu de NPK juste après la plantation suffit. Trop d'engrais abîme la patate.",
+      "version_a": "Woso bɛ nɔgɔ bɔlen kɛ jɛ sɛnɛ ɲɛ. Aw ye NPK dɔɔni fere kɛ joona sɛnɛ kɔfɛ. Nɔgɔ caman bɛ woso halaki.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "patate douce = woso (An Ka Taa + Bamadaba). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Woso bɛ nɔgɔ bɔlen fɛ sɛnɛ ɲɛ. NPK dɔɔni sɛnɛ kɔ ka kɛnɛ. Nɔgɔ caman bɛ woso halaki.",
+      "version_b_pr": "PR #81"
+    },
+    {
+      "id": "patate_irrigation_001",
+      "culture": "CULTURE_PATATE",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "La patate douce a besoin d'eau mais ne supporte pas l'excès. Sans pluie, arrosez légèrement. La patate peut tenir un mois sans eau.",
+      "version_a": "Woso b a fɛ ji dɔɔni. Ni sanjiii tɛ, aw ye ji don foroo la. Woso bɛ se ka kɛ kalo kelen.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « foroo » ; B : « sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "patate douce = woso (An Ka Taa + Bamadaba). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Woso bɛ ji fɛ nka ji caman man ɲi. Ni sanjiii tɛ na, ji dɔɔni don. Woso bɛ se ka to kalo kelen ji tɛ.",
+      "version_b_pr": "PR #81"
+    },
+    {
+      "id": "patate_recolte_001",
+      "culture": "CULTURE_PATATE",
+      "intent": "QUESTION_RECOLTE",
+      "french": "La patate douce est prête à récolter 3 à 4 mois après la plantation. Quand les feuilles commencent à jaunir, c'est le signe. Creusez pour sortir les tubercules.",
+      "version_a": "Woso tigɛlen tuma ye kalo saba ni naani cɛ. Ni sira bɛ la ka gɛlɛn, tigɛlen tuma ye. Aw ye duguma cɛ ka woso bɔ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "patate douce = woso (An Ka Taa + Bamadaba). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kalo saba ni naani cɛ woso bɛ se ka bɔ. Ni fura bɛ nɛrɛmugu, tigɛ tuma ye. Aw ye dugukoloo sɛgɛsɛgɛ ka woso bɔ.",
+      "version_b_pr": "PR #81"
+    },
+    {
+      "id": "patate_saison_001",
+      "culture": "CULTURE_PATATE",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "Le meilleur moment pour planter la patate douce c'est la saison des pluies. Mai ou septembre c'est bon. Prépare ton champ maintenant pour être prêt.",
+      "version_a": "Woso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Aw ye foroo labɛn sisan ka kɛ ɲɔgɔn na.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « sɛtanburuuu », « foroo » ; B : « sanjiii », « Mɛɛɛ », « sɛtanburuuu », « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "patate douce = woso (An Ka Taa + Bamadaba). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Woso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛɛɛ wala sɛtanburuuu kalo ka ɲi. Sisan aw ye foroo labɛn.",
+      "version_b_pr": "PR #81"
+    },
+    {
+      "id": "patate_stockage_001",
+      "culture": "CULTURE_PATATE",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "La patate douce fraîche ne se conserve qu'un mois environ. Stockez dans un endroit frais et ventilé. Faites sécher pour une meilleure conservation.",
+      "version_a": "Woso kura bɛ bɔrɔ kalo kelen. Aw ye mara yɔrɔ sumanin wala kurun na. Aw ye woso mɛ ka jɛ ka mara.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "patate douce = woso (An Ka Taa + Bamadaba). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Woso kura bɛ se ka to kalo kelen. Aw ye a mara yɔrɔ surunya na fiɲɛ bɛ yɔrɔ. Aw ye a ja ka a mara tuma jan.",
+      "version_b_pr": "PR #81"
+    },
+    {
+      "id": "patate_vente_001",
+      "culture": "CULTURE_PATATE",
+      "intent": "QUESTION_VENTE",
+      "french": "Vendez la patate douce au marché. Vendez frais dans les 3 jours après récolte. Le prix est meilleur quand il ne pleut pas.",
+      "version_a": "Woso fere kɛ lɔgɔ la wala julabaga fɛ. Aw ye woso fara tile saba kɔfɛ. Sɔngɔ ka ɲi sanjiii tɛ tuma na.",
+      "alerte_audit": "ALERTE MOT MALIEN : « sugu » (B) → lɔgɔ (marché) — validation native #52/#53. Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii » ; B : « Sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "patate douce = woso (An Ka Taa + Bamadaba). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : sugu (Mali) → lɔgɔ (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye woso fere sugu la. Tigɛ kɔ tile saba kɔnɔ aw ye fere. Sanjiii tɛ tuma na sɔngɔ ka ɲi.",
+      "version_b_pr": "PR #81"
+    }
+  ]
+}

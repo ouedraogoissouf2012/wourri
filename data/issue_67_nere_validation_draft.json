@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "issue": 67,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_NERE",
+  "crop_label": "néré",
+  "crop_term": "nɛrɛ",
+  "crop_term_note": "néré = nɛrɛ (attesté). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "NERE",
+  "footer_label": "Wourri - Issue #67 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 5,
+  "version_b_source_prs": [
+    82
+  ],
+  "warning": "Ce formulaire présente 5 entrées néré. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "nere_conseil_001",
+      "culture": "CULTURE_NERE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Le néré est un arbre très utile. Plante-le en bordure de ton champ, il pousse longtemps. Tu pourras faire du sumbala avec ses graines pour vendre au marché.",
+      "version_a": "Nɛrɛ jiri ka nafama caman. Aw ye a sɛnɛ foroo da la, a bɛna ca. Aw bɛna sumbala kɛ jiridenw na ka wari sɔrɔ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI ; « sugu » (B) → lɔgɔ (marché) — validation native #52/#53. Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "néré = nɛrɛ (attesté). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI); sugu (Mali) → lɔgɔ (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Nɛrɛ ye yiri nafaman ye kosɛbɛ. Aw ye a sɛnɛ foroo dala la, a bɛ bɔ tuma jan. Aw bɛ se ka sumbala kɛ a kisɛ la ka fere sugu la.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "nere_diagnostic_001",
+      "culture": "CULTURE_NERE",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si ton néré a un problème, observe les feuilles et l'écorce. Si les feuilles jaunissent, arrose davantage. Si l'écorce se fend, c'est normal avec l'âge.",
+      "version_a": "Ni nɛrɛ jiri bɛ dimi, aw ye fɔlɔ filɛ. Ni fɔlɔ yɛlɛma nɛrɛmugu, aw ye ji don a la. Ni yiri fara sɛgɛsɛgɛ, bana bɛ a la.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "néré = nɛrɛ (attesté). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni nɛrɛ bɛ dɛsɛ, aw ye fura ni golo kɔrɔsi. Ni fura bɛ nɛrɛmugu, ji don ka a dɛmɛ. Ni golo bɛ fara, o ye kɔrɔya ye, a man jugu.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "nere_recolte_001",
+      "culture": "CULTURE_NERE",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Les graines de néré mûrissent en juin-juillet. Ramasse-les quand elles tombent. Sèche-les bien avant de faire le sumbala.",
+      "version_a": "Nɛrɛ jiridenw bɛna kɔkɔla zuwɛɛɛn kalo ni zuluye kalo la. Aw ye olu minɛ ni olu bɛ dan. Aw ye olu jukoro kà ban sumbala kɛ ɲɛ fɛ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « zuwɛɛɛn » ; B : « zuwɛɛɛn ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "néré = nɛrɛ (attesté). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Nɛrɛ kisɛ bɛ mɔ zuwɛɛɛn ni zuliye kalo la. Ni a bɛ bin, aw ye a lajɛ. Aw ye kisɛ ja ka ɲɛ sani ka sumbala kɛ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "nere_stockage_001",
+      "culture": "CULTURE_NERE",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Sèche bien les graines de néré avant de les stocker. Mets-les dans un sac fermé, à l'abri de l'humidité. Le sumbala préparé se conserve plusieurs jours.",
+      "version_a": "Aw ye nɛrɛ jiridenw jukoro ka mara. Aw ye olu don bɔrɔ kɔnɔ, ji kana sɔrɔ. Sumbala bɛna ɲɛ tile caman na.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "néré = nɛrɛ (attesté). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye nɛrɛ kisɛ ja ka ɲɛ fɔlɔ. Aw ye a don saki datugulɛn na ji tɛ yɔrɔ. Sumbala labɛnnen bɛ se ka to tile caman.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "nere_vente_001",
+      "culture": "CULTURE_NERE",
+      "intent": "QUESTION_VENTE",
+      "french": "Le sumbala de néré se vend bien au marché. Prépare-le soigneusement pour obtenir un bon prix. Les femmes en achètent beaucoup pour la sauce.",
+      "version_a": "Nɛrɛ sumbala bɛ sɔrɔ wari caman lɔgɔ la. Aw ye a kɛ ɲuman kà nafolo sɔrɔ. Musow bɛ a san caman k a kɛ nasi la.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI ; « sugu » (B) → lɔgɔ (marché) — validation native #52/#53. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "néré = nɛrɛ (attesté). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI); sugu (Mali) → lɔgɔ (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Nɛrɛ sumbala fere ka ɲi sugu la. Aw ye a labɛn ka ɲɛ ka sɔngɔ ɲuman sɔrɔ. Musow bɛ a san kosɛbɛ nɛgɛsɔ kama.",
+      "version_b_pr": "PR #82"
+    }
+  ]
+}

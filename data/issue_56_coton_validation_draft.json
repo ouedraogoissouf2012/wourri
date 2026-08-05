@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "issue": 56,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_COTON",
+  "crop_label": "coton",
+  "crop_term": "kɔrɔni",
+  "crop_term_note": "coton = kɔrɔni (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "COTON",
+  "footer_label": "Wourri - Issue #56 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 8,
+  "version_b_source_prs": [
+    75
+  ],
+  "warning": "Ce formulaire présente 8 entrées coton. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "coton_conseil_001",
+      "culture": "CULTURE_COTON",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Pour bien cultiver le coton, prépare bien ton champ. Plante le coton avec 20 cm d'écart. Le NPK peut l'aider.",
+      "version_a": "Kɔrɔni sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ. Aw ye kɔrɔni sɛnɛ santimɛtiri bi ni mugan. NPK bɛ se ka a dɛmɛ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "coton = kɔrɔni (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye foroo labɛn ka ɲɛ fɔlɔ. Aw ye kɔrɔni da santimɛtiri mugan mugan. NPK bɛ a dɛmɛ ka bɔ.",
+      "version_b_pr": "PR #75"
+    },
+    {
+      "id": "coton_diagnostic_001",
+      "culture": "CULTURE_COTON",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les fleurs de coton tombent trop vite, il y a maladie ou insectes. Traitez avec un insecticide pour protéger le coton. L'agent ANADER peut vous aider.",
+      "version_a": "Ni kɔrɔni fura bɛ bɔ joona, bana wala jere bɛ a la. Aw ye furakɛ furakɛli la ka kɔrɔni kisi. ANADER bɛ se ka i dɛmɛ furakɛ la.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "coton = kɔrɔni (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni kɔrɔni fura bɛ bin joona, bana wala kulun bɛ a la. Aw ye furakɛli kɛ ka kɔrɔni kisi. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "version_b_pr": "PR #75"
+    },
+    {
+      "id": "coton_engrais_001",
+      "culture": "CULTURE_COTON",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "Le coton préfère le NPK 14-23-14. L'urée l'aide aussi à bien pousser. Faites le traitement 15 jours après la plantation.",
+      "version_a": "Kɔrɔni bɛ NPK 14-23-14 jɛ ka ɲi. Urée fana bɛ a dɛmɛ ka jiriden bɛ. Aw ye furakɛ sɛnɛ kɔfɛ tile bi ni duuru.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "coton = kɔrɔni (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kɔrɔni bɛ NPK fɛ kosɛbɛ. Ire fana bɛ a dɛmɛ ka bɔ ka ɲɛ. Tile tan ni duuru sɛnɛ kɔ furakɛli kɛ.",
+      "version_b_pr": "PR #75"
+    },
+    {
+      "id": "coton_irrigation_001",
+      "culture": "CULTURE_COTON",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "Le coton a besoin d'eau après la plantation. Si la pluie tarde, arrosez le champ. Le coton peut aussi résister à la sécheresse.",
+      "version_a": "Kɔrɔni bɛ jɛ ji ye sɛnɛ kɔfɛ. Ni sanjiii ma na joona, aw ye ji don foroo la. Kɔrɔni bɛ se ka kɛ ji kɔrɔ la fana.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « foroo » ; B : « sanjiii », « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "coton = kɔrɔni (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kɔrɔni bɛ ji fɛ sɛnɛ kɔ. Ni sanjiii tɛ na joona, aw ye ji don foroo la. Kɔrɔni bɛ se ka sɔn ji tɛ ma dɔɔni.",
+      "version_b_pr": "PR #75"
+    },
+    {
+      "id": "coton_recolte_001",
+      "culture": "CULTURE_COTON",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Le coton est prêt à récolter 9 à 10 mois après la plantation. Quand les capsules s'ouvrent, c'est le bon moment. Faites la récolte vite pour éviter les pertes.",
+      "version_a": "Kɔrɔni tigɛlen tuma ye kalo kɔnɔntɔn ni kalo tan sɛnɛ kɔfɛ. Ni kɔrɔni bɛ la ka fara, tigɛlen tuma ye. Aw ye tigɛlen kɛ ka jigi kɛ joona.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "coton = kɔrɔni (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kalo kɔnɔntɔn ni tan sɛnɛ kɔ kɔrɔni bɛ se ka tigɛ. Ni kɔrɔni den bɛ yɛlɛ, tigɛ tuma ye. Aw ye tigɛ joona ka a kisi.",
+      "version_b_pr": "PR #75"
+    },
+    {
+      "id": "coton_saison_001",
+      "culture": "CULTURE_COTON",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "La saison de plantation du coton c'est quand les pluies commencent. Mai ou septembre c'est bien. Plante le coton au début des pluies.",
+      "version_a": "Kɔrɔni sɛnɛ tuma ye sanjiii bɛ wuli tuma. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Aw ye kɔrɔni sɛnɛ sanjiii fɔlɔ na.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « sɛtanburuuu » ; B : « sanjiii », « Mɛɛɛ », « sɛtanburuuu ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "coton = kɔrɔni (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kɔrɔni sɛnɛ tuma ye sanjiii bɛ daminɛ tuma. Mɛɛɛ wala sɛtanburuuu kalo ka ɲi. Aw ye kɔrɔni sɛnɛ sanjiii fɔlɔ na.",
+      "version_b_pr": "PR #75"
+    },
+    {
+      "id": "coton_stockage_001",
+      "culture": "CULTURE_COTON",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Pour stocker le coton, mettez-le dans un endroit sec. Mettez le coton dans des sacs et attachez-les. L'eau ne doit pas atteindre le lieu de stockage.",
+      "version_a": "Kɔrɔni marali la, aw ye a mara yɔrɔ sumanin na. Aw ye kɔrɔni don sak na ka sɔrɔ. ji kana se a ma mara yɔrɔ la.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "coton = kɔrɔni (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye kɔrɔni don saki na yɔrɔ jalen na. Aw ye saki siri ka ɲɛ. Ji kana se kɔrɔni mara yɔrɔ ma.",
+      "version_b_pr": "PR #75"
+    },
+    {
+      "id": "coton_vente_001",
+      "culture": "CULTURE_COTON",
+      "intent": "QUESTION_VENTE",
+      "french": "Vendez le coton à travers un groupement. Le groupement vous obtient un meilleur prix. Stockez bien votre coton juste après la récolte.",
+      "version_a": "Kɔrɔni fere kɛ jɛkulun la. jɛkulun bɛ sɔngɔ ɲuman sɔrɔ i ye. Aw ye kɔrɔni mara ka ɲɛ joona tigɛlen kɔfɛ.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "coton = kɔrɔni (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye kɔrɔni fere jɛkulun fɛ. Jɛkulun bɛ sɔngɔ ɲuman sɔrɔ aw ye. Tigɛ kɔ joona aw ye kɔrɔni mara ka ɲɛ.",
+      "version_b_pr": "PR #75"
+    }
+  ]
+}
