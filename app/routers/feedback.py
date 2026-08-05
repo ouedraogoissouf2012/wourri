@@ -1,9 +1,18 @@
 """
-WOURI - Router Feedback C4
-Reçoit les retours 👍/👎 depuis WhatsApp et déclenche C3 auto-apprentissage.
+WOURI - Router Feedback
 
-POST /api/feedback/positif  → ajouter_reponse_validee() si source = ivr_fallback
-POST /api/feedback/negatif  → log pour C5 reporting
+Reçoit les retours 👍/👎 depuis WhatsApp. Le feedback est un SIGNAL, pas une
+validation linguistique (ADR-0019).
+
+POST /api/feedback/positif  → log analytics + file de candidats à revue native
+                              (si source = fallback), JAMAIS d'ajout direct au corpus
+POST /api/feedback/negatif  → log pour priorisation des réécritures (C5)
+
+ADR-0019 : le feedback n'enrichit JAMAIS le corpus automatiquement. Un 👍 sur une
+réponse DeepSeek fallback dépose un CANDIDAT dans feedback_candidates.jsonl ;
+ce candidat n'entre au corpus qu'après validation par un locuteur natif dioula CI
+(processus formulaire → natif → promotion). Le corpus servi ne contient que du
+dioula validé nativement (règle d'or, ADR-0014).
 """
 import json
 import logging
@@ -21,6 +30,10 @@ router = APIRouter(prefix="/api/feedback", tags=["Feedback"])
 # Logs feedback
 FEEDBACK_LOG         = os.path.join(os.path.dirname(__file__), "..", "..", "logs", "feedback.jsonl")
 FEEDBACK_NEGATIF_LOG = os.path.join(os.path.dirname(__file__), "..", "..", "data", "feedback_negatif.jsonl")
+# File de candidats à revue native (ADR-0019) : un 👍 sur une réponse fallback
+# dépose ici un candidat. Il n'entre au corpus qu'après validation d'un natif —
+# jamais automatiquement. Lu par tools/review_feedback_candidates.py.
+FEEDBACK_CANDIDATES_LOG = os.path.join(os.path.dirname(__file__), "..", "..", "data", "feedback_candidates.jsonl")
 
 
 class FeedbackRequest(BaseModel):
@@ -47,8 +60,11 @@ def _log_feedback(entry: dict):
 async def feedback_positif(request: Request, req: FeedbackRequest):
     """
     Feedback 👍 — l'utilisateur a apprécié la réponse.
-    Si source = ivr_fallback : ajouter la réponse au corpus VDB (C3).
-    Si source = ivr_exact    : déjà dans le corpus, rien à faire.
+
+    ADR-0019 : le feedback n'enrichit JAMAIS le corpus automatiquement.
+    - source = fallback (ivr_fallback/fallback_generic) : dépose un CANDIDAT dans
+      feedback_candidates.jsonl → sera proposé à un locuteur natif pour validation.
+    - source = ivr_exact : déjà dans le corpus validé, rien à faire.
     """
     entry = {
         "ts": datetime.utcnow().isoformat(),
@@ -61,24 +77,35 @@ async def feedback_positif(request: Request, req: FeedbackRequest):
     }
     _log_feedback(entry)
 
-    # C3 : auto-apprentissage uniquement pour les réponses de fallback
+    # ADR-0019 : un 👍 sur une réponse de fallback (dioula IA non validé) NE l'ajoute
+    # PAS au corpus. Il dépose un candidat dans une file de revue native persistante.
+    # Le candidat n'entre au corpus qu'après validation d'un locuteur natif dioula CI.
     if req.source in ("ivr_fallback", "fallback_generic") and req.reponse_bambara:
+        candidate = {
+            "ts": datetime.utcnow().isoformat(),
+            "user": anonymize_user_id(req.user_id),
+            "intent": req.intent or "CONSEIL_PRODUCTION",
+            "cultures": req.cultures or ["*"],
+            "reponse_bambara": req.reponse_bambara,
+            "reponse_fr": req.reponse_fr or "",
+            "source": req.source,
+            "status": "pending_native_review",
+        }
         try:
-            # Façade ADR-0008 §Phase C : route vers Chroma (défaut) / dual / pgvector.
-            from app.services.corpus_facade import ajouter_reponse_validee
-            ok = ajouter_reponse_validee(
-                intent=req.intent or "CONSEIL_PRODUCTION",
-                cultures=req.cultures or ["*"],
-                reponse_bambara=req.reponse_bambara,
-                reponse_fr=req.reponse_fr or "",
-                score_validation=0.80,
-                tags=["feedback_positif", "auto_appris"],
+            os.makedirs(os.path.dirname(FEEDBACK_CANDIDATES_LOG), exist_ok=True)
+            with open(FEEDBACK_CANDIDATES_LOG, "a", encoding="utf-8") as f:
+                f.write(json.dumps(candidate, ensure_ascii=False) + "\n")
+            logger.info(
+                f"[Feedback] Candidat déposé pour revue native (intent={req.intent}, "
+                f"source={req.source})"
             )
-            if ok:
-                logger.info(f"[C3] Nouvelle entrée validée depuis feedback 👍 (intent={req.intent})")
-                return {"status": "ok", "action": "apprentissage", "message": "Réponse ajoutée au corpus"}
+            return {
+                "status": "ok",
+                "action": "candidate_queued",
+                "message": "Merci ! Cette réponse sera proposée à un validateur.",
+            }
         except Exception as e:
-            logger.error(f"[C3] Erreur auto-apprentissage: {e}")
+            logger.error(f"[Feedback] Erreur écriture candidat: {e}")
 
     return {"status": "ok", "action": "logged", "message": "Merci pour votre retour"}
 

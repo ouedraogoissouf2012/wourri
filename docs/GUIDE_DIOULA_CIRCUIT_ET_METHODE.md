@@ -65,34 +65,33 @@ La branche par défaut GitHub était `wourri` (obsolète depuis janvier), alors 
 3. **Filtre langue LM (OOV)** — `app/services/validation/lm_filter.py`
    Rejette une transcription si le ratio hors-vocabulaire dépasse `OOV_REJECT = 0.40`, **si** un lexique lui est passé en paramètre.
 
-### 2.3 L'auto-ajout au corpus (circuit d'apprentissage « C3 ») — MÉCANISME RÉEL
+### 2.3 Le feedback = signal + file de revue native (ADR-0019)
 
-**Point d'entrée** : `POST /api/feedback/positif` (`app/routers/feedback.py:45-83`).
+> **Refonte** : l'ancien auto-apprentissage « C3 » (feedback 👍 → ajout direct au
+> corpus, score 0.80 sans validation) a été retiré (ADR-0019). Il était doublement
+> défaillant : perdu au rebuild (les `dynamic_*` disparaissaient) ET contraire au
+> principe « le natif tranche ». Le feedback est désormais **un signal, jamais une
+> validation**.
 
-**Conditions EXACTES d'ajout** (`feedback.py:65`) :
-```python
-if req.source in ("ivr_fallback", "fallback_generic") and req.reponse_bambara:
-```
-| Cas | Ajout au corpus ? |
+**Point d'entrée** : `POST /api/feedback/positif` (`app/routers/feedback.py`).
+
+**Comportement (ADR-0019)** :
+| Cas | Effet |
 |---|---|
-| feedback 👍 sur réponse `ivr_fallback` (DeepSeek hors-corpus) | ✅ **OUI** |
-| feedback 👍 sur réponse `fallback_generic` | ✅ **OUI** |
-| feedback 👍 sur `ivr_exact` (déjà dans le corpus) | ❌ non (rien à faire) |
-| `reponse_bambara` vide | ❌ non |
-| feedback 👎 (négatif) | ❌ **JAMAIS** — logué dans `data/feedback_negatif.jsonl` pour réécriture prioritaire |
+| 👍 sur `ivr_fallback` / `fallback_generic` (dioula IA non validé) | Dépose un **candidat** dans `data/feedback_candidates.jsonl` (`status: pending_native_review`). **Aucun ajout au corpus.** |
+| 👍 sur `ivr_exact` (déjà validé) | Log analytics uniquement, rien à faire. |
+| `reponse_bambara` vide | Log uniquement. |
+| 👎 (négatif) | Logué dans `data/feedback_negatif.jsonl` (priorisation des réécritures). Jamais de candidat. |
 
-**⚠️ AUCUN contrôle humain avant l'ajout.** Tout feedback positif éligible ajoute directement, avec :
-- `score_validation = 0.80` **hardcodé** (`feedback.py:74`)
-- tags `["feedback_positif", "auto_appris"]`
-- id généré `dynamic_{intent}_{culture}_{timestamp}` (`vdb_service.py:328`)
-- `source = "auto_validated"` (`vdb_service.py:342`)
+**Le corpus n'est JAMAIS enrichi automatiquement.** Un candidat n'entre au corpus
+qu'après **validation d'un locuteur natif** via le processus formulaire → natif →
+promotion (§4-5). Le feedback sert à : (1) l'analytics (dashboard #41), (2) alimenter
+la file de candidats à valider.
 
-**OÙ l'ajout est stocké** (dépend du flag `corpus_storage_mode`, défaut `chroma`) :
-- Mode `chroma` (défaut) → **ChromaDB** (`data/chroma_ivr/`), persistant sur disque.
-- Mode `dual` → Chroma (autoritatif) + pgvector en thread best-effort.
-- Mode `pgvector` → `INSERT INTO corpus_entries` (PostgreSQL).
-
-**🔴 PIÈGE MAJEUR À CONNAÎTRE** : l'auto-ajout **n'écrit JAMAIS dans `dictionnaires/corpus_ivr.json`**. Il vit uniquement dans le store vectoriel. Or la collection Chroma est **supprimée et repeuplée depuis le JSON** au prochain rebuild (voir §2.4). **Donc les entrées auto-apprises `dynamic_*` peuvent être PERDUES** si un rebuild se déclenche. C'est une dette structurante : l'apprentissage C3 est **volatile**.
+**Ce qui N'EXISTE PLUS** (retiré par ADR-0019) :
+- ❌ l'appel `ajouter_reponse_validee()` depuis le feedback
+- ❌ les entrées `dynamic_*` / `source=auto_validated` dans le store
+- ❌ le `score_validation=0.80` attribué automatiquement
 
 ### 2.4 Chargement du corpus au démarrage (`vdb_service.py:70-149`)
 
@@ -152,8 +151,8 @@ Saison : mars-juin & sept-oct = `saison_pluie`, sinon `saison_seche` (`vdb_servi
         │
         ▼
    Feedback utilisateur 👍/👎
-        ├─ 👍 sur ivr_fallback → ajouter_reponse_validee() → ChromaDB (dynamic_*, score 0.80)
-        │                         ⚠️ volatile : perdu au rebuild
+        ├─ 👍 sur ivr_fallback → feedback_candidates.jsonl (pending_native_review)
+        │                         → validé par un natif AVANT tout ajout au corpus (ADR-0019)
         └─ 👎 → feedback_negatif.jsonl (réécriture prioritaire)
 
    CORPUS :
@@ -243,7 +242,7 @@ curl -s -X POST "http://127.0.0.1:8000/api/tts/ivorian?text=<URLencodé>&languag
 | 1 | **Le natif tranche, toujours.** Ne jamais mettre du dioula IA en prod sans validation native. | ADR-0014, principe fondateur |
 | 2 | **Travailler sur `APIPy`**, jamais sur `wourri` (obsolète). Les PR ciblent `APIPy` (= branche par défaut). | Gouvernance |
 | 3 | **`corpus_ivr.json` = prod servie ; le draft v3 n'est PAS servi.** La promotion est une PR manuelle. | §2.6 |
-| 4 | **L'auto-apprentissage C3 est VOLATILE** (Chroma, perdu au rebuild). Ne pas compter dessus pour du permanent. | §2.3 🔴 |
+| 4 | **Le feedback n'enrichit JAMAIS le corpus automatiquement** (ADR-0019). Un 👍 fallback dépose un candidat à revue native ; seul le natif valide. | §2.3 |
 | 5 | **`asr_vocab_sources` = dead config.** Les datasets koumankan/findora ne sont pas chargés au runtime. | §2.1 ⚠️ |
 | 6 | **Règles lexicales conditionnelles au SENS**, pas au mot. `sugu`/`kosɛbɛ` ne sont PAS bannis absolument. | §4.3 |
 | 7 | **Jamais de regex générale sur les voyelles.** Table explicite uniquement. | §4.3 |
