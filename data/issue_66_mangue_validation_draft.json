@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "issue": 66,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_MANGUE",
+  "crop_label": "mangue",
+  "crop_term": "mangoro",
+  "crop_term_note": "mangue = mangoro / maŋoro (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "MANGUE",
+  "footer_label": "Wourri - Issue #66 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 2,
+  "version_b_source_prs": [
+    82
+  ],
+  "warning": "Ce formulaire présente 2 entrées mangue. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "mangue_conseil_001",
+      "culture": "CULTURE_MANGUE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Le manguier produit bien entre décembre et mars. Si tu vois des fruits pourris, retire-les du champ immédiatement. Surveille tes arbres et tes fruits régulièrement.",
+      "version_a": "Maŋoro sɛnɛ ɲuman ye zanwuye kalo. Ni maŋoro bana ye, o bɔ foroo la joona. kɔrɔsi jiri tuma bɛɛ kalo kelen kelen.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « desanburuuu », « marisiii », « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "mangue = mangoro / maŋoro (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Mangoro yiri bɛ den bɔ desanburuuu ni marisiii kalo cɛ. Ni den cɛnnen ye, aw ye a bɔ foroo la joona. Aw ye aw ka yiri ni den kɔrɔsi tuma bɛɛ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "mangue_limogo_diagnostic_001",
+      "culture": "CULTURE_MANGUE",
+      "intent": "DIAGNOSTIQUE_PROBLEME",
+      "french": "Si tu vois tes mangues pourrir, la mouche des fruits peut en être la cause. Cet insecte pénètre à l'intérieur du fruit et le fait pourrir. Retire rapidement les mangues abîmées de ton champ. Surveille ton champ chaque mois.",
+      "version_a": "Ni maŋoro bɛ bana, jiriden limɔgɔ bɛ o kɛ. Aw ye jiri banaw bɔ foroo la joona. kɔrɔsi foroo kalo kelen kelen.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "mangue = mangoro / maŋoro (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni mangoro bɛ cɛn, nikisɛ bɛ se ka kɛ sababi ye. Kulun bɛ don den kɔnɔ ka a cɛn. Aw ye mangoro halakilen bɔ foroo la joona. Kalo o kalo foroo kɔrɔsi.",
+      "version_b_pr": "PR #82"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "issue": 59,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_HARICOT",
+  "crop_label": "haricot",
+  "crop_term": "soso",
+  "crop_term_note": "haricot/niébé = soso (CI). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "HARICOT",
+  "footer_label": "Wourri - Issue #59 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 8,
+  "version_b_source_prs": [
+    78
+  ],
+  "warning": "Ce formulaire présente 8 entrées haricot. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "haricot_conseil_001",
+      "culture": "CULTURE_HARICOT",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Pour bien cultiver le haricot, prépare bien ton sol. Plante le haricot avec 20 cm d'écart. Le NPK 0-20-20 peut l'aider.",
+      "version_a": "Soso sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ. Aw ye soso sɛnɛ santimɛtiri bi ni mugan. NPK 0-20-20 bɛ se ka a dɛmɛ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "haricot/niébé = soso (CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye dugukoloo labɛn ka ɲɛ fɔlɔ. Aw ye soso da santimɛtiri mugan mugan. NPK bɛ a dɛmɛ ka bɔ.",
+      "version_b_pr": "PR #78"
+    },
+    {
+      "id": "haricot_diagnostic_001",
+      "culture": "CULTURE_HARICOT",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les feuilles du haricot changent de couleur, il y a une maladie. Traitez avec un fongicide rapidement. L'agent ANADER peut vous aider.",
+      "version_a": "Ni soso fura bɛ kɛ wɛrɛ wɛrɛ, bana bɛ a la. Aw ye furakɛ furakɛli la joona. ANADER bɛ se ka i dɛmɛ.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "haricot/niébé = soso (CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni soso fura bɛ wɛrɛ, bana bɛ a la. Aw ye furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "version_b_pr": "PR #78"
+    },
+    {
+      "id": "haricot_engrais_001",
+      "culture": "CULTURE_HARICOT",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "Le haricot a besoin de NPK 0-20-20 après la plantation. La légumineuse fixe l'azote pour s'aider. Faites le traitement 15 jours après la plantation.",
+      "version_a": "Soso bɛ NPK 0-20-20 jɛ sɛnɛ kɔfɛ. Soso jiriden bɛ azɔti kɛ k a bɛɛ dɛmɛ. Aw ye furakɛ sɛnɛ kɔfɛ tile bi ni duuru.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "haricot/niébé = soso (CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Sɛnɛ kɔ NPK don dugukoloo la. Soso bɛ azɔti kɛ a yɛrɛ, nɔgɔ caman man ɲi. Tile tan ni duuru kɔ furakɛli kɛ.",
+      "version_b_pr": "PR #78"
+    },
+    {
+      "id": "haricot_irrigation_001",
+      "culture": "CULTURE_HARICOT",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "Le haricot a besoin d'eau surtout les 20 premiers jours. Si la pluie manque, arrosez chaque jour. Trop d'eau fait pourrir le haricot, évitez l'excès.",
+      "version_a": "Soso b a fɛ ji tile mugan sɛnɛ kɔfɛ. Ni sanjiii tɛ, aw ye ji don tile kelen kelen. ji caman bɛ soso bɔrɔ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii » ; B : « sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "haricot/niébé = soso (CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Soso bɛ ji fɛ tile mugan fɔlɔ kɔnɔ. Ni sanjiii tɛ na, aw ye ji don tile o tile. Ji caman bɛ soso cɛn.",
+      "version_b_pr": "PR #78"
+    },
+    {
+      "id": "haricot_recolte_001",
+      "culture": "CULTURE_HARICOT",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Le haricot est prêt à récolter 3 à 4 mois après la plantation. Quand les gousses sèchent, c'est le bon moment. Récoltez vite avant les pluies.",
+      "version_a": "Soso tigɛlen tuma ye kalo saba ni naani cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ joona.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — B : « sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "haricot/niébé = soso (CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kalo saba ni naani cɛ soso bɛ se ka tigɛ. Ni soso gɔsi bɛ ja, tigɛ tuma ye. Aw ye tigɛ joona sanjiii ɲɛ.",
+      "version_b_pr": "PR #78"
+    },
+    {
+      "id": "haricot_saison_001",
+      "culture": "CULTURE_HARICOT",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "Le meilleur moment pour planter le haricot c'est la saison des pluies. Mai ou septembre c'est bien. Attends que les pluies commencent.",
+      "version_a": "Soso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Aw ye to sanjiii ka wili ka fɔlɔ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « sɛtanburuuu » ; B : « sanjiii », « Mɛɛɛ », « sɛtanburuuu ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "haricot/niébé = soso (CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Soso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛɛɛ wala sɛtanburuuu kalo ka ɲi. Aw ye sanjiii fɔlɔ makɔnɔ.",
+      "version_b_pr": "PR #78"
+    },
+    {
+      "id": "haricot_stockage_001",
+      "culture": "CULTURE_HARICOT",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Pour stocker le haricot, faites-le bien sécher d'abord. Mettez le haricot dans un bon sac pour le conserver. Le lieu de stockage doit être sec pour protéger le haricot.",
+      "version_a": "Soso marali la, aw ye a mɛ ka ɲɛ fɔlɔ. Aw ye soso don sak ɲuman na ka mara. mara yɔrɔ sɔnna jɛ ka soso kisi.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "haricot/niébé = soso (CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye soso ja ka ɲɛ fɔlɔ. Aw ye soso don saki ɲuman na. Yɔrɔ jalen na a mara ka soso kisi.",
+      "version_b_pr": "PR #78"
+    },
+    {
+      "id": "haricot_vente_001",
+      "culture": "CULTURE_HARICOT",
+      "intent": "QUESTION_VENTE",
+      "french": "Vendez le haricot au marché ou à un commerçant. Stockez-le bien avant de vendre. Le prix est bon quand le haricot est de bonne qualité.",
+      "version_a": "Soso fere kɛ lɔgɔ la wala kɔlɔ la. Aw ye soso mara ka ɲɛ fɔlɔ ka fere kɛ joona. Sɔngɔ ka ɲi ni soso ɲɛ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « sugu » (B) → lɔgɔ (marché) — validation native #52/#53. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "haricot/niébé = soso (CI). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : sugu (Mali) → lɔgɔ (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye soso fere sugu la wala julabaga fɛ. Aw ye a mara ka ɲɛ sani ka fere. Soso ɲuman sɔngɔ ka ɲi.",
+      "version_b_pr": "PR #78"
+    }
+  ]
+}

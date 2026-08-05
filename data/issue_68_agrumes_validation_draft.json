@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "issue": 68,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_AGRUMES",
+  "crop_label": "agrumes",
+  "crop_term": "lemuru",
+  "crop_term_note": "agrumes = lemuru / lenburu (citron/agrume). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "AGRUMES",
+  "footer_label": "Wourri - Issue #68 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 4,
+  "version_b_source_prs": [
+    82
+  ],
+  "warning": "Ce formulaire présente 4 entrées agrumes. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "agrumes_conseil_001",
+      "culture": "CULTURE_AGRUMES",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Pour planter des agrumes, creuse un grand trou et mets du compost dedans. Plante en début de saison des pluies. Arrose chaque jour pendant les six premiers mois.",
+      "version_a": "Ka lemuru sɛnɛ, aw ye dunbu kɛ ka nɔgɔ don a kɔnɔ. Aw ye sɛnɛ sanjiii tuma. Aw ye ji don kalo wɔɔrɔ kɔnɔ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii » ; B : « Sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "agrumes = lemuru / lenburu (citron/agrume). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye dingɛ bon sɛgɛsɛgɛ ka kɔnpɔsi don. Sanjiii tuma daminɛ na aw ye lemuru sɛnɛ. Kalo wɔɔrɔ fɔlɔ aw ye ji don tile o tile.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "agrumes_diagnostic_001",
+      "culture": "CULTURE_AGRUMES",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les feuilles de tes agrumes jaunissent, c'est souvent un manque d'engrais. Applique de l'engrais pour corriger ça. Si des taches noires apparaissent, traite avec du jus de feuilles de neem.",
+      "version_a": "Ni lemuru fɔlɔ yɛlɛma nɛrɛmugu, nɔgɔ dɔgɔ bɛ o kɛ. Aw ye nɔgɔ kɛnɛ don. Tɔɔ dibi bɛ ye, aw ye neem ji la.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — B : « taa ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "agrumes = lemuru / lenburu (citron/agrume). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni lemuru fura bɛ nɛrɛmugu, nɔgɔ ka dɔgɔ. Aw ye nɔgɔ don ka a labɛn. Ni taa finmanw bɛ yen, aw ye neem fura ji kɛ furakɛli ye.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "agrumes_engrais_001",
+      "culture": "CULTURE_AGRUMES",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "Les agrumes ont besoin d'engrais deux fois par an. Mets de l'NPK en début de saison des pluies, et du compost en saison sèche. Tu obtiendras de beaux fruits.",
+      "version_a": "Lemuru bɛ nɔgɔ fɛ san kɔnɔ siɲɛ fila. Aw ye NPK don sanjiii tuma daminɛ la, kà kɔnpɔsi don sanjiii ban kɔ. A bɛna jiridenw ɲuman bɔ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii » ; B : « Sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "agrumes = lemuru / lenburu (citron/agrume). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Lemuru bɛ nɔgɔ fɛ siɲɛ fila san kɔnɔ. Sanjiii tuma daminɛ na NPK don, sanjiii tɛ tuma na kɔnpɔsi don. Aw bɛna den ɲumanw sɔrɔ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "agrumes_irrigation_001",
+      "culture": "CULTURE_AGRUMES",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "Les agrumes ont besoin de beaucoup d'eau. En saison sèche, arrose deux fois par semaine. Un bon arrosage donne de beaux fruits.",
+      "version_a": "Lemuru bɛ ji fɛ caman. Nɛgɛ tuma na, aw ye ji don a la siɲɛ fila kelen kelen. ji ɲuman bɛna jiridenw ɲuman bɔ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI. Voyelles doublées/triplées non standard (orthographe à corriger) — B : « Sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "agrumes = lemuru / lenburu (citron/agrume). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Lemuru bɛ ji fɛ kosɛbɛ. Sanjiii tɛ tuma na, aw ye ji don siɲɛ fila lɔgɔkun kɔnɔ. Ji ɲuman bɛ den ɲumanw bɔ.",
+      "version_b_pr": "PR #82"
+    }
+  ]
+}

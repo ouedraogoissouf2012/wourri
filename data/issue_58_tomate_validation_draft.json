@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.0",
+  "issue": 58,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_TOMATE",
+  "crop_label": "tomate",
+  "crop_term": "tamati / ntomati",
+  "crop_term_note": "tomate = tamati / ntomati (variante CI). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "TOMATE",
+  "footer_label": "Wourri - Issue #58 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 8,
+  "version_b_source_prs": [
+    77
+  ],
+  "warning": "Ce formulaire présente 8 entrées tomate. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "tomate_conseil_001",
+      "culture": "CULTURE_TOMATE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Pour bien cultiver la tomate, fais d'abord une pépinière. Transplante les plants de pépinière après 20 jours. Plante la tomate avec 20 cm d'écart.",
+      "version_a": "Ntomati sɛnɛ la ka ɲi, aw ye den foroo kɛ fɔlɔ. Aw ye den foroo yɔrɔ yɛlɛma tile mugan kɔnɔ. Aw ye ntomati sɛnɛ santimɛtiri bi ni mugan.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "tomate = tamati / ntomati (variante CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla)."
+    },
+    {
+      "id": "tomate_diagnostic_001",
+      "culture": "CULTURE_TOMATE",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les feuilles de tomate changent de couleur, c'est le mildiou. Traitez avec un fongicide rapidement. L'agent ANADER peut vous aider.",
+      "version_a": "Ni ntomati fura bɛ kɛ wɛrɛ wɛrɛ, bana bana bɛ a la. Aw ye furakɛ furakɛli la joona. ANADER bɛ se ka i dɛmɛ.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "tomate = tamati / ntomati (variante CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni ntomati fura bɛ wɛrɛ, bana bɛ a la. Aw ye furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "version_b_pr": "PR #77"
+    },
+    {
+      "id": "tomate_engrais_001",
+      "culture": "CULTURE_TOMATE",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "La tomate a besoin de NPK 15-15-15 après la plantation. Apportez de l'urée 20 jours après pour la croissance. Le compost est aussi très bien.",
+      "version_a": "Ntomati bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. Urée don tile mugan kɔfɛ ka ntomati dɛmɛ. Aw ye nɔgɔ bɔlen kɛ fana ka ɲɛ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI. Voyelles doublées/triplées non standard (orthographe à corriger) — B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "tomate = tamati / ntomati (variante CI). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Sɛnɛ kɔ NPK don dugukoloo la. Tile mugan kɔ ire don ka ntomati dɛmɛ. Kɔnpɔsi fana ka ɲi kosɛbɛ.",
+      "version_b_pr": "PR #77"
+    },
+    {
+      "id": "tomate_irrigation_001",
+      "culture": "CULTURE_TOMATE",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "La tomate a besoin d'eau chaque jour. Arrosez le champ quotidiennement. Sans eau, la tomate se dessèche vite.",
+      "version_a": "Ntomati bɛ jɛ ji ye tile bɛɛ. Aw ye ji don foroo la tile kelen kelen na. Ni ji bana, ntomati bɛ la ka kɛ ɲɔgɔn na.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "tomate = tamati / ntomati (variante CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla)."
+    },
+    {
+      "id": "tomate_recolte_001",
+      "culture": "CULTURE_TOMATE",
+      "intent": "QUESTION_RECOLTE",
+      "french": "La tomate est prête à récolter 3 mois après la plantation. Quand les fruits rougissent, c'est le moment. Récoltez chaque jour quand il y a des fruits mûrs.",
+      "version_a": "Ntomati tigɛlen tuma ye kalo saba sɛnɛ kɔfɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ. tigɛlen kɛ tile kelen kelen.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "tomate = tamati / ntomati (variante CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla)."
+    },
+    {
+      "id": "tomate_saison_001",
+      "culture": "CULTURE_TOMATE",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "La tomate peut etre plantee toute l annee si l eau est disponible. Sans pluie, arrosez votre champ chaque jour. Faites d abord un semis puis transplantez au champ.",
+      "version_a": "Ntomati bɛ sɛnɛ san bɛɛ ni ji bɛ ɲɛ. Ni sanjiii tɛ, aw ye ji bila foroo la tile o tile. Aw ye ntomati den sɛnɛ fɔlɔ ka a cɛ foroo la.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "tomate = tamati / ntomati (variante CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla)."
+    },
+    {
+      "id": "tomate_stockage_001",
+      "culture": "CULTURE_TOMATE",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "La tomate se conserve environ 7 jours. Stocke-la dans un endroit frais. Vends vite avant qu'elle ne soit trop mûre.",
+      "version_a": "Ntomati marali tuma ye tile seegin ka jɛ. Aw ye ntomati mara yɔrɔ sumanin na. Aw ye fere kɛ joona k a bɔ.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "tomate = tamati / ntomati (variante CI). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ntomati bɛ se ka to tile wolonfila. Aw ye a mara yɔrɔ surunya na. Aw ye fere joona sani a ka mɔ.",
+      "version_b_pr": "PR #77"
+    },
+    {
+      "id": "tomate_vente_001",
+      "culture": "CULTURE_TOMATE",
+      "intent": "QUESTION_VENTE",
+      "french": "Vendez la tomate juste après la récolte. Vendez au marché ou à un commerçant. La tomate mûre se détériore vite, vendez rapidement.",
+      "version_a": "Ntomati fere kɛ joona tigɛlen kɔfɛ. Aw ye fere kɛ lɔgɔ la wala julabaga ye. Ntomati mana tigɛlen, a bɛ gɛlɛ joona.",
+      "alerte_audit": "ALERTE MOT MALIEN : « sugu » (B) → lɔgɔ (marché) — validation native #52/#53. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "tomate = tamati / ntomati (variante CI). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : sugu (Mali) → lɔgɔ (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Tigɛ kɔ joona aw ye ntomati fere. Aw ye a fere sugu la wala julabaga fɛ. Ntomati mɔlen bɛ halaki joona.",
+      "version_b_pr": "PR #77"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "issue": 57,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_BANANE",
+  "crop_label": "banane",
+  "crop_term": "bàrànda / namasa",
+  "crop_term_note": "banane = barandaa (CI) / namasa (Mali). Vérifiez la forme retenue dans chaque phrase.",
+  "field_prefix_base": "BANANE",
+  "footer_label": "Wourri - Issue #57 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 8,
+  "version_b_source_prs": [
+    76
+  ],
+  "warning": "Ce formulaire présente 8 entrées banane. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "banane_conseil_001",
+      "culture": "CULTURE_BANANE",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Pour bien cultiver la banane, prépare bien ton sol. Plante le bananier avec 2 à 3 mètres d'écart. Mets du compost ou de l'engrais dans le sol.",
+      "version_a": "Bàrànda sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ. Aw ye bàrànda sɛnɛ santimɛtiri bi ni mugan ni mugan. nɔgɔ bɔlen wala nɔgɔ bɔlen don foroo la.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "banane = barandaa (CI) / namasa (Mali). Vérifiez la forme retenue dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye dugukoloo labɛn ka ɲɛ. Aw ye bàrànda da mɛtɛrɛ fila ni saba cɛ. Nɔgɔ bɔlen wala kɔnpɔsi don dugukoloo la.",
+      "version_b_pr": "PR #76"
+    },
+    {
+      "id": "banane_diagnostic_001",
+      "culture": "CULTURE_BANANE",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les feuilles du bananier changent de couleur, il y a une maladie. Retirez les pieds malades vite pour aider. L'agent ANADER peut vous aider pour le traitement.",
+      "version_a": "Ni bàrànda jiri fura bɛ kɛ wɛrɛ wɛrɛ, bana bɛ a la. Aw ye jiri kɛ bɔ joona ka dɛmɛ. ANADER bɛ se ka i dɛmɛ furakɛ la.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "banane = barandaa (CI) / namasa (Mali). Vérifiez la forme retenue dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni bàrànda fura bɛ wɛrɛ, bana bɛ a la. Aw ye yiri bananen bɔ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "version_b_pr": "PR #76"
+    },
+    {
+      "id": "banane_engrais_001",
+      "culture": "CULTURE_BANANE",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "La banane a particulièrement besoin de potassium. Le NPK 0-0-60 ou du compost est bien. Faites le traitement chaque mois.",
+      "version_a": "Bàrànda bɛ potassium jɛ ka ɲɛ. NPK 0-0-60 wala nɔgɔ bɔlen kɛ ka ɲɛ. Aw ye furakɛ kalo kelen kelen na.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "banane = barandaa (CI) / namasa (Mali). Vérifiez la forme retenue dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Bàrànda bɛ potasi fɛ kosɛbɛ. NPK wala kɔnpɔsi don ka ɲɛ. Kalo o kalo furakɛli kɛ.",
+      "version_b_pr": "PR #76"
+    },
+    {
+      "id": "banane_irrigation_001",
+      "culture": "CULTURE_BANANE",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "La banane a vraiment besoin d'eau. Arrose le champ chaque jour. Trop d'eau n'est pas bien — améliore le drainage.",
+      "version_a": "Bàrànda bɛ jɛ ji ye ka ɲi. Aw ye ji don foroo la tile kelen kelen na. ji caman tɛ ɲɛ, ji bɔli kɛ k a labɛn.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI. Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "banane = barandaa (CI) / namasa (Mali). Vérifiez la forme retenue dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Bàrànda bɛ ji fɛ kosɛbɛ. Aw ye ji don foroo la tile o tile. Ji caman man ɲi, aw ye ji bɔli labɛn.",
+      "version_b_pr": "PR #76"
+    },
+    {
+      "id": "banane_recolte_001",
+      "culture": "CULTURE_BANANE",
+      "intent": "QUESTION_RECOLTE",
+      "french": "La banane est prête 9 à 10 mois après la plantation. Quand les fruits grossissent et jaunissent légèrement, c'est le moment. Récoltez vite pour éviter la surmaturation.",
+      "version_a": "Bàrànda tigɛlen tuma ye kalo kɔnɔntɔn ni tan cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ. tigɛlen kɛ joona.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "banane = barandaa (CI) / namasa (Mali). Vérifiez la forme retenue dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kalo kɔnɔntɔn ni tan cɛ bàrànda bɛ se ka tigɛ. Ni den bɛ bon ka nɛrɛmugu dɔɔni, tigɛ tuma ye. Aw ye tigɛ joona.",
+      "version_b_pr": "PR #76"
+    },
+    {
+      "id": "banane_saison_001",
+      "culture": "CULTURE_BANANE",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "La banane peut être plantée toute l'année si l'eau est disponible. En saison des pluies, la banane pousse vite. Plante pendant les pluies ou si tu as de l'eau.",
+      "version_a": "Bàrànda bɛ sɛnɛ san bɛɛ ni ji bɛ ɲɛ. Sanjiii tuma na, a bɛ ɲɛ joona. Aw ye sɛnɛ sanjiii tuma.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « Sanjiii » ; B : « Sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "banane = barandaa (CI) / namasa (Mali). Vérifiez la forme retenue dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Bàrànda bɛ se ka sɛnɛ san bɛɛ ni ji bɛ yen. Sanjiii tuma na a bɛ bɔ joona. Aw ye sɛnɛ sanjiii tuma na.",
+      "version_b_pr": "PR #76"
+    },
+    {
+      "id": "banane_stockage_001",
+      "culture": "CULTURE_BANANE",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "La banane se conserve environ 7 jours. Stocke-la dans un endroit frais à l'ombre. Vends vite avant qu'elle ne soit trop mûre.",
+      "version_a": "Bàrànda marali tuma ye tile seegin ka jɛ. Aw ye bàrànda mara yɔrɔ sumanin na ka boli. Aw ye fere kɛ joona ka gɛlɛ tɛmɛ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "banane = barandaa (CI) / namasa (Mali). Vérifiez la forme retenue dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Bàrànda bɛ se ka to tile wolonfila. Aw ye a mara yɔrɔ surunya na. Aw ye fere joona sani a ka mɔ kosɛbɛ.",
+      "version_b_pr": "PR #76"
+    },
+    {
+      "id": "banane_vente_001",
+      "culture": "CULTURE_BANANE",
+      "intent": "QUESTION_VENTE",
+      "french": "Vendez la banane juste après la récolte. Vendez au marché ou à un commerçant. Une fois mûre la banane se détériore vite.",
+      "version_a": "Bàrànda fere kɛ joona tigɛlen kɔfɛ. Aw ye fere kɛ lɔgɔ la wala julabaga ye. Bàrànda tigɛlen mana tɛmɛ, a bɛ gɛlɛ joona.",
+      "alerte_audit": "ALERTE MOT MALIEN : « sugu » (B) → lɔgɔ (marché) — validation native #52/#53. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "banane = barandaa (CI) / namasa (Mali). Vérifiez la forme retenue dans chaque phrase. Formes CI à imposer : sugu (Mali) → lɔgɔ (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Tigɛ kɔ joona aw ye bàrànda fere. Aw ye a fere sugu la wala julabaga fɛ. Bàrànda mɔlen bɛ halaki joona.",
+      "version_b_pr": "PR #76"
+    }
+  ]
+}

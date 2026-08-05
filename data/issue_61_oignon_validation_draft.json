@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "issue": 61,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_OIGNON",
+  "crop_label": "oignon",
+  "crop_term": "jaba",
+  "crop_term_note": "oignon = jaba (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "OIGNON",
+  "footer_label": "Wourri - Issue #61 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 8,
+  "version_b_source_prs": [
+    80
+  ],
+  "warning": "Ce formulaire présente 8 entrées oignon. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "oignon_conseil_001",
+      "culture": "CULTURE_OIGNON",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Pour bien cultiver l'oignon, fais d'abord une pépinière. Transplante les plants après 20 jours. Plante l'oignon avec 10 à 15 cm d'écart.",
+      "version_a": "Jaba sɛnɛ la ka ɲi, aw ye den foroo kɛ fɔlɔ. Aw ye den foroo yɔrɔ yɛlɛma tile mugan kɔnɔ. Aw ye jaba sɛnɛ santimɛtiri bi ni mugan.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "oignon = jaba (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Fɔlɔ aw ye jaba den foroo kɛ. Tile mugan kɔ aw ye den turu foroo la. Aw ye jaba da santimɛtiri tan ni duuru.",
+      "version_b_pr": "PR #80"
+    },
+    {
+      "id": "oignon_diagnostic_001",
+      "culture": "CULTURE_OIGNON",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les fanes de l'oignon tombent trop tôt, il y a une maladie. Traitez avec un fongicide rapidement. L'agent ANADER peut vous aider.",
+      "version_a": "Ni jaba jiri bɛ la ka gɛlɛn joona, bana bɛ a la. Aw ye furakɛ furakɛli la joona. ANADER bɛ se ka i dɛmɛ furakɛ la.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "oignon = jaba (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni jaba fura bɛ bin joona dɔɔni, bana bɛ a la. Aw ye furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "version_b_pr": "PR #80"
+    },
+    {
+      "id": "oignon_engrais_001",
+      "culture": "CULTURE_OIGNON",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "L'oignon a besoin de NPK 15-15-15 après la plantation. Le potassium l'aide aussi à se former. Faites le traitement chaque mois.",
+      "version_a": "Jaba bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. Potassium fana bɛ a dɛmɛ ka koro. Aw ye furakɛ kalo kelen kelen na.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "oignon = jaba (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Sɛnɛ kɔ NPK don dugukoloo la. Potasi bɛ jaba dɛmɛ ka bon. Kalo o kalo furakɛli kɛ.",
+      "version_b_pr": "PR #80"
+    },
+    {
+      "id": "oignon_irrigation_001",
+      "culture": "CULTURE_OIGNON",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "L'oignon a besoin d'eau chaque jour. Arrosez le champ quotidiennement. Vers la fin réduisez l'arrosage pour que l'oignon durcisse.",
+      "version_a": "Jaba bɛ jɛ ji ye tile bɛɛ. Aw ye ji don foroo la tile kelen kelen na. tigɛlen kɔ tuma, aw ye ji bilali dɔgɔya.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "oignon = jaba (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Jaba bɛ ji fɛ tile o tile. Aw ye ji don foroo la tile bɛɛ. Laban na ji dɔgɔya ka jaba gɛlɛya.",
+      "version_b_pr": "PR #80"
+    },
+    {
+      "id": "oignon_recolte_001",
+      "culture": "CULTURE_OIGNON",
+      "intent": "QUESTION_RECOLTE",
+      "french": "L'oignon est prêt à récolter 3 à 4 mois après la plantation. Quand les fanes tombent, c'est le moment. Déterrez avec soin et mettez à sécher.",
+      "version_a": "Jaba tigɛlen tuma ye kalo saba ni naani cɛ. Ni jaba jiri bɛ la, aw ye tigɛlen kɛ. Aw ye jaba bɔ ni hɛrɛ ye.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "oignon = jaba (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kalo saba ni naani cɛ jaba bɛ se ka bɔ. Ni jaba fura bɛ bin, tigɛ tuma ye. Aw ye jaba bɔ dugukoloo la ka a ja.",
+      "version_b_pr": "PR #80"
+    },
+    {
+      "id": "oignon_saison_001",
+      "culture": "CULTURE_OIGNON",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "Le meilleur moment pour l oignon c est quand il ne pleut pas. Novembre et décembre c est bien. Faites d abord la pépinière.",
+      "version_a": "Jaba sɛnɛ tuma ɲuman ye sanjiii tɛ tuma na. Novanburu ni desanburu kalo bɛ ɲɛ ka sɛnɛ. Aw ye den foroo kɛ fɔlɔ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « foroo » ; B : « sanjiii », « Nowanburuuu », « desanburuuu », « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "oignon = jaba (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Jaba sɛnɛ tuma ɲuman ye sanjiii tɛ tuma na. Nowanburuuu ni desanburuuu kalo ka ɲi. Aw ye den foroo kɛ fɔlɔ.",
+      "version_b_pr": "PR #80"
+    },
+    {
+      "id": "oignon_stockage_001",
+      "culture": "CULTURE_OIGNON",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "L'oignon peut se conserver jusqu'à 6 mois. Stocke-le dans un endroit sec ou sur des claies. Fais-le bien sécher avant de stocker.",
+      "version_a": "Jaba marali tuma ye kalo wɔɔrɔ. Aw ye jaba mara yɔrɔ sumanin na wala lɔgɔ la. Aw ye jaba mɛ fɔlɔ.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "oignon = jaba (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Jaba bɛ se ka to kalo wɔɔrɔ. Aw ye a mara yɔrɔ jalen na wala gala kan. Aw ye jaba ja ka ɲɛ fɔlɔ sani ka a mara.",
+      "version_b_pr": "PR #80"
+    },
+    {
+      "id": "oignon_vente_001",
+      "culture": "CULTURE_OIGNON",
+      "intent": "QUESTION_VENTE",
+      "french": "Vendez l oignon au marché ou à un commerçant. Le prix est meilleur quand il ne pleut pas. Stockez bien pour avoir un meilleur prix.",
+      "version_a": "Jaba fere kɛ lɔgɔ la wala julabaga fɛ. Jaba sɔngɔ ka ɲi sanjiii tɛ tuma na. Aw ye a mara ka sɔngɔ ɲuman sɔrɔ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « sugu » (B) → lɔgɔ (marché) — validation native #52/#53. Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii » ; B : « Sanjiii ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "oignon = jaba (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : sugu (Mali) → lɔgɔ (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye jaba fere sugu la wala julabaga fɛ. Sanjiii tɛ tuma na sɔngɔ ka ɲi. Aw ye a mara ka ɲɛ ka sɔngɔ ɲuman sɔrɔ.",
+      "version_b_pr": "PR #80"
+    }
+  ]
+}

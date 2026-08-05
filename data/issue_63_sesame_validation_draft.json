@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "issue": 63,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_SESAME",
+  "crop_label": "sésame",
+  "crop_term": "bɛnɛ",
+  "crop_term_note": "sésame = bɛnɛ (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "SESAME",
+  "footer_label": "Wourri - Issue #63 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 8,
+  "version_b_source_prs": [
+    82
+  ],
+  "warning": "Ce formulaire présente 8 entrées sésame. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "sesame_conseil_001",
+      "culture": "CULTURE_SESAME",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Le sésame se cultive bien dans un sol léger et bien drainé. Plantez le sésame au début de la saison des pluies. Un bon champ donne un bon rendement.",
+      "version_a": "Bɛnɛ sɛnɛ la ka ɲi duguma sɔnna yɔrɔ. Aw ye bɛnɛ sɛnɛ sanjiii tuma fɔlɔ na. Bɛnɛ bɛ se ka sɔrɔ caman sɔrɔ ni foroo ɲi.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « foroo » ; B : « Sanjiii », « Foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "sésame = bɛnɛ (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Bɛnɛ bɛ bɔ ka ɲɛ dugukolo gɛrɛn na. Sanjiii tuma daminɛ na aw ye bɛnɛ sɛnɛ. Foroo ɲuman bɛ bɛnɛ caman bɔ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "sesame_diagnostic_001",
+      "culture": "CULTURE_SESAME",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les feuilles du sésame tombent ou brunissent, un fongicide peut aider. Traitez rapidement dès les premiers signes de maladie. Arrachez les plants très malades.",
+      "version_a": "Ni bɛnɛ jira bɛ jɛ ka fara, furakɛli bɛ se ka dɛmɛ. Aw ye furakɛ joona. Aw ye jira cɛnna bɔ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — B : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "sésame = bɛnɛ (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni bɛnɛ fura bɛ bin wala kɔgɔ, furakɛli bɛ se ka dɛmɛ. Aw ye furakɛli kɛ joona. Bɛnɛ bananen bɔ foroo la.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "sesame_engrais_001",
+      "culture": "CULTURE_SESAME",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "Le sésame n'a pas besoin de beaucoup d'engrais. Mets de la fumure organique avant la plantation. Un peu de phosphate l'aide à se développer.",
+      "version_a": "Bɛnɛ ma nɔgɔ caman fɛ. nɔgɔ bɔlen kɛ foroo la sɛnɛ ɲɛ ka ɲi. fɔsifati dɔɔni bɛ a dɛmɛ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "sésame = bɛnɛ (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Bɛnɛ tɛ nɔgɔ caman fɛ. Sɛnɛ ɲɛ nɔgɔ bɔlen don dugukoloo la. Fosifɔri dɔɔni bɛ a dɛmɛ ka bɔ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "sesame_irrigation_001",
+      "culture": "CULTURE_SESAME",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "Le sésame n'a pas besoin de beaucoup d'eau. Il résiste très bien à la sécheresse. Trop d'eau peut le faire pourrir.",
+      "version_a": "Bɛnɛ ma jɛ ji caman ye. Jiɲɛ la bɛnɛ bɛ se ka dugu la ka ɲɛ. ji dan caman bɛ a halaki.",
+      "alerte_audit": "ALERTE MOT MALIEN : « kosɛbɛ » (B) → caman (beaucoup) — corrections CI. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "sésame = bɛnɛ (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : kosɛbɛ (Mali) → caman (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Bɛnɛ tɛ ji caman fɛ. A bɛ se ka sɔn ji tɛ ma kosɛbɛ. Ji caman bɛ bɛnɛ cɛn.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "sesame_recolte_001",
+      "culture": "CULTURE_SESAME",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Le sésame est prêt à récolter 3 mois après la plantation. Quand les capsules commencent à brunir, c'est le bon moment. Récoltez tôt le matin avant que les capsules s'ouvrent.",
+      "version_a": "Bɛnɛ tigɛlen tuma ye kalo saba sɛnɛ kɔfɛ. Ni fura bɛ bɔ ka koro, tigɛlen ye. Aw ye tigɛlen kɛ tile na fɔlɔ ka fura fali.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "sésame = bɛnɛ (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kalo saba sɛnɛ kɔ bɛnɛ bɛ se ka tigɛ. Ni bɛnɛ den bɛ kɔgɔ, tigɛ tuma ye. Sɔgɔma joona aw ye tigɛ sani den ka yɛlɛ.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "sesame_saison_001",
+      "culture": "CULTURE_SESAME",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "Le meilleur moment pour planter le sésame c'est septembre ou octobre. Les pluies sont légères à ce moment. Prépare vite ton champ pour planter.",
+      "version_a": "Bɛnɛ sɛnɛ tuma ɲuman ye sɛtanburu wala Ɔtɔburu kalo. Sanjiii bɛ kɛ dɔɔni o tuma. Aw ye foroo labɛn joona ka sɛnɛ kɛ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « Sanjiii », « foroo » ; B : « sɛtanburuuu », « Sanjiii », « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "sésame = bɛnɛ (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Bɛnɛ sɛnɛ tuma ɲuman ye sɛtanburuuu wala ɔkitɔburu kalo. Sanjiii ka dɔgɔ o tuma la. Aw ye foroo labɛn joona.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "sesame_stockage_001",
+      "culture": "CULTURE_SESAME",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Pour stocker le sésame, faites-le bien sécher d'abord. Mettez le sésame dans un sac bien sec. Le sésame bien séché peut se conserver plusieurs mois.",
+      "version_a": "Bɛnɛ marali tuma la, aw ye a mɛ ka ɲɛ fɔlɔ. Aw ye bɛnɛ mara sak sumanin na. Bɛnɛ mɛnen bɛ se ka sɔrɔ kalo caman.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "sésame = bɛnɛ (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye bɛnɛ ja ka ɲɛ fɔlɔ. Aw ye a don saki jalen na. Bɛnɛ jalen bɛ se ka to kalo caman.",
+      "version_b_pr": "PR #82"
+    },
+    {
+      "id": "sesame_vente_001",
+      "culture": "CULTURE_SESAME",
+      "intent": "QUESTION_VENTE",
+      "french": "Vendez le sésame au marché ou à un commerçant. Le prix est bon quand le sésame est bien sec. Stockez bien avant de vendre.",
+      "version_a": "Bɛnɛ fere kɛ lɔgɔ la wala kɔlɔ la. Bɛnɛ sɔngɔ ka ɲi ni a mɛ ka ɲɛ. Aw ye mara ka ɲɛ fɔlɔ ka fere kɛ.",
+      "alerte_audit": "ALERTE MOT MALIEN : « sugu » (B) → lɔgɔ (marché) — validation native #52/#53. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "sésame = bɛnɛ (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : sugu (Mali) → lɔgɔ (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye bɛnɛ fere sugu la wala julabaga fɛ. Bɛnɛ jalen sɔngɔ ka ɲi. Aw ye a mara ka ɲɛ sani ka fere.",
+      "version_b_pr": "PR #82"
+    }
+  ]
+}

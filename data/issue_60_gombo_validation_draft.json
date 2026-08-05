@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "issue": 60,
+  "date": "2026-08-04",
+  "status": "pending_native_validation",
+  "culture": "CULTURE_GOMBO",
+  "crop_label": "gombo",
+  "crop_term": "gan",
+  "crop_term_note": "gombo = gan (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase.",
+  "field_prefix_base": "GOMBO",
+  "footer_label": "Wourri - Issue #60 - Brouillon, ne pas intégrer avant validation native",
+  "item_count": 8,
+  "version_b_source_prs": [
+    79
+  ],
+  "warning": "Ce formulaire présente 8 entrées gombo. La VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR proposée) sont des propositions non validées, absentes du corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
+  "audit_basis": {
+    "mots_maliens_bannis": {
+      "karo": "→ kalo (mois) — PR #84",
+      "sugu": "→ lɔgɔ (marché) — validation native #52/#53",
+      "waati": "→ tuma (moment/temps) — validation native #51",
+      "kosɛbɛ": "→ caman (beaucoup) — corrections CI",
+      "sɛnnɛkɛla": "→ sɛnɛbaga (cultivateur/agent) — validation native"
+    },
+    "reference": "data/GRAMMAIRE_DIOULA_REGLES.md §12bis"
+  },
+  "items": [
+    {
+      "id": "gombo_conseil_001",
+      "culture": "CULTURE_GOMBO",
+      "intent": "CONSEIL_PRODUCTION",
+      "french": "Pour bien cultiver le gombo, prépare bien ton sol. Plante le gombo avec 20 cm d'écart. Mets de l'engrais dans le sol après la plantation.",
+      "version_a": "Gan sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ. Aw ye gan sɛnɛ santimɛtiri bi ni mugan. nɔgɔ bɔlen kɛ foroo la sɛnɛ kɔfɛ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "gombo = gan (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Aw ye dugukoloo labɛn ka ɲɛ fɔlɔ. Aw ye gan da santimɛtiri mugan mugan. Sɛnɛ kɔ nɔgɔ don dugukoloo la.",
+      "version_b_pr": "PR #79"
+    },
+    {
+      "id": "gombo_diagnostic_001",
+      "culture": "CULTURE_GOMBO",
+      "intent": "DIAGNOSTIC_PROBLEME",
+      "french": "Si les feuilles du gombo changent, il y a maladie ou pucerons. Traitez avec un insecticide rapidement. L'agent ANADER peut vous aider.",
+      "version_a": "Ni gan fura bɛ kɛ wɛrɛ wɛrɛ, bana wala kulun bɛ a la. Aw ye furakɛ furakɛli la joona. ANADER bɛ se ka i dɛmɛ.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "gombo = gan (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Ni gan fura bɛ wɛrɛ, bana wala kulun bɛ a la. Aw ye furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+      "version_b_pr": "PR #79"
+    },
+    {
+      "id": "gombo_engrais_001",
+      "culture": "CULTURE_GOMBO",
+      "intent": "QUESTION_ENGRAIS",
+      "french": "Le gombo a besoin de NPK 15-15-15 après la plantation. Du compost l'aide aussi à bien pousser. Faites le traitement chaque mois.",
+      "version_a": "Gan bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. nɔgɔ bɔlen kɛ fana ka gan dɛmɛ. Aw ye furakɛ kalo kelen kelen na.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — B : « dugukoloo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "gombo = gan (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Sɛnɛ kɔ NPK don dugukoloo la. Kɔnpɔsi fana bɛ a dɛmɛ ka bɔ. Kalo o kalo furakɛli kɛ.",
+      "version_b_pr": "PR #79"
+    },
+    {
+      "id": "gombo_irrigation_001",
+      "culture": "CULTURE_GOMBO",
+      "intent": "QUESTION_IRRIGATION",
+      "french": "Le gombo a besoin d'eau chaque jour. Arrosez le champ quotidiennement. Le gombo pousse vite quand l'eau est disponible.",
+      "version_a": "Gan bɛ jɛ ji ye tile bɛɛ. Aw ye ji don foroo la tile kelen kelen na. Gan bɛ la joona ni ji bɛ ɲɛ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « foroo » ; B : « foroo ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "gombo = gan (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Gan bɛ ji fɛ tile o tile. Aw ye ji don foroo la tile bɛɛ. Ni ji bɛ yen gan bɛ bɔ joona.",
+      "version_b_pr": "PR #79"
+    },
+    {
+      "id": "gombo_recolte_001",
+      "culture": "CULTURE_GOMBO",
+      "intent": "QUESTION_RECOLTE",
+      "french": "Le gombo est prêt à récolter 2 à 3 mois après la plantation. Quand les fruits sont tendres et bien formés, récoltez vite. Récoltez un jour sur deux pour garder la qualité.",
+      "version_a": "Gan tigɛlen tuma ye kalo fila ni saba cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ joona. tigɛlen kɛ tile kelen kelen.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "gombo = gan (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Kalo fila ni saba cɛ gan bɛ se ka tigɛ. Ni gan den bɛ nɔgɔ ka ɲɛ, tigɛ tuma ye. Tile fila o tile fila aw ye tigɛ.",
+      "version_b_pr": "PR #79"
+    },
+    {
+      "id": "gombo_saison_001",
+      "culture": "CULTURE_GOMBO",
+      "intent": "QUESTION_SAISON_PLANTATION",
+      "french": "Le meilleur moment pour le gombo c est la saison des pluies. Mai ou septembre c est bien. Sans pluie aussi, le gombo peut pousser avec de l eau.",
+      "version_a": "Gan sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Ni sanjiii tɛ fana, gan bɛ se ka sɛnɛ ni ji bɛ ɲɛ.",
+      "alerte_audit": "Voyelles doublées/triplées non standard (orthographe à corriger) — A : « sanjiii », « sɛtanburuuu » ; B : « sanjiii », « Mɛɛɛ », « sɛtanburuuu ». Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "gombo = gan (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Gan sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛɛɛ wala sɛtanburuuu kalo ka ɲi. Sanjiii tɛ fana, gan bɛ se ka bɔ ni ji bɛ yen.",
+      "version_b_pr": "PR #79"
+    },
+    {
+      "id": "gombo_stockage_001",
+      "culture": "CULTURE_GOMBO",
+      "intent": "QUESTION_STOCKAGE",
+      "french": "Le gombo se conserve environ 7 jours. Stocke-le dans un endroit frais. Vends vite avant qu'il ne se détériore.",
+      "version_a": "Gan marali tuma ye tile seegin ka jɛ. Aw ye gan mara yɔrɔ sumanin na. Aw ye fere kɛ joona k a bɔ.",
+      "alerte_audit": "Aucun mot malien banni ni voyelle triplée détecté automatiquement. Vérifier manuellement l'ordre SOV, le sens des verbes et l'orthographe des loanwords.",
+      "repere_verifie": "gombo = gan (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Gan bɛ se ka to tile wolonfila. Aw ye a mara yɔrɔ surunya na. Aw ye fere joona sani a ka halaki.",
+      "version_b_pr": "PR #79"
+    },
+    {
+      "id": "gombo_vente_001",
+      "culture": "CULTURE_GOMBO",
+      "intent": "QUESTION_VENTE",
+      "french": "Vendez le gombo juste après la récolte. Allez vendre au marché régulièrement. Le gombo mûr se détériore vite, vendez rapidement.",
+      "version_a": "Gan fere kɛ joona tigɛlen kɔfɛ. Aw ye fere kɛ lɔgɔ la tile kelen kelen na. Gan mana tigɛlen, a bɛ gɛlɛ joona.",
+      "alerte_audit": "ALERTE MOT MALIEN : « sugu » (B) → lɔgɔ (marché) — validation native #52/#53. Vérifier aussi l'ordre SOV (verbe en fin), le sens des verbes et l'impératif pluriel « Aw ye … ».",
+      "repere_verifie": "gombo = gan (attesté An Ka Taa). Vérifiez son emploi dans chaque phrase. Formes CI à imposer : sugu (Mali) → lɔgɔ (CI). Rappels : marché = lɔgɔ (PAS sugu) ; moment = tuma (PAS waati) ; beaucoup = caman (PAS kosɛbɛ) ; mois = kalo (PAS karo) ; agent = sɛnɛbaga (PAS sɛnnɛkɛla).",
+      "version_b": "Tigɛ kɔ joona aw ye gan fere. Aw ye sugu ta tuma bɛɛ. Gan mɔlen bɛ halaki joona, aw ye fere joona.",
+      "version_b_pr": "PR #79"
+    }
+  ]
+}
