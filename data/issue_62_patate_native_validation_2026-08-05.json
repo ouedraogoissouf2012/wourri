@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "issue": 62,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-62-patate-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_PATATE",
+    "corrected": 8
+  },
+  "corrections": {
+    "patate_conseil_001": "Aw ye foro labɛn ka ɲɛ fɔlɔ. Aw ye woso bolow da santimɛtiri bi saba. Sanji tuma ye woso sɛnɛ tuma ɲuman ye.",
+    "patate_diagnostic_001": "Ni woso bolo bɛ fɔsɔn wala bin joona, saransɔn bɛ a la. Aw ye ɛnsɛktisidi la furakɛli kɛ joona. Aw ye woso bananenw bɔ foro la.",
+    "patate_engrais_001": "Aw ye nɔgɔ bɔlen don dugukolo la sɛnɛ ɲɛ. Sɛnɛ kɔfɛ, NPK dɔɔni ka kɛnɛ. Nɔgɔ caman bɛ woso halaki.",
+    "patate_irrigation_001": "Woso bɛ ji fɛ, nka ji caman man ɲi. Ni sanji tɛ, aw ye ji dɔɔni don. Woso bɛ se ka to kalo kelen ji tɛ.",
+    "patate_recolte_001": "Kalo saba ni naani cɛ sɛnɛ kɔfɛ, woso bɛ se ka bɔ. Ni fura bɛ nɛrɛmugu, tigɛ tuma ye. Aw ye dugukolo sɛgɛsɛgɛ ka woso bɔ.",
+    "patate_saison_001": "Woso sɛnɛ tuma ɲuman ye sanji tuma na. Mɛ kalo wala Sɛtanburu kalo ka ɲi. Sisan, aw ye foro labɛn ka ɲɛ.",
+    "patate_stockage_001": "Woso kura bɛ se ka to kalo kelen. Aw ye a mara yɔrɔ sumanin na, fiɲɛ bɛ yɔrɔ. Aw ye a ja ka a mara tuma jan.",
+    "patate_vente_001": "Aw ye woso feere lɔgɔ la. Tigɛ kɔ tile saba kɔnɔ, aw ye a feere kura. Sanji tɛ tuma na, sɔngɔ ka ɲi."
+  },
+  "comments": {
+    "patate_conseil_001": "« woso bolo » pour bouture est à confirmer avec les producteurs.",
+    "patate_diagnostic_001": "« saransɔn » et « ɛnsɛktisidi » sont des emprunts provisoires.",
+    "patate_engrais_001": "Correction de l’erreur fere ; conseil d’engrais à valider agronomiquement.",
+    "patate_irrigation_001": "Tournure proche de la version B ; résistance d’un mois à confirmer agronomiquement.",
+    "patate_recolte_001": "La phrase de récolte doit être validée avec le terme local du tubercule.",
+    "patate_saison_001": "Correction des mois, de sanji et de foro.",
+    "patate_stockage_001": "« fiɲɛ bɛ yɔrɔ » exprime un lieu ventilé ; à confirmer.",
+    "patate_vente_001": "lɔgɔ remplace sugu ; feere kura signifie vendre frais."
+  }
+}

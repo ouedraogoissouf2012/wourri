@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "issue": 66,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-66-mangue-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 2,
+    "culture": "CULTURE_MANGUE",
+    "corrected": 2
+  },
+  "corrections": {
+    "mangue_conseil_001": "Desanburu ni Marisi kalo cɛ, mangoro yiri bɛ den bɔ ka ɲɛ. Ni mangoro den cɛnnen ye, aw ye a bɔ foro la joona. Aw ye aw ka yiriw ni denw kɔrɔsi tuma bɛɛ.",
+    "mangue_limogo_diagnostic_001": "Ni mangoro bɛ cɛn, jiriden limɔgɔ bɛ se ka kɛ sababi ye. Limɔgɔ bɛ don den kɔnɔ ka a cɛn. Aw ye mangoro halakilenw bɔ foro la joona. Kalo o kalo, aw ye foro kɔrɔsi."
+  },
+  "comments": {
+    "mangue_conseil_001": "Mois harmonisés ; « den » pour fruit et cɛnnen pour pourri à confirmer.",
+    "mangue_limogo_diagnostic_001": "« jiriden limɔgɔ » est proposé pour mouche des fruits ; validation native nécessaire."
+  }
+}

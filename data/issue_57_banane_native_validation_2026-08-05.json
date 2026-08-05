@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "issue": 57,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-57-banane-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_BANANE",
+    "corrected": 8
+  },
+  "corrections": {
+    "banane_conseil_001": "Aw ye dugukolo labɛn ka ɲɛ fɔlɔ. Aw ye barandaa da mɛtɛrɛ fila ni saba cɛ. Aw ye kɔnpɔsi walima nɔgɔ don dugukolo la.",
+    "banane_diagnostic_001": "Ni barandaa furaw bɛ kɛ wɛrɛ ye, bana bɛ a la. Aw ye yiri bananenw bɔ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ furakɛli la.",
+    "banane_engrais_001": "Barandaa bɛ potasi fɛ caman. NPK 0-0-60 walima kɔnpɔsi ka ɲi. Kalo o kalo, aw ye furakɛli kɛ.",
+    "banane_irrigation_001": "Barandaa bɛ ji fɛ caman. Aw ye ji don foro la tile o tile. Ji caman man ɲi; aw ye jibolisira labɛn ka ɲɛ.",
+    "banane_recolte_001": "Kalo kɔnɔntɔn ni tan cɛ sɛnɛli kɔfɛ, barandaa bɛ se ka tigɛ. Ni denw bɛ bon ka nɛrɛmuguya dɔɔni, tigɛ tuma ye. Aw ye u tigɛ joona, u kana mɔ ka tɛmɛ.",
+    "banane_saison_001": "Ni ji bɛ yen, barandaa bɛ se ka sɛnɛ san bɛɛ. Sanji tuma na, a bɛ bɔ joona. Aw ye a sɛnɛ sanji tuma walima ni ji bɛ aw bolo.",
+    "banane_stockage_001": "Barandaa bɛ se ka to tile wolonfila ɲɔgɔn na. Aw ye a mara suma la yɔrɔ sumanin na. Aw ye a feere joona sani a ka mɔ ka tɛmɛ.",
+    "banane_vente_001": "Tigɛli kɔfɛ joona, aw ye barandaa feere. Aw ye a feere lɔgɔ la walima julabaga fɛ. Ni barandaa mɔlen don, a bɛ tiɲɛ joona."
+  },
+  "comments": {
+    "banane_conseil_001": "« barandaa » est retenu comme forme CI. La version B est corrigée : dugukolo et impératif complet.",
+    "banane_diagnostic_001": "La version B est la plus proche. La formulation exacte de « changer de couleur » reste à confirmer oralement.",
+    "banane_engrais_001": "« kosɛbɛ » est écarté au profit de « caman ». Potasi, formule NPK et fréquence à valider agronomiquement.",
+    "banane_irrigation_001": "« jibolisira » paraphrase le drainage. « foro » remplace « foroo » et « caman » remplace « kosɛbɛ ».",
+    "banane_recolte_001": "« denw » désigne ici les fruits. La tournure de surmaturation doit être testée avec un locuteur natif.",
+    "banane_saison_001": "Les voyelles artificiellement triplées sont supprimées. La dernière tournure signifie « si vous avez de l’eau ».",
+    "banane_stockage_001": "« suma la » est proposé pour à l’ombre. Durée et formulation de surmaturation à confirmer localement.",
+    "banane_vente_001": "« lɔgɔ » remplace la forme malienne « sugu ». « tiɲɛ » est proposé pour se détériorer."
+  }
+}

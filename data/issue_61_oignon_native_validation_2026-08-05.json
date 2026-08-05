@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "issue": 61,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-61-oignon-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_OIGNON",
+    "corrected": 8
+  },
+  "corrections": {
+    "oignon_conseil_001": "Aw ye jaba den foro labɛn fɔlɔ. Tile mugan kɔfɛ, aw ye denw turu foro la. Aw ye jaba da santimɛtiri tan ni tan ni duuru cɛ.",
+    "oignon_diagnostic_001": "Ni jaba fura bɛ bin joona, bana bɛ a la. Aw ye fɔngisidi la furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+    "oignon_engrais_001": "Jaba bɛ NPK 15-15-15 fɛ sɛnɛ kɔfɛ. Potasi fana bɛ jaba dɛmɛ ka bon. Kalo o kalo, aw ye furakɛli kɛ.",
+    "oignon_irrigation_001": "Jaba bɛ ji fɛ tile o tile. Aw ye ji don foro la tile o tile. Laban na, aw ye ji donli dɔgɔya ka jaba gɛlɛya.",
+    "oignon_recolte_001": "Kalo saba ni naani cɛ sɛnɛ kɔfɛ, jaba bɛ se ka bɔ. Ni jaba fura bɛ bin, tigɛ tuma ye. Aw ye jaba sogi dɔɔni dɔɔni ka a ja.",
+    "oignon_saison_001": "Jaba sɛnɛ tuma ɲuman ye sanji tɛ tuma na. Nowanburu ni Desanburu kalo ka ɲi. Aw ye jaba den foro labɛn fɔlɔ.",
+    "oignon_stockage_001": "Jaba bɛ se ka to kalo wɔɔrɔ. Aw ye a mara yɔrɔ jalen na wala gala kan. Aw ye jaba ja ka ɲɛ sani ka a mara.",
+    "oignon_vente_001": "Aw ye jaba feere lɔgɔ la wala julabaga fɛ. Sanji tɛ tuma na, sɔngɔ ka ɲi. Aw ye a mara ka ɲɛ ka sɔngɔ ɲuman sɔrɔ."
+  },
+  "comments": {
+    "oignon_conseil_001": "Pépinière, transplantation et écart 10-15 cm à confirmer oralement.",
+    "oignon_diagnostic_001": "fura est retenu pour les fanes ; fɔngisidi reste un emprunt.",
+    "oignon_engrais_001": "« potasi » et le conseil d’application doivent être validés localement.",
+    "oignon_irrigation_001": "La tournure finale sur le durcissement doit être testée avec un locuteur natif.",
+    "oignon_recolte_001": "sogi est proposé pour déterrer ; à confirmer pour l’oignon.",
+    "oignon_saison_001": "Orthographe TTS des mois et terme de pépinière à confirmer.",
+    "oignon_stockage_001": "« gala » pour claie est repris de la version B et doit être confirmé.",
+    "oignon_vente_001": "lɔgɔ remplace sugu ; formulation commerciale à valider oralement."
+  }
+}

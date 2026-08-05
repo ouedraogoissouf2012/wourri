@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "issue": 56,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-56-coton-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_COTON",
+    "corrected": 8
+  },
+  "corrections": {
+    "coton_conseil_001": "Aw ye foro labɛn ka ɲɛ fɔlɔ. Aw ye kɔrɔni da santimɛtiri mugan mugan. NPK bɛ se ka a dɛmɛ.",
+    "coton_diagnostic_001": "Ni kɔrɔni feerew bɛ bin joona, bana walima insɛktiw bɛ a la. Aw ye furaji kɛ ka kɔrɔni kisi. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+    "coton_engrais_001": "Kɔrɔni bɛ NPK 14-23-14 fɛ. Ire fana bɛ a dɛmɛ ka bɔ ka ɲɛ. Aw ye furakɛli kɛ sɛnɛli kɔfɛ tile tan ni duuru.",
+    "coton_irrigation_001": "Kɔrɔni bɛ ji fɛ sɛnɛli kɔfɛ. Ni sanji ma na joona, aw ye ji don foro la. Kɔrɔni bɛ se ka jitanya dɔɔni muɲu.",
+    "coton_recolte_001": "Kalo kɔnɔntɔn ni tan cɛ sɛnɛli kɔfɛ, kɔrɔni bɛ se ka tigɛ. Ni kɔrɔni denw bɛ yɛlɛ, tigɛ tuma ye. Aw ye a tigɛ joona ka tiɲɛli bali.",
+    "coton_saison_001": "Ni sanji bɛ daminɛ, kɔrɔni sɛnɛ tuma ye. Mɛ kalo walima Sɛtanburu kalo ka ɲi. Aw ye kɔrɔni sɛnɛ sanji daminɛ na.",
+    "coton_stockage_001": "Aw ye kɔrɔni mara yɔrɔ jalen na. Aw ye a don sakiw na ka sakiw siri ka ɲɛ. Ji kana se kɔrɔni marayɔrɔ ma.",
+    "coton_vente_001": "Aw ye kɔrɔni feere jɛkulu fɛ. Jɛkulu bɛ sɔngɔ ɲuman sɔrɔ aw ye. Tigɛli kɔfɛ joona, aw ye kɔrɔni mara ka ɲɛ."
+  },
+  "comments": {
+    "coton_conseil_001": "Version B la plus proche. « foroo » est corrigé en « foro ». Espacement et conseil NPK à confirmer agronomiquement.",
+    "coton_diagnostic_001": "« feere » est proposé pour fleur. « insɛktiw » est un emprunt provisoire; terme agricole local à confirmer.",
+    "coton_engrais_001": "« ire » est retenu provisoirement pour urée. Dose, calendrier et sens de « traitement » à valider agronomiquement.",
+    "coton_irrigation_001": "« jitanya » est proposé pour sécheresse. « sanji » et « foro » remplacent les voyelles artificiellement allongées.",
+    "coton_recolte_001": "« denw » paraphrase les capsules et doit être confirmé. La durée française est conservée sans validation agronomique.",
+    "coton_saison_001": "Formes harmonisées : sanji, Mɛ kalo, Sɛtanburu kalo et tuma. Validation orale CI requise.",
+    "coton_stockage_001": "La version B est réécrite pour expliciter le lieu sec, les sacs attachés et la protection contre l’eau.",
+    "coton_vente_001": "« jɛkulu » désigne un groupement au sens large; le terme institutionnel exact doit être confirmé localement."
+  }
+}

@@ -2038,9 +2038,9 @@
         "CULTURE_COTON"
       ],
       "conditions": [],
-      "reponse_bambara": "Kɔrɔni sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ. Aw ye kɔrɔni sɛnɛ santimɛtiri bi ni mugan. NPK bɛ se ka a dɛmɛ.",
+      "reponse_bambara": "Aw ye foro labɛn ka ɲɛ fɔlɔ. Aw ye kɔrɔni da santimɛtiri mugan mugan. NPK bɛ se ka a dɛmɛ.",
       "reponse_fr": "Pour bien cultiver le coton, prépare bien ton champ. Plante le coton avec 20 cm d'écart. Le NPK peut l'aider.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "coton",
         "kɔrɔni",
@@ -2057,9 +2057,9 @@
         "CULTURE_COTON"
       ],
       "conditions": [],
-      "reponse_bambara": "Kɔrɔni sɛnɛ tuma ye sanjiii bɛ wuli tuma. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Aw ye kɔrɔni sɛnɛ sanjiii fɔlɔ na.",
+      "reponse_bambara": "Ni sanji bɛ daminɛ, kɔrɔni sɛnɛ tuma ye. Mɛ kalo walima Sɛtanburu kalo ka ɲi. Aw ye kɔrɔni sɛnɛ sanji daminɛ na.",
       "reponse_fr": "La saison de plantation du coton c'est quand les pluies commencent. Mai ou septembre c'est bien. Plante le coton au début des pluies.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "coton",
         "kɔrɔni",
@@ -2076,9 +2076,9 @@
         "CULTURE_COTON"
       ],
       "conditions": [],
-      "reponse_bambara": "Kɔrɔni tigɛlen tuma ye kalo kɔnɔntɔn ni kalo tan sɛnɛ kɔfɛ. Ni kɔrɔni bɛ la ka fara, tigɛlen tuma ye. Aw ye tigɛlen kɛ ka jigi kɛ joona.",
+      "reponse_bambara": "Kalo kɔnɔntɔn ni tan cɛ sɛnɛli kɔfɛ, kɔrɔni bɛ se ka tigɛ. Ni kɔrɔni denw bɛ yɛlɛ, tigɛ tuma ye. Aw ye a tigɛ joona ka tiɲɛli bali.",
       "reponse_fr": "Le coton est prêt à récolter 9 à 10 mois après la plantation. Quand les capsules s'ouvrent, c'est le bon moment. Faites la récolte vite pour éviter les pertes.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "coton",
         "kɔrɔni",
@@ -2095,9 +2095,9 @@
         "CULTURE_COTON"
       ],
       "conditions": [],
-      "reponse_bambara": "Kɔrɔni bɛ jɛ ji ye sɛnɛ kɔfɛ. Ni sanjiii ma na joona, aw ye ji don foroo la. Kɔrɔni bɛ se ka kɛ ji kɔrɔ la fana.",
+      "reponse_bambara": "Kɔrɔni bɛ ji fɛ sɛnɛli kɔfɛ. Ni sanji ma na joona, aw ye ji don foro la. Kɔrɔni bɛ se ka jitanya dɔɔni muɲu.",
       "reponse_fr": "Le coton a besoin d'eau après la plantation. Si la pluie tarde, arrosez le champ. Le coton peut aussi résister à la sécheresse.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "coton",
         "kɔrɔni",
@@ -2113,9 +2113,9 @@
         "CULTURE_COTON"
       ],
       "conditions": [],
-      "reponse_bambara": "Kɔrɔni bɛ NPK 14-23-14 jɛ ka ɲi. Urée fana bɛ a dɛmɛ ka jiriden bɛ. Aw ye furakɛ sɛnɛ kɔfɛ tile bi ni duuru.",
+      "reponse_bambara": "Kɔrɔni bɛ NPK 14-23-14 fɛ. Ire fana bɛ a dɛmɛ ka bɔ ka ɲɛ. Aw ye furakɛli kɛ sɛnɛli kɔfɛ tile tan ni duuru.",
       "reponse_fr": "Le coton préfère le NPK 14-23-14. L'urée l'aide aussi à bien pousser. Faites le traitement 15 jours après la plantation.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "coton",
         "kɔrɔni",
@@ -2132,9 +2132,9 @@
         "CULTURE_COTON"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni kɔrɔni fura bɛ bɔ joona, bana wala jere bɛ a la. Aw ye furakɛ furakɛli la ka kɔrɔni kisi. ANADER bɛ se ka i dɛmɛ furakɛ la.",
+      "reponse_bambara": "Ni kɔrɔni feerew bɛ bin joona, bana walima insɛktiw bɛ a la. Aw ye furaji kɛ ka kɔrɔni kisi. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
       "reponse_fr": "Si les fleurs de coton tombent trop vite, il y a maladie ou insectes. Traitez avec un insecticide pour protéger le coton. L'agent ANADER peut vous aider.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "coton",
         "kɔrɔni",
@@ -2151,9 +2151,9 @@
         "CULTURE_COTON"
       ],
       "conditions": [],
-      "reponse_bambara": "Kɔrɔni fere kɛ jɛkulun la. jɛkulun bɛ sɔngɔ ɲuman sɔrɔ i ye. Aw ye kɔrɔni mara ka ɲɛ joona tigɛlen kɔfɛ.",
+      "reponse_bambara": "Aw ye kɔrɔni feere jɛkulu fɛ. Jɛkulu bɛ sɔngɔ ɲuman sɔrɔ aw ye. Tigɛli kɔfɛ joona, aw ye kɔrɔni mara ka ɲɛ.",
       "reponse_fr": "Vendez le coton à travers un groupement. Le groupement vous obtient un meilleur prix. Stockez bien votre coton juste après la récolte.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "coton",
         "kɔrɔni",
@@ -2170,9 +2170,9 @@
         "CULTURE_COTON"
       ],
       "conditions": [],
-      "reponse_bambara": "Kɔrɔni marali la, aw ye a mara yɔrɔ sumanin na. Aw ye kɔrɔni don sak na ka sɔrɔ. ji kana se a ma mara yɔrɔ la.",
+      "reponse_bambara": "Aw ye kɔrɔni mara yɔrɔ jalen na. Aw ye a don sakiw na ka sakiw siri ka ɲɛ. Ji kana se kɔrɔni marayɔrɔ ma.",
       "reponse_fr": "Pour stocker le coton, mettez-le dans un endroit sec. Mettez le coton dans des sacs et attachez-les. L'eau ne doit pas atteindre le lieu de stockage.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "coton",
         "kɔrɔni",
@@ -2189,9 +2189,9 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ. Aw ye bàrànda sɛnɛ santimɛtiri bi ni mugan ni mugan. nɔgɔ bɔlen wala nɔgɔ bɔlen don foroo la.",
+      "reponse_bambara": "Aw ye dugukolo labɛn ka ɲɛ fɔlɔ. Aw ye barandaa da mɛtɛrɛ fila ni saba cɛ. Aw ye kɔnpɔsi walima nɔgɔ don dugukolo la.",
       "reponse_fr": "Pour bien cultiver la banane, prépare bien ton sol. Plante le bananier avec 2 à 3 mètres d'écart. Mets du compost ou de l'engrais dans le sol.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "banane",
         "bàrànda",
@@ -2216,9 +2216,9 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda bɛ sɛnɛ san bɛɛ ni ji bɛ ɲɛ. Sanjiii tuma na, a bɛ ɲɛ joona. Aw ye sɛnɛ sanjiii tuma.",
+      "reponse_bambara": "Ni ji bɛ yen, barandaa bɛ se ka sɛnɛ san bɛɛ. Sanji tuma na, a bɛ bɔ joona. Aw ye a sɛnɛ sanji tuma walima ni ji bɛ aw bolo.",
       "reponse_fr": "La banane peut être plantée toute l'année si l'eau est disponible. En saison des pluies, la banane pousse vite. Plante pendant les pluies ou si tu as de l'eau.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "banane",
         "bàrànda",
@@ -2243,9 +2243,9 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda tigɛlen tuma ye kalo kɔnɔntɔn ni tan cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ. tigɛlen kɛ joona.",
+      "reponse_bambara": "Kalo kɔnɔntɔn ni tan cɛ sɛnɛli kɔfɛ, barandaa bɛ se ka tigɛ. Ni denw bɛ bon ka nɛrɛmuguya dɔɔni, tigɛ tuma ye. Aw ye u tigɛ joona, u kana mɔ ka tɛmɛ.",
       "reponse_fr": "La banane est prête 9 à 10 mois après la plantation. Quand les fruits grossissent et jaunissent légèrement, c'est le moment. Récoltez vite pour éviter la surmaturation.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "banane",
         "bàrànda",
@@ -2270,9 +2270,9 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda bɛ jɛ ji ye ka ɲi. Aw ye ji don foroo la tile kelen kelen na. ji caman tɛ ɲɛ, ji bɔli kɛ k a labɛn.",
+      "reponse_bambara": "Barandaa bɛ ji fɛ caman. Aw ye ji don foro la tile o tile. Ji caman man ɲi; aw ye jibolisira labɛn ka ɲɛ.",
       "reponse_fr": "La banane a vraiment besoin d'eau. Arrose le champ chaque jour. Trop d'eau n'est pas bien — améliore le drainage.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "banane",
         "bàrànda",
@@ -2297,9 +2297,9 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda bɛ potassium jɛ ka ɲɛ. NPK 0-0-60 wala nɔgɔ bɔlen kɛ ka ɲɛ. Aw ye furakɛ kalo kelen kelen na.",
+      "reponse_bambara": "Barandaa bɛ potasi fɛ caman. NPK 0-0-60 walima kɔnpɔsi ka ɲi. Kalo o kalo, aw ye furakɛli kɛ.",
       "reponse_fr": "La banane a particulièrement besoin de potassium. Le NPK 0-0-60 ou du compost est bien. Faites le traitement chaque mois.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "banane",
         "bàrànda",
@@ -2324,9 +2324,9 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni bàrànda jiri fura bɛ kɛ wɛrɛ wɛrɛ, bana bɛ a la. Aw ye jiri kɛ bɔ joona ka dɛmɛ. ANADER bɛ se ka i dɛmɛ furakɛ la.",
+      "reponse_bambara": "Ni barandaa furaw bɛ kɛ wɛrɛ ye, bana bɛ a la. Aw ye yiri bananenw bɔ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ furakɛli la.",
       "reponse_fr": "Si les feuilles du bananier changent de couleur, il y a une maladie. Retirez les pieds malades vite pour aider. L'agent ANADER peut vous aider pour le traitement.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "banane",
         "bàrànda",
@@ -2351,9 +2351,9 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda fere kɛ joona tigɛlen kɔfɛ. Aw ye fere kɛ lɔgɔ la wala julabaga ye. Bàrànda tigɛlen mana tɛmɛ, a bɛ gɛlɛ joona.",
+      "reponse_bambara": "Tigɛli kɔfɛ joona, aw ye barandaa feere. Aw ye a feere lɔgɔ la walima julabaga fɛ. Ni barandaa mɔlen don, a bɛ tiɲɛ joona.",
       "reponse_fr": "Vendez la banane juste après la récolte. Vendez au marché ou à un commerçant. Une fois mûre la banane se détériore vite.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "banane",
         "bàrànda",
@@ -2378,9 +2378,9 @@
         "CULTURE_BANANE"
       ],
       "conditions": [],
-      "reponse_bambara": "Bàrànda marali tuma ye tile seegin ka jɛ. Aw ye bàrànda mara yɔrɔ sumanin na ka boli. Aw ye fere kɛ joona ka gɛlɛ tɛmɛ.",
+      "reponse_bambara": "Barandaa bɛ se ka to tile wolonfila ɲɔgɔn na. Aw ye a mara suma la yɔrɔ sumanin na. Aw ye a feere joona sani a ka mɔ ka tɛmɛ.",
       "reponse_fr": "La banane se conserve environ 7 jours. Stocke-la dans un endroit frais à l'ombre. Vends vite avant qu'elle ne soit trop mûre.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "banane",
         "bàrànda",
@@ -2405,9 +2405,9 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ntomati sɛnɛ la ka ɲi, aw ye den foroo kɛ fɔlɔ. Aw ye den foroo yɔrɔ yɛlɛma tile mugan kɔnɔ. Aw ye ntomati sɛnɛ santimɛtiri bi ni mugan.",
+      "reponse_bambara": "Aw ye ntomati den foro labɛn fɔlɔ. Tile mugan kɔfɛ, aw ye denw turu foro la. Aw ye ntomati da santimɛtiri mugan mugan.",
       "reponse_fr": "Pour bien cultiver la tomate, fais d'abord une pépinière. Transplante les plants de pépinière après 20 jours. Plante la tomate avec 20 cm d'écart.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "tomate",
         "tamati",
@@ -2424,9 +2424,9 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ntomati bɛ sɛnɛ san bɛɛ ni ji bɛ ɲɛ. Ni sanjiii tɛ, aw ye ji bila foroo la tile o tile. Aw ye ntomati den sɛnɛ fɔlɔ ka a cɛ foroo la.",
+      "reponse_bambara": "Ntomati bɛ se ka sɛnɛ san bɛɛ ni ji bɛ yen. Ni sanji tɛ, aw ye ji don foro la tile o tile. Aw ye den foro kɛ fɔlɔ, ka denw turu foro la.",
       "reponse_fr": "La tomate peut etre plantee toute l annee si l eau est disponible. Sans pluie, arrosez votre champ chaque jour. Faites d abord un semis puis transplantez au champ.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "tomate",
         "tamati",
@@ -2443,9 +2443,9 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ntomati tigɛlen tuma ye kalo saba sɛnɛ kɔfɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ. tigɛlen kɛ tile kelen kelen.",
+      "reponse_bambara": "Kalo saba sɛnɛ kɔfɛ, ntomati bɛ se ka tigɛ. Ni denw bɛ bilenman, tigɛ tuma ye. Ni den mɔlen bɛ yen, aw ye tigɛ tile o tile.",
       "reponse_fr": "La tomate est prête à récolter 3 mois après la plantation. Quand les fruits rougissent, c'est le moment. Récoltez chaque jour quand il y a des fruits mûrs.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "tomate",
         "tamati",
@@ -2462,9 +2462,9 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ntomati bɛ jɛ ji ye tile bɛɛ. Aw ye ji don foroo la tile kelen kelen na. Ni ji bana, ntomati bɛ la ka kɛ ɲɔgɔn na.",
+      "reponse_bambara": "Ntomati bɛ ji fɛ tile o tile. Aw ye ji don foro la tile o tile. Ni ji tɛ, ntomati bɛ ja joona.",
       "reponse_fr": "La tomate a besoin d'eau chaque jour. Arrosez le champ quotidiennement. Sans eau, la tomate se dessèche vite.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "tomate",
         "tamati",
@@ -2481,9 +2481,9 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ntomati bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. Urée don tile mugan kɔfɛ ka ntomati dɛmɛ. Aw ye nɔgɔ bɔlen kɛ fana ka ɲɛ.",
+      "reponse_bambara": "Ntomati bɛ NPK 15-15-15 fɛ sɛnɛ kɔfɛ. Tile mugan kɔfɛ, aw ye ire don ka ntomati dɛmɛ. Kɔnpɔsi fana ka ɲi.",
       "reponse_fr": "La tomate a besoin de NPK 15-15-15 après la plantation. Apportez de l'urée 20 jours après pour la croissance. Le compost est aussi très bien.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "tomate",
         "tamati",
@@ -2500,9 +2500,9 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni ntomati fura bɛ kɛ wɛrɛ wɛrɛ, bana bana bɛ a la. Aw ye furakɛ furakɛli la joona. ANADER bɛ se ka i dɛmɛ.",
+      "reponse_bambara": "Ni ntomati fura bɛ yɛlɛma, mildiwu bana bɛ a la. Aw ye fɔngisidi la furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
       "reponse_fr": "Si les feuilles de tomate changent de couleur, c'est le mildiou. Traitez avec un fongicide rapidement. L'agent ANADER peut vous aider.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "tomate",
         "tamati",
@@ -2519,9 +2519,9 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ntomati fere kɛ joona tigɛlen kɔfɛ. Aw ye fere kɛ lɔgɔ la wala julabaga ye. Ntomati mana tigɛlen, a bɛ gɛlɛ joona.",
+      "reponse_bambara": "Tigɛ kɔfɛ joona, aw ye ntomati feere. Aw ye a feere lɔgɔ la wala julabaga fɛ. Ntomati mɔlen bɛ halaki joona.",
       "reponse_fr": "Vendez la tomate juste après la récolte. Vendez au marché ou à un commerçant. La tomate mûre se détériore vite, vendez rapidement.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "tomate",
         "tamati",
@@ -2538,9 +2538,9 @@
         "CULTURE_TOMATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ntomati marali tuma ye tile seegin ka jɛ. Aw ye ntomati mara yɔrɔ sumanin na. Aw ye fere kɛ joona k a bɔ.",
+      "reponse_bambara": "Ntomati bɛ se ka to tile wolonfila. Aw ye a mara yɔrɔ sumanin na. Aw ye a feere joona sani a ka mɔ caman.",
       "reponse_fr": "La tomate se conserve environ 7 jours. Stocke-la dans un endroit frais. Vends vite avant qu'elle ne soit trop mûre.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "tomate",
         "tamati",
@@ -2557,9 +2557,9 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ. Aw ye soso sɛnɛ santimɛtiri bi ni mugan. NPK 0-20-20 bɛ se ka a dɛmɛ.",
+      "reponse_bambara": "Aw ye foro labɛn ka ɲɛ fɔlɔ. Aw ye soso da santimɛtiri mugan mugan. NPK 0-20-20 bɛ se ka a dɛmɛ.",
       "reponse_fr": "Pour bien cultiver le haricot, prépare bien ton sol. Plante le haricot avec 20 cm d'écart. Le NPK 0-20-20 peut l'aider.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "haricot",
         "soso",
@@ -2576,9 +2576,9 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Aw ye to sanjiii ka wili ka fɔlɔ.",
+      "reponse_bambara": "Soso sɛnɛ tuma ɲuman ye sanji tuma na. Mɛ kalo wala Sɛtanburu kalo ka ɲi. Aw ye sanji daminɛ makɔnɔ fɔlɔ.",
       "reponse_fr": "Le meilleur moment pour planter le haricot c'est la saison des pluies. Mai ou septembre c'est bien. Attends que les pluies commencent.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "haricot",
         "soso",
@@ -2595,9 +2595,9 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso tigɛlen tuma ye kalo saba ni naani cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ joona.",
+      "reponse_bambara": "Kalo saba ni naani cɛ sɛnɛ kɔfɛ, soso bɛ se ka tigɛ. Ni soso denw bɛ ja, tigɛ tuma ye. Aw ye tigɛ joona sanji ɲɛ.",
       "reponse_fr": "Le haricot est prêt à récolter 3 à 4 mois après la plantation. Quand les gousses sèchent, c'est le bon moment. Récoltez vite avant les pluies.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "haricot",
         "soso",
@@ -2614,9 +2614,9 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso b a fɛ ji tile mugan sɛnɛ kɔfɛ. Ni sanjiii tɛ, aw ye ji don tile kelen kelen. ji caman bɛ soso bɔrɔ.",
+      "reponse_bambara": "Soso bɛ ji fɛ tile mugan fɔlɔ kɔnɔ. Ni sanji tɛ na, aw ye ji don tile o tile. Ji caman bɛ soso cɛn; aw kana a kɛ.",
       "reponse_fr": "Le haricot a besoin d'eau surtout les 20 premiers jours. Si la pluie manque, arrosez chaque jour. Trop d'eau fait pourrir le haricot, évitez l'excès.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "haricot",
         "soso",
@@ -2633,9 +2633,9 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso bɛ NPK 0-20-20 jɛ sɛnɛ kɔfɛ. Soso jiriden bɛ azɔti kɛ k a bɛɛ dɛmɛ. Aw ye furakɛ sɛnɛ kɔfɛ tile bi ni duuru.",
+      "reponse_bambara": "Aw ye NPK 0-20-20 don dugukolo la sɛnɛ kɔfɛ. Soso bɛ azɔti kɛ a yɛrɛ ka a dɛmɛ. Tile tan ni duuru kɔfɛ, aw ye furakɛli kɛ.",
       "reponse_fr": "Le haricot a besoin de NPK 0-20-20 après la plantation. La légumineuse fixe l'azote pour s'aider. Faites le traitement 15 jours après la plantation.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "haricot",
         "soso",
@@ -2652,9 +2652,9 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni soso fura bɛ kɛ wɛrɛ wɛrɛ, bana bɛ a la. Aw ye furakɛ furakɛli la joona. ANADER bɛ se ka i dɛmɛ.",
+      "reponse_bambara": "Ni soso fura bɛ yɛlɛma, bana bɛ a la. Aw ye fɔngisidi la furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
       "reponse_fr": "Si les feuilles du haricot changent de couleur, il y a une maladie. Traitez avec un fongicide rapidement. L'agent ANADER peut vous aider.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "haricot",
         "soso",
@@ -2671,9 +2671,9 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso fere kɛ lɔgɔ la wala kɔlɔ la. Aw ye soso mara ka ɲɛ fɔlɔ ka fere kɛ joona. Sɔngɔ ka ɲi ni soso ɲɛ.",
+      "reponse_bambara": "Aw ye soso feere lɔgɔ la wala julabaga fɛ. Aw ye a mara ka ɲɛ sani ka feere. Soso ɲuman sɔngɔ ka ɲi.",
       "reponse_fr": "Vendez le haricot au marché ou à un commerçant. Stockez-le bien avant de vendre. Le prix est bon quand le haricot est de bonne qualité.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "haricot",
         "soso",
@@ -2690,9 +2690,9 @@
         "CULTURE_HARICOT"
       ],
       "conditions": [],
-      "reponse_bambara": "Soso marali la, aw ye a mɛ ka ɲɛ fɔlɔ. Aw ye soso don sak ɲuman na ka mara. mara yɔrɔ sɔnna jɛ ka soso kisi.",
+      "reponse_bambara": "Aw ye soso ja ka ɲɛ fɔlɔ. Aw ye soso don saki ɲuman na ka mara. Aw ye a mara yɔrɔ jalen na ka soso kisi.",
       "reponse_fr": "Pour stocker le haricot, faites-le bien sécher d'abord. Mettez le haricot dans un bon sac pour le conserver. Le lieu de stockage doit être sec pour protéger le haricot.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "haricot",
         "soso",
@@ -2709,9 +2709,9 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ. Aw ye gan sɛnɛ santimɛtiri bi ni mugan. nɔgɔ bɔlen kɛ foroo la sɛnɛ kɔfɛ.",
+      "reponse_bambara": "Aw ye foro labɛn ka ɲɛ fɔlɔ. Aw ye gan da santimɛtiri mugan mugan. Aw ye nɔgɔ don dugukolo la sɛnɛ kɔfɛ.",
       "reponse_fr": "Pour bien cultiver le gombo, prépare bien ton sol. Plante le gombo avec 20 cm d'écart. Mets de l'engrais dans le sol après la plantation.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "gombo",
         "gan",
@@ -2728,9 +2728,9 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Ni sanjiii tɛ fana, gan bɛ se ka sɛnɛ ni ji bɛ ɲɛ.",
+      "reponse_bambara": "Gan sɛnɛ tuma ɲuman ye sanji tuma na. Mɛ kalo wala Sɛtanburu kalo ka ɲi. Sanji tɛ fana, gan bɛ se ka bɔ ni ji bɛ yen.",
       "reponse_fr": "Le meilleur moment pour le gombo c est la saison des pluies. Mai ou septembre c est bien. Sans pluie aussi, le gombo peut pousser avec de l eau.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "gombo",
         "gan",
@@ -2747,9 +2747,9 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan tigɛlen tuma ye kalo fila ni saba cɛ. Ni a bɛ la ka kɔrɔ, aw ye tigɛlen kɛ joona. tigɛlen kɛ tile kelen kelen.",
+      "reponse_bambara": "Kalo fila ni saba cɛ sɛnɛ kɔfɛ, gan bɛ se ka tigɛ. Ni gan denw magan ka ɲi, aw ye tigɛ joona. Tile fila o tile fila, aw ye gan tigɛ.",
       "reponse_fr": "Le gombo est prêt à récolter 2 à 3 mois après la plantation. Quand les fruits sont tendres et bien formés, récoltez vite. Récoltez un jour sur deux pour garder la qualité.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "gombo",
         "gan",
@@ -2766,9 +2766,9 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan bɛ jɛ ji ye tile bɛɛ. Aw ye ji don foroo la tile kelen kelen na. Gan bɛ la joona ni ji bɛ ɲɛ.",
+      "reponse_bambara": "Gan bɛ ji fɛ tile o tile. Aw ye ji don foro la tile o tile. Ni ji bɛ yen, gan bɛ bɔ joona.",
       "reponse_fr": "Le gombo a besoin d'eau chaque jour. Arrosez le champ quotidiennement. Le gombo pousse vite quand l'eau est disponible.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "gombo",
         "gan",
@@ -2785,9 +2785,9 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. nɔgɔ bɔlen kɛ fana ka gan dɛmɛ. Aw ye furakɛ kalo kelen kelen na.",
+      "reponse_bambara": "Gan bɛ NPK 15-15-15 fɛ sɛnɛ kɔfɛ. Kɔnpɔsi fana bɛ a dɛmɛ ka bɔ ka ɲɛ. Kalo o kalo, aw ye furakɛli kɛ.",
       "reponse_fr": "Le gombo a besoin de NPK 15-15-15 après la plantation. Du compost l'aide aussi à bien pousser. Faites le traitement chaque mois.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "gombo",
         "gan",
@@ -2804,9 +2804,9 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni gan fura bɛ kɛ wɛrɛ wɛrɛ, bana wala kulun bɛ a la. Aw ye furakɛ furakɛli la joona. ANADER bɛ se ka i dɛmɛ.",
+      "reponse_bambara": "Ni gan fura bɛ yɛlɛma, bana wala puserɔn bɛ a la. Aw ye ɛnsɛktisidi la furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
       "reponse_fr": "Si les feuilles du gombo changent, il y a maladie ou pucerons. Traitez avec un insecticide rapidement. L'agent ANADER peut vous aider.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "gombo",
         "gan",
@@ -2823,9 +2823,9 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan fere kɛ joona tigɛlen kɔfɛ. Aw ye fere kɛ lɔgɔ la tile kelen kelen na. Gan mana tigɛlen, a bɛ gɛlɛ joona.",
+      "reponse_bambara": "Tigɛ kɔfɛ joona, aw ye gan feere. Aw ye a feere lɔgɔ la tuma bɛɛ. Gan mɔlen bɛ halaki joona.",
       "reponse_fr": "Vendez le gombo juste après la récolte. Allez vendre au marché régulièrement. Le gombo mûr se détériore vite, vendez rapidement.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "gombo",
         "gan",
@@ -2842,9 +2842,9 @@
         "CULTURE_GOMBO"
       ],
       "conditions": [],
-      "reponse_bambara": "Gan marali tuma ye tile seegin ka jɛ. Aw ye gan mara yɔrɔ sumanin na. Aw ye fere kɛ joona k a bɔ.",
+      "reponse_bambara": "Gan bɛ se ka to tile wolonfila. Aw ye a mara yɔrɔ sumanin na. Aw ye a feere joona sani a ka halaki.",
       "reponse_fr": "Le gombo se conserve environ 7 jours. Stocke-le dans un endroit frais. Vends vite avant qu'il ne se détériore.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "gombo",
         "gan",
@@ -2861,9 +2861,9 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba sɛnɛ la ka ɲi, aw ye den foroo kɛ fɔlɔ. Aw ye den foroo yɔrɔ yɛlɛma tile mugan kɔnɔ. Aw ye jaba sɛnɛ santimɛtiri bi ni mugan.",
+      "reponse_bambara": "Aw ye jaba den foro labɛn fɔlɔ. Tile mugan kɔfɛ, aw ye denw turu foro la. Aw ye jaba da santimɛtiri tan ni tan ni duuru cɛ.",
       "reponse_fr": "Pour bien cultiver l'oignon, fais d'abord une pépinière. Transplante les plants après 20 jours. Plante l'oignon avec 10 à 15 cm d'écart.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "oignon",
         "jaba",
@@ -2880,9 +2880,9 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba sɛnɛ tuma ɲuman ye sanjiii tɛ tuma na. Novanburu ni desanburu kalo bɛ ɲɛ ka sɛnɛ. Aw ye den foroo kɛ fɔlɔ.",
+      "reponse_bambara": "Jaba sɛnɛ tuma ɲuman ye sanji tɛ tuma na. Nowanburu ni Desanburu kalo ka ɲi. Aw ye jaba den foro labɛn fɔlɔ.",
       "reponse_fr": "Le meilleur moment pour l oignon c est quand il ne pleut pas. Novembre et décembre c est bien. Faites d abord la pépinière.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "oignon",
         "jaba",
@@ -2899,9 +2899,9 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba tigɛlen tuma ye kalo saba ni naani cɛ. Ni jaba jiri bɛ la, aw ye tigɛlen kɛ. Aw ye jaba bɔ ni hɛrɛ ye.",
+      "reponse_bambara": "Kalo saba ni naani cɛ sɛnɛ kɔfɛ, jaba bɛ se ka bɔ. Ni jaba fura bɛ bin, tigɛ tuma ye. Aw ye jaba sogi dɔɔni dɔɔni ka a ja.",
       "reponse_fr": "L'oignon est prêt à récolter 3 à 4 mois après la plantation. Quand les fanes tombent, c'est le moment. Déterrez avec soin et mettez à sécher.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "oignon",
         "jaba",
@@ -2918,9 +2918,9 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba bɛ jɛ ji ye tile bɛɛ. Aw ye ji don foroo la tile kelen kelen na. tigɛlen kɔ tuma, aw ye ji bilali dɔgɔya.",
+      "reponse_bambara": "Jaba bɛ ji fɛ tile o tile. Aw ye ji don foro la tile o tile. Laban na, aw ye ji donli dɔgɔya ka jaba gɛlɛya.",
       "reponse_fr": "L'oignon a besoin d'eau chaque jour. Arrosez le champ quotidiennement. Vers la fin réduisez l'arrosage pour que l'oignon durcisse.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "oignon",
         "jaba",
@@ -2937,9 +2937,9 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. Potassium fana bɛ a dɛmɛ ka koro. Aw ye furakɛ kalo kelen kelen na.",
+      "reponse_bambara": "Jaba bɛ NPK 15-15-15 fɛ sɛnɛ kɔfɛ. Potasi fana bɛ jaba dɛmɛ ka bon. Kalo o kalo, aw ye furakɛli kɛ.",
       "reponse_fr": "L'oignon a besoin de NPK 15-15-15 après la plantation. Le potassium l'aide aussi à se former. Faites le traitement chaque mois.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "oignon",
         "jaba",
@@ -2956,9 +2956,9 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni jaba jiri bɛ la ka gɛlɛn joona, bana bɛ a la. Aw ye furakɛ furakɛli la joona. ANADER bɛ se ka i dɛmɛ furakɛ la.",
+      "reponse_bambara": "Ni jaba fura bɛ bin joona, bana bɛ a la. Aw ye fɔngisidi la furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
       "reponse_fr": "Si les fanes de l'oignon tombent trop tôt, il y a une maladie. Traitez avec un fongicide rapidement. L'agent ANADER peut vous aider.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "oignon",
         "jaba",
@@ -2975,9 +2975,9 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba fere kɛ lɔgɔ la wala julabaga fɛ. Jaba sɔngɔ ka ɲi sanjiii tɛ tuma na. Aw ye a mara ka sɔngɔ ɲuman sɔrɔ.",
+      "reponse_bambara": "Aw ye jaba feere lɔgɔ la wala julabaga fɛ. Sanji tɛ tuma na, sɔngɔ ka ɲi. Aw ye a mara ka ɲɛ ka sɔngɔ ɲuman sɔrɔ.",
       "reponse_fr": "Vendez l oignon au marché ou à un commerçant. Le prix est meilleur quand il ne pleut pas. Stockez bien pour avoir un meilleur prix.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "oignon",
         "jaba",
@@ -2994,9 +2994,9 @@
         "CULTURE_OIGNON"
       ],
       "conditions": [],
-      "reponse_bambara": "Jaba marali tuma ye kalo wɔɔrɔ. Aw ye jaba mara yɔrɔ sumanin na wala lɔgɔ la. Aw ye jaba mɛ fɔlɔ.",
+      "reponse_bambara": "Jaba bɛ se ka to kalo wɔɔrɔ. Aw ye a mara yɔrɔ jalen na wala gala kan. Aw ye jaba ja ka ɲɛ sani ka a mara.",
       "reponse_fr": "L'oignon peut se conserver jusqu'à 6 mois. Stocke-le dans un endroit sec ou sur des claies. Fais-le bien sécher avant de stocker.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "oignon",
         "jaba",
@@ -3013,9 +3013,9 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ. Aw ye woso sɛnɛ santimɛtiri bi ni bi na. Sanjiii tuma ye woso sɛnɛli tuma ɲuman.",
+      "reponse_bambara": "Aw ye foro labɛn ka ɲɛ fɔlɔ. Aw ye woso bolow da santimɛtiri bi saba. Sanji tuma ye woso sɛnɛ tuma ɲuman ye.",
       "reponse_fr": "Pour bien cultiver la patate douce, prépare bien ton sol. Plante les boutures à 30 cm d'écart. La saison des pluies est le meilleur moment.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "patate douce",
         "woso",
@@ -3032,9 +3032,9 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala sɛtanburuuu kalo bɛ ɲɛ. Aw ye foroo labɛn sisan ka kɛ ɲɔgɔn na.",
+      "reponse_bambara": "Woso sɛnɛ tuma ɲuman ye sanji tuma na. Mɛ kalo wala Sɛtanburu kalo ka ɲi. Sisan, aw ye foro labɛn ka ɲɛ.",
       "reponse_fr": "Le meilleur moment pour planter la patate douce c'est la saison des pluies. Mai ou septembre c'est bon. Prépare ton champ maintenant pour être prêt.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "patate douce",
         "woso",
@@ -3050,9 +3050,9 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso tigɛlen tuma ye kalo saba ni naani cɛ. Ni sira bɛ la ka gɛlɛn, tigɛlen tuma ye. Aw ye duguma cɛ ka woso bɔ.",
+      "reponse_bambara": "Kalo saba ni naani cɛ sɛnɛ kɔfɛ, woso bɛ se ka bɔ. Ni fura bɛ nɛrɛmugu, tigɛ tuma ye. Aw ye dugukolo sɛgɛsɛgɛ ka woso bɔ.",
       "reponse_fr": "La patate douce est prête à récolter 3 à 4 mois après la plantation. Quand les feuilles commencent à jaunir, c'est le signe. Creusez pour sortir les tubercules.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "patate douce",
         "woso",
@@ -3069,9 +3069,9 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso b a fɛ ji dɔɔni. Ni sanjiii tɛ, aw ye ji don foroo la. Woso bɛ se ka kɛ kalo kelen.",
+      "reponse_bambara": "Woso bɛ ji fɛ, nka ji caman man ɲi. Ni sanji tɛ, aw ye ji dɔɔni don. Woso bɛ se ka to kalo kelen ji tɛ.",
       "reponse_fr": "La patate douce a besoin d'eau mais ne supporte pas l'excès. Sans pluie, arrosez légèrement. La patate peut tenir un mois sans eau.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "patate douce",
         "woso",
@@ -3088,9 +3088,9 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso bɛ nɔgɔ bɔlen kɛ jɛ sɛnɛ ɲɛ. Aw ye NPK dɔɔni fere kɛ joona sɛnɛ kɔfɛ. Nɔgɔ caman bɛ woso halaki.",
+      "reponse_bambara": "Aw ye nɔgɔ bɔlen don dugukolo la sɛnɛ ɲɛ. Sɛnɛ kɔfɛ, NPK dɔɔni ka kɛnɛ. Nɔgɔ caman bɛ woso halaki.",
       "reponse_fr": "La patate douce aime la fumure organique avant la plantation. Un peu de NPK juste après la plantation suffit. Trop d'engrais abîme la patate.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "patate douce",
         "woso",
@@ -3107,9 +3107,9 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni woso jiri bɛ gɛlɛn wala bɛ la joona, kulun bɛ a la. Aw ye furakɛ furakɛli la joona. Aw ye jira cɛnna bɛɛ bɔ foroo la.",
+      "reponse_bambara": "Ni woso bolo bɛ fɔsɔn wala bin joona, saransɔn bɛ a la. Aw ye ɛnsɛktisidi la furakɛli kɛ joona. Aw ye woso bananenw bɔ foro la.",
       "reponse_fr": "Si les tiges de la patate douce se flétrisent ou tombent trop tôt, c'est le charançon. Traitez avec un insecticide rapidement. Arrachez les plants très atteints.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "patate douce",
         "woso",
@@ -3126,9 +3126,9 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso fere kɛ lɔgɔ la wala julabaga fɛ. Aw ye woso fara tile saba kɔfɛ. Sɔngɔ ka ɲi sanjiii tɛ tuma na.",
+      "reponse_bambara": "Aw ye woso feere lɔgɔ la. Tigɛ kɔ tile saba kɔnɔ, aw ye a feere kura. Sanji tɛ tuma na, sɔngɔ ka ɲi.",
       "reponse_fr": "Vendez la patate douce au marché. Vendez frais dans les 3 jours après récolte. Le prix est meilleur quand il ne pleut pas.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "patate douce",
         "woso",
@@ -3145,9 +3145,9 @@
         "CULTURE_PATATE"
       ],
       "conditions": [],
-      "reponse_bambara": "Woso kura bɛ bɔrɔ kalo kelen. Aw ye mara yɔrɔ sumanin wala kurun na. Aw ye woso mɛ ka jɛ ka mara.",
+      "reponse_bambara": "Woso kura bɛ se ka to kalo kelen. Aw ye a mara yɔrɔ sumanin na, fiɲɛ bɛ yɔrɔ. Aw ye a ja ka a mara tuma jan.",
       "reponse_fr": "La patate douce fraîche ne se conserve qu'un mois environ. Stockez dans un endroit frais et ventilé. Faites sécher pour une meilleure conservation.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "patate douce",
         "woso",
@@ -3164,9 +3164,9 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ sɛnɛ la ka ɲi duguma sɔnna yɔrɔ. Aw ye bɛnɛ sɛnɛ sanjiii tuma fɔlɔ na. Bɛnɛ bɛ se ka sɔrɔ caman sɔrɔ ni foroo ɲi.",
+      "reponse_bambara": "Aw ye foro labɛn yɔrɔ la min dugukolo nɔgɔman don, ji bɔli ka ɲi. Sanji tuma daminɛ na, aw ye bɛnɛ sɛnɛ. Foro ɲuman bɛ bɛnɛ caman bɔ.",
       "reponse_fr": "Le sésame se cultive bien dans un sol léger et bien drainé. Plantez le sésame au début de la saison des pluies. Un bon champ donne un bon rendement.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "sésame",
         "bɛnɛ",
@@ -3183,9 +3183,9 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ sɛnɛ tuma ɲuman ye sɛtanburu wala Ɔtɔburu kalo. Sanjiii bɛ kɛ dɔɔni o tuma. Aw ye foroo labɛn joona ka sɛnɛ kɛ.",
+      "reponse_bambara": "Bɛnɛ sɛnɛ tuma ɲuman ye Sɛtanburu wala Ɔkitɔburu kalo. Sanji ka dɔgɔ o tuma la. Aw ye foro labɛn joona ka bɛnɛ sɛnɛ.",
       "reponse_fr": "Le meilleur moment pour planter le sésame c'est septembre ou octobre. Les pluies sont légères à ce moment. Prépare vite ton champ pour planter.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "sésame",
         "bɛnɛ",
@@ -3202,9 +3202,9 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ tigɛlen tuma ye kalo saba sɛnɛ kɔfɛ. Ni fura bɛ bɔ ka koro, tigɛlen ye. Aw ye tigɛlen kɛ tile na fɔlɔ ka fura fali.",
+      "reponse_bambara": "Kalo saba sɛnɛ kɔfɛ, bɛnɛ bɛ se ka tigɛ. Ni bɛnɛ denw bɛ kɔgɔ, tigɛ tuma ye. Sɔgɔma joona, aw ye tigɛ sani denw ka yɛlɛ.",
       "reponse_fr": "Le sésame est prêt à récolter 3 mois après la plantation. Quand les capsules commencent à brunir, c'est le bon moment. Récoltez tôt le matin avant que les capsules s'ouvrent.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "sésame",
         "bɛnɛ",
@@ -3221,9 +3221,9 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ ma jɛ ji caman ye. Jiɲɛ la bɛnɛ bɛ se ka dugu la ka ɲɛ. ji dan caman bɛ a halaki.",
+      "reponse_bambara": "Bɛnɛ tɛ ji caman fɛ. A bɛ se ka sɔn ji tɛ ma caman. Ji caman bɛ bɛnɛ cɛn.",
       "reponse_fr": "Le sésame n'a pas besoin de beaucoup d'eau. Il résiste très bien à la sécheresse. Trop d'eau peut le faire pourrir.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "sésame",
         "bɛnɛ",
@@ -3240,9 +3240,9 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ ma nɔgɔ caman fɛ. nɔgɔ bɔlen kɛ foroo la sɛnɛ ɲɛ ka ɲi. fɔsifati dɔɔni bɛ a dɛmɛ.",
+      "reponse_bambara": "Bɛnɛ tɛ nɔgɔ caman fɛ. Aw ye nɔgɔ bɔlen don dugukolo la sɛnɛ ɲɛ. Fɔsifati dɔɔni bɛ a dɛmɛ ka bɔ.",
       "reponse_fr": "Le sésame n'a pas besoin de beaucoup d'engrais. Mets de la fumure organique avant la plantation. Un peu de phosphate l'aide à se développer.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "sésame",
         "bɛnɛ",
@@ -3259,9 +3259,9 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni bɛnɛ jira bɛ jɛ ka fara, furakɛli bɛ se ka dɛmɛ. Aw ye furakɛ joona. Aw ye jira cɛnna bɔ.",
+      "reponse_bambara": "Ni bɛnɛ fura bɛ bin wala kɔgɔ, aw ye fɔngisidi la furakɛli kɛ. Bana taamasiɲɛ fɔlɔw yera tuma, aw ye furakɛli kɛ joona. Aw ye bɛnɛ bananenw bɔ foro la.",
       "reponse_fr": "Si les feuilles du sésame tombent ou brunissent, un fongicide peut aider. Traitez rapidement dès les premiers signes de maladie. Arrachez les plants très malades.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "sésame",
         "bɛnɛ",
@@ -3278,9 +3278,9 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ fere kɛ lɔgɔ la wala kɔlɔ la. Bɛnɛ sɔngɔ ka ɲi ni a mɛ ka ɲɛ. Aw ye mara ka ɲɛ fɔlɔ ka fere kɛ.",
+      "reponse_bambara": "Aw ye bɛnɛ feere lɔgɔ la wala julabaga fɛ. Bɛnɛ jalen sɔngɔ ka ɲi. Aw ye a mara ka ɲɛ sani ka feere.",
       "reponse_fr": "Vendez le sésame au marché ou à un commerçant. Le prix est bon quand le sésame est bien sec. Stockez bien avant de vendre.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "sésame",
         "bɛnɛ",
@@ -3297,9 +3297,9 @@
         "CULTURE_SESAME"
       ],
       "conditions": [],
-      "reponse_bambara": "Bɛnɛ marali tuma la, aw ye a mɛ ka ɲɛ fɔlɔ. Aw ye bɛnɛ mara sak sumanin na. Bɛnɛ mɛnen bɛ se ka sɔrɔ kalo caman.",
+      "reponse_bambara": "Aw ye bɛnɛ ja ka ɲɛ fɔlɔ. Aw ye a don saki jalen na. Bɛnɛ jalen bɛ se ka to kalo caman.",
       "reponse_fr": "Pour stocker le sésame, faites-le bien sécher d'abord. Mettez le sésame dans un sac bien sec. Le sésame bien séché peut se conserver plusieurs mois.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "sésame",
         "bɛnɛ",
@@ -3316,9 +3316,9 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe ye sɔrɔ fɛn fɔlɔ Kote d Ivoire la. Aw ye kafe sɛnɛ jiri kɔrɔfɛ ka juruni lakisi. San 3 kɔfɛ kafe tigɛlen bɛ sɔrɔ.",
+      "reponse_bambara": "Kafe ye sɛnɛfɛn nafaman ye Kote Divwari la. Aw ye kafe denw sɛnɛ yiri wɛrɛw kɔrɔ ka olu kisi. San saba kɔfɛ, kafe tigɛ fɔlɔ bɛ kɛ.",
       "reponse_fr": "Le café est une culture importante en Côte d'Ivoire. Plantez le café à l'ombre d'autres arbres pour protéger les jeunes plants. La première récolte arrive après 3 ans.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "café",
         "kafe",
@@ -3335,9 +3335,9 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe sɛnɛ tuma ɲuman ye sanjiii tuma na. Mɛ wala juin kalo bɛ ɲɛ. Aw ye den foroo labɛn fɔlɔ sɛnɛ ɲɛ.",
+      "reponse_bambara": "Kafe sɛnɛ tuma ɲuman ye sanji tuma na. Mɛ kalo wala Zuwɛ kalo ka ɲi. Aw ye kafe den foro labɛn fɔlɔ.",
       "reponse_fr": "Le meilleur moment pour planter le café c'est la saison des pluies. Mai ou juin c'est bien. Prépare une pépinière avant de planter.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "café",
         "kafe",
@@ -3354,9 +3354,9 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe tigɛlen tuma ye Ɔtɔburu ni Fevuruye cɛ. Ni kafe bɛ la ka surun, tigɛlen tuma ye. Aw ye tigɛlen kɛ tile siran na.",
+      "reponse_bambara": "Ɔkitɔburu ni Fevuruye kalo cɛ, kafe bɛ tigɛ. Ni kafe denw bɛ bilenman, tigɛ tuma ye. Sɔgɔma joona, aw ye kafe tigɛ.",
       "reponse_fr": "Le café se récolte entre octobre et février. Quand les cerises sont bien rouges, c'est le bon moment. Récoltez tôt le matin.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "café",
         "kafe",
@@ -3374,9 +3374,9 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe bɛ jɛ ji ye caman. Ni sanjiii ma na joona, aw ye ji don kafe la. Jiɲɛ jan bɛ kafe dɛmɛ kɛ.",
+      "reponse_bambara": "Kafe bɛ ji fɛ caman. Ni sanji tɛ na joona, aw ye ji don kafew la. Ji tɛ tuma jan bɛ kafe halaki.",
       "reponse_fr": "Le café a besoin de beaucoup d'eau. Si les pluies tardent, arrosez vos caféiers. La sécheresse prolongée abîme le café.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "café",
         "kafe",
@@ -3393,9 +3393,9 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe bɛ NPK 12-15-18 jɛ ka ɲi. Aw ye furakɛ kalo kelen kelen na. maginesiyɔm fana bɛ kafe dɛmɛ.",
+      "reponse_bambara": "Kafe bɛ NPK 12-15-18 fɛ. Kalo o kalo, aw ye furakɛli kɛ. Maginesiyɔm fana bɛ kafe dɛmɛ ka den caman bɔ.",
       "reponse_fr": "Le café préfère le NPK 12-15-18. Faites le traitement chaque mois. Le magnésium aide aussi le caféier à bien produire.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "café",
         "kafe",
@@ -3412,9 +3412,9 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni kafe jira bɛ jɛ ka gɛlɛn wala bɛ la joona, bana bɛ a la. CBD bana bɛ kafe halaki caman. Aw ye furakɛ furakɛli la joona.",
+      "reponse_bambara": "Ni kafe fura bɛ bin wala kɔgɔ joona, bana bɛ a la. CBD ye kafe bana juguya ye. Aw ye fɔngisidi la furakɛli kɛ joona.",
       "reponse_fr": "Si les feuilles du caféier tombent ou brunissent trop tôt, il y a une maladie. La CBD est la plus grave maladie du café. Traitez avec un fongicide rapidement.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "café",
         "kafe",
@@ -3432,9 +3432,9 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe fere kɛ jɛkulun la. jɛkulun bɛ sɔngɔ ɲuman sɔrɔ i ye. Aw ye kafe mɛ ka ɲɛ fɔlɔ ka fere kɛ.",
+      "reponse_bambara": "Aw ye kafe feere jɛkulu fɛ. Jɛkulu bɛ sɔngɔ ɲuman sɔrɔ aw ye. Aw ye kafe ja ka ɲɛ sani ka feere.",
       "reponse_fr": "Vendez le café à travers une coopérative. La coopérative vous obtient un meilleur prix. Faites bien sécher votre café avant de vendre.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "café",
         "kafe",
@@ -3451,9 +3451,9 @@
         "CULTURE_CAFE"
       ],
       "conditions": [],
-      "reponse_bambara": "Kafe marali tuma la, aw ye a mɛ ka ɲɛ caman. Aw ye mara yɔrɔ sumanin na ka ji kɛ. Kafe mɛnen bɛ se ka sɔrɔ kalo caman.",
+      "reponse_bambara": "Aw ye kafe ja ka ɲɛ fɔlɔ. Aw ye a mara yɔrɔ sumanin ni jalen na. Kafe jalen bɛ se ka to kalo caman.",
       "reponse_fr": "Pour stocker le café, faites-le bien sécher. Stockez dans un endroit frais et sec. Le café bien séché peut se conserver plusieurs mois.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "café",
         "kafe",
@@ -3470,9 +3470,9 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ananas sɛnɛ la ka ɲi Kote d Ivoire la caman. Aw ye ananas sɛnɛ santimɛtiri bi ni bi na. Couronne wala bolo bɛ sɛnɛ la.",
+      "reponse_bambara": "Ananas bɛ bɔ ka ɲɛ Kote Divwari la. Aw ye a da santimɛtiri bi saba. Aw ye ananas kunw wala denw sɛnɛ.",
       "reponse_fr": "L'ananas se cultive très bien en Côte d'Ivoire. Plantez à 30 cm d'écart. On plante avec les couronnes ou les rejets.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "ananas",
         "conseils",
@@ -3489,9 +3489,9 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ananas bɛ se ka sɛnɛ kalo bɛɛ la ni ji bɛ ɲɛ. Sanjiii tuma na sɛnɛ bɛ ɲɛ caman. Aw ye couronne labɛn fɔlɔ ka sɛnɛ.",
+      "reponse_bambara": "Ananas bɛ se ka sɛnɛ san bɛɛ ni ji bɛ yen. Sanji tuma ye tuma ɲuman ye. Aw ye ananas kunw labɛn ka ɲɛ fɔlɔ.",
       "reponse_fr": "L'ananas peut se planter toute l'année avec de l'eau. La saison des pluies est la meilleure. Préparez bien vos couronnes avant de planter.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "ananas",
         "saison",
@@ -3508,9 +3508,9 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ananas tigɛlen tuma ye kalo bi ni naani sɛnɛ kɔfɛ. Ni ananas bɛ la ka gɛlɛn duguma fɛ, tigɛlen ye. Aw ye ananas bɔ ka fere kɛ joona.",
+      "reponse_bambara": "Kalo tan ni naani ni kalo tan ni segin cɛ, ananas bɛ se ka tigɛ. Ni a bɛ nɛrɛmugu dɔɔni duguma fɛ, a mɔlen don. Aw ye a tigɛ ka feere joona.",
       "reponse_fr": "L'ananas est prêt à récolter 14 à 18 mois après la plantation. Quand il commence à jaunir à la base, c'est prêt. Récoltez et vendez rapidement.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "ananas",
         "récolte",
@@ -3527,9 +3527,9 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ananas bɛ jiɲɛ la sɔn dɔɔni. Nka ji dɔɔni ka ɲi joona sɛnɛ kɔfɛ. Ni sanjiii ma na, aw ye ji don foroo la kalo kelen.",
+      "reponse_bambara": "Ananas bɛ se ka sɔn ji tɛ ma dɔɔni. Sɛnɛ kɔfɛ joona, ji dɔɔni bɛ a dɛmɛ. Ni sanji tɛ, kalo o kalo aw ye ji don.",
       "reponse_fr": "L'ananas tolère assez bien la sécheresse. Mais un peu d'eau aide juste après la plantation. Sans pluie, arrosez une fois par mois.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "ananas",
         "eau",
@@ -3546,9 +3546,9 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ananas bɛ potassium jɛ ka ɲi caman. Aw ye NPK don joona sɛnɛ kɔfɛ. potasi de potasse bɛ ananas dɛmɛ.",
+      "reponse_bambara": "Ananas bɛ potasi fɛ caman. Sɛnɛ kɔfɛ joona, aw ye NPK don dugukolo la. Sulfati potasi bɛ ananas dɛmɛ ka bon.",
       "reponse_fr": "L'ananas aime surtout le potassium. Apportez du NPK juste après la plantation. Le sulfate de potasse aide beaucoup l'ananas à grossir.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "ananas",
         "engrais",
@@ -3565,9 +3565,9 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni ananas jira bɛ jɛ ka jɔ wala bɛ la joona, kosheni bɛ a la. Aw ye furakɛ furakɛli la joona. Aw ye ananas cɛnna bɔ foroo la.",
+      "reponse_bambara": "Ni ananas fura bɛ nɛrɛmugu wala bin, kosheni bɛ a la. Aw ye ɛnsɛktisidi la furakɛli kɛ joona. Aw ye ananas bananenw bɔ foro la.",
       "reponse_fr": "Si les feuilles de l'ananas jaunissent ou tombent, ce sont les cochenilles. Traitez avec un insecticide rapidement. Retirez les plants très atteints du champ.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "ananas",
         "cochenilles",
@@ -3584,9 +3584,9 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ananas fere kɛ lɔgɔ la wala kɔlɔ la. Aw ye ananas fere joona tigɛlen kɔfɛ tile saba. dɛsɛ bɛ se ka sɔngɔ ɲuman sɔrɔ.",
+      "reponse_bambara": "Aw ye ananas feere lɔgɔ la wala julabaga fɛ. Tigɛ kɔ tile saba kɔnɔ, aw ye a feere. Jamana wɛrɛ la feere bɛ se ka sɔngɔ ɲuman di.",
       "reponse_fr": "Vendez l'ananas au marché ou à un commerçant. Vendez dans les 3 jours après récolte. L'exportation peut donner un meilleur prix.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "ananas",
         "vente",
@@ -3603,9 +3603,9 @@
         "CULTURE_ANANAS"
       ],
       "conditions": [],
-      "reponse_bambara": "Ananas kura bɛ bɔrɔ tile tan wala bi ni naani. Aw ye mara yɔrɔ sumanin na. Aw ye tigɛlen kɛ joona ka fere.",
+      "reponse_bambara": "Ananas kura bɛ se ka to tile tan ni tile tan ni naani cɛ. Aw ye a mara yɔrɔ sumanin na. Aw ye a tigɛ tuma ɲuman na ka feere joona.",
       "reponse_fr": "L'ananas frais ne se conserve que 10 à 14 jours. Stockez dans un endroit frais. Récoltez au bon moment et vendez vite.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "ananas",
         "stockage",
@@ -3691,9 +3691,9 @@
         "PROBLEME_INSECTE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni maŋoro bɛ bana, jiriden limɔgɔ bɛ o kɛ. Aw ye jiri banaw bɔ foroo la joona. kɔrɔsi foroo kalo kelen kelen.",
+      "reponse_bambara": "Ni mangoro bɛ cɛn, jiriden limɔgɔ bɛ se ka kɛ sababi ye. Limɔgɔ bɛ don den kɔnɔ ka a cɛn. Aw ye mangoro halakilenw bɔ foro la joona. Kalo o kalo, aw ye foro kɔrɔsi.",
       "reponse_fr": "Si tu vois tes mangues pourrir, la mouche des fruits peut en être la cause. Cet insecte pénètre à l'intérieur du fruit et le fait pourrir. Retire rapidement les mangues abîmées de ton champ. Surveille ton champ chaque mois.",
-      "score_validation": 0.62,
+      "score_validation": 1.0,
       "tags": [
         "mangue",
         "maŋoro",
@@ -3726,9 +3726,9 @@
         "CULTURE_MANGUE"
       ],
       "conditions": [],
-      "reponse_bambara": "Maŋoro sɛnɛ ɲuman ye zanwuye kalo. Ni maŋoro bana ye, o bɔ foroo la joona. kɔrɔsi jiri tuma bɛɛ kalo kelen kelen.",
+      "reponse_bambara": "Desanburu ni Marisi kalo cɛ, mangoro yiri bɛ den bɔ ka ɲɛ. Ni mangoro den cɛnnen ye, aw ye a bɔ foro la joona. Aw ye aw ka yiriw ni denw kɔrɔsi tuma bɛɛ.",
       "reponse_fr": "Le manguier produit bien entre décembre et mars. Si tu vois des fruits pourris, retire-les du champ immédiatement. Surveille tes arbres et tes fruits régulièrement.",
-      "score_validation": 0.6,
+      "score_validation": 1.0,
       "tags": [
         "mangue",
         "maŋoro",
@@ -3770,9 +3770,9 @@
         "CULTURE_NERE"
       ],
       "conditions": [],
-      "reponse_bambara": "Nɛrɛ jiri ka nafama caman. Aw ye a sɛnɛ foroo da la, a bɛna ca. Aw bɛna sumbala kɛ jiridenw na ka wari sɔrɔ.",
+      "reponse_bambara": "Nɛrɛ ye yiri nafaman ye caman. Aw ye a sɛnɛ foro da la; a bɛ to san caman. Aw bɛ se ka sumbala kɛ a kisɛw la ka feere lɔgɔ la.",
       "reponse_fr": "Le néré est un arbre très utile. Plante-le en bordure de ton champ, il pousse longtemps. Tu pourras faire du sumbala avec ses graines pour vendre au marché.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "nere",
         "sumbala",
@@ -3865,9 +3865,9 @@
         "CULTURE_NERE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni nɛrɛ jiri bɛ dimi, aw ye fɔlɔ filɛ. Ni fɔlɔ yɛlɛma nɛrɛmugu, aw ye ji don a la. Ni yiri fara sɛgɛsɛgɛ, bana bɛ a la.",
+      "reponse_bambara": "Ni nɛrɛ bɛ dɛsɛ, aw ye fura ni golo kɔrɔsi. Ni fura bɛ nɛrɛmugu, aw ye ji don caman. Ni golo bɛ fara, o ye kɔrɔya ye; a man jugu.",
       "reponse_fr": "Si ton néré a un problème, observe les feuilles et l'écorce. Si les feuilles jaunissent, arrose davantage. Si l'écorce se fend, c'est normal avec l'âge.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "nere",
         "diagnostic",
@@ -3885,9 +3885,9 @@
       "conditions": [
         "saison_pluie"
       ],
-      "reponse_bambara": "Nɛrɛ jiridenw bɛna kɔkɔla zuwɛɛɛn kalo ni zuluye kalo la. Aw ye olu minɛ ni olu bɛ dan. Aw ye olu jukoro kà ban sumbala kɛ ɲɛ fɛ.",
+      "reponse_bambara": "Nɛrɛ kisɛw bɛ mɔ Zuwɛ ni Zuliye kalo la. Ni olu bɛ bin, aw ye olu lajɛ. Aw ye kisɛw ja ka ɲɛ sani ka sumbala kɛ.",
       "reponse_fr": "Les graines de néré mûrissent en juin-juillet. Ramasse-les quand elles tombent. Sèche-les bien avant de faire le sumbala.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "nere",
         "recolte",
@@ -3904,9 +3904,9 @@
         "CULTURE_NERE"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye nɛrɛ jiridenw jukoro ka mara. Aw ye olu don bɔrɔ kɔnɔ, ji kana sɔrɔ. Sumbala bɛna ɲɛ tile caman na.",
+      "reponse_bambara": "Aw ye nɛrɛ kisɛw ja ka ɲɛ fɔlɔ. Aw ye olu don saki datugulɛn na, ji tɛ yɔrɔ. Sumbala labɛnnen bɛ se ka to tile caman.",
       "reponse_fr": "Sèche bien les graines de néré avant de les stocker. Mets-les dans un sac fermé, à l'abri de l'humidité. Le sumbala préparé se conserve plusieurs jours.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "nere",
         "stockage",
@@ -3922,9 +3922,9 @@
         "CULTURE_NERE"
       ],
       "conditions": [],
-      "reponse_bambara": "Nɛrɛ sumbala bɛ sɔrɔ wari caman lɔgɔ la. Aw ye a kɛ ɲuman kà nafolo sɔrɔ. Musow bɛ a san caman k a kɛ nasi la.",
+      "reponse_bambara": "Nɛrɛ sumbala feere ka ɲi lɔgɔ la. Aw ye a labɛn ka ɲɛ ka sɔngɔ ɲuman sɔrɔ. Musow bɛ a san caman ka nasi kɛ.",
       "reponse_fr": "Le sumbala de néré se vend bien au marché. Prépare-le soigneusement pour obtenir un bon prix. Les femmes en achètent beaucoup pour la sauce.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "nere",
         "sumbala",
@@ -3942,9 +3942,9 @@
       "conditions": [
         "saison_pluie"
       ],
-      "reponse_bambara": "Ka lemuru sɛnɛ, aw ye dunbu kɛ ka nɔgɔ don a kɔnɔ. Aw ye sɛnɛ sanjiii tuma. Aw ye ji don kalo wɔɔrɔ kɔnɔ.",
+      "reponse_bambara": "Aw ye dingɛ bon kɛ ka kɔnpɔsi don a kɔnɔ. Sanji tuma daminɛ na, aw ye lemuru sɛnɛ. Kalo wɔɔrɔ fɔlɔ kɔnɔ, aw ye ji don tile o tile.",
       "reponse_fr": "Pour planter des agrumes, creuse un grand trou et mets du compost dedans. Plante en début de saison des pluies. Arrose chaque jour pendant les six premiers mois.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "lemuru",
         "agrumes",
@@ -3960,9 +3960,9 @@
         "CULTURE_AGRUMES"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni lemuru fɔlɔ yɛlɛma nɛrɛmugu, nɔgɔ dɔgɔ bɛ o kɛ. Aw ye nɔgɔ kɛnɛ don. Tɔɔ dibi bɛ ye, aw ye neem ji la.",
+      "reponse_bambara": "Ni lemuru fura bɛ nɛrɛmugu, nɔgɔ ka dɔgɔ. Aw ye nɔgɔ don ka a labɛn. Ni tɔ finmanw bɛ yen, aw ye neem fura ji kɛ furakɛli ye.",
       "reponse_fr": "Si les feuilles de tes agrumes jaunissent, c'est souvent un manque d'engrais. Applique de l'engrais pour corriger ça. Si des taches noires apparaissent, traite avec du jus de feuilles de neem.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "lemuru",
         "agrumes",
@@ -3979,9 +3979,9 @@
         "CULTURE_AGRUMES"
       ],
       "conditions": [],
-      "reponse_bambara": "Lemuru bɛ nɔgɔ fɛ san kɔnɔ siɲɛ fila. Aw ye NPK don sanjiii tuma daminɛ la, kà kɔnpɔsi don sanjiii ban kɔ. A bɛna jiridenw ɲuman bɔ.",
+      "reponse_bambara": "Lemuru bɛ nɔgɔ fɛ siɲɛ fila san kɔnɔ. Sanji tuma daminɛ na, aw ye NPK don; sanji tɛ tuma na, aw ye kɔnpɔsi don. Aw bɛna den ɲumanw sɔrɔ.",
       "reponse_fr": "Les agrumes ont besoin d'engrais deux fois par an. Mets de l'NPK en début de saison des pluies, et du compost en saison sèche. Tu obtiendras de beaux fruits.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "lemuru",
         "agrumes",
@@ -4000,9 +4000,9 @@
       "conditions": [
         "saison_seche"
       ],
-      "reponse_bambara": "Lemuru bɛ ji fɛ caman. Nɛgɛ tuma na, aw ye ji don a la siɲɛ fila kelen kelen. ji ɲuman bɛna jiridenw ɲuman bɔ.",
+      "reponse_bambara": "Lemuru bɛ ji fɛ caman. Sanji tɛ tuma na, lɔgɔkun kɔnɔ siɲɛ fila aw ye ji don. Ji donli ɲuman bɛ den ɲumanw bɔ.",
       "reponse_fr": "Les agrumes ont besoin de beaucoup d'eau. En saison sèche, arrose deux fois par semaine. Un bon arrosage donne de beaux fruits.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "lemuru",
         "agrumes",
