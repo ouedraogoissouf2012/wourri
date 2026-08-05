@@ -88,21 +88,23 @@ def test_adr_0014_keeps_the_validated_slice_out_of_production(issue, culture, to
     )
 
 
-def test_manioc_pending_entries_are_explicitly_flagged_not_validated():
-    """Le PDF #53 ne couvre que 8 des 11 entrées manioc du draft.
-    Les 3 non couvertes doivent rester non promues (score < 1.0) et
-    explicitement listées, pour ne pas laisser croire à une validation complète.
+def test_manioc_formerly_pending_entries_now_validated():
+    """Historique : le 1er PDF #53 ne couvrait que 8 des 11 entrées manioc ;
+    les 3 restantes (conseil/saison/recolte) étaient listées comme
+    `not_covered_pending_validation`. Elles ont depuis été validées nativement
+    (lot final 2026-08-05b) → le manioc est désormais complet (100 %). Ce test
+    verrouille cet aboutissement : les 3 entrées jadis en attente sont à 1.0.
     """
     validation = _load(_validation_path(53))
     draft = _load(DRAFT_PATH)
     entries = {entry["id"]: entry for entry in draft["entries"]}
 
-    pending = validation["not_covered_pending_validation"]
-    assert set(pending) == {
+    formerly_pending = validation["not_covered_pending_validation"]
+    assert set(formerly_pending) == {
         "manioc_conseil_001",
         "manioc_saison_001",
         "manioc_recolte_001",
     }
-    # Ces entrées ne doivent PAS avoir été promues à 1.0 par erreur.
-    for entry_id in pending:
-        assert entries[entry_id]["score_validation"] != 1.0
+    # Désormais validées nativement (lot final).
+    for entry_id in formerly_pending:
+        assert entries[entry_id]["score_validation"] == 1.0

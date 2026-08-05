@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "issue": 55,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-55-mil-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_MIL",
+    "corrected": 8
+  },
+  "corrections": {
+    "mil_conseil_001": "Aw ye foro labɛn ka ɲɛ fɔlɔ. Aw ye nyɔ da santimɛtiri mugan mugan. Aw ye NPK 15-15-15 don dugukolo la sɛnɛ kɔfɛ.",
+    "mil_saison_001": "Nyɔ sɛnɛ tuma ɲuman ye sanji daminɛ tuma ye. Mɛ wala Sɛtanburu kalo la, nyɔ bɛ se ka sɛnɛ. Aw ye sanji daminɛ makɔnɔ fɔlɔ.",
+    "mil_recolte_001": "Kalo naani sɛnɛ kɔfɛ, nyɔ bɛ se ka tigɛ. Ni nyɔ jiriw bɛ ja, a mɔlen don. Aw ye nyɔ tigɛ joona sanji ɲɛ.",
+    "mil_irrigation_001": "Nyɔ bɛ ji fɛ tile mugan fɔlɔ kɔnɔ. Ni sanji tɛ na, aw ye ji don foro la. Ji caman bɛ nyɔ cɛn; aw kana a kɛ.",
+    "mil_engrais_001": "Aw ye NPK 15-15-15 don dugukolo la sɛnɛ kɔfɛ. Tile mugan kɔfɛ, aw ye ire don ka nyɔ dɛmɛ. Tile tan ni duuru sɛnɛ kɔfɛ, aw ye furakɛli kɛ.",
+    "mil_diagnostic_001": "Ni nyɔ jiriw bɛ kɛ wɛrɛ, bana bɛ a la. Aw ye furakɛli kɛ ka nyɔ kisi. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+    "mil_vente_001": "Nyɔ feere tuma ɲuman ye tigɛli kɔfɛ joona. Aw ye nyɔ feere lɔgɔ la wala julabaga fɛ. Sanji tuma kɔfɛ, sɔngɔ ka ɲi.",
+    "mil_stockage_001": "Aw ye nyɔ ja ka ɲɛ fɔlɔ. Aw ye nyɔ don saki ɲuman na ka mara. Aw ye a mara yɔrɔ jalen na ka nyɔ kisi."
+  },
+  "comments": {
+    "mil_conseil_001": "Foroo et dugukoloo normalisés. Confirmer da pour semer le mil et la recommandation NPK.",
+    "mil_saison_001": "Sanji, Mɛ et Sɛtanburu normalisés. Confirmer daminɛ makɔnɔ fɔlɔ pour attendre le début.",
+    "mil_recolte_001": "Tigɛ, ja et mɔlen harmonisés. Nyɔ jiriw pour tiges doit être confirmé par un producteur.",
+    "mil_irrigation_001": "Version B corrigée: sanji et foro normalisés. Confirmer ji fɛ et cɛn pour la pourriture du mil.",
+    "mil_engrais_001": "Impératifs complétés et dugukolo normalisé. Ire et les calendriers doivent être confirmés agronomiquement.",
+    "mil_diagnostic_001": "Sɛnɛbaga et aw harmonisés. Confirmer nyɔ jiriw et kɛ wɛrɛ pour le changement de couleur.",
+    "mil_vente_001": "Lɔgɔ remplace sugu et julabaga remplace kɔlɔ. Confirmer feere et julabaga en dioula CI.",
+    "mil_stockage_001": "Ja, saki, mara et yɔrɔ jalen sont retenus provisoirement. Confirmer la dernière construction."
+  },
+  "codex_match": {
+    "mil_conseil_001": true,
+    "mil_saison_001": true,
+    "mil_recolte_001": true,
+    "mil_irrigation_001": true,
+    "mil_engrais_001": true,
+    "mil_diagnostic_001": true,
+    "mil_vente_001": true,
+    "mil_stockage_001": true
+  }
+}

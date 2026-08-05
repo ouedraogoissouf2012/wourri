@@ -39,9 +39,9 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye maa loo sɛnɛ mɛɛɛ kalo la sanjiii tuma na. Aw ye dugukoloo jiman ɲini, ji ka se ka don a la. Aw ye sɛnɛ santimɛtiri mugan mugan.",
+      "reponse_bambara": "Aw ye malo sɛnɛ Mɛ kalo la, sanji tuma na. Aw ye dugukolo jiman ɲini, ji bɛ se ka to min na. Aw ye malo da santimɛtiri mugan mugan.",
       "reponse_fr": "Plante ton riz en mai pendant la saison des pluies. Cherche une terre humide où l'eau peut rester. Plante avec 20 centimètres d'écart.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "malo",
@@ -90,9 +90,9 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "malo sɛnɛli tuma ɲuman ye mɛɛɛ kalo ye. Sanjiii bɛ na o tuma la ka foroo ɲɛ. Aw ye foroo labɛn sisan ka kɛ ɲɔgɔn na.",
+      "reponse_bambara": "Malo sɛnɛ tuma ɲuman ye Mɛ kalo ye. Sanji bɛ na o tuma la ka foro ji. Aw ye foro labɛn sisan.",
       "reponse_fr": "Le meilleur moment pour planter le riz c'est en mai. Les pluies arrivent à ce moment pour bien arroser. Prépare ton champ maintenant pour être prêt.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "saison",
@@ -110,9 +110,9 @@
       "conditions": [
         "saison_seche"
       ],
-      "reponse_bambara": "Ni sanjiii tɛ, maa loo sɛnɛ ka ɲi ji bɛ yɔrɔ. Aw ye maa loo sɛnɛ fala la ji bɛ yɔrɔ. Sanjiii tuma kɔ, foroo caman bɛ se.",
+      "reponse_bambara": "Ni sanji tɛ, aw ye malo sɛnɛ ji bɛ yɔrɔ. Aw ye malo sɛnɛ ji bɛ fala kɔnɔ. Sanji tuma kɔfɛ, foro caman bɛ se ka sɛnɛ.",
       "reponse_fr": "Sans pluie, le riz se plante là où il y a de l eau. Plante le riz dans les bas-fonds. Après la saison des pluies, beaucoup de champs sont possibles.",
-      "score_validation": 0.65,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "saison sèche",
@@ -128,9 +128,9 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "malo filɛli tuma ye kalo saba ye sɛnɛli kɔfɛ. Aw ye maa loo filɛ ni maa loo cɛɛn gɛlɛn ye ka wuli. Aw ye joona kɛ sanjiii sanni na.",
+      "reponse_bambara": "Kalo saba sɛnɛ kɔfɛ, malo bɛ se ka tigɛ. Ni malo kunw jalen don ka gɔngɔn, aw ye a tigɛ. Aw ye a tigɛ joona sanji ɲɛ.",
       "reponse_fr": "Le riz se récolte 3 mois après la plantation. Récolte quand les épis de riz sont bien secs et courbés. Fais-le vite avant les pluies.",
-      "score_validation": 0.73,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "récolte",
@@ -146,9 +146,9 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "malo b a fɛ ji caman. Aw ye ji don foroo la tile o tile. Ni ji ma sɔrɔ kalo fɔlɔ na, maa loo bɛ tɛmɛ.",
+      "reponse_bambara": "Malo bɛ ji caman fɛ. Aw ye ji don foro la tile o tile. Ni ji tɛ kalo fɔlɔ kɔnɔ, malo bɛ sa.",
       "reponse_fr": "Le riz a besoin de beaucoup d'eau. Arrose ton champ tous les jours. Sans eau dans le premier mois, le riz mourra.",
-      "score_validation": 0.74,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "eau",
@@ -164,9 +164,9 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye nɔgɔ NPK don dugukoloo la sɛnɛ tuma la. Lɔgɔkun wɔɔrɔ kɔ, aw ye urée fara a kan dɔɔni. Nɔgɔ bɛ maa loo ka ca caman.",
+      "reponse_bambara": "Aw ye NPK don dugukolo la sɛnɛ tuma la. Lɔgɔkun wɔɔrɔ kɔfɛ, aw ye ire dɔɔni fara a kan. Nɔgɔ bɛ malo dɛmɛ ka bon.",
       "reponse_fr": "Mets de l'engrais NPK dans la terre au moment de planter. Après 6 semaines, rajoute un peu d'urée. L'engrais fait beaucoup grossir le riz.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "engrais",
@@ -183,9 +183,9 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "malo filɛlen kɔ, aw ye a ja tile o tile ka ɲɛ. Aw ye a don bɔn la ji tɛ yɔrɔ. bɔn ka kan ka kɛ duguma kan.",
+      "reponse_bambara": "Tigɛli kɔfɛ, aw ye malo ja tile la tile o tile. Aw ye a don bɔn jalen na, ji tɛ min na. Bɔn ka kan ka kɛ dugukolo sanfɛ.",
       "reponse_fr": "Après la récolte, sèche bien ton riz au soleil chaque jour. Mets-le dans un grenier sans humidité. Le grenier doit être surélevé du sol.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "stockage",
@@ -201,9 +201,9 @@
         "CULTURE_RIZ"
       ],
       "conditions": [],
-      "reponse_bambara": "Maa loo sɔngɔ ka ca sanjiii kɔ. Aw ye maa loo caya fara lɔgɔ ma. Ni i maa loo mara, i bɛ wari caman sɔrɔ.",
+      "reponse_bambara": "Sanji tuma kɔfɛ, malo sɔngɔ bɛ yɛlɛ. Aw ye malo caya fara lɔgɔ ma. Ni aw ye malo mara, aw bɛ wari caman sɔrɔ.",
       "reponse_fr": "Le prix du riz monte après la saison des pluies. Amène ton surplus au marché. Si tu gardes ton riz, tu obtiendras plus d argent.",
-      "score_validation": 0.68,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "vente",
@@ -222,9 +222,9 @@
       "conditions": [
         "PROBLEME_MALADIE"
       ],
-      "reponse_bambara": "Ni maa loo fura bɛ gɛlɛn ka wɛrɛ, bana bɛ a la. Aw ye furakɛ fara maa loo fura la joona. Aw ye mɔgɔ dɔ wele ka na i dɛmɛ.",
+      "reponse_bambara": "Ni malo fura bɛ ja ka nɛrɛmugu, bana bɛ a la. Aw ye furaji kɛ malo fura la joona. Aw ye mɔgɔ dɔ weele ka aw dɛmɛ.",
       "reponse_fr": "Si les feuilles de riz sèchent et jaunissent, c'est une maladie. Traite les feuilles rapidement avec un produit. Appelle quelqu'un pour t'aider.",
-      "score_validation": 0.67,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "maladie",
@@ -243,9 +243,9 @@
       "conditions": [
         "PROBLEME_INSECTE"
       ],
-      "reponse_bambara": "Ni kulun bɛ maa loo dumu, furakɛ sow ka kan. Aw ye furakɛ bɔ tile fila o tile fila. Kulun bɛ halaki ni a ma daminɛ.",
+      "reponse_bambara": "Ni tɔrɔfɛnw bɛ malo dumu, aw ye furakɛli kɛ. Aw ye furaji bɔ malo kan tile fila o tile fila. Ni aw ma furakɛli daminɛ, tɔrɔfɛnw bɛ se ka malo halaki.",
       "reponse_fr": "Si des insectes mangent ton riz, il faut traiter. Pulvérise un produit sur le riz tous les 2 jours. Les insectes peuvent détruire le riz si on ne commence pas.",
-      "score_validation": 0.67,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "insectes",
@@ -262,9 +262,9 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye kabaa sɛnɛ awiriliiii kalo la sanjiii dɔɔni kɔ. Aw ye foroo cɛ ka ɲɛ duguma la. Sɛnɛ ka kɛ santimɛtiri bi wɔɔrɔ wɔɔrɔ.",
+      "reponse_bambara": "Aw ye kaba sɛnɛ Awirili kalo la, sanji fɔlɔ kɔfɛ. Aw ye dugukolo sɛgɛ ka ɲɛ ka dun. Aw ye kaba da santimɛtiri bi wɔɔrɔ, sira ni sira cɛ.",
       "reponse_fr": "Plante ton maïs en avril après les premières pluies. Laboure bien la terre en profondeur. Plante à 80 centimètres d'écart entre rangées.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "maïs",
         "kaba",
@@ -643,9 +643,9 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Kabaa sɛnɛli tuma ɲuman ye Avirili-mɛ ye. Sanjiii dɔɔni ka kan sɛnɛ daminɛ ye. Aw ye foroo labɛn sisan.",
+      "reponse_bambara": "Kaba sɛnɛ tuma ɲuman ye Awirili ni Mɛ kalo cɛ. Sanji dɔɔni ka kan ka sɛnɛ daminɛ. Aw ye foro labɛn sisan.",
       "reponse_fr": "Le meilleur moment pour planter le maïs c'est avril-mai. Il faut un peu de pluie pour commencer. Prépare ton champ maintenant.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "maïs",
         "saison",
@@ -694,9 +694,9 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Kabaa filɛli tuma ye tile bi kɛmɛ ye sɛnɛli kɔfɛ. Kabaa ka gɛlɛn caya ni kabaa gɛlɛnw bɛ sɛgɛla. Aw ye sogi ka kabaa bɔ ka ja.",
+      "reponse_bambara": "Tile bi kɔnɔntɔn ni tile kɛmɛ cɛ sɛnɛ kɔfɛ, kaba bɛ se ka tigɛ. Ni kaba kisɛw gɛlɛn don ka nɛrɛmugu, a mɔlen don. Aw ye kaba kunw tigɛ ka olu ja.",
       "reponse_fr": "Le maïs se récolte 90-100 jours après la plantation. Le maïs est mûr quand les grains durcissent et jaunissent. Cueille les épis et fais-les sécher.",
-      "score_validation": 0.71,
+      "score_validation": 1.0,
       "tags": [
         "maïs",
         "récolte",
@@ -745,9 +745,9 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Kabaa b a fɛ ji tile o tile. Ni sanjiii tɛ, aw ye ji faro la. Kabaa bɛ sa ni ji tɛ tile bi saba kɔnɔ.",
+      "reponse_bambara": "Kaba bɛ ji dɔɔni fɛ tile o tile. Ni sanji tɛ na, aw ye ji don foro la sɔgɔma joona. Ni ji tɛ tile bi saba fɔlɔ kɔnɔ, kaba bɛ se ka sa.",
       "reponse_fr": "Le maïs a besoin d'un peu d'eau chaque jour. Si la pluie ne vient pas, arrose le champ tôt le matin. Le maïs peut mourir sans eau dans les 30 premiers jours.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "maïs",
         "eau",
@@ -795,9 +795,9 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye nɔgɔ NPK don dugukoloo la sɛnɛ tuma la. Tile bi saba kɔ, aw ye urée fara a kan dɔɔni. Nɔgɔ bɛ kabaa ka ca ka di.",
+      "reponse_bambara": "Aw ye NPK don dugukolo la sɛnɛ tuma la. Tile bi saba kɔfɛ, aw ye ire dɔɔni fara a kan. Nɔgɔ bɛ kaba dɛmɛ ka bon ka ɲi.",
       "reponse_fr": "Mets du NPK dans la terre au moment de planter. Après 30 jours, rajoute un peu d'urée. L'engrais fait grossir le maïs et il est bon.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "maïs",
         "engrais",
@@ -846,9 +846,9 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Kabaa filɛlen kɔ, aw ye a ja tile la. Aw ye a don saku la bɔlɔ tɛ. Aw ye fura don saku kɔnɔ kulun ma.",
+      "reponse_bambara": "Tigɛli kɔfɛ, aw ye kaba ja tile la tile o tile. Aw ye a don saki jalenw na, ji kana se a ma. Aw ye tɔrɔfɛn furaji don saki kɔnɔ.",
       "reponse_fr": "Après la récolte, fais sécher le maïs au soleil chaque jour. Mets-le dans des sacs à l'abri de l'humidité. Mets un produit anti-insectes dans le sac.",
-      "score_validation": 0.7,
+      "score_validation": 1.0,
       "tags": [
         "maïs",
         "stockage",
@@ -897,9 +897,9 @@
         "CULTURE_MAIS"
       ],
       "conditions": [],
-      "reponse_bambara": "Kabaa sɔngɔ ka ca ni kalo wɔɔrɔ na. Dugukoloo mɔgɔw bɛ kabaa san foroo la. Aw ye kabaa mara dɔɔni sani aw ka a fara lɔgɔ ma.",
+      "reponse_bambara": "Zuwen kalo la, kaba sɔngɔ bɛ yɛlɛ. Sannabagaw bɛ na foro la ka kaba san. Aw ye kaba mara dɔɔni sani ka a feere lɔgɔ la.",
       "reponse_fr": "Le prix du maïs monte en juin. Les acheteurs viennent directement dans les champs. Garde ton maïs un peu avant de le vendre au marché.",
-      "score_validation": 0.68,
+      "score_validation": 1.0,
       "tags": [
         "maïs",
         "vente",
@@ -950,9 +950,9 @@
       "conditions": [
         "PROBLEME_MALADIE"
       ],
-      "reponse_bambara": "Ni kabaa fura sɛgɛ ka gɛlɛn, bana bɛ a la. Aw ye furakɛ bɔ joona. Ni kabaa bɛɛ bana, aw ye a cɛ ka bɔ.",
+      "reponse_bambara": "Ni kaba fura bɛ nɛrɛmugu ka ja, bana bɛ a la. Aw ye furakɛli kɛ joona. Ni kaba bɛɛ bananen don, aw ye a bɔ ka jeni.",
       "reponse_fr": "Si les feuilles de maïs jaunissent et sèchent, c'est une maladie. Traite rapidement avec un produit. Si tout le maïs est touché, arrache et brûle.",
-      "score_validation": 0.67,
+      "score_validation": 1.0,
       "tags": [
         "maïs",
         "maladie",
@@ -1000,9 +1000,9 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Aw ye ti ga sɛnɛ mɛɛɛ kalo la sanjiii tuma na. Aw ye dugukoloo fɔlɔ ɲini, ji tɛ to a la. Sɛnɛ ka kɛ santimɛtiri bi naani naani.",
+      "reponse_bambara": "Aw ye tiga sɛnɛ Mɛ kalo la, sanji tuma na. Aw ye dugukolo cɛncɛnma ɲini, ji tɛ to min na. Aw ye tiga da santimɛtiri bi naani bi naani.",
       "reponse_fr": "Plante tes arachides en mai pendant la saison des pluies. Cherche une terre sableuse où l'eau ne reste pas. Plante à 40 centimètres d'écart.",
-      "score_validation": 0.71,
+      "score_validation": 1.0,
       "tags": [
         "arachide",
         "tiga",
@@ -1041,9 +1041,9 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ti ga sɛnɛli tuma ɲuman ye mɛ-Zuwen ye. Dugukoloo ka kan ka mɛn joona sanjiii kɔ. Aw ye foroo cɛ ka ɲɛ sini sanni.",
+      "reponse_bambara": "Tiga sɛnɛ tuma ɲuman ye Mɛ ni Zuwen kalo cɛ. Sanji kɔfɛ, dugukolo ka kan ka ja joona. Aw ye foro labɛn ka a sɛgɛ ka ɲɛ sini.",
       "reponse_fr": "Le meilleur moment pour les arachides c'est mai-juin. La terre doit sécher rapidement après la pluie. Prépare et laboure bien ton champ dès demain.",
-      "score_validation": 0.71,
+      "score_validation": 1.0,
       "tags": [
         "arachide",
         "saison",
@@ -1060,9 +1060,9 @@
         "CULTURE_ARACHIDE"
       ],
       "conditions": [],
-      "reponse_bambara": "Ti ga filɛli tuma ye kalo saba ye sɛnɛli kɔfɛ. Aw ye ti ga bɔ dugukoloo la ni fɔrɔ ye joona. Aw ye ti ga ja tile o tile ka ɲɛ.",
+      "reponse_bambara": "Kalo saba sɛnɛ kɔfɛ, tiga bɛ se ka tigɛ. Aw ye tiga yiriw bɔ dugukolo la dɔɔni dɔɔni, joona. Aw ye tiga ja tile la tile o tile.",
       "reponse_fr": "L'arachide se récolte 3 mois après la plantation. Arrache les plants délicatement et rapidement. Fais sécher les arachides chaque jour au soleil.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "arachide",
         "récolte",
@@ -1360,9 +1360,9 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Banankuuu sɛnɛ bɛ se ka kɛ foroo sɔgɔ bɛɛ la. Aw ye bolo kɛ mɛtiri kelen sɔngɔ. Banankuuu bɛ bɔ kalo 8 ni 18 cɛ.",
+      "reponse_bambara": "Banankun bɛ se ka sɛnɛ dugukolo bɛɛ la. Aw ye banankun duguturu da mɛtiri kelen kelen. Kalo seegin ni tan ni seegin cɛ, banankun bɛ se ka bɔ, a sifaya kɔ.",
       "reponse_fr": "Le manioc pousse dans tous types de sols. Plantez les boutures à 1 mètre de distance. Le manioc peut se récolter après 8 à 18 mois selon la variété.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",
@@ -1379,9 +1379,9 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Banankuuu bɛ se ka sɛnɛ sanjiii tuma bɛɛ. Nka sanjiii daminɛ ka ɲi caman. Aw ye bolo don duguma kɔrɔ. Ni sanjiii tɛ caman kana sɛnɛ.",
+      "reponse_bambara": "Banankun bɛ se ka sɛnɛ san bɛɛ, nka sanji daminɛ tuma de ka ɲi. Aw ye duguturu da kɔrɔ dɔ la. Ni sanji tɛ fɛwu, aw kana sɛnɛ.",
       "reponse_fr": "Le manioc peut être planté toute l année mais le début des pluies est le meilleur moment. Plantez les boutures en biais. Evitez de planter quand il ne pleut pas du tout.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",
@@ -1397,9 +1397,9 @@
         "CULTURE_MANIOC"
       ],
       "conditions": [],
-      "reponse_bambara": "Banankuuu tigɛlen tuma ye sira bɛ la tuma. Aw ye duguma cɛ ka banankuuu bɔ. Tile wulanna la ka bɔ ka tile bana jɔ.",
+      "reponse_bambara": "Ni banankun fura bɛ daminɛ ka bin, tigɛ tuma sera. Aw ye dugukolo sɛgɛ a sen lamini na ka banankun bɔ. Aw ye banankun bɔ sɔgɔma ka tilema kalaya bali.",
       "reponse_fr": "Le manioc est prêt à récolter quand les feuilles commencent à tomber. Creusez autour de la tige pour dégager les racines. Récoltez le matin pour éviter la chaleur.",
-      "score_validation": 0.8,
+      "score_validation": 1.0,
       "tags": [
         "manioc",
         "bananku",
@@ -1672,9 +1672,9 @@
       "conditions": [
         "TEMPS_SAISON_SECHE"
       ],
-      "reponse_bambara": "Maa loo sɛnɛ tuma ɲuman ye mɛɛɛ kalo ye. Sanjiii bɛ na o tuma la ka foroo ɲɛ. Aw ye foroo labɛn sisan.",
+      "reponse_bambara": "Malo sɛnɛ tuma ɲuman ye Mɛ kalo ye. Sanji bɛ na o tuma la ka foro ji. Aw ye foro labɛn sisan.",
       "reponse_fr": "Le meilleur moment pour planter le riz est en mai. La pluie arrive à ce moment pour arroser le champ. Préparez votre champ maintenant.",
-      "score_validation": 0.73,
+      "score_validation": 1.0,
       "tags": [
         "riz",
         "malo",
@@ -1693,9 +1693,9 @@
       "conditions": [
         "TEMPS_SAISON_SECHE"
       ],
-      "reponse_bambara": "Ni sanjiii tɛ, kabaa sɛnɛ tɛ ɲɛ ji ma. Aw ye to ka sanjiii tuma sɔrɔ. Marisi wala awiriliiii kalo sanjiii bɛ na ka foroo ɲɛ.",
+      "reponse_bambara": "Ni sanji tɛ, kaba tɛ bɔ ka ɲi. Aw ye sanji tuma makɔnɔ. Marisi wala Awirili kalo la, sanji bɛ na ka foro ji.",
       "reponse_fr": "Sans pluie, le maïs ne pousse pas bien. Attendez la saison des pluies. En mars ou avril les pluies arrivent pour arroser le champ.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "maïs",
         "kaba",
@@ -1746,9 +1746,9 @@
       "conditions": [
         "TEMPS_SAISON_SECHE"
       ],
-      "reponse_bambara": "Ni sanjiii tɛ, ti ga sɛnɛ tɛ ɲɛ. Aw ye sanjiii tuma sɔrɔ, mɛ wala sɛtanburuuu kalo. Ti ga bɛ sanjiii ye ka sɛnɛ.",
+      "reponse_bambara": "Ni sanji tɛ, tiga tɛ bɔ ka ɲi. Aw ye sanji tuma makɔnɔ, Mɛ wala Sɛtanburu kalo la. Tiga bɛ sanji fɛ ka bɔ.",
       "reponse_fr": "Sans pluie, l arachide ne pousse pas. Attendez la saison des pluies, en mai ou septembre. L arachide a besoin de pluie pour démarrer.",
-      "score_validation": 0.72,
+      "score_validation": 1.0,
       "tags": [
         "arachide",
         "tiga",
@@ -1765,9 +1765,9 @@
         "*"
       ],
       "conditions": [],
-      "reponse_bambara": "Alu ni sɔgɔma! Ne ye Wourri ye, aw ta sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b a fɛ ka ɲinini mun na?",
+      "reponse_bambara": "Alu ni sɔgɔma! Ne ye Wourri ye, aw ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b'a fɛ n ka aw dɛmɛ mun na?",
       "reponse_fr": "Bonjour à toi ! Je suis Wourri, ton assistant agricole. {{METEO_FR}} Tu veux de l'aide sur quoi ?",
-      "score_validation": 0.9,
+      "score_validation": 1.0,
       "tags": [
         "salutation",
         "matin",
@@ -1782,9 +1782,9 @@
         "*"
       ],
       "conditions": [],
-      "reponse_bambara": "Alu ni tilefɛ! Ne ye Wourri ye, aw ta sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b a fɛ ka ɲinini mun na?",
+      "reponse_bambara": "Alu ni tilefɛ! Ne ye Wourri ye, aw ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b'a fɛ n ka aw dɛmɛ mun na?",
       "reponse_fr": "Bonne mi-journée ! Je suis Wourri, ton assistant agricole. {{METEO_FR}} Tu veux de l'aide sur quoi ?",
-      "score_validation": 0.9,
+      "score_validation": 1.0,
       "tags": [
         "salutation",
         "midi",
@@ -1799,9 +1799,9 @@
         "*"
       ],
       "conditions": [],
-      "reponse_bambara": "Alu ni wulafɛ! Ne ye Wourri ye, aw ta sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b a fɛ ka ɲinini mun na?",
+      "reponse_bambara": "Alu ni wulafɛ! Ne ye Wourri ye, aw ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b'a fɛ n ka aw dɛmɛ mun na?",
       "reponse_fr": "Bonsoir ! Je suis Wourri, ton assistant agricole. {{METEO_FR}} Tu veux de l'aide sur quoi ?",
-      "score_validation": 0.9,
+      "score_validation": 1.0,
       "tags": [
         "salutation",
         "soir",
@@ -1816,9 +1816,9 @@
         "*"
       ],
       "conditions": [],
-      "reponse_bambara": "Alu ni sufɛ! Ne ye Wourri ye, aw ta sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b a fɛ ka ɲinini mun na?",
+      "reponse_bambara": "Alu ni su! Ne ye Wourri ye, aw ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b'a fɛ n ka aw dɛmɛ mun na?",
       "reponse_fr": "Bonne nuit ! Je suis Wourri, ton assistant agricole. {{METEO_FR}} Tu veux de l'aide sur quoi ?",
-      "score_validation": 0.9,
+      "score_validation": 1.0,
       "tags": [
         "salutation",
         "nuit",
@@ -1841,9 +1841,9 @@
         "*"
       ],
       "conditions": [],
-      "reponse_bambara": "À ni ce! Ne ye Wourri ye, senekela dɛmɛbaga. Aw b a fɛ mun koo la — malo, kaba, wala tiga?",
+      "reponse_bambara": "Aw ni ce! Ne ye Wourri ye, sɛnɛ dɛmɛbaga. Aw b'a fɛ n ka aw dɛmɛ mun na: malo, kaba, wala tiga?",
       "reponse_fr": "Bonjour ! Je suis Wourri, assistant agricole. Tu veux quoi comme aide — riz, maïs, ou arachide ?",
-      "score_validation": 0.85,
+      "score_validation": 1.0,
       "tags": [
         "salutation",
         "bienvenue",
@@ -1858,9 +1858,9 @@
         "*"
       ],
       "conditions": [],
-      "reponse_bambara": "Ne ye Wourri ye, senekela dɛmɛbaga dɔrɔn. N tɛ se ka dɛmɛ i ma o ko la. Aw ye aw ta sɛnɛ ko ɲini.",
+      "reponse_bambara": "Ne ye Wourri ye, sɛnɛ dɛmɛbaga dɔrɔn. N tɛ se ka aw dɛmɛ o ko la. Aw ye n ɲininka aw ka foro ko la.",
       "reponse_fr": "Je suis Wourri, seulement assistant agricole. Je ne peux pas t'aider pour ça. Pose-moi une question sur ton champ.",
-      "score_validation": 0.85,
+      "score_validation": 1.0,
       "tags": [
         "hors sujet",
         "refus",
@@ -1874,9 +1874,9 @@
         "*"
       ],
       "conditions": [],
-      "reponse_bambara": "N bɛ aw dɛmɛ aw ta sɛnɛ ko la. Aw ye aw ta ɲinini wele fɔ cogo wɛrɛ. Malo, kaba, wala ti ga — mun b i ɲɛ?",
+      "reponse_bambara": "N bɛ se ka aw dɛmɛ aw ka foro ko la. Aw ye aw ka ɲininkali fɔ cogo wɛrɛ la. Malo, kaba, wala tiga: mun de bɛ aw hakili la?",
       "reponse_fr": "Je peux t'aider pour ton champ. Explique-moi ta question autrement. Riz, maïs, ou arachide — qu'est-ce qui te préoccupe ?",
-      "score_validation": 0.85,
+      "score_validation": 1.0,
       "tags": [
         "fallback",
         "incompréhension",
@@ -1890,9 +1890,9 @@
         "CULTURE_MIL"
       ],
       "conditions": [],
-      "reponse_bambara": "Nyɔ sɛnɛ la ka ɲi, aw ye foroo labɛn ka ɲɛ fɔlɔ. Aw ye nyɔ sɛnɛ santimɛtiri mugan mugan. NPK 15-15-15 don foroo la sɛnɛ kɔfɛ.",
+      "reponse_bambara": "Aw ye foro labɛn ka ɲɛ fɔlɔ. Aw ye nyɔ da santimɛtiri mugan mugan. Aw ye NPK 15-15-15 don dugukolo la sɛnɛ kɔfɛ.",
       "reponse_fr": "Pour bien cultiver le mil, prépare bien ton champ d'abord. Plante le mil avec 20 cm d'écart. Mets du NPK 15-15-15 dans le sol après la plantation.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "mil",
         "nyɔ",
@@ -1909,9 +1909,9 @@
         "CULTURE_MIL"
       ],
       "conditions": [],
-      "reponse_bambara": "Nyɔ sɛnɛ tuma ɲuman ye sanjiii fɔlɔ tuma na. Mɛ wala sɛtanburuuu kalo, nyɔ bɛ se ka sɛnɛ. Aw ye to sanjiii ka wili ka fɔlɔ.",
+      "reponse_bambara": "Nyɔ sɛnɛ tuma ɲuman ye sanji daminɛ tuma ye. Mɛ wala Sɛtanburu kalo la, nyɔ bɛ se ka sɛnɛ. Aw ye sanji daminɛ makɔnɔ fɔlɔ.",
       "reponse_fr": "Le meilleur moment pour planter le mil c'est au début des pluies. En mai ou septembre le mil peut être planté. Attends que les pluies commencent d'abord.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "mil",
         "nyɔ",
@@ -1928,9 +1928,9 @@
         "CULTURE_MIL"
       ],
       "conditions": [],
-      "reponse_bambara": "Nyɔ tigɛlen tuma ye kalo naani sɛnɛ kɔfɛ. Ni nyɔ jiri bɛ la, nyɔ bɛ ɲɛ ka bɔ. Aw ye tigɛlen kɛ ka jigi kɛ joona.",
+      "reponse_bambara": "Kalo naani sɛnɛ kɔfɛ, nyɔ bɛ se ka tigɛ. Ni nyɔ jiriw bɛ ja, a mɔlen don. Aw ye nyɔ tigɛ joona sanji ɲɛ.",
       "reponse_fr": "Le mil est prêt à récolter 4 mois après la plantation. Quand les tiges sèchent, le mil est mûr. Faites la récolte vite avant les pluies.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "mil",
         "nyɔ",
@@ -1946,9 +1946,9 @@
         "CULTURE_MIL"
       ],
       "conditions": [],
-      "reponse_bambara": "Nyɔ bɛ jɛ ji ye sɛnɛ fɔlɔ tile mugan kɔnɔ. Ni sanjiii ma na, aw ye ji don foroo la. ji caman bɛ nyɔ dɔ, o kana kɛ.",
+      "reponse_bambara": "Nyɔ bɛ ji fɛ tile mugan fɔlɔ kɔnɔ. Ni sanji tɛ na, aw ye ji don foro la. Ji caman bɛ nyɔ cɛn; aw kana a kɛ.",
       "reponse_fr": "Le mil a besoin d'eau surtout les 20 premiers jours. Si la pluie manque, arrosez le champ. Trop d'eau fait pourrir le mil, évitez l'excès.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "mil",
         "nyɔ",
@@ -1964,9 +1964,9 @@
         "CULTURE_MIL"
       ],
       "conditions": [],
-      "reponse_bambara": "Nyɔ bɛ NPK 15-15-15 jɛ sɛnɛ kɔfɛ. Urée don tile mugan kɔfɛ ka nyɔ dɛmɛ. Aw ye furakɛ sɛnɛ kɔfɛ tile bi ni duuru.",
+      "reponse_bambara": "Aw ye NPK 15-15-15 don dugukolo la sɛnɛ kɔfɛ. Tile mugan kɔfɛ, aw ye ire don ka nyɔ dɛmɛ. Tile tan ni duuru sɛnɛ kɔfɛ, aw ye furakɛli kɛ.",
       "reponse_fr": "Le mil a besoin de NPK 15-15-15 après la plantation. Apportez de l'urée 20 jours après pour aider la croissance. Faites le traitement 15 jours après la plantation.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "mil",
         "nyɔ",
@@ -1983,9 +1983,9 @@
         "CULTURE_MIL"
       ],
       "conditions": [],
-      "reponse_bambara": "Ni nyɔ jiri bɛ kɛ wɛrɛ wɛrɛ, bana bɛ a la. Aw ye bana furakɛ don ka nyɔ kisi. ANADER dɛmɛba bɛ se ka i dɛmɛ.",
+      "reponse_bambara": "Ni nyɔ jiriw bɛ kɛ wɛrɛ, bana bɛ a la. Aw ye furakɛli kɛ ka nyɔ kisi. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
       "reponse_fr": "Si les tiges du mil changent de couleur, il y a une maladie. Appliquez un traitement pour sauver le mil. L'agent ANADER peut vous aider.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "mil",
         "nyɔ",
@@ -2002,9 +2002,9 @@
         "CULTURE_MIL"
       ],
       "conditions": [],
-      "reponse_bambara": "Nyɔ fere tuma ɲuman ye tigɛlen kɔfɛ joona. Aw ye nyɔ fere lɔgɔ la wala kɔlɔ la. Sɔngɔ ka ɲi sanjiii tuma kɔfɛ.",
+      "reponse_bambara": "Nyɔ feere tuma ɲuman ye tigɛli kɔfɛ joona. Aw ye nyɔ feere lɔgɔ la wala julabaga fɛ. Sanji tuma kɔfɛ, sɔngɔ ka ɲi.",
       "reponse_fr": "Le meilleur moment pour vendre le mil c'est juste après la récolte. Vendez au marché ou à un commerçant. Le prix est meilleur après la saison des pluies.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "mil",
         "nyɔ",
@@ -2020,9 +2020,9 @@
         "CULTURE_MIL"
       ],
       "conditions": [],
-      "reponse_bambara": "Nyɔ marali tuma la, aw ye a mɛ ka ɲɛ. Aw ye nyɔ don sak ɲuman na ka mara. mara yɔrɔ sɔnna jɛ ka nyɔ kisi.",
+      "reponse_bambara": "Aw ye nyɔ ja ka ɲɛ fɔlɔ. Aw ye nyɔ don saki ɲuman na ka mara. Aw ye a mara yɔrɔ jalen na ka nyɔ kisi.",
       "reponse_fr": "Pour stocker le mil, faites-le bien sécher d'abord. Mettez le mil dans un bon sac pour le conserver. Le lieu de stockage doit être au sec pour protéger le mil.",
-      "score_validation": 0.75,
+      "score_validation": 1.0,
       "tags": [
         "mil",
         "nyɔ",

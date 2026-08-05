@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "issue": "systeme",
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-systeme-messages-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 7,
+    "culture": "CULTURE_SYSTEME",
+    "corrected": 7
+  },
+  "corrections": {
+    "salutation_matin_001": "Alu ni sɔgɔma! Ne ye Wourri ye, aw ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b'a fɛ n ka aw dɛmɛ mun na?",
+    "salutation_midi_001": "Alu ni tilefɛ! Ne ye Wourri ye, aw ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b'a fɛ n ka aw dɛmɛ mun na?",
+    "salutation_soir_001": "Alu ni wulafɛ! Ne ye Wourri ye, aw ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b'a fɛ n ka aw dɛmɛ mun na?",
+    "salutation_nuit_001": "Alu ni su! Ne ye Wourri ye, aw ka sɛnɛ dɛmɛbaga. {{METEO_CONTEXTUEL}} Aw b'a fɛ n ka aw dɛmɛ mun na?",
+    "generic_salutation_001": "Aw ni ce! Ne ye Wourri ye, sɛnɛ dɛmɛbaga. Aw b'a fɛ n ka aw dɛmɛ mun na: malo, kaba, wala tiga?",
+    "generic_hors_sujet_001": "Ne ye Wourri ye, sɛnɛ dɛmɛbaga dɔrɔn. N tɛ se ka aw dɛmɛ o ko la. Aw ye n ɲininka aw ka foro ko la.",
+    "generic_fallback_001": "N bɛ se ka aw dɛmɛ aw ka foro ko la. Aw ye aw ka ɲininkali fɔ cogo wɛrɛ la. Malo, kaba, wala tiga: mun de bɛ aw hakili la?"
+  },
+  "comments": {
+    "salutation_matin_001": "Correction du possessif et de la question finale. Confirmer Alu ni sɔgɔma et le niveau de politesse aw.",
+    "salutation_midi_001": "Structure harmonisée. La salutation tilefɛ doit être confirmée oralement en dioula CI.",
+    "salutation_soir_001": "Structure harmonisée. Confirmer si wulafɛ est la salutation naturelle attendue le soir.",
+    "salutation_nuit_001": "Sufɛ remplacé provisoirement par su. Confirmer la salutation nocturne naturelle en Côte d'Ivoire.",
+    "generic_salutation_001": "Koo supprimé; senekela remplacé par une formulation d'assistance agricole. Confirmer la question orale.",
+    "generic_hors_sujet_001": "Pronoms harmonisés avec aw. La dernière phrase exprime clairement: posez-moi une question sur votre champ.",
+    "generic_fallback_001": "La reformulation et la question finale sont rendues explicitement. Confirmer mun de bɛ aw hakili la."
+  },
+  "codex_match": {
+    "salutation_matin_001": true,
+    "salutation_midi_001": true,
+    "salutation_soir_001": true,
+    "salutation_nuit_001": true,
+    "generic_salutation_001": true,
+    "generic_hors_sujet_001": true,
+    "generic_fallback_001": true
+  }
+}

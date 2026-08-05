@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "issue": 53,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-53b-manioc-reste-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 3,
+    "culture": "CULTURE_MANIOC",
+    "corrected": 3
+  },
+  "corrections": {
+    "manioc_conseil_001": "Banankun bɛ se ka sɛnɛ dugukolo bɛɛ la. Aw ye banankun duguturu da mɛtiri kelen kelen. Kalo seegin ni tan ni seegin cɛ, banankun bɛ se ka bɔ, a sifaya kɔ.",
+    "manioc_recolte_001": "Ni banankun fura bɛ daminɛ ka bin, tigɛ tuma sera. Aw ye dugukolo sɛgɛ a sen lamini na ka banankun bɔ. Aw ye banankun bɔ sɔgɔma ka tilema kalaya bali.",
+    "manioc_saison_001": "Banankun bɛ se ka sɛnɛ san bɛɛ, nka sanji daminɛ tuma de ka ɲi. Aw ye duguturu da kɔrɔ dɔ la. Ni sanji tɛ fɛwu, aw kana sɛnɛ."
+  },
+  "comments": {
+    "manioc_conseil_001": "Banankuuu et foroo normalisés. Dugukolo bɛɛ évite l'ambiguïté de sugu. Confirmer duguturu, da et sifaya.",
+    "manioc_recolte_001": "Sira est remplacé par fura. La phrase sur les racines est paraphrasée; sen lamini et kalaya sont à confirmer.",
+    "manioc_saison_001": "San bɛɛ remplace sanji tuma bɛɛ. Bouture rendue par duguturu; la tournure en biais reste à confirmer."
+  },
+  "codex_match": {
+    "manioc_conseil_001": true,
+    "manioc_recolte_001": true,
+    "manioc_saison_001": true
+  }
+}
