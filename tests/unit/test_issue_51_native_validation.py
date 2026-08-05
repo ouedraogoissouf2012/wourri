@@ -44,9 +44,11 @@ def test_validated_responses_follow_issue_51_form_constraints():
         assert len(sentences) <= 3
         assert all(len(sentence.split()) <= 15 for sentence in sentences)
         assert "ti ga" in response.lower()
+        # Formes maliennes sans sens alternatif attesté (toujours à éviter).
+        # `sugu` non testé : attesté « sorte/espèce » en dioula CI (Mandenkan) ;
+        # règle WOURI conditionnelle au sens (« marché » → lɔgɔ), pas au mot.
         assert "waati" not in response.lower()
         assert "karo" not in response.lower()
-        assert "sugu" not in response.lower()
 
 
 def test_terms_left_for_oral_confirmation_are_explicitly_confirmed():

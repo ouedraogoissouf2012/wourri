@@ -27,7 +27,13 @@ VALIDATION_FILES = sorted(
     (ROOT / "data").glob("issue_*_native_validation_2026-08-05.json")
 )
 
-BANNED_TERMS = ["sugu", "karo", "waati", "kosɛbɛ"]
+# Formes MALIENNES sans sens alternatif attesté en dioula CI → toujours à éviter.
+# NB : `sugu` (= sorte/espèce) et `kosɛbɛ` (= beaucoup) NE sont PAS bannis de
+# façon absolue : le lexique dioula CI Mandenkan les atteste dans ces sens
+# (cf. spécification de prévalidation, §2.3). La règle WOURI est conditionnelle
+# au SENS (« marché » → lɔgɔ, pas sugu), pas au mot. Et surtout : le locuteur
+# natif fait autorité — un test ne doit pas invalider une forme qu'il a validée.
+BANNED_TERMS = ["karo", "waati"]
 
 
 def _load(path: Path) -> dict:

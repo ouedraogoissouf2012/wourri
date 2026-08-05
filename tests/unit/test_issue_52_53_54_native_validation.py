@@ -26,7 +26,11 @@ CASES = [
 ]
 
 # Termes bannis par les règles dioula CI du projet (formes maliennes / erronées).
-BANNED_TERMS = ["waati", "karo", "sugu", "kosɛbɛ"]
+# Formes maliennes sans sens alternatif attesté en dioula CI (toujours à éviter).
+# `sugu`/`kosɛbɛ` retirés : attestés dans un sens valide par le lexique CI
+# Mandenkan (sorte/espèce ; beaucoup). Règle WOURI conditionnelle au sens, pas
+# au mot — et le natif fait autorité.
+BANNED_TERMS = ["waati", "karo"]
 
 
 def _load(path: Path) -> dict:
