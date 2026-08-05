@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "issue": 63,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-63-sesame-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_SESAME",
+    "corrected": 8
+  },
+  "corrections": {
+    "sesame_conseil_001": "Aw ye foro labɛn yɔrɔ la min dugukolo nɔgɔman don, ji bɔli ka ɲi. Sanji tuma daminɛ na, aw ye bɛnɛ sɛnɛ. Foro ɲuman bɛ bɛnɛ caman bɔ.",
+    "sesame_diagnostic_001": "Ni bɛnɛ fura bɛ bin wala kɔgɔ, aw ye fɔngisidi la furakɛli kɛ. Bana taamasiɲɛ fɔlɔw yera tuma, aw ye furakɛli kɛ joona. Aw ye bɛnɛ bananenw bɔ foro la.",
+    "sesame_engrais_001": "Bɛnɛ tɛ nɔgɔ caman fɛ. Aw ye nɔgɔ bɔlen don dugukolo la sɛnɛ ɲɛ. Fɔsifati dɔɔni bɛ a dɛmɛ ka bɔ.",
+    "sesame_irrigation_001": "Bɛnɛ tɛ ji caman fɛ. A bɛ se ka sɔn ji tɛ ma caman. Ji caman bɛ bɛnɛ cɛn.",
+    "sesame_recolte_001": "Kalo saba sɛnɛ kɔfɛ, bɛnɛ bɛ se ka tigɛ. Ni bɛnɛ denw bɛ kɔgɔ, tigɛ tuma ye. Sɔgɔma joona, aw ye tigɛ sani denw ka yɛlɛ.",
+    "sesame_saison_001": "Bɛnɛ sɛnɛ tuma ɲuman ye Sɛtanburu wala Ɔkitɔburu kalo. Sanji ka dɔgɔ o tuma la. Aw ye foro labɛn joona ka bɛnɛ sɛnɛ.",
+    "sesame_stockage_001": "Aw ye bɛnɛ ja ka ɲɛ fɔlɔ. Aw ye a don saki jalen na. Bɛnɛ jalen bɛ se ka to kalo caman.",
+    "sesame_vente_001": "Aw ye bɛnɛ feere lɔgɔ la wala julabaga fɛ. Bɛnɛ jalen sɔngɔ ka ɲi. Aw ye a mara ka ɲɛ sani ka feere."
+  },
+  "comments": {
+    "sesame_conseil_001": "La description du sol léger et drainé doit être simplifiée par un locuteur natif.",
+    "sesame_diagnostic_001": "« taamasiɲɛ » et « fɔngisidi » doivent être testés oralement.",
+    "sesame_engrais_001": "fɔsifati est retenu provisoirement pour phosphate.",
+    "sesame_irrigation_001": "cɛn est proposé pour pourrir ; phrase de sécheresse à valider.",
+    "sesame_recolte_001": "« bɛnɛ den » pour capsule est à confirmer en dioula CI.",
+    "sesame_saison_001": "Orthographe des mois et ordre SOV harmonisés.",
+    "sesame_stockage_001": "La version B est corrigée et conservée comme base de prévalidation.",
+    "sesame_vente_001": "lɔgɔ remplace sugu ; jalen est retenu pour bien sec."
+  }
+}

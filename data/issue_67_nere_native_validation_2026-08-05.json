@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "issue": 67,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-67-nere-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 5,
+    "culture": "CULTURE_NERE",
+    "corrected": 5
+  },
+  "corrections": {
+    "nere_conseil_001": "Nɛrɛ ye yiri nafaman ye caman. Aw ye a sɛnɛ foro da la; a bɛ to san caman. Aw bɛ se ka sumbala kɛ a kisɛw la ka feere lɔgɔ la.",
+    "nere_diagnostic_001": "Ni nɛrɛ bɛ dɛsɛ, aw ye fura ni golo kɔrɔsi. Ni fura bɛ nɛrɛmugu, aw ye ji don caman. Ni golo bɛ fara, o ye kɔrɔya ye; a man jugu.",
+    "nere_recolte_001": "Nɛrɛ kisɛw bɛ mɔ Zuwɛ ni Zuliye kalo la. Ni olu bɛ bin, aw ye olu lajɛ. Aw ye kisɛw ja ka ɲɛ sani ka sumbala kɛ.",
+    "nere_stockage_001": "Aw ye nɛrɛ kisɛw ja ka ɲɛ fɔlɔ. Aw ye olu don saki datugulɛn na, ji tɛ yɔrɔ. Sumbala labɛnnen bɛ se ka to tile caman.",
+    "nere_vente_001": "Nɛrɛ sumbala feere ka ɲi lɔgɔ la. Aw ye a labɛn ka ɲɛ ka sɔngɔ ɲuman sɔrɔ. Musow bɛ a san caman ka nasi kɛ."
+  },
+  "comments": {
+    "nere_conseil_001": "lɔgɔ remplace sugu ; kisɛ est retenu pour graines.",
+    "nere_diagnostic_001": "golo est retenu pour écorce ; dernière phrase à confirmer oralement.",
+    "nere_recolte_001": "Formes de juin/juillet à confirmer en TTS ; lajɛ proposé pour ramasser.",
+    "nere_stockage_001": "« saki datugulɛn » exprime sac fermé ; phrase d’humidité à tester.",
+    "nere_vente_001": "lɔgɔ et caman remplacent les formes maliennes ; nasi pour sauce à confirmer."
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "issue": 59,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-59-haricot-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_HARICOT",
+    "corrected": 8
+  },
+  "corrections": {
+    "haricot_conseil_001": "Aw ye foro labɛn ka ɲɛ fɔlɔ. Aw ye soso da santimɛtiri mugan mugan. NPK 0-20-20 bɛ se ka a dɛmɛ.",
+    "haricot_diagnostic_001": "Ni soso fura bɛ yɛlɛma, bana bɛ a la. Aw ye fɔngisidi la furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+    "haricot_engrais_001": "Aw ye NPK 0-20-20 don dugukolo la sɛnɛ kɔfɛ. Soso bɛ azɔti kɛ a yɛrɛ ka a dɛmɛ. Tile tan ni duuru kɔfɛ, aw ye furakɛli kɛ.",
+    "haricot_irrigation_001": "Soso bɛ ji fɛ tile mugan fɔlɔ kɔnɔ. Ni sanji tɛ na, aw ye ji don tile o tile. Ji caman bɛ soso cɛn; aw kana a kɛ.",
+    "haricot_recolte_001": "Kalo saba ni naani cɛ sɛnɛ kɔfɛ, soso bɛ se ka tigɛ. Ni soso denw bɛ ja, tigɛ tuma ye. Aw ye tigɛ joona sanji ɲɛ.",
+    "haricot_saison_001": "Soso sɛnɛ tuma ɲuman ye sanji tuma na. Mɛ kalo wala Sɛtanburu kalo ka ɲi. Aw ye sanji daminɛ makɔnɔ fɔlɔ.",
+    "haricot_stockage_001": "Aw ye soso ja ka ɲɛ fɔlɔ. Aw ye soso don saki ɲuman na ka mara. Aw ye a mara yɔrɔ jalen na ka soso kisi.",
+    "haricot_vente_001": "Aw ye soso feere lɔgɔ la wala julabaga fɛ. Aw ye a mara ka ɲɛ sani ka feere. Soso ɲuman sɔngɔ ka ɲi."
+  },
+  "comments": {
+    "haricot_conseil_001": "Correction de foro, de l’écartement et de l’ordre SOV.",
+    "haricot_diagnostic_001": "« fɔngisidi » est un emprunt technique à confirmer localement.",
+    "haricot_engrais_001": "La phrase sur la fixation de l’azote doit être contre-validée agronomiquement.",
+    "haricot_irrigation_001": "cɛn est retenu provisoirement pour gâter/pourrir.",
+    "haricot_recolte_001": "« soso den » pour gousse est à confirmer en dioula CI.",
+    "haricot_saison_001": "Mois et sanji harmonisés ; tournure d’attente à tester oralement.",
+    "haricot_stockage_001": "ja, saki, mara et yɔrɔ jalen sont les formes retenues provisoirement.",
+    "haricot_vente_001": "lɔgɔ remplace sugu ; formulation de la qualité à confirmer."
+  }
+}

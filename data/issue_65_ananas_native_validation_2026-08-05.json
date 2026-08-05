@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "issue": 65,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-65-ananas-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_ANANAS",
+    "corrected": 8
+  },
+  "corrections": {
+    "ananas_conseil_001": "Ananas bɛ bɔ ka ɲɛ Kote Divwari la. Aw ye a da santimɛtiri bi saba. Aw ye ananas kunw wala denw sɛnɛ.",
+    "ananas_diagnostic_001": "Ni ananas fura bɛ nɛrɛmugu wala bin, kosheni bɛ a la. Aw ye ɛnsɛktisidi la furakɛli kɛ joona. Aw ye ananas bananenw bɔ foro la.",
+    "ananas_engrais_001": "Ananas bɛ potasi fɛ caman. Sɛnɛ kɔfɛ joona, aw ye NPK don dugukolo la. Sulfati potasi bɛ ananas dɛmɛ ka bon.",
+    "ananas_irrigation_001": "Ananas bɛ se ka sɔn ji tɛ ma dɔɔni. Sɛnɛ kɔfɛ joona, ji dɔɔni bɛ a dɛmɛ. Ni sanji tɛ, kalo o kalo aw ye ji don.",
+    "ananas_recolte_001": "Kalo tan ni naani ni kalo tan ni segin cɛ, ananas bɛ se ka tigɛ. Ni a bɛ nɛrɛmugu dɔɔni duguma fɛ, a mɔlen don. Aw ye a tigɛ ka feere joona.",
+    "ananas_saison_001": "Ananas bɛ se ka sɛnɛ san bɛɛ ni ji bɛ yen. Sanji tuma ye tuma ɲuman ye. Aw ye ananas kunw labɛn ka ɲɛ fɔlɔ.",
+    "ananas_stockage_001": "Ananas kura bɛ se ka to tile tan ni tile tan ni naani cɛ. Aw ye a mara yɔrɔ sumanin na. Aw ye a tigɛ tuma ɲuman na ka feere joona.",
+    "ananas_vente_001": "Aw ye ananas feere lɔgɔ la wala julabaga fɛ. Tigɛ kɔ tile saba kɔnɔ, aw ye a feere. Jamana wɛrɛ la feere bɛ se ka sɔngɔ ɲuman di."
+  },
+  "comments": {
+    "ananas_conseil_001": "« ananas kun » et « den » pour couronne/rejet sont à confirmer.",
+    "ananas_diagnostic_001": "kosheni et ɛnsɛktisidi sont des emprunts techniques à valider.",
+    "ananas_engrais_001": "« sulfati potasi » est une translittération provisoire ; validation agronomique requise.",
+    "ananas_irrigation_001": "La fréquence d’arrosage doit être confirmée par une source agronomique.",
+    "ananas_recolte_001": "La formulation 14-18 mois est explicite mais doit être testée oralement.",
+    "ananas_saison_001": "« ananas kun » pour couronne reste à confirmer.",
+    "ananas_stockage_001": "Durée 10-14 jours formulée explicitement ; yɔrɔ sumanin à tester.",
+    "ananas_vente_001": "La dernière phrase paraphrase l’exportation ; formulation à confirmer."
+  }
+}

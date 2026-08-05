@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "issue": 58,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-58-tomate-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_TOMATE",
+    "corrected": 8
+  },
+  "corrections": {
+    "tomate_conseil_001": "Aw ye ntomati den foro labɛn fɔlɔ. Tile mugan kɔfɛ, aw ye denw turu foro la. Aw ye ntomati da santimɛtiri mugan mugan.",
+    "tomate_diagnostic_001": "Ni ntomati fura bɛ yɛlɛma, mildiwu bana bɛ a la. Aw ye fɔngisidi la furakɛli kɛ joona. ANADER sɛnɛbaga bɛ se ka aw dɛmɛ.",
+    "tomate_engrais_001": "Ntomati bɛ NPK 15-15-15 fɛ sɛnɛ kɔfɛ. Tile mugan kɔfɛ, aw ye ire don ka ntomati dɛmɛ. Kɔnpɔsi fana ka ɲi.",
+    "tomate_irrigation_001": "Ntomati bɛ ji fɛ tile o tile. Aw ye ji don foro la tile o tile. Ni ji tɛ, ntomati bɛ ja joona.",
+    "tomate_recolte_001": "Kalo saba sɛnɛ kɔfɛ, ntomati bɛ se ka tigɛ. Ni denw bɛ bilenman, tigɛ tuma ye. Ni den mɔlen bɛ yen, aw ye tigɛ tile o tile.",
+    "tomate_saison_001": "Ntomati bɛ se ka sɛnɛ san bɛɛ ni ji bɛ yen. Ni sanji tɛ, aw ye ji don foro la tile o tile. Aw ye den foro kɛ fɔlɔ, ka denw turu foro la.",
+    "tomate_stockage_001": "Ntomati bɛ se ka to tile wolonfila. Aw ye a mara yɔrɔ sumanin na. Aw ye a feere joona sani a ka mɔ caman.",
+    "tomate_vente_001": "Tigɛ kɔfɛ joona, aw ye ntomati feere. Aw ye a feere lɔgɔ la wala julabaga fɛ. Ntomati mɔlen bɛ halaki joona."
+  },
+  "comments": {
+    "tomate_conseil_001": "Prévalidation assistée. « den foro » et « turu » sont à confirmer en dioula CI.",
+    "tomate_diagnostic_001": "Les emprunts « mildiwu » et « fɔngisidi » doivent être validés oralement.",
+    "tomate_engrais_001": "« ire » (urée) et « kɔnpɔsi » restent à confirmer avec les producteurs.",
+    "tomate_irrigation_001": "Correction de foro et simplification de la tournure « besoin d’eau ».",
+    "tomate_recolte_001": "« den » désigne ici le fruit ; emploi à confirmer par un locuteur natif.",
+    "tomate_saison_001": "Pépinière et transplantation à confirmer ; sanji et foro harmonisés.",
+    "tomate_stockage_001": "« yɔrɔ sumanin » est proposé pour un lieu frais ; à tester oralement.",
+    "tomate_vente_001": "lɔgɔ remplace sugu ; julabaga est conservé pour commerçant."
+  }
+}

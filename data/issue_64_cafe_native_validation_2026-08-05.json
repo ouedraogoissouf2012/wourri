@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "issue": 64,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-64-cafe-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 8,
+    "culture": "CULTURE_CAFE",
+    "corrected": 8
+  },
+  "corrections": {
+    "cafe_conseil_001": "Kafe ye sɛnɛfɛn nafaman ye Kote Divwari la. Aw ye kafe denw sɛnɛ yiri wɛrɛw kɔrɔ ka olu kisi. San saba kɔfɛ, kafe tigɛ fɔlɔ bɛ kɛ.",
+    "cafe_diagnostic_001": "Ni kafe fura bɛ bin wala kɔgɔ joona, bana bɛ a la. CBD ye kafe bana juguya ye. Aw ye fɔngisidi la furakɛli kɛ joona.",
+    "cafe_engrais_001": "Kafe bɛ NPK 12-15-18 fɛ. Kalo o kalo, aw ye furakɛli kɛ. Maginesiyɔm fana bɛ kafe dɛmɛ ka den caman bɔ.",
+    "cafe_irrigation_001": "Kafe bɛ ji fɛ caman. Ni sanji tɛ na joona, aw ye ji don kafew la. Ji tɛ tuma jan bɛ kafe halaki.",
+    "cafe_recolte_001": "Ɔkitɔburu ni Fevuruye kalo cɛ, kafe bɛ tigɛ. Ni kafe denw bɛ bilenman, tigɛ tuma ye. Sɔgɔma joona, aw ye kafe tigɛ.",
+    "cafe_saison_001": "Kafe sɛnɛ tuma ɲuman ye sanji tuma na. Mɛ kalo wala Zuwɛ kalo ka ɲi. Aw ye kafe den foro labɛn fɔlɔ.",
+    "cafe_stockage_001": "Aw ye kafe ja ka ɲɛ fɔlɔ. Aw ye a mara yɔrɔ sumanin ni jalen na. Kafe jalen bɛ se ka to kalo caman.",
+    "cafe_vente_001": "Aw ye kafe feere jɛkulu fɛ. Jɛkulu bɛ sɔngɔ ɲuman sɔrɔ aw ye. Aw ye kafe ja ka ɲɛ sani ka feere."
+  },
+  "comments": {
+    "cafe_conseil_001": "« sɛnɛfɛn nafaman » et « kafe den » doivent être confirmés localement.",
+    "cafe_diagnostic_001": "CBD et fɔngisidi sont des termes techniques à conserver ou adapter après validation.",
+    "cafe_engrais_001": "Intrants et calendrier à valider agronomiquement ; maginesiyɔm est un emprunt.",
+    "cafe_irrigation_001": "Correction de sanji et de la phrase erronée sur la sécheresse.",
+    "cafe_recolte_001": "Les formes des mois et « kafe den » doivent être testées en TTS.",
+    "cafe_saison_001": "« Zuwɛ » pour juin et « den foro » pour pépinière à confirmer.",
+    "cafe_stockage_001": "Correction de mɛ ; lieu frais et sec formulé simplement.",
+    "cafe_vente_001": "jɛkulu est provisoire pour coopérative et doit être confirmé juridiquement/localement."
+  }
+}

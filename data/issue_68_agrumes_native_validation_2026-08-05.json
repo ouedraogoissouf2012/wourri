@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "issue": 68,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-68-agrumes-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 4,
+    "culture": "CULTURE_AGRUMES",
+    "corrected": 4
+  },
+  "corrections": {
+    "agrumes_conseil_001": "Aw ye dingɛ bon kɛ ka kɔnpɔsi don a kɔnɔ. Sanji tuma daminɛ na, aw ye lemuru sɛnɛ. Kalo wɔɔrɔ fɔlɔ kɔnɔ, aw ye ji don tile o tile.",
+    "agrumes_diagnostic_001": "Ni lemuru fura bɛ nɛrɛmugu, nɔgɔ ka dɔgɔ. Aw ye nɔgɔ don ka a labɛn. Ni tɔ finmanw bɛ yen, aw ye neem fura ji kɛ furakɛli ye.",
+    "agrumes_engrais_001": "Lemuru bɛ nɔgɔ fɛ siɲɛ fila san kɔnɔ. Sanji tuma daminɛ na, aw ye NPK don; sanji tɛ tuma na, aw ye kɔnpɔsi don. Aw bɛna den ɲumanw sɔrɔ.",
+    "agrumes_irrigation_001": "Lemuru bɛ ji fɛ caman. Sanji tɛ tuma na, lɔgɔkun kɔnɔ siɲɛ fila aw ye ji don. Ji donli ɲuman bɛ den ɲumanw bɔ."
+  },
+  "comments": {
+    "agrumes_conseil_001": "dingɛ, kɔnpɔsi et lemuru doivent être confirmés dans la variante locale.",
+    "agrumes_diagnostic_001": "« tɔ finmanw » pour taches noires et le traitement au neem exigent validation.",
+    "agrumes_engrais_001": "Intrants, calendrier et « den » pour fruit à confirmer agronomiquement.",
+    "agrumes_irrigation_001": "lɔgɔkun est retenu pour semaine ; phrase à tester oralement."
+  }
+}
