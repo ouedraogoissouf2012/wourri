@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "issue": 49,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-49b-riz-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 11,
+    "culture": "CULTURE_RIZ",
+    "corrected": 11
+  },
+  "corrections": {
+    "riz_conseil_001": "Aw ye malo sɛnɛ Mɛ kalo la, sanji tuma na. Aw ye dugukolo jiman ɲini, ji bɛ se ka to min na. Aw ye malo da santimɛtiri mugan mugan.",
+    "riz_diagnostic_001": "Ni malo fura bɛ ja ka nɛrɛmugu, bana bɛ a la. Aw ye furaji kɛ malo fura la joona. Aw ye mɔgɔ dɔ weele ka aw dɛmɛ.",
+    "riz_diagnostic_002": "Ni tɔrɔfɛnw bɛ malo dumu, aw ye furakɛli kɛ. Aw ye furaji bɔ malo kan tile fila o tile fila. Ni aw ma furakɛli daminɛ, tɔrɔfɛnw bɛ se ka malo halaki.",
+    "riz_engrais_001": "Aw ye NPK don dugukolo la sɛnɛ tuma la. Lɔgɔkun wɔɔrɔ kɔfɛ, aw ye ire dɔɔni fara a kan. Nɔgɔ bɛ malo dɛmɛ ka bon.",
+    "riz_irrigation_001": "Malo bɛ ji caman fɛ. Aw ye ji don foro la tile o tile. Ni ji tɛ kalo fɔlɔ kɔnɔ, malo bɛ sa.",
+    "riz_recolte_001": "Kalo saba sɛnɛ kɔfɛ, malo bɛ se ka tigɛ. Ni malo kunw jalen don ka gɔngɔn, aw ye a tigɛ. Aw ye a tigɛ joona sanji ɲɛ.",
+    "riz_saison_001": "Malo sɛnɛ tuma ɲuman ye Mɛ kalo ye. Sanji bɛ na o tuma la ka foro ji. Aw ye foro labɛn sisan.",
+    "riz_saison_002": "Ni sanji tɛ, aw ye malo sɛnɛ ji bɛ yɔrɔ. Aw ye malo sɛnɛ ji bɛ fala kɔnɔ. Sanji tuma kɔfɛ, foro caman bɛ se ka sɛnɛ.",
+    "riz_saison_seche_001": "Malo sɛnɛ tuma ɲuman ye Mɛ kalo ye. Sanji bɛ na o tuma la ka foro ji. Aw ye foro labɛn sisan.",
+    "riz_stockage_001": "Tigɛli kɔfɛ, aw ye malo ja tile la tile o tile. Aw ye a don bɔn jalen na, ji tɛ min na. Bɔn ka kan ka kɛ dugukolo sanfɛ.",
+    "riz_vente_001": "Sanji tuma kɔfɛ, malo sɔngɔ bɛ yɛlɛ. Aw ye malo caya fara lɔgɔ ma. Ni aw ye malo mara, aw bɛ wari caman sɔrɔ."
+  },
+  "comments": {
+    "riz_conseil_001": "Maa loo fusionné en malo; Mɛ, sanji et dugukolo normalisés. Confirmer dugukolo jiman et da.",
+    "riz_diagnostic_001": "Malo normalisé. Furaji est une proposition générique pour produit liquide; confirmer le terme et la construction.",
+    "riz_diagnostic_002": "Kulun rejeté pour insectes. Tɔrɔfɛn et furaji sont provisoires; le conseil tous les 2 jours exige validation agronomique.",
+    "riz_engrais_001": "Malo et dugukolo normalisés. Ire pour urée et le conseil de fertilisation doivent être confirmés.",
+    "riz_irrigation_001": "Malo et foro normalisés. Phrase directe et courte; confirmer la formulation du premier mois.",
+    "riz_recolte_001": "Filɛli remplacé par tigɛ et sanji normalisé. Malo kunw et gɔngɔn pour épis courbés sont à confirmer.",
+    "riz_saison_001": "Mɛ, sanji et foro normalisés. Ka foro ji est une paraphrase d'arroser le champ à confirmer.",
+    "riz_saison_002": "Malo, sanji et foro normalisés. Fala pour bas-fond et la dernière phrase demandent une validation native.",
+    "riz_saison_seche_001": "Même correction que l'entrée saison principale. Confirmer ka foro ji dans la variante locale.",
+    "riz_stockage_001": "Le soleil et l'absence d'humidité sont explicités. Bɔn et dugukolo sanfɛ pour grenier surélevé sont à confirmer.",
+    "riz_vente_001": "Malo et sanji normalisés; lɔgɔ conservé. Confirmer caya pour surplus et fara lɔgɔ ma."
+  },
+  "codex_match": {
+    "riz_conseil_001": true,
+    "riz_diagnostic_001": true,
+    "riz_diagnostic_002": true,
+    "riz_engrais_001": true,
+    "riz_irrigation_001": true,
+    "riz_recolte_001": true,
+    "riz_saison_001": true,
+    "riz_saison_002": true,
+    "riz_saison_seche_001": true,
+    "riz_stockage_001": true,
+    "riz_vente_001": true
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "issue": 51,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-51b-arachide-reste-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 4,
+    "culture": "CULTURE_ARACHIDE",
+    "corrected": 4
+  },
+  "corrections": {
+    "arachide_conseil_001": "Aw ye tiga sɛnɛ Mɛ kalo la, sanji tuma na. Aw ye dugukolo cɛncɛnma ɲini, ji tɛ to min na. Aw ye tiga da santimɛtiri bi naani bi naani.",
+    "arachide_recolte_001": "Kalo saba sɛnɛ kɔfɛ, tiga bɛ se ka tigɛ. Aw ye tiga yiriw bɔ dugukolo la dɔɔni dɔɔni, joona. Aw ye tiga ja tile la tile o tile.",
+    "arachide_saison_001": "Tiga sɛnɛ tuma ɲuman ye Mɛ ni Zuwen kalo cɛ. Sanji kɔfɛ, dugukolo ka kan ka ja joona. Aw ye foro labɛn ka a sɛgɛ ka ɲɛ sini.",
+    "arachide_saison_seche_001": "Ni sanji tɛ, tiga tɛ bɔ ka ɲi. Aw ye sanji tuma makɔnɔ, Mɛ wala Sɛtanburu kalo la. Tiga bɛ sanji fɛ ka bɔ."
+  },
+  "comments": {
+    "arachide_conseil_001": "Mɛ, sanji et dugukolo normalisés. Cɛncɛnma pour sol sableux et da pour planter restent à confirmer.",
+    "arachide_recolte_001": "Filɛli remplacé par tigɛ. La désignation tiga yiriw pour les plants doit être validée localement.",
+    "arachide_saison_001": "Mois, sanji, dugukolo et foro normalisés. Sɛgɛ pour labourer et l'ordre avec sini sont à confirmer.",
+    "arachide_saison_seche_001": "Sanji et Sɛtanburu normalisés. Confirmer makɔnɔ et la dernière phrase pour exprimer le démarrage."
+  },
+  "codex_match": {
+    "arachide_conseil_001": true,
+    "arachide_recolte_001": true,
+    "arachide_saison_001": true,
+    "arachide_saison_seche_001": true
+  }
+}

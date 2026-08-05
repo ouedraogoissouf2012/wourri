@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "issue": 40,
+  "date": "2026-08-05",
+  "status": "validated",
+  "source_document": "issue-40b-mais-prevalidation-remplie.pdf",
+  "validation_source": "formulaire retourné rempli par le locuteur natif dioula CI",
+  "selected_choice": "C",
+  "target": "dictionnaires/archive/corpus_ivr_v3_full_draft.json",
+  "production_policy": "archive_only_per_adr_0014",
+  "summary": {
+    "validated_total": 9,
+    "culture": "CULTURE_MAIS",
+    "corrected": 9
+  },
+  "corrections": {
+    "mais_conseil_001": "Aw ye kaba sɛnɛ Awirili kalo la, sanji fɔlɔ kɔfɛ. Aw ye dugukolo sɛgɛ ka ɲɛ ka dun. Aw ye kaba da santimɛtiri bi wɔɔrɔ, sira ni sira cɛ.",
+    "mais_diagnostic_001": "Ni kaba fura bɛ nɛrɛmugu ka ja, bana bɛ a la. Aw ye furakɛli kɛ joona. Ni kaba bɛɛ bananen don, aw ye a bɔ ka jeni.",
+    "mais_engrais_001": "Aw ye NPK don dugukolo la sɛnɛ tuma la. Tile bi saba kɔfɛ, aw ye ire dɔɔni fara a kan. Nɔgɔ bɛ kaba dɛmɛ ka bon ka ɲi.",
+    "mais_irrigation_001": "Kaba bɛ ji dɔɔni fɛ tile o tile. Ni sanji tɛ na, aw ye ji don foro la sɔgɔma joona. Ni ji tɛ tile bi saba fɔlɔ kɔnɔ, kaba bɛ se ka sa.",
+    "mais_recolte_001": "Tile bi kɔnɔntɔn ni tile kɛmɛ cɛ sɛnɛ kɔfɛ, kaba bɛ se ka tigɛ. Ni kaba kisɛw gɛlɛn don ka nɛrɛmugu, a mɔlen don. Aw ye kaba kunw tigɛ ka olu ja.",
+    "mais_saison_001": "Kaba sɛnɛ tuma ɲuman ye Awirili ni Mɛ kalo cɛ. Sanji dɔɔni ka kan ka sɛnɛ daminɛ. Aw ye foro labɛn sisan.",
+    "mais_saison_seche_001": "Ni sanji tɛ, kaba tɛ bɔ ka ɲi. Aw ye sanji tuma makɔnɔ. Marisi wala Awirili kalo la, sanji bɛ na ka foro ji.",
+    "mais_stockage_001": "Tigɛli kɔfɛ, aw ye kaba ja tile la tile o tile. Aw ye a don saki jalenw na, ji kana se a ma. Aw ye tɔrɔfɛn furaji don saki kɔnɔ.",
+    "mais_vente_001": "Zuwen kalo la, kaba sɔngɔ bɛ yɛlɛ. Sannabagaw bɛ na foro la ka kaba san. Aw ye kaba mara dɔɔni sani ka a feere lɔgɔ la."
+  },
+  "comments": {
+    "mais_conseil_001": "Kabaa, Awirili, sanji et dugukolo normalisés. Sɛgɛ ka dun et sira ni sira cɛ sont à confirmer.",
+    "mais_diagnostic_001": "Kabaa normalisé; symptômes explicités. Confirmer jeni pour brûler et la sécurité du conseil.",
+    "mais_engrais_001": "Dugukolo et kaba normalisés. Ire pour urée et les doses doivent être validés agronomiquement.",
+    "mais_irrigation_001": "Kaba, sanji et foro normalisés. La période tile bi saba fɔlɔ kɔnɔ est à confirmer.",
+    "mais_recolte_001": "90-100 jours conservés. Kaba kisɛw et kaba kunw sont des propositions à faire confirmer.",
+    "mais_saison_001": "Mois, sanji, kaba et foro normalisés. Confirmer la construction ka kan ka sɛnɛ daminɛ.",
+    "mais_saison_seche_001": "Kaba, sanji, Awirili et foro normalisés. Makɔnɔ et ka foro ji sont à confirmer.",
+    "mais_stockage_001": "Bɔlɔ tɛ remplacé par une phrase sans humidité. Le produit anti-insectes exige un nom, un dosage et une validation agronomique.",
+    "mais_vente_001": "Kaba, foro et lɔgɔ normalisés. Confirmer Zuwen, sannabaga et la tournure de vente."
+  },
+  "codex_match": {
+    "mais_conseil_001": true,
+    "mais_diagnostic_001": true,
+    "mais_engrais_001": true,
+    "mais_irrigation_001": true,
+    "mais_recolte_001": true,
+    "mais_saison_001": true,
+    "mais_saison_seche_001": true,
+    "mais_stockage_001": true,
+    "mais_vente_001": true
+  }
+}
