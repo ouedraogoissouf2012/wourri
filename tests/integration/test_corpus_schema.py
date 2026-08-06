@@ -49,6 +49,27 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+def _import_subprocess_env() -> dict:
+    """Construit l'env du subprocess `import_corpus_ivr.py`.
+
+    #189 : `KMP_DUPLICATE_LIB_OK=TRUE` + `OMP_NUM_THREADS=1` préviennent
+    l'ACCESS_VIOLATION Windows (returncode 0xC0000005) causé par le double-load
+    des DLL OpenMP de torch, quand un test parent a déjà chargé
+    SentenceTransformer avant que ce subprocess ne le recharge. C'est le
+    contournement standard documenté pour cette classe de crash.
+
+    Durcissement PRÉVENTIF : le crash a été observé au smoke Phase D mais n'est
+    pas reproductible sur toutes les configs (non reproduit sur dev Windows le
+    2026-08-06). Ces variables ne changent PAS le résultat de l'import — elles
+    éliminent seulement le conflit de chargement OpenMP.
+    """
+    env = os.environ.copy()
+    env["POSTGRES_URL"] = _URL
+    env["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+    env["OMP_NUM_THREADS"] = "1"
+    return env
+
+
 @pytest.fixture(scope="module")
 def engine():
     """Engine SQLAlchemy partagé pour le module."""
@@ -70,8 +91,7 @@ def imported_corpus(engine):
     l'ancien 600s si le modele est absent du cache.
     """
     script = _PROJECT_ROOT / "scripts" / "import_corpus_ivr.py"
-    env = os.environ.copy()
-    env["POSTGRES_URL"] = _URL
+    env = _import_subprocess_env()
     try:
         result = subprocess.run(
             [sys.executable, str(script)],
@@ -304,8 +324,7 @@ class TestImportIdempotence:
         doit avoir vidé proprement les phrases avant la 2e insertion.
         """
         script = _PROJECT_ROOT / "scripts" / "import_corpus_ivr.py"
-        env = os.environ.copy()
-        env["POSTGRES_URL"] = _URL
+        env = _import_subprocess_env()
         result = subprocess.run(
             [sys.executable, str(script)],
             cwd=str(_PROJECT_ROOT),
