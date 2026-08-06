@@ -146,6 +146,33 @@ def _consonant_changes(word_a: str, word_b: str) -> int:
     return changes
 
 
+def _phonological_variant_in_vocab(word_lower: str) -> Optional[str]:
+    """Cherche une variante phonologique dioula↔bambara présente dans le vocab NLU.
+
+    ADR-0020 : applique les 5 règles phonologiques déterministes (gw↔g, l↔d,
+    l↔j, r↔l intervoc, nin↔len) et retourne la première variante — autre que le
+    mot lui-même — qui est un mot NLU connu. Aucune substitution lexicale n'est
+    faite ici (celles-ci restent conditionnelles au sens, hors de ce module).
+
+    Limite connue : cette étape n'est atteinte QUE pour un mot hors vocab (les
+    mots déjà connus font early-return dans _fuzzy_correct_word). Deux mots NLU
+    sont phonologiquement voisins (wolo=poulet ↔ woro=porc/cola) ; comme les deux
+    sont dans le vocab, aucun n'est jamais réécrit vers l'autre par cette voie.
+    Le risque résiduel (un mot ASR hors vocab dont une variante tombe sur l'un
+    d'eux) est ≤ à celui du fuzzy Levenshtein existant, plus permissif.
+
+    Retourne None si aucune variante n'est dans le vocabulaire.
+    """
+    try:
+        from app.services.language import phonological_variants
+    except ImportError:
+        return None
+    for variant in phonological_variants(word_lower):
+        if variant != word_lower and variant in _NLU_VOCAB:
+            return variant
+    return None
+
+
 def _fuzzy_correct_word(word: str) -> str:
     """Corrige un mot par fuzzy matching contre le vocabulaire NLU.
 
@@ -164,6 +191,15 @@ def _fuzzy_correct_word(word: str) -> str:
     word_lower = word.lower()
     if word_lower in _NLU_VOCAB:
         return word
+
+    # ADR-0020 : avant le fuzzy approximatif, tenter les variantes phonologiques
+    # dioula↔bambara (déterministes). Si UNE variante est exactement dans le
+    # vocabulaire NLU, c'est un match sûr (le modèle ASR a produit la forme
+    # malienne d'un mot dioula, ou l'inverse) — préférable au fuzzy.
+    phon_match = _phonological_variant_in_vocab(word_lower)
+    if phon_match:
+        logger.info("[ASR-NORM] Variante phonologique: '%s' → '%s'", word, phon_match)
+        return phon_match
 
     try:
         from rapidfuzz.distance import Levenshtein
