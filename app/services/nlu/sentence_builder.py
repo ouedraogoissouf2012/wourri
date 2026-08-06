@@ -276,23 +276,6 @@ class SentenceBuilder:
                 return f"Comment et où vendre mes {entity} pour avoir le meilleur prix ?"
             return f"Comment et où vendre {entity_with_article} pour avoir le meilleur prix ?"
 
-        elif intent == "QUESTION_ELEVAGE":
-            if has_insecte or has_maladie:
-                return (
-                    f"Mes {entity} sont malades. "
-                    f"Quels sont les symptômes et traitements possibles ?"
-                )
-            elif has_intensite:
-                return (
-                    f"Je fais de l'élevage de {entity} "
-                    f"et je cherche des conseils pour augmenter ma production."
-                )
-            else:
-                return (
-                    f"Je cherche des conseils pour mon élevage de {entity}. "
-                    f"Que dois-je savoir ?"
-                )
-
         elif intent == "QUESTION_METEO_AGRICOLE":
             if entity != "ma culture":
                 return (
