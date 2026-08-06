@@ -71,7 +71,10 @@ def test_final_corrections_absent_from_production(validation):
     production = _load(PROD)
     prod_entries = {e["id"]: e for e in production["entries"]}
 
-    assert production["version"] == "2.4"
+    assert production["version"].startswith("2.4"), (
+        "garde-fou ADR-0014 : la prod reste dans la lignée 2.4.x (patches inclus), "
+        "jamais le draft v3"
+    )
     assert all(
         prod_entries[entry_id]["reponse_bambara"] != validated
         for entry_id, validated in validation["corrections"].items()
