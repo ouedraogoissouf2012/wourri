@@ -318,6 +318,11 @@ def ajouter_reponse_validee(
 ) -> bool:
     """Insère une nouvelle réponse validée dans corpus_entries.
 
+    ⚠️ STATUT (2026-08-05) : **aucun appelant de production** depuis ADR-0019.
+    Conservée délibérément comme adapter pgvector de la **double-écriture**
+    (ADR-0008 Phase C-D, à reprendre). Ne pas supprimer sans ADR. Cf.
+    `corpus_facade.ajouter_reponse_validee`.
+
     Format `document_text` (entrée dynamique) : `f"{reponse_fr} {' '.join(tags)}"`.
     Identique à `vdb_service.ajouter_reponse_validee` (vdb_service.py:315) — les
     entrées dynamiques n'ont pas de `phrases_attestees` à leur création.
