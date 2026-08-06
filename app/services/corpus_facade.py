@@ -373,7 +373,16 @@ def ajouter_reponse_validee(
     conditions: list[str] = None,
     tags: list[str] = None,
 ) -> bool:
-    """Écriture : `dual` écrit dans les deux stores (best-effort sur pgvector)."""
+    """Écriture d'une réponse validée : `dual` écrit dans les deux stores.
+
+    ⚠️ STATUT (2026-08-05) : cette fonction n'a **plus aucun appelant de
+    production** depuis ADR-0019 — le feedback 👍 ne peuple plus le corpus
+    (il dépose un candidat à revue native). Elle est **conservée
+    délibérément**, pas supprimée : c'est le point de **double-écriture** de la
+    migration pgvector (ADR-0008 Phase C-D), actée et à reprendre après le
+    staging (#202). Ne pas la traiter comme du dead code à retirer sans passer
+    par un ADR (décision Ruben, tension ADR-0019↔ADR-0008 tracée).
+    """
     mode = _mode()
 
     if mode == "pgvector":

@@ -161,3 +161,11 @@ signal analytics).
 
 - 2026-08-05 — rédaction initiale (statut proposé), après questions stratégiques à Ruben.
 - 2026-08-05 — **accepté** par Ruben (Option A). Implémentation autorisée.
+- 2026-08-05 — audit anti-hardcoding : constat que `ajouter_reponse_validee`
+  (dont cet ADR a retiré le seul appelant de production) subsiste **sans
+  appelant de prod** dans les 3 modules (`vdb_service`, `corpus_service`,
+  `corpus_facade`). **Décision Ruben : ne PAS la supprimer** — c'est le point de
+  double-écriture de la migration pgvector (ADR-0008), actée et « active / à
+  reprendre ». Tension ADR-0019↔ADR-0008 tracée ici et **documentée dans les
+  docstrings** des 3 fonctions. À réévaluer si la migration pgvector est
+  finalisée (Phase E) ou abandonnée.

@@ -298,9 +298,13 @@ def ajouter_reponse_validee(
     conditions: list[str] = None,
     tags: list[str] = None,
 ) -> bool:
-    """
-    Injecte une nouvelle réponse validée dans la BD vectorielle (auto-apprentissage C6).
-    Appelé quand le pipeline de validation valide une réponse dynamique (score > 0.75).
+    """Injecte une réponse validée dans la BD vectorielle Chroma.
+
+    ⚠️ STATUT (2026-08-05) : **aucun appelant de production** depuis ADR-0019
+    (le feedback ne peuple plus le corpus ; la promotion se fait par PR JSON +
+    rebuild). Conservée délibérément comme point de **double-écriture** de la
+    migration pgvector (ADR-0008 Phase C-D, à reprendre). Ne pas supprimer
+    comme du dead code sans ADR. Cf. `corpus_facade.ajouter_reponse_validee`.
     """
     collection = _get_collection()
     if collection is None:
