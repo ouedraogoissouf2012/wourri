@@ -1,6 +1,6 @@
 # ADR-0015 — Strategy Pattern pour la cascade chat + ajout de l'anglais
 
-**Statut** : accepté
+**Statut** : livré
 **Date** : 2026-06-01
 **Auteur** : Claude (assistant)
 **Valideur** : Ruben (validé le 2026-06-02)
@@ -345,3 +345,16 @@ modes existants (FR/DIOULA/BOTH) fonctionnent toujours.
   restent en français pour cette ADR — futures langues l10n via gettext si besoin)
 - Support d'autres langues européennes (espagnol, portugais) → pure extension, pas
   d'ADR nécessaire grâce au pattern installé
+
+---
+
+## Historique
+
+- 2026-06-02 — **accepté** par Ruben.
+- 2026-08-06 — **livré**. Les 4 PRs de l'epic #275 sont mergées sur APIPy :
+  Protocol `LanguageHandler` + `FrenchHandler` (#276), `DioulaHandler` +
+  `BothHandler` (#277), `chat_service.process()` dispatcher pur + prompts
+  DeepSeek externalisés dans `deepseek_prompts.py` (#278), `EnglishHandler` +
+  `tts_english.py` + `Language.ENGLISH` (#279). `HANDLERS = {FRENCH, DIOULA,
+  BOTH, ENGLISH}` enregistrés dans `app/services/chat/handlers/__init__.py`.
+  Issues #275-279 fermées.
