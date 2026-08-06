@@ -28,10 +28,11 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
+
+from app.services.corpus import season_scoring
 
 logger = logging.getLogger(__name__)
 
@@ -101,17 +102,6 @@ def _get_model():
 # ─────────────────────────────────────────────────────────────────────────
 
 
-def _get_current_season() -> str:
-    """Saison agricole CI selon le mois courant (copie de vdb_service.py:43-55).
-
-    Mars-Juin + Sep-Oct → saison_pluie ; Nov-Fev + Jul-Aout → saison_seche.
-    """
-    month = datetime.now().month
-    if month in (3, 4, 5, 6, 9, 10):
-        return "saison_pluie"
-    return "saison_seche"
-
-
 def _format_vector(vec) -> str:
     """Sérialise un vecteur en littéral pgvector `[1.0,2.0,...]`.
 
@@ -151,40 +141,37 @@ def _embed_query(text: str):
     )[0]
 
 
-def _best_result_pg(rows: list[dict], conditions: list[str]) -> dict | None:
-    """Scoring identique à `vdb_service._best_result` (vdb_service.py:245-293).
+def _best_result_pg(
+    rows: list[dict], conditions: list[str], season: str | None = None
+) -> dict | None:
+    """Sélectionne la meilleure entrée parmi les candidats pgvector.
 
-    Entrée : `rows` = list de dicts `{id, intent, cultures, conditions,
-    reponse_bambara, reponse_fr, score_validation}` retournés par la requête SQL.
+    Le scoring métier (saison + conditions) est délégué à
+    `season_scoring.score_entry` — logique partagée avec le backend Chroma
+    (`vdb_service._best_result`). Ce backend ne fait que son I/O : mapper les
+    `rows` SQL (conditions déjà en array Postgres) vers la structure de sortie.
 
-    Scoring :
-    - base : `score_validation` (0.5-1.0)
-    - bonus saison : +0.15 si saison courante dans entry.conditions
-    - pénalité mauvaise saison : -0.05 si l'entrée a une condition saisonnière
-      qui ne match pas
-    - bonus autres conditions : +0.05 par condition explicite matchée
+    Args:
+        rows: candidats `{id, intent, cultures, conditions, reponse_bambara,
+            reponse_fr, score_validation}` retournés par la requête SQL.
+        season: saison courante, injectable pour les tests ; par défaut
+            `season_scoring.get_current_season()`.
     """
     if not rows:
         return None
 
-    current_season = _get_current_season()
+    if season is None:
+        season = season_scoring.get_current_season()
     best = None
     best_score = -1.0
 
     for row in rows:
-        score = float(row.get("score_validation", 0.5))
+        base = float(
+            row.get("score_validation", season_scoring.DEFAULT_VALIDATION_SCORE)
+        )
+        # pgvector stocke les conditions en array natif → déjà une liste.
         entry_conditions = list(row.get("conditions") or [])
-
-        if current_season in entry_conditions:
-            score += 0.15
-        elif not any(c in ("saison_pluie", "saison_seche") for c in entry_conditions if c):
-            score += 0.0  # neutre — entrée sans contrainte saisonnière
-        else:
-            score -= 0.05  # mauvaise saison
-
-        for cond in conditions:
-            if cond and cond in entry_conditions:
-                score += 0.05
+        score = season_scoring.score_entry(base, entry_conditions, conditions, season)
 
         if score > best_score:
             best_score = score
@@ -193,7 +180,7 @@ def _best_result_pg(rows: list[dict], conditions: list[str]) -> dict | None:
                 "id": row["id"],
                 "reponse_bambara": row["reponse_bambara"],
                 "reponse_fr": row.get("reponse_fr", "") or "",
-                "score_validation": float(row.get("score_validation", 0.5)),
+                "score_validation": base,
                 "intent": row["intent"],
                 # Cohérence avec vdb_service : Chroma stockait `cultures` en CSV ;
                 # ici on retourne la 1re culture (la plus spécifique) en string.

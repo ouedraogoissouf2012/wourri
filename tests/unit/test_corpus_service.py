@@ -129,8 +129,7 @@ class TestBestResultPg:
             _make_row("dry", score=0.85, conditions=["saison_seche"]),
             _make_row("rain", score=0.75, conditions=["saison_pluie"]),
         ]
-        with patch.object(corpus_service, "_get_current_season", return_value="saison_pluie"):
-            result = corpus_service._best_result_pg(rows, conditions=[])
+        result = corpus_service._best_result_pg(rows, conditions=[], season="saison_pluie")
         # 0.75 + 0.15 (rain match) = 0.90 > 0.85 - 0.05 (dry penalty) = 0.80
         assert result is not None
         assert result["id"] == "rain"
@@ -141,8 +140,7 @@ class TestBestResultPg:
             _make_row("plain", score=0.80, conditions=[]),
             _make_row("matched", score=0.78, conditions=["urgence"]),
         ]
-        with patch.object(corpus_service, "_get_current_season", return_value="saison_seche"):
-            result = corpus_service._best_result_pg(rows, conditions=["urgence"])
+        result = corpus_service._best_result_pg(rows, conditions=["urgence"], season="saison_seche")
         # plain : 0.80 (pas de saison → +0) = 0.80
         # matched : 0.78 (pas de saison → +0) + 0.05 (urgence match) = 0.83
         assert result is not None
@@ -162,17 +160,10 @@ class TestBestResultPg:
         assert result["cultures"] == "*"
 
 
-class TestGetCurrentSeason:
-    """Pareil que vdb_service._get_current_season (copie fidèle)."""
-
-    @pytest.mark.parametrize("month,expected", [
-        (3, "saison_pluie"), (6, "saison_pluie"), (9, "saison_pluie"), (10, "saison_pluie"),
-        (1, "saison_seche"), (7, "saison_seche"), (11, "saison_seche"),
-    ])
-    def test_season_calendar_ci(self, month, expected):
-        with patch("app.services.corpus_service.datetime") as mock_dt:
-            mock_dt.now.return_value.month = month
-            assert corpus_service._get_current_season() == expected
+# NOTE : la logique de saison est désormais centralisée dans
+# app/services/corpus/season_scoring.py et testée exhaustivement (les 12 mois)
+# par tests/unit/test_season_scoring.py. corpus_service._get_current_season a
+# été supprimé (DRY, ADR-0008 : les backends délèguent au module partagé).
 
 
 class TestFormatVector:

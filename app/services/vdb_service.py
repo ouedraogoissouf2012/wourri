@@ -11,9 +11,10 @@ Approche : IVR intelligent inspiré CGIAR/Viamo
 import json
 import os
 import logging
-from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
+
+from app.services.corpus import season_scoring
 
 logger = logging.getLogger(__name__)
 
@@ -45,21 +46,6 @@ _CHROMA_DIR = Path(__file__).parent.parent.parent / "data" / "chroma_ivr"
 _HF_MODEL_ID = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 _chroma_collection = None
-
-
-def _get_current_season() -> str:
-    """Retourne la saison agricole CI selon le mois courant.
-
-    Calendrier Côte d'Ivoire :
-    - Mars-Juin  : grande saison des pluies → saison_pluie
-    - Sep-Oct    : petite saison des pluies → saison_pluie
-    - Nov-Fév    : grande saison sèche     → saison_seche
-    - Jul-Août   : petite saison sèche     → saison_seche
-    """
-    month = datetime.now().month
-    if month in (3, 4, 5, 6, 9, 10):
-        return "saison_pluie"
-    return "saison_seche"
 
 
 def _load_corpus_entries() -> list[dict]:
@@ -256,13 +242,19 @@ def chercher_reponse_ivr(intent: str, cultures: list[str], conditions: list[str]
     return None
 
 
-def _best_result(results: dict, conditions: list[str]) -> dict | None:
+def _best_result(
+    results: dict, conditions: list[str], season: str | None = None
+) -> dict | None:
     """Sélectionne la meilleure entrée parmi les résultats Chroma.
 
-    Scoring :
-    - score_validation de base (0.5-1.0)
-    - +0.15 si la saison actuelle correspond aux conditions de l'entrée
-    - +0.05 pour chaque autre condition correspondante
+    Le scoring métier (bonus/pénalité saison, bonus conditions) est délégué à
+    `season_scoring.score_entry` — logique partagée avec le backend pgvector.
+    Ce backend ne fait que son I/O : désérialiser les conditions Chroma (CSV)
+    et mapper les métadonnées.
+
+    Args:
+        season: saison courante, injectable pour les tests ; par défaut
+            `season_scoring.get_current_season()`.
     """
     if not results or not results.get("ids") or not results["ids"][0]:
         return None
@@ -270,28 +262,18 @@ def _best_result(results: dict, conditions: list[str]) -> dict | None:
     ids = results["ids"][0]
     metadatas = results["metadatas"][0]
 
-    current_season = _get_current_season()
+    if season is None:
+        season = season_scoring.get_current_season()
     best = None
     best_score = -1.0
 
-    for i, (entry_id, meta) in enumerate(zip(ids, metadatas)):
-        score = float(meta.get("score_validation", 0.5))
-
+    for entry_id, meta in zip(ids, metadatas):
+        base = float(
+            meta.get("score_validation", season_scoring.DEFAULT_VALIDATION_SCORE)
+        )
+        # Chroma stocke les conditions en CSV → désérialisation (I/O du backend).
         entry_conditions = meta.get("conditions", "").split(",")
-
-        # Bonus saison (priorité haute : l'agriculteur doit recevoir le bon conseil)
-        if current_season in entry_conditions:
-            score += 0.15
-        # Entrée sans contrainte saisonnière → légère pénalité si une entrée saisonnière existe
-        elif not any(c in ("saison_pluie", "saison_seche") for c in entry_conditions if c):
-            score += 0.0  # neutre
-        else:
-            score -= 0.05  # mauvaise saison
-
-        # Bonus pour les autres conditions explicites
-        for cond in conditions:
-            if cond and cond in entry_conditions:
-                score += 0.05
+        score = season_scoring.score_entry(base, entry_conditions, conditions, season)
 
         if score > best_score:
             best_score = score
@@ -299,7 +281,7 @@ def _best_result(results: dict, conditions: list[str]) -> dict | None:
                 "id": entry_id,
                 "reponse_bambara": meta["reponse_bambara"],
                 "reponse_fr": meta.get("reponse_fr", ""),
-                "score_validation": float(meta.get("score_validation", 0.5)),
+                "score_validation": base,
                 "intent": meta["intent"],
                 "cultures": meta.get("cultures", "*"),
             }
