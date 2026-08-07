@@ -322,6 +322,25 @@ def get_dashboard_data(*, days: int = 7, recent_limit: int = 12) -> dict:
             params,
         ).all()
 
+        # Répartition par `source` (issue #304) : ivr_exact (corpus validé),
+        # ivr_fallback, clarification_culture, deepseek_open (chemin dégradé qui
+        # invente du bambara). Combinée à summary.total_requests, elle donne le
+        # % de trafic servi par le corpus vs l'IA — métrique produit clé.
+        top_sources = conn.execute(
+            text(
+                """
+                SELECT source AS label, count(*) AS count
+                FROM admin_request_metrics
+                WHERE observed_at >= NOW() - make_interval(days => :days)
+                  AND source IS NOT NULL
+                GROUP BY source
+                ORDER BY count DESC, source
+                LIMIT 8
+                """
+            ),
+            params,
+        ).all()
+
         recent = conn.execute(
             text(
                 """
@@ -400,6 +419,9 @@ def get_dashboard_data(*, days: int = 7, recent_limit: int = 12) -> dict:
         ],
         "endpoint_counts": [
             {"label": row.label, "count": int(row.count)} for row in endpoint_counts
+        ],
+        "top_sources": [
+            {"label": row.label, "count": int(row.count)} for row in top_sources
         ],
         "recent_requests": [_row_to_recent(row) for row in recent],
         "recent_errors": [
