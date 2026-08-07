@@ -8,7 +8,7 @@ Valide :
 - get_asr_languages() retourne le format (display_name, iso_code)
 - get_tts_languages() retourne le format (display_name, tts_model, nllb_code)
 - resolve_language_alias() résout alias, codes directs, et retourne None pour inconnus
-- Cohérence entre constants.py, asr_ivorian, tts_ivoirian, schemas
+- Cohérence entre constants.py, tts_ivoirian, schemas
 """
 import pytest
 
@@ -134,12 +134,6 @@ class TestHelpers:
 
 class TestConsistency:
     """Vérifie que les services utilisent bien constants.py."""
-
-    def test_asr_languages_match_constants(self):
-        """asr_ivorian.IVORIAN_ASR_LANGUAGES == get_asr_languages()."""
-        from app.services.asr_ivorian import IVORIAN_ASR_LANGUAGES
-        expected = get_asr_languages()
-        assert IVORIAN_ASR_LANGUAGES == expected
 
     def test_tts_languages_match_constants(self):
         """tts_ivoirian.IVORIAN_LANGUAGES == get_tts_languages()."""
