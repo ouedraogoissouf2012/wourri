@@ -178,6 +178,7 @@ function render(data) {
   renderRanking("top-intents", data.top_intents);
   renderRanking("top-cultures", data.top_cultures);
   renderRanking("endpoint-counts", data.endpoint_counts);
+  renderRanking("top-sources", data.top_sources);
   renderRecent(data.recent_requests);
   renderErrors(data.recent_errors);
   renderChart(data.daily);

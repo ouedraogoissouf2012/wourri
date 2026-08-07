@@ -111,6 +111,7 @@ class DashboardDataResponse(BaseModel):
     top_intents: list[CountBucket]
     top_cultures: list[CountBucket]
     endpoint_counts: list[CountBucket]
+    top_sources: list[CountBucket]
     recent_requests: list[RecentRequestMetric]
     recent_errors: list[RecentErrorMetric]
 

@@ -40,6 +40,7 @@ def _dashboard_payload():
         "top_intents": [{"label": "CONSEIL_PRODUCTION", "count": 3}],
         "top_cultures": [{"label": "CULTURE_RIZ", "count": 2}],
         "endpoint_counts": [{"label": "/api/chat/", "count": 4}],
+        "top_sources": [{"label": "ivr_exact", "count": 3}],
         "recent_requests": [recent],
         "recent_errors": [
             {

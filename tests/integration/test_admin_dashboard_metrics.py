@@ -83,6 +83,13 @@ def test_persist_and_aggregate_privacy_safe_metrics(clean_metrics):
         {"label": "CONSEIL_PRODUCTION", "count": 2}
     ]
     assert data["top_cultures"] == [{"label": "CULTURE_RIZ", "count": 2}]
+    # #304 : agrégation par source (ORDER BY count DESC, source) — permet de
+    # mesurer le % corpus validé (ivr_exact) vs chemin dégradé (deepseek_open).
+    assert data["top_sources"] == [
+        {"label": "asr", "count": 2},
+        {"label": "deepseek_open", "count": 1},
+        {"label": "ivr_exact", "count": 1},
+    ]
     assert data["recent_errors"][0]["error_kind"] == "server_error"
 
 
