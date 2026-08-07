@@ -34,7 +34,7 @@ def client():
     with patch("app.security._API_SECRET_KEY", None), \
          patch("app.routers.stt.stt_whisper.WHISPER_AVAILABLE", True), \
          patch("app.services.nlu.get_nlu_service", return_value=None), \
-         patch("app.services.asr_soloni_nemo.get_nemo_model", return_value=None), \
+         patch("app.services.asr.nemo_provider.preload_nemo_model", return_value=None), \
          patch("app.services.translation.get_translation_service") as mock_ts, \
          patch("app.services.tts_bambara.get_tts_model", return_value=(None, None)), \
          patch("app.services.tts_dioula.get_tts_model_dioula", return_value=(None, None)), \
@@ -142,7 +142,7 @@ class TestUploadLimitsWithAuth:
         with patch("app.security._API_SECRET_KEY", self.AUTH_KEY), \
              patch("app.routers.stt.stt_whisper.WHISPER_AVAILABLE", True), \
              patch("app.services.nlu.get_nlu_service", return_value=None), \
-             patch("app.services.asr_soloni_nemo.get_nemo_model", return_value=None), \
+             patch("app.services.asr.nemo_provider.preload_nemo_model", return_value=None), \
              patch("app.services.translation.get_translation_service") as mock_ts, \
              patch("app.services.tts_bambara.get_tts_model", return_value=(None, None)), \
              patch("app.services.tts_dioula.get_tts_model_dioula", return_value=(None, None)), \

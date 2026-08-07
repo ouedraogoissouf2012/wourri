@@ -345,7 +345,7 @@ def main():
     try:
         import sys
         sys.path.insert(0, str(API_DIR))
-        from app.services.asr_soloni_nemo import transcribe_bambara_nemo
+        from app.services.asr.nemo_provider import NemoSoloniASR  # noqa: F401 (disponibilité NeMo)
         import asyncio
 
         print(f"\n[Eval] Modèle NeMo Soloni (ASR actuel Wourri)...")
