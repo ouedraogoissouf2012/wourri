@@ -116,12 +116,13 @@ class Settings(BaseSettings):
     # POSTGRES_* du .env quand `postgres_url` n'est pas défini.
     postgres_url: str = ""
 
-    # Feature flag de bascule storage corpus (ADR-0008 §Phase C).
-    # - "chroma"   : legacy ChromaDB (vdb_service.py) — comportement actuel inchangé (DÉFAUT)
-    # - "dual"     : double-lecture, retourne Chroma (autoritatif), compare pgvector en background
-    # - "pgvector" : PostgreSQL+pgvector seul (Phase E)
-    # Plan de rollback : `corpus_storage_mode=chroma` dans `.env` → restart immédiat.
-    corpus_storage_mode: Literal["chroma", "dual", "pgvector"] = "chroma"
+    # Feature flag de bascule storage corpus (ADR-0008 §Phase E).
+    # - "pgvector" : PostgreSQL+pgvector seul — DÉFAUT depuis la bascule Phase E.
+    # - "dual"     : double-lecture, retourne Chroma (autoritatif), compare pgvector.
+    # - "chroma"   : legacy ChromaDB (vdb_service.py) — ⚠️ CASSÉ avec numpy 2.x
+    #                (`np.float_ was removed`). Conservé transitoirement le temps du
+    #                nettoyage complet Chroma (#203) ; ne plus l'utiliser.
+    corpus_storage_mode: Literal["chroma", "dual", "pgvector"] = "pgvector"
 
     # ========== Dashboard opérateur sans PII (issue #41, ADR-0017) ==========
     # Enregistre dans PostgreSQL uniquement des métadonnées techniques :
