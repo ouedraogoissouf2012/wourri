@@ -38,7 +38,7 @@ async def weather_all(request: Request):
 
 @router.get("/cities/list", response_model=list[CityInfo])
 async def list_cities():
-    """Liste toutes les villes disponibles (60 villes ivoiriennes)"""
+    """Liste toutes les villes ivoiriennes disponibles."""
     return get_all_cities()
 
 
