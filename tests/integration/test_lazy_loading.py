@@ -34,7 +34,7 @@ def lifespan_spies():
     # sont locaux dans le lifespan).
     with patch("app.services.stt_whisper.get_whisper_model",
                return_value=None) as spy_whisper, \
-         patch("app.services.asr_soloni_nemo.get_nemo_model",
+         patch("app.services.asr.nemo_provider.preload_nemo_model",
                return_value=object()) as spy_nemo, \
          patch("app.services.tts_bambara.get_tts_model",
                return_value=(object(), object())) as spy_tts_bam, \
@@ -140,13 +140,13 @@ class TestLazyLoadingPolicyDetails:
         """NeMo doit être chargé exactement une fois (pas de double appel)."""
         spy = lifespan_spies["spy_nemo"]
         assert spy.call_count == 1, (
-            f"get_nemo_model a été appelé {spy.call_count} fois (attendu : 1)."
+            f"preload_nemo_model a été appelé {spy.call_count} fois (attendu : 1)."
         )
 
 
 def test_lifespan_reports_nemo_unavailable_without_false_success(caplog):
     """Un loader NeMo qui renvoie None ne doit jamais être annoncé comme OK."""
-    with patch("app.services.asr_soloni_nemo.get_nemo_model",
+    with patch("app.services.asr.nemo_provider.preload_nemo_model",
                return_value=None), \
          patch("app.services.nlu.get_nlu_service") as mock_nlu, \
          patch("app.services.translation.get_translation_service") as mock_ts, \
@@ -185,7 +185,7 @@ def test_lifespan_minimal_dioula_profile_loads_only_required_models():
     with patch(
         "app.services.stt_whisper.get_whisper_model", return_value=None
     ) as spy_whisper, patch(
-        "app.services.asr_soloni_nemo.get_nemo_model", return_value=object()
+        "app.services.asr.nemo_provider.preload_nemo_model", return_value=object()
     ) as spy_nemo, patch(
         "app.services.tts_bambara.get_tts_model",
         return_value=(object(), object()),

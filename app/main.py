@@ -20,7 +20,7 @@ from app.config import get_settings
 from app.middleware.admin_metrics import AdminMetricsMiddleware
 from app.routers import weather, chat, tts, stt, rag, asr, feedback, admin
 from app.services.deepseek import check_deepseek_status
-from app.services.asr_soloni_nemo import check_nemo_asr_status
+from app.services.asr.nemo_provider import get_nemo_status
 from app.services.tts_bambara import check_models_status
 from app.services.stt_whisper import check_whisper_status
 from app.services.rag_knowledge import check_rag_status
@@ -69,9 +69,9 @@ async def lifespan(app: FastAPI):
 
     # 1. Précharger ASR NeMo Soloni (decodeur TDT complet, bambara)
     try:
-        from app.services.asr_soloni_nemo import get_nemo_model
+        from app.services.asr.nemo_provider import preload_nemo_model
         logger.info("[PRELOAD] Chargement ASR NeMo Soloni (TDT, bambara)...")
-        nemo_model = get_nemo_model()
+        nemo_model = preload_nemo_model()
         if nemo_model is None:
             logger.warning(
                 "[PRELOAD] ASR NeMo Soloni: INDISPONIBLE "
@@ -285,7 +285,7 @@ async def health():
     hf_status = check_models_status()
     whisper_status = check_whisper_status()
     rag_status = check_rag_status()
-    nemo_status = check_nemo_asr_status()
+    nemo_status = get_nemo_status()
 
     # Observabilité ML (ADR-0011 Phase 4)
     loaded_keys = sorted(registry.list_loaded())

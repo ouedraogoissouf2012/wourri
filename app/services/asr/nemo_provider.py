@@ -73,6 +73,18 @@ class NemoSoloniASR(ASRProvider):
 
         return registry.get("nemo_soloni", loader=_load)
 
+    def preload(self):
+        """Force le chargement du modèle (préchargement au démarrage, ADR-0021).
+
+        Déclenche le chargement via le registry sous la clé partagée
+        `nemo_soloni`. Le runtime réutilise exactement ce modèle et sa config
+        décodeur — plus de divergence préchargé/runtime possible. Retourne le
+        modèle chargé, ou None si NeMo est indisponible.
+        """
+        if not self.is_available():
+            return None
+        return self._get_model()
+
     def _transcribe_wav(self, wav_path: str) -> Optional[str]:
         """Transcrit un WAV 16kHz avec NeMo TDT."""
         model = self._get_model()
@@ -112,3 +124,25 @@ class NemoSoloniASR(ASRProvider):
             logger.info("[%s] Transcription: '%s'", self.name, result)
 
         return result
+
+
+# --- Préchargement / statut (ADR-0021) ---------------------------------------
+# Remplacent app/services/asr_soloni_nemo.py (supprimé). Le préchargement au
+# démarrage (main.py) et le statut santé passent désormais par ce provider
+# canonique — seule source de vérité du modèle NeMo Soloni et de sa config.
+
+
+def preload_nemo_model():
+    """Précharge le modèle NeMo Soloni au démarrage. None si indisponible."""
+    return NemoSoloniASR().preload()
+
+
+def get_nemo_status() -> dict:
+    """Statut du provider NeMo Soloni (disponibilité, présence modèle, cache)."""
+    from app.services.model_registry import registry
+
+    return {
+        "nemo_available": _nemo_available,
+        "model_path_exists": os.path.exists(NEMO_PATH),
+        "model_loaded": registry.is_loaded("nemo_soloni"),
+    }

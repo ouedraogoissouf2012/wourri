@@ -123,8 +123,8 @@ def _load_nlu():
 
 
 def _load_nemo():
-    from app.services.asr_soloni_nemo import get_nemo_model
-    return get_nemo_model()
+    from app.services.asr.nemo_provider import preload_nemo_model
+    return preload_nemo_model()
 
 
 def _load_translation_dict():
