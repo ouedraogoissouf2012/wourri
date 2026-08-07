@@ -7,7 +7,7 @@
   "warning": "Ce formulaire compare deux propositions dioula pour le mil (nyɔ) : la VERSION A (brouillon consolidé du draft v3) et la VERSION B (ancienne PR #74, fermée). Aucune n'est validée ni intégrée au corpus IVR de production. Le validateur natif dioula CI tranche entrée par entrée.",
   "crop_term": "nyɔ",
   "production_state": {
-    "corpus_version": "2.4",
+    "corpus_version": "2.4.1",
     "mil_entry_count": 0
   },
   "audit_basis": {

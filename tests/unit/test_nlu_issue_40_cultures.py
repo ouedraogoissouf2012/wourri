@@ -116,7 +116,10 @@ def test_35_native_validated_items_are_promoted_exactly():
         "CULTURE_PALMIER_HUILE": 15,
     }
     assert all(item["status"] == "pending_native_validation" for item in items)
-    assert corpus["version"] == "2.4"
+    assert corpus["version"].startswith("2.4"), (
+        "garde-fou ADR-0014 : la prod reste dans la lignée 2.4.x (patches inclus), "
+        "jamais le draft v3"
+    )
     assert len(corpus["entries"]) == 197
 
     for item in items:

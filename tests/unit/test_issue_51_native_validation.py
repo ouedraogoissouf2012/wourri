@@ -73,7 +73,10 @@ def test_adr_0014_keeps_the_validated_slice_out_of_production():
 
     assert validation["production_policy"] == "archive_only_per_adr_0014"
     assert validation["target"] == "dictionnaires/archive/corpus_ivr_v3_full_draft.json"
-    assert production["version"] == "2.4"
+    assert production["version"].startswith("2.4"), (
+        "garde-fou ADR-0014 : la prod reste dans la lignée 2.4.x (patches inclus), "
+        "jamais le draft v3"
+    )
     assert all(
         production_entries[entry_id]["reponse_bambara"] != validated_response
         for entry_id, validated_response in validation["corrections"].items()

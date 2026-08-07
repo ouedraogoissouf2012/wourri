@@ -10,7 +10,7 @@
   ],
   "warning": "Ces 15 formulations dioula sont des brouillons à corriger ou valider par un locuteur natif dioula de Côte d'Ivoire. Elles ne font pas partie du corpus IVR de production.",
   "production_state": {
-    "corpus_version": "2.4",
+    "corpus_version": "2.4.1",
     "corpus_entry_count": 197,
     "hevea_entry_count": 0
   },
