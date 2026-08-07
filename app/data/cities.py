@@ -1,5 +1,5 @@
 """
-WOURI - Villes de Côte d'Ivoire (60 villes)
+WOURI - Villes de Côte d'Ivoire (59 villes)
 """
 
 IVORIAN_CITIES = {

@@ -2,7 +2,7 @@
 Tests unitaires pour app/data/constants.py (issue #46).
 
 Valide :
-- IVORIAN_CITY_NAMES contient les 60 villes
+- IVORIAN_CITY_NAMES contient toutes les villes ivoiriennes (≥ 59)
 - SUPPORTED_LANGUAGES contient les 8 langues avec tous les champs requis
 - LANGUAGE_ALIASES résout correctement vers les codes
 - get_asr_languages() retourne le format (display_name, iso_code)

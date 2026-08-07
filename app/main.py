@@ -200,7 +200,7 @@ app = FastAPI(
 
     ## Fonctionnalités
 
-    * **Météo** - Données météo en temps réel pour 60 villes ivoiriennes
+    * **Météo** - Données météo en temps réel pour les villes ivoiriennes couvertes
     * **Chat IA** - Assistant conversationnel avec conseils agricoles
     * **TTS Français** - Synthèse vocale en français (Edge-TTS)
     * **TTS Bambara** - Synthèse vocale en Bambara/Dioula (Hugging Face)
