@@ -13,7 +13,11 @@ from app.services.asr.audio_utils import transcribe_with_temp_files
 
 logger = logging.getLogger(__name__)
 
-ADAPTER_PATH = Path(__file__).parent.parent.parent / "modeles_manuels" / "mms-dioula-adapter"
+# Racine du repo = 4 niveaux au-dessus de app/services/asr/ (fix #358 : la
+# formule à 3 .parent, copiée de l'ancien asr_mms_dyu.py un niveau moins
+# profond, résolvait vers app/modeles_manuels/ inexistant → is_available()
+# retournait toujours False et l'adapter dioula n'a jamais servi).
+ADAPTER_PATH = Path(__file__).parent.parent.parent.parent / "modeles_manuels" / "mms-dioula-adapter"
 
 _torch_available = False
 _torch = None

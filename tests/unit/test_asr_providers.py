@@ -91,6 +91,42 @@ class TestMMSDyuProvider:
             provider._transcribe_wav("question.wav")
 
 
+class TestAdapterPathResolution:
+    """Tests de garde NON mockés (#358) : le bug historique était un chemin
+    ADAPTER_PATH résolvant vers app/modeles_manuels/ (inexistant) → le seul
+    modèle ASR fine-tuné dioula CI n'a jamais servi, silencieusement, pendant
+    4 mois — et les tests mockés ci-dessus ne pouvaient pas le voir.
+    """
+
+    def test_adapter_path_resolves_to_repo_root_modeles_manuels(self):
+        """Détecte tout off-by-one de .parent sans dépendre du modèle sur disque."""
+        from pathlib import Path
+
+        repo_root = Path(__file__).resolve().parents[2]  # tests/unit/ -> wouri-api/
+        expected = repo_root / "modeles_manuels" / "mms-dioula-adapter"
+        assert mms_dyu_provider.ADAPTER_PATH.resolve() == expected
+
+    @pytest.mark.skipif(
+        not mms_dyu_provider.ADAPTER_PATH.exists(),
+        reason="adapter absent du disque (CI) — test de cohérence locale uniquement",
+    )
+    def test_adapter_dir_contains_loadable_wav2vec2_files(self):
+        """Quand l'adapter est présent, il doit être réellement chargeable :
+        config Wav2Vec2ForCTC + fichiers processor (le dossier n'a contenu que
+        model.safetensors pendant des mois — chargement impossible)."""
+        import json
+
+        adapter = mms_dyu_provider.ADAPTER_PATH
+        for required in ("config.json", "vocab.json", "tokenizer_config.json"):
+            assert (adapter / required).is_file(), f"{required} manquant"
+        cfg = json.loads((adapter / "config.json").read_text(encoding="utf-8"))
+        assert cfg.get("architectures") == ["Wav2Vec2ForCTC"]
+        tok = json.loads(
+            (adapter / "tokenizer_config.json").read_text(encoding="utf-8")
+        )
+        assert tok.get("target_lang") == "dyu"
+
+
 class TestMMSGenericProvider:
     def test_name_language_and_availability(self):
         provider = mms_generic_provider.MMSGenericASR("ati")

@@ -60,7 +60,7 @@ class ASRChain:
         Si un provider réussit mais sans mot-clé agricole détecté,
         et qu'un agri_fallback est configuré, tente le fallback.
         """
-        result = await self._try_chain(audio_bytes, file_extension)
+        result, winner = await self._try_chain(audio_bytes, file_extension)
 
         # Normalisation post-ASR (corrections exactes + fuzzy matching NLU)
         if result:
@@ -70,7 +70,16 @@ class ASRChain:
                 logger.info("[ASRChain] Normalisé: '%s' → '%s'", result, normalized)
                 result = normalized
 
-        if result and self._agri_fallback and self._agri_fallback.is_available():
+        # Second passage agricole : inutile si le résultat vient déjà de
+        # l'agri_fallback lui-même (re-transcrire avec le même modèle donnerait
+        # le même texte pour ~45s de CPU — cas réel depuis la réparation #358
+        # où MMS-dyu est à la fois provider principal effectif et fallback).
+        if (
+            result
+            and self._agri_fallback
+            and winner is not self._agri_fallback
+            and self._agri_fallback.is_available()
+        ):
             if not self._has_agri_keywords(result):
                 words_count = len(result.split())
                 if words_count >= 3:
@@ -96,8 +105,13 @@ class ASRChain:
         self,
         audio_bytes: bytes,
         file_extension: str,
-    ) -> Optional[str]:
-        """Essaie chaque provider dans l'ordre."""
+    ) -> tuple[Optional[str], Optional[ASRProvider]]:
+        """Essaie chaque provider dans l'ordre.
+
+        Retourne (résultat, provider gagnant) — le provider sert à éviter un
+        second passage agricole redondant quand le gagnant est déjà
+        l'agri_fallback.
+        """
         for provider in self._providers:
             if not provider.is_available():
                 logger.debug("[ASRChain] %s non disponible, skip", provider.name)
@@ -107,14 +121,14 @@ class ASRChain:
                 result = await provider.transcribe(audio_bytes, file_extension)
                 if result:
                     logger.info("[ASRChain] %s → '%s'", provider.name, result)
-                    return result
+                    return result, provider
                 else:
                     logger.warning("[ASRChain] %s → résultat vide", provider.name)
             except Exception as e:
                 logger.error("[ASRChain] %s erreur: %s", provider.name, e)
 
         logger.warning("[ASRChain] Tous les providers ont échoué")
-        return None
+        return None, None
 
     @staticmethod
     def _has_agri_keywords(text: str) -> bool:
