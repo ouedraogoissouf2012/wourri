@@ -98,6 +98,10 @@ class TestAdapterPathResolution:
     4 mois — et les tests mockés ci-dessus ne pouvaient pas le voir.
     """
 
+    @pytest.mark.skipif(
+        "MMS_DYU_ADAPTER_PATH" in __import__("os").environ,
+        reason="chemin surchargé par env var — le test vérifie le DÉFAUT",
+    )
     def test_adapter_path_resolves_to_repo_root_modeles_manuels(self):
         """Détecte tout off-by-one de .parent sans dépendre du modèle sur disque."""
         from pathlib import Path

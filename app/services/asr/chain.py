@@ -90,6 +90,13 @@ class ASRChain:
                     fallback_result = await self._agri_fallback.transcribe(
                         audio_bytes, file_extension,
                     )
+                    if fallback_result:
+                        # Même normalisation que le résultat principal (revue
+                        # #358 F1 : le texte du fallback partait brut — les
+                        # corrections exactes/fuzzy ne s'y appliquaient pas,
+                        # et le check agricole ratait les formes corrigibles).
+                        from app.services.asr_normalizer import normalize_asr_output
+                        fallback_result = normalize_asr_output(fallback_result)
                     if fallback_result and self._has_agri_keywords(fallback_result):
                         logger.info(
                             "[ASRChain] Fallback %s a trouvé des mots agricoles",
