@@ -70,4 +70,7 @@ class FrenchHandler:
             city=city,
             language=language.value,
             audio_language="Français" if audio_url else None,
+            # #359 : sans meta, le feedback recevait source='unknown' et le
+            # trafic FR était invisible dans top_sources (source IS NULL).
+            meta={"source": "deepseek_french"},
         )

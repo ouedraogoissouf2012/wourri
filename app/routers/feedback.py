@@ -5,7 +5,8 @@ Reçoit les retours 👍/👎 depuis WhatsApp. Le feedback est un SIGNAL, pas un
 validation linguistique (ADR-0019).
 
 POST /api/feedback/positif  → log analytics + file de candidats à revue native
-                              (si source = fallback), JAMAIS d'ajout direct au corpus
+                              (si source = deepseek_open, le dioula machine),
+                              JAMAIS d'ajout direct au corpus
 POST /api/feedback/negatif  → log pour priorisation des réécritures (C5)
 
 ADR-0019 : le feedback n'enrichit JAMAIS le corpus automatiquement. Un 👍 sur une
@@ -13,6 +14,12 @@ réponse DeepSeek fallback dépose un CANDIDAT dans feedback_candidates.jsonl ;
 ce candidat n'entre au corpus qu'après validation par un locuteur natif dioula CI
 (processus formulaire → natif → promotion). Le corpus servi ne contient que du
 dioula validé nativement (règle d'or, ADR-0014).
+
+Fix #359 : la condition d'origine visait `ivr_fallback`/`fallback_generic` —
+or `ivr_fallback` est déjà du corpus validé (rien à revoir) et `fallback_generic`
+n'est produit nulle part. La SEULE source de dioula machine est `deepseek_open`
+(traduction NLLB du fallback DeepSeek) : c'est elle, et elle seule, qui alimente
+la file de revue native.
 """
 import json
 import logging
@@ -30,10 +37,20 @@ router = APIRouter(prefix="/api/feedback", tags=["Feedback"])
 # Logs feedback
 FEEDBACK_LOG         = os.path.join(os.path.dirname(__file__), "..", "..", "logs", "feedback.jsonl")
 FEEDBACK_NEGATIF_LOG = os.path.join(os.path.dirname(__file__), "..", "..", "data", "feedback_negatif.jsonl")
-# File de candidats à revue native (ADR-0019) : un 👍 sur une réponse fallback
-# dépose ici un candidat. Il n'entre au corpus qu'après validation d'un natif —
-# jamais automatiquement. Lu par tools/review_feedback_candidates.py.
+# File de candidats à revue native (ADR-0019) : un 👍 sur une réponse DeepSeek
+# (deepseek_open) dépose ici un candidat. Il n'entre au corpus qu'après
+# validation d'un natif — jamais automatiquement. Revue : manuelle pour
+# l'instant (lire le jsonl → formulaire PDF via generate_culture_validation_pdf) ;
+# l'outil dédié tools/review_feedback_candidates.py, prévu « optionnel » par
+# ADR-0019, n'a pas encore été écrit.
 FEEDBACK_CANDIDATES_LOG = os.path.join(os.path.dirname(__file__), "..", "..", "data", "feedback_candidates.jsonl")
+
+# Caractères propres à l'écriture dioula/bambara — même heuristique que
+# nlu_preprocessor.py:120 (2 usages : sous le seuil de factorisation du projet).
+# Sert de garde : si `reponse_bambara` n'en contient aucun, c'est très
+# probablement le texte FRANÇAIS non traduit (cas include_audio=False où
+# response_dioula = réponse FR brute) → ne pas polluer la file de revue native.
+_BAMBARA_CHARS = set("ɛɔŋɲɛ̀ɛ́ɔ̀ɔ́")
 
 
 class FeedbackRequest(BaseModel):
@@ -61,10 +78,13 @@ async def feedback_positif(request: Request, req: FeedbackRequest):
     """
     Feedback 👍 — l'utilisateur a apprécié la réponse.
 
-    ADR-0019 : le feedback n'enrichit JAMAIS le corpus automatiquement.
-    - source = fallback (ivr_fallback/fallback_generic) : dépose un CANDIDAT dans
+    ADR-0019 (condition corrigée #359) : le feedback n'enrichit JAMAIS le corpus
+    automatiquement.
+    - source = deepseek_open (dioula machine, NLLB) : dépose un CANDIDAT dans
       feedback_candidates.jsonl → sera proposé à un locuteur natif pour validation.
-    - source = ivr_exact : déjà dans le corpus validé, rien à faire.
+    - source = ivr_exact / ivr_fallback : texte déjà issu du corpus validé,
+      log analytics seulement.
+    - deepseek_english / deepseek_french : pas du dioula, log seulement.
     """
     entry = {
         "ts": datetime.utcnow().isoformat(),
@@ -80,7 +100,15 @@ async def feedback_positif(request: Request, req: FeedbackRequest):
     # ADR-0019 : un 👍 sur une réponse de fallback (dioula IA non validé) NE l'ajoute
     # PAS au corpus. Il dépose un candidat dans une file de revue native persistante.
     # Le candidat n'entre au corpus qu'après validation d'un locuteur natif dioula CI.
-    if req.source in ("ivr_fallback", "fallback_generic") and req.reponse_bambara:
+    # Fix #359 : cible = deepseek_open, la seule source de dioula machine
+    # (l'ancienne condition ivr_fallback/fallback_generic ne pouvait jamais
+    # capturer de dioula IA). Garde : le texte doit contenir des caractères
+    # dioula — sinon c'est la réponse FR non traduite (include_audio=False).
+    if (
+        req.source == "deepseek_open"
+        and req.reponse_bambara
+        and any(c in req.reponse_bambara for c in _BAMBARA_CHARS)
+    ):
         candidate = {
             "ts": datetime.utcnow().isoformat(),
             "user": anonymize_user_id(req.user_id),
