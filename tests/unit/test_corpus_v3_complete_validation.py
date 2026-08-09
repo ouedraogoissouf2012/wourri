@@ -38,6 +38,34 @@ def test_draft_v3_is_fully_native_validated():
     )
 
 
+def test_draft_v3_intents_and_cultures_are_reachable():
+    """Verrou pré-promotion (#361) : chaque intent/culture du draft doit exister
+    côté NLU, sinon l'entrée devient INATTEIGNABLE une fois promue (la recherche
+    corpus filtre strictement WHERE intent = :intent). Le cas réel : la typo
+    `DIAGNOSTIQUE_PROBLEME` (mangue_limogo_diagnostic_001) aurait cassé
+    silencieusement l'entrée à la promotion — aucun test ne la voyait.
+    `_FALLBACK` est toléré (déjà utilisé par la prod, hors NLU par conception).
+    """
+    nlu = _load(ROOT / "dictionnaires" / "nlu_concepts.json")
+    declared_intents = {i["name"] for i in nlu["intents"]} | {"_FALLBACK"}
+    declared_concepts = set(nlu["concepts"].keys()) | {"*"}
+
+    draft = _load(DRAFT)
+    bad_intents = {
+        e["id"]: e["intent"]
+        for e in draft["entries"]
+        if e["intent"] not in declared_intents
+    }
+    assert not bad_intents, f"intents inconnus du NLU : {bad_intents}"
+
+    bad_cultures = {
+        e["id"]: [c for c in e.get("cultures", []) if c not in declared_concepts]
+        for e in draft["entries"]
+        if any(c not in declared_concepts for c in e.get("cultures", []))
+    }
+    assert not bad_cultures, f"cultures inconnues du NLU : {bad_cultures}"
+
+
 def test_six_final_validation_files_present():
     assert len(FINAL_VALIDATION_FILES) == 6
 
