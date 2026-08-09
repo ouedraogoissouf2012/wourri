@@ -58,9 +58,9 @@ class TestConcurrenceIVR:
                 "cultures": cultures[0] if cultures else "*",
             }
 
-        # Patch la fonction réelle (via facade puis vdb_service mode chroma)
+        # Patch la fonction réelle (backend pgvector unique, #203)
         with patch(
-            "app.services.corpus_facade.chercher_reponse_ivr",
+            "app.services.corpus_service.chercher_reponse_ivr",
             side_effect=fake_chercher,
         ):
             nlu = NLUResult(

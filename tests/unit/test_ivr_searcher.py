@@ -48,10 +48,10 @@ async def test_try_ivr_exact_intent_vide_retourne_none():
 
 @pytest.mark.asyncio
 async def test_try_ivr_exact_vdb_exception_retourne_none():
-    """Si corpus_facade leve, on log et retourne None."""
+    """Si corpus_service leve, on log et retourne None."""
     nlu = _make_nlu(intent="QUESTION_SAISON_PLANTATION", concepts={"CULTURE_RIZ": True})
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         side_effect=RuntimeError("VDB casse"),
     ):
         result = await try_ivr_exact(nlu, "Abidjan", None, False, Language.DIOULA)
@@ -63,7 +63,7 @@ async def test_try_ivr_exact_pas_de_resultat_retourne_none():
     """Si corpus retourne None (pas de match) → return None."""
     nlu = _make_nlu(intent="X", concepts={})
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         return_value=None,
     ):
         result = await try_ivr_exact(nlu, "Abidjan", None, False, Language.DIOULA)
@@ -85,7 +85,7 @@ async def test_try_ivr_exact_rejette_une_reponse_dune_autre_culture():
     }
 
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         return_value=wrong_crop,
     ):
         result = await try_ivr_exact(
@@ -113,10 +113,10 @@ async def test_try_ivr_exact_accepte_une_reponse_generique():
     }
 
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         return_value=generic,
     ), patch(
-        "app.services.corpus_facade.get_phrases_for_intent",
+        "app.services.corpus_service.get_phrases_for_intent",
         return_value=[],
     ), patch(
         "app.services.chat.ivr_searcher.get_conseil_saisonnier",
@@ -147,10 +147,10 @@ async def test_try_ivr_exact_succes_retourne_chat_result():
         "reponse_fr": "Plantez le riz tot",
     }
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         return_value=fake_entry,
     ), patch(
-        "app.services.corpus_facade.get_phrases_for_intent",
+        "app.services.corpus_service.get_phrases_for_intent",
         return_value=[],
     ), patch(
         "app.services.chat.ivr_searcher.get_conseil_saisonnier",
@@ -179,10 +179,10 @@ async def test_try_ivr_exact_inject_meteo_remplace_tags():
     }
     weather = {"weather_code": 0, "temperature": 28, "precipitation": 0, "city": "Abidjan"}
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         return_value=fake_entry,
     ), patch(
-        "app.services.corpus_facade.get_phrases_for_intent",
+        "app.services.corpus_service.get_phrases_for_intent",
         return_value=[],
     ), patch(
         "app.services.chat.ivr_searcher.get_conseil_saisonnier",
@@ -220,7 +220,7 @@ async def test_try_ivr_concept_pas_de_resultat_retourne_none():
         concepts={"CULTURE_INCONNU": True, "ACTION_PLANTER": True},
     )
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         return_value=None,
     ):
         result = await try_ivr_concept(nlu, "Abidjan", False, Language.DIOULA)
@@ -237,7 +237,7 @@ async def test_try_ivr_concept_succes_retourne_chat_result():
         "reponse_fr": "Fr",
     }
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         return_value=fake_entry,
     ):
         result = await try_ivr_concept(nlu, "Abidjan", False, Language.DIOULA)
@@ -293,7 +293,7 @@ async def test_search_ivr_by_concept_intent_candidat_hit():
         "reponse_fr": "Fr",
     }
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         return_value=fake_entry,
     ):
         result = await search_ivr_by_concept(concepts)
@@ -310,7 +310,7 @@ async def test_search_ivr_by_concept_fallback_conseil_production():
         "reponse_fr": "Conseil FR",
     }
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         return_value=fake_entry,
     ):
         result = await search_ivr_by_concept(concepts)
@@ -328,7 +328,7 @@ async def test_search_ivr_by_concept_rejette_un_fallback_inter_culture():
     }
 
     with patch(
-        "app.services.corpus_facade.chercher_reponse_ivr",
+        "app.services.corpus_service.chercher_reponse_ivr",
         return_value=wrong_crop,
     ):
         result = await search_ivr_by_concept(concepts)

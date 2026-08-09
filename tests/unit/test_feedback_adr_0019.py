@@ -78,7 +78,7 @@ def test_positif_deepseek_open_deposits_candidate_not_corpus(redirect_files, mon
         called["corpus"] = True
         raise AssertionError("ADR-0019 violé : ajout direct au corpus interdit")
 
-    monkeypatch.setattr("app.services.corpus_facade.ajouter_reponse_validee", _boom, raising=False)
+    monkeypatch.setattr("app.services.corpus_service.ajouter_reponse_validee", _boom, raising=False)
 
     resp = _run_positif(_req(source="deepseek_open"))
 

@@ -22,7 +22,7 @@ async def test_chat_service_runs_nlu_ivr_deepseek_and_tts_pipeline():
             new=AsyncMock(return_value=weather),
         ) as get_weather,
         patch(
-            "app.services.corpus_facade.chercher_reponse_ivr",
+            "app.services.corpus_service.chercher_reponse_ivr",
             return_value=None,
         ) as search_ivr,
         patch(

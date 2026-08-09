@@ -106,11 +106,8 @@ services:
       # Settings ne connait que development/production. Le staging execute la
       # configuration securisee de production (secret obligatoire, debug force off).
       ENV: production
-      # ⚠️ Defaut pgvector (#360) : les modes chroma/dual sont CASSES avec
-      # numpy 2.x (chromadb np.float_) — en dual, Chroma autoritaire retourne
-      # None silencieusement et tout le corpus part en fallback DeepSeek.
-      # La validation dual d'ADR-0008 §Phase E attend le nettoyage Chroma (#203).
-      CORPUS_STORAGE_MODE: ${CORPUS_STORAGE_MODE:-pgvector}
+      # NOTE (#203) : CORPUS_STORAGE_MODE retiré — pgvector est le backend
+      # corpus unique (ADR-0008 Phase E terminée, ChromaDB supprimé).
       TZ: UTC
       API_SECRET_KEY_FILE: /run/secrets/api_secret_key
       API_SECRET_KEY_PREVIOUS: ${WOURI_API_KEY_PREVIOUS:-}

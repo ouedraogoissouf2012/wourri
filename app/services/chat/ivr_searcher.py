@@ -9,7 +9,7 @@ par culture/intent) :
   - `search_ivr_by_concept()` : utilitaire interne pour try_ivr_concept
 
 Pattern : fonctions module-level (pas de classe car aucun etat persistant).
-Toutes les fonctions sont async car la facade `corpus_facade` utilise
+Toutes les fonctions sont async car `corpus_service` (pgvector) utilise
 `asyncio.to_thread` pour wrapper l'embedding SentenceTransformer.
 
 Refs :
@@ -82,9 +82,9 @@ async def try_ivr_exact(
     corpus. Sinon ChatResult avec response (FR par contrat #167),
     response_dioula, audio_url (TTS si include_audio), meta complete.
     """
-    # Facade ADR-0008 §Phase C : route vers Chroma / dual / pgvector
-    # via `corpus_storage_mode`. API identique a `vdb_service`.
-    from app.services.corpus_facade import chercher_reponse_ivr, get_phrases_for_intent
+    # Backend corpus unique : pgvector (ADR-0008 Phase E terminée, #203 —
+    # la façade multi-backend et Chroma ont été retirés).
+    from app.services.corpus_service import chercher_reponse_ivr, get_phrases_for_intent
 
     cultures = [k for k in nlu.concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
     conditions = [k for k in nlu.concepts if k.startswith("PROBLEME_") or k.startswith("TEMPS_")]
@@ -268,7 +268,7 @@ async def search_ivr_by_concept(concepts: dict) -> Optional[dict]:
     if not concepts:
         return None
 
-    from app.services.corpus_facade import chercher_reponse_ivr
+    from app.services.corpus_service import chercher_reponse_ivr
 
     cultures = [k for k in concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
     if not cultures:

@@ -42,7 +42,7 @@ def lifespan_spies():
                return_value=(object(), object())) as spy_tts_dyu, \
          patch("app.services.translation.get_translation_service") as mock_ts, \
          patch("app.services.nlu.get_nlu_service") as mock_nlu, \
-         patch("app.services.corpus_facade.initialiser_vdb"), \
+         patch("app.services.corpus_service.initialiser_vdb"), \
          patch("app.services.audio_cleanup.start_cleanup_scheduler"), \
          patch("app.services.audio_cleanup.stop_cleanup_scheduler"), \
          patch("app.core.logging_config.setup_logging"):
@@ -154,7 +154,7 @@ def test_lifespan_reports_nemo_unavailable_without_false_success(caplog):
                return_value=(object(), object())), \
          patch("app.services.tts_dioula.get_tts_model_dioula",
                return_value=(object(), object())), \
-         patch("app.services.corpus_facade.initialiser_vdb"), \
+         patch("app.services.corpus_service.initialiser_vdb"), \
          patch("app.services.audio_cleanup.start_cleanup_scheduler"), \
          patch("app.services.audio_cleanup.stop_cleanup_scheduler"):
         mock_nlu.return_value.get_stats.return_value = {
@@ -197,7 +197,7 @@ def test_lifespan_minimal_dioula_profile_loads_only_required_models():
     ) as mock_ts, patch(
         "app.services.nlu.get_nlu_service"
     ) as mock_nlu, patch(
-        "app.services.corpus_facade.initialiser_vdb"
+        "app.services.corpus_service.initialiser_vdb"
     ), patch(
         "app.services.audio_cleanup.start_cleanup_scheduler"
     ), patch(

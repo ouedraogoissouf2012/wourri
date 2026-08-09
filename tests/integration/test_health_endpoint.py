@@ -24,7 +24,7 @@ def client():
          patch("app.services.tts_bambara.get_tts_model", return_value=(None, None)), \
          patch("app.services.tts_dioula.get_tts_model_dioula", return_value=(None, None)), \
          patch("app.services.stt_whisper.get_whisper_model", return_value=None), \
-         patch("app.services.vdb_service.initialiser_vdb"), \
+         patch("app.services.corpus_service.initialiser_vdb"), \
          patch("app.services.audio_cleanup.start_cleanup_scheduler"), \
          patch("app.services.audio_cleanup.stop_cleanup_scheduler"):
         mock_svc = mock_ts.return_value
