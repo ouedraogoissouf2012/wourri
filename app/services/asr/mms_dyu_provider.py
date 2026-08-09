@@ -5,6 +5,7 @@ Provider spécialisé pour le dioula ivoirien. Utilise l'adapter AXE-4
 fine-tuné sur 295 clips Common Voice dyu v24.
 """
 import logging
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -13,11 +14,19 @@ from app.services.asr.audio_utils import transcribe_with_temp_files
 
 logger = logging.getLogger(__name__)
 
-# Racine du repo = 4 niveaux au-dessus de app/services/asr/ (fix #358 : la
-# formule à 3 .parent, copiée de l'ancien asr_mms_dyu.py un niveau moins
+# Chemin de l'adapter — surchargeable via MMS_DYU_ADAPTER_PATH (même pattern
+# que NEMO_MODEL_PATH dans nemo_provider.py ; utile en Docker où l'adapter de
+# 3,86 Go est monté en volume, .dockerignore l'excluant de l'image).
+# Défaut : racine du repo = 4 niveaux au-dessus de app/services/asr/ (fix #358 :
+# la formule à 3 .parent, copiée de l'ancien asr_mms_dyu.py un niveau moins
 # profond, résolvait vers app/modeles_manuels/ inexistant → is_available()
 # retournait toujours False et l'adapter dioula n'a jamais servi).
-ADAPTER_PATH = Path(__file__).parent.parent.parent.parent / "modeles_manuels" / "mms-dioula-adapter"
+ADAPTER_PATH = Path(
+    os.getenv(
+        "MMS_DYU_ADAPTER_PATH",
+        str(Path(__file__).parent.parent.parent.parent / "modeles_manuels" / "mms-dioula-adapter"),
+    )
+)
 
 _torch_available = False
 _torch = None
