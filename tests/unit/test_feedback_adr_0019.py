@@ -1,8 +1,13 @@
 """Contrats de l'ADR-0019 : le feedback est un signal, jamais une validation.
 
-- Un 👍 sur une réponse de fallback dépose un CANDIDAT (pending_native_review)
-  dans feedback_candidates.jsonl — PAS d'ajout au corpus.
-- Un 👍 sur ivr_exact ne produit aucun candidat.
+Condition corrigée par #359 — la file de revue native cible le dioula MACHINE :
+- Un 👍 sur deepseek_open (traduction NLLB du fallback DeepSeek) dépose un
+  CANDIDAT (pending_native_review) dans feedback_candidates.jsonl — PAS d'ajout
+  au corpus.
+- Un 👍 sur ivr_exact OU ivr_fallback (texte déjà issu du corpus validé) ne
+  produit aucun candidat.
+- deepseek_open sans caractères dioula (réponse FR non traduite,
+  include_audio=False) ne produit aucun candidat.
 - Un 👎 logue en négatif, jamais de candidat.
 - Aucune entrée `auto_validated` / `auto_appris` n'est créée par le feedback.
 """
@@ -59,13 +64,13 @@ def _req(**kw):
         reponse_fr="Prépare bien ton champ.",
         intent="CONSEIL_PRODUCTION",
         cultures=["CULTURE_MAIS"],
-        source="ivr_fallback",
+        source="deepseek_open",
     )
     base.update(kw)
     return fb.FeedbackRequest(**base)
 
 
-def test_positif_fallback_deposits_candidate_not_corpus(redirect_files, monkeypatch):
+def test_positif_deepseek_open_deposits_candidate_not_corpus(redirect_files, monkeypatch):
     # Garde-fou : ajouter_reponse_validee ne DOIT PAS être appelé (ADR-0019).
     called = {"corpus": False}
 
@@ -75,7 +80,7 @@ def test_positif_fallback_deposits_candidate_not_corpus(redirect_files, monkeypa
 
     monkeypatch.setattr("app.services.corpus_facade.ajouter_reponse_validee", _boom, raising=False)
 
-    resp = _run_positif(_req(source="ivr_fallback"))
+    resp = _run_positif(_req(source="deepseek_open"))
 
     assert resp["action"] == "candidate_queued"
     assert called["corpus"] is False
@@ -85,29 +90,60 @@ def test_positif_fallback_deposits_candidate_not_corpus(redirect_files, monkeypa
     cand = json.loads(lines[0])
     assert cand["status"] == "pending_native_review"
     assert cand["reponse_bambara"] == "Aw ye foro labɛn ka ɲɛ."
-    assert cand["source"] == "ivr_fallback"
+    assert cand["source"] == "deepseek_open"
 
 
-def test_positif_fallback_generic_also_queues_candidate(redirect_files):
+def test_positif_ivr_fallback_is_corpus_text_no_candidate(redirect_files):
+    """#359 : ivr_fallback = texte déjà issu du corpus validé — plus de mise
+    en file (l'ancienne condition le capturait à tort)."""
+    resp = _run_positif(_req(source="ivr_fallback"))
+    assert resp["action"] == "logged"
+    assert not redirect_files.candidates.exists()
+
+
+def test_positif_fallback_generic_legacy_value_no_candidate(redirect_files):
+    """`fallback_generic` n'est produit nulle part dans l'API (vérifié #359) —
+    une valeur legacy reçue ne déclenche plus la file."""
     resp = _run_positif(_req(source="fallback_generic"))
-    assert resp["action"] == "candidate_queued"
-    assert redirect_files.candidates.exists()
+    assert resp["action"] == "logged"
+    assert not redirect_files.candidates.exists()
 
 
 def test_positif_ivr_exact_produces_no_candidate(redirect_files):
     resp = _run_positif(_req(source="ivr_exact"))
     assert resp["action"] == "logged"
-    # Aucun fichier candidat créé.
+    assert not redirect_files.candidates.exists()
+
+
+def test_positif_deepseek_english_produces_no_candidate(redirect_files):
+    """Le mode EN produit de l'anglais — rien à faire valider par le natif dioula."""
+    resp = _run_positif(
+        _req(source="deepseek_english", reponse_bambara="Plant your maize early.")
+    )
+    assert resp["action"] == "logged"
+    assert not redirect_files.candidates.exists()
+
+
+def test_positif_deepseek_open_without_dioula_chars_no_candidate(redirect_files):
+    """Garde #359 : avec include_audio=False, response_dioula est la réponse
+    FRANÇAISE non traduite — elle ne doit pas polluer la file de revue native."""
+    resp = _run_positif(
+        _req(
+            source="deepseek_open",
+            reponse_bambara="Preparez bien votre champ avant les pluies.",
+        )
+    )
+    assert resp["action"] == "logged"
     assert not redirect_files.candidates.exists()
 
 
 def test_positif_empty_bambara_produces_no_candidate(redirect_files):
-    resp = _run_positif(_req(source="ivr_fallback", reponse_bambara=""))
+    resp = _run_positif(_req(source="deepseek_open", reponse_bambara=""))
     assert resp["action"] == "logged"
     assert not redirect_files.candidates.exists()
 
 
 def test_negatif_never_creates_candidate(redirect_files):
-    resp = _run_negatif(_req(source="ivr_fallback"))
+    resp = _run_negatif(_req(source="deepseek_open"))
     assert resp["action"] == "logged"
     assert not redirect_files.candidates.exists()

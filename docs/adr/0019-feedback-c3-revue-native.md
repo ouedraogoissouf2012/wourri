@@ -161,6 +161,15 @@ signal analytics).
 
 - 2026-08-05 — rédaction initiale (statut proposé), après questions stratégiques à Ruben.
 - 2026-08-05 — **accepté** par Ruben (Option A). Implémentation autorisée.
+- 2026-08-09 — **correction #359** : l'implémentation initiale conditionnait la
+  file de candidats à `source ∈ {ivr_fallback, fallback_generic}` — or
+  `ivr_fallback` est du texte déjà issu du corpus validé (rien à revoir) et
+  `fallback_generic` n'est produit nulle part. La cible réelle de cet ADR
+  (« un 👍 sur une réponse DeepSeek fallback dépose un candidat ») émet
+  `source=deepseek_open` : condition alignée sur l'intention. Ajouts : garde
+  caractères dioula (la réponse FR non traduite du cas `include_audio=False`
+  ne pollue plus la file) ; `FrenchHandler` porte désormais
+  `meta.source=deepseek_french` (le trafic FR n'est plus invisible).
 - 2026-08-05 — audit anti-hardcoding : constat que `ajouter_reponse_validee`
   (dont cet ADR a retiré le seul appelant de production) subsiste **sans
   appelant de prod** dans les 3 modules (`vdb_service`, `corpus_service`,
