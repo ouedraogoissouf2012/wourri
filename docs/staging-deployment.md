@@ -62,7 +62,7 @@
 |---|---|---|
 | **Domaine** | `api.wourri.ci` | `staging-api.wourri.ci` |
 | **VM** | DEV1-M (4 GB RAM) | DEV1-S (2 GB RAM) |
-| **CORPUS_STORAGE_MODE** | `dual` ou `pgvector` | **`dual`** (mesure Phase E) |
+| **CORPUS_STORAGE_MODE** | `pgvector` | **`pgvector`** (⚠️ `chroma`/`dual` cassés avec numpy 2.x, cf. #360 — la mesure dual Phase E attend #203) |
 | **LOG_LEVEL** | `info` | **`debug`** (plus de signal) |
 | **Monitoring** | healthchecks.io seul | healthchecks.io + Loki + Alloy |
 | **Ports host** | 8000 / 3001 | 8001 / 3002 |
