@@ -161,6 +161,13 @@ signal analytics).
 
 - 2026-08-05 — rédaction initiale (statut proposé), après questions stratégiques à Ruben.
 - 2026-08-05 — **accepté** par Ruben (Option A). Implémentation autorisée.
+- 2026-08-09 — **#203 (ADR-0008 complete)** : les copies d'`ajouter_reponse_validee`
+  de `vdb_service.py` et `corpus_facade.py` ont disparu avec la suppression de
+  ces modules (fin de la migration pgvector — la raison de conservation
+  « point de double-écriture » n'existe plus). Seule reste l'implémentation
+  pgvector dans `corpus_service.py`, toujours sans appelant de production
+  (dormante documentée) — l'unique chemin d'enrichissement du corpus demeure
+  la validation native (formulaire → natif → import).
 - 2026-08-09 — **correction #359** : l'implémentation initiale conditionnait la
   file de candidats à `source ∈ {ivr_fallback, fallback_generic}` — or
   `ivr_fallback` est du texte déjà issu du corpus validé (rien à revoir) et

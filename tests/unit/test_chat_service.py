@@ -299,14 +299,14 @@ class TestSearchIVRByConcept:
         Invariant verrouillé : `chercher_reponse_ivr` ne doit PAS être appelé
         dans ce cas (sinon réintroduction silencieuse d'un fallback).
         """
-        with patch("app.services.corpus_facade.chercher_reponse_ivr") as mock_vdb:
+        with patch("app.services.corpus_service.chercher_reponse_ivr") as mock_vdb:
             result = await self.service._search_ivr_by_concept({"ACTION_PLANTER": True})
             assert result is None
             mock_vdb.assert_not_called()
 
     async def test_culture_without_action_uses_conseil_production(self):
         """Culture sans action → CONSEIL_PRODUCTION par défaut."""
-        with patch("app.services.corpus_facade.chercher_reponse_ivr") as mock_vdb:
+        with patch("app.services.corpus_service.chercher_reponse_ivr") as mock_vdb:
             mock_vdb.return_value = {
                 "id": "riz_conseil_001",
                 "reponse_bambara": "Malo sɛnɛ..."
@@ -351,7 +351,7 @@ class TestIVRResponseContract:
 
         Sprint G.2 : méthode async (to_thread sur chercher_reponse_ivr).
         """
-        with patch("app.services.corpus_facade.chercher_reponse_ivr") as mock_vdb:
+        with patch("app.services.corpus_service.chercher_reponse_ivr") as mock_vdb:
             mock_vdb.return_value = {
                 "id": "riz_conseil_001",
                 "reponse_bambara": "Malo sɛnɛ kalo la sanji tuma na.",
@@ -366,7 +366,7 @@ class TestIVRResponseContract:
 
     async def test_search_ivr_by_concept_fallback_fr_empty_when_missing(self):
         """Si `reponse_fr` manque dans l'entrée corpus, retour dict avec reponse_fr=''."""
-        with patch("app.services.corpus_facade.chercher_reponse_ivr") as mock_vdb:
+        with patch("app.services.corpus_service.chercher_reponse_ivr") as mock_vdb:
             mock_vdb.return_value = {
                 "id": "test",
                 "reponse_bambara": "Malo sɛnɛ.",

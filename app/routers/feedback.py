@@ -166,7 +166,7 @@ async def feedback_negatif(request: Request, req: FeedbackRequest):
     if req.intent and req.source == "ivr_exact":
         try:
             # Façade ADR-0008 §Phase C : route vers Chroma (défaut) / dual / pgvector.
-            from app.services.corpus_facade import chercher_reponse_ivr
+            from app.services.corpus_service import chercher_reponse_ivr
             result = chercher_reponse_ivr(
                 intent=req.intent,
                 cultures=req.cultures or ["*"],

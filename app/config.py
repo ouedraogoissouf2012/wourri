@@ -4,7 +4,6 @@ WOURI - Configuration
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
 import logging
 import os
 import sys
@@ -116,13 +115,11 @@ class Settings(BaseSettings):
     # POSTGRES_* du .env quand `postgres_url` n'est pas défini.
     postgres_url: str = ""
 
-    # Feature flag de bascule storage corpus (ADR-0008 §Phase E).
-    # - "pgvector" : PostgreSQL+pgvector seul — DÉFAUT depuis la bascule Phase E.
-    # - "dual"     : double-lecture, retourne Chroma (autoritatif), compare pgvector.
-    # - "chroma"   : legacy ChromaDB (vdb_service.py) — ⚠️ CASSÉ avec numpy 2.x
-    #                (`np.float_ was removed`). Conservé transitoirement le temps du
-    #                nettoyage complet Chroma (#203) ; ne plus l'utiliser.
-    corpus_storage_mode: Literal["chroma", "dual", "pgvector"] = "pgvector"
+    # NOTE (#203, ADR-0008 Phase E terminée) : le feature flag
+    # `corpus_storage_mode` a été RETIRÉ — pgvector est le backend corpus
+    # unique (ChromaDB supprimé : incompatible numpy 2.x, np.float_ removed).
+    # Un CORPUS_STORAGE_MODE résiduel dans un .env est ignoré sans erreur
+    # (Config.extra = "ignore").
 
     # ========== Dashboard opérateur sans PII (issue #41, ADR-0017) ==========
     # Enregistre dans PostgreSQL uniquement des métadonnées techniques :

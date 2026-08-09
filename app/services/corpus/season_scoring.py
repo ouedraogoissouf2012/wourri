@@ -1,7 +1,7 @@
 """Saison agricole CI + scoring métier des candidats IVR (logique partagée).
 
 Ce module centralise deux règles métier qui étaient auparavant DUPLIQUÉES
-verbatim entre le backend Chroma (`vdb_service._best_result`) et pgvector
+verbatim entre l'ancien backend Chroma (retiré, #203) et pgvector
 (`corpus_service._best_result_pg`) :
 
   1. `get_current_season()` — saison agricole selon le mois (calendrier CI) ;
@@ -24,7 +24,7 @@ from typing import Iterable, Optional
 # --- Calendrier agricole CI ------------------------------------------------
 # Grande saison des pluies (mars-juin) + petite saison des pluies (sep-oct).
 # Le reste (nov-fév, jul-août) = saison sèche. Valeurs identiques à l'origine
-# (vdb_service.py / corpus_service.py, fonctions `_get_current_season`).
+# (corpus_service.py, fonction `_get_current_season` — l'ex-copie Chroma est retirée).
 RAINY_MONTHS: frozenset[int] = frozenset({3, 4, 5, 6, 9, 10})
 SEASON_RAINY = "saison_pluie"
 SEASON_DRY = "saison_seche"

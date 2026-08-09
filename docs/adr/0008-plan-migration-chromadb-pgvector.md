@@ -1,6 +1,6 @@
 # ADR-0008 — Plan de migration ChromaDB → PostgreSQL + pgvector
 
-**Statut** : accepté
+**Statut** : complete
 **Date** : 2026-05-05
 **Auteur** : Claude (assistant)
 **Valideur** : Ruben (validé le 2026-05-05)
@@ -521,3 +521,16 @@ pgvector seul. Avant cela, le code Chroma reste récupérable via `git revert`.
 - ADR-0001 mentionnait initialement "ADR-0002 séparé" pour ce plan.
   ADR-0002 ayant servi pour Omnilingual ASR, le plan migration storage
   prend la prochaine référence libre = **0008**.
+- **2026-08-09 (Phase E terminée, #203)** : statut basculé à **complete**.
+  Bascule pgvector effectuée AVANT staging (écart au plan assumé et motivé) :
+  chromadb s'est révélé CASSÉ avec numpy 2.x (`np.float_ removed`, reproduit) —
+  le mode chroma ne chargeait plus le corpus et le mode dual aurait servi None
+  sur toutes les recherches. Décision Ruben (« chroma n'est plus nécessaire on
+  balance sur pgvector », 2026-08-08) + validation fonctionnelle réelle
+  (source=ivr_exact prouvé en local, #354). Étape 1 de #203 (mesure latence
+  dual ≥7j staging) rendue impossible et sans objet : il n'y avait plus
+  d'alternative à comparer. Livré : suppression vdb_service.py, corpus_facade.py
+  (les consommateurs pointent corpus_service), endpoint /admin/corpus-divergence-report,
+  scripts/phase_d_load_test.py, flag corpus_storage_mode, dépendance chromadb.
+  La table corpus_divergences reste en base (données historiques, coût nul).
+  data/chroma_ivr/ : suppression manuelle laissée à l'opérateur.

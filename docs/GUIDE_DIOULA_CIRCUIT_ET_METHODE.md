@@ -1,5 +1,15 @@
 # WOURRI — Guide du dioula : circuit réel, méthode, et mémos dev
 
+> **⚠️ MISE À JOUR 2026-08-09 (#203, ADR-0008 complete)** : le backend corpus est
+> désormais **PostgreSQL+pgvector UNIQUE**. ChromaDB (`vdb_service.py`), la façade
+> multi-backend (`corpus_facade.py`) et le flag `corpus_storage_mode` ont été
+> **supprimés** (chromadb incompatible numpy 2.x). Les sections §2.4-§2.6 ci-dessous
+> décrivent l'ancien monde Chroma — retenir à la place : (1) le corpus est peuplé
+> **UNIQUEMENT** par `scripts/import_corpus_ivr.py` (manuel — à relancer après toute
+> modification de `corpus_ivr.json`, le bump de version ne suffit plus) ; (2) la
+> recherche vit dans `app/services/corpus_service.py`. État exhaustif à jour :
+> `docs/AUDIT_DIOULA_2026-08.md`.
+
 > **Document de référence capital.** Rédigé le 2026-08-05, fondé sur une lecture
 > du code réel (branche `APIPy`), pas sur des suppositions. Chaque affirmation est
 > vérifiable par `fichier:ligne`. **Les sections « ⚠️ N'EXISTE PAS » sont aussi

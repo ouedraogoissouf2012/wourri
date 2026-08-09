@@ -1,22 +1,24 @@
-"""Wourri — Service BD Vectorielle IVR — adapter PostgreSQL+pgvector (ADR-0008 §Phase C).
+"""Wourri — Service BD Vectorielle IVR — PostgreSQL+pgvector, backend UNIQUE.
 
-Adapter strictement compatible avec l'API de `vdb_service.py` (ChromaDB legacy).
-Cible : remplacer ChromaDB par PostgreSQL+pgvector à terme (Phase E).
-
-API publique identique à `vdb_service` :
+Depuis #203 (ADR-0008 Phase E terminée), ce module est le seul backend corpus :
+l'ancien `vdb_service.py` (ChromaDB, incompatible numpy 2.x) et la façade
+multi-backend `corpus_facade.py` ont été supprimés. L'API publique (héritée du
+contrat historique Chroma) :
 - `chercher_reponse_ivr(intent, cultures, conditions=None) -> dict | None`
 - `ajouter_reponse_validee(intent, cultures, reponse_bambara, reponse_fr, score_validation, conditions=None, tags=None) -> bool`
 - `get_reponse_fallback() -> str`
 - `get_phrases_for_intent(intent, cultures) -> list[dict]`
 - `initialiser_vdb() -> None`
 
-**Logique métier** : cascade 3 essais + scoring saison/conditions copie fidèle
-de `vdb_service._best_result` (vdb_service.py:245-293). Format `document_text`
-identique à `vdb_service.py:155` (cohérence sémantique des embeddings — Phase E
-ne recalculera PAS les vecteurs).
+**Logique métier** : cascade 3 essais + scoring saison/conditions partagé
+(`app/services/corpus/season_scoring.py`). Format `document_text` hérité de
+l'import historique (cohérence sémantique des embeddings — jamais recalculés).
 
-**Logs** : préfixe `[VDB-PG]` (distinct du `[VDB]` chromadb) pour observabilité
-en mode dual (Phase D).
+**Peuplement** : UNIQUEMENT via `scripts/import_corpus_ivr.py` (manuel). Après
+toute modification de `dictionnaires/corpus_ivr.json`, relancer l'import —
+rien ne se synchronise automatiquement.
+
+**Logs** : préfixe `[VDB-PG]` (hérité de l'époque bi-backend).
 
 **Singletons lazy** :
 - `_get_engine()` : SQLAlchemy engine, créé au premier appel via `lru_cache`
@@ -43,7 +45,7 @@ _MODEL_PATH = (
 )
 _EMBEDDING_DIM = 384
 
-# Fallback bambara hardcodé (identique à vdb_service.py:342)
+# Fallback bambara hardcodé (hérité de l'ancien backend Chroma, retiré #203)
 _FALLBACK_BAMBARA = "N bɛ i dɛmɛ i ka sɛnɛ ko la. I ka i ka ɲinini wele fɔ cogo wɛrɛ."
 
 
@@ -90,7 +92,7 @@ def _get_model():
     if not _MODEL_PATH.exists():
         raise RuntimeError(
             f"[VDB-PG] Modèle introuvable : {_MODEL_PATH}. "
-            "Phase C exige le même modèle que vdb_service.py "
+            "Le corpus a été embeddé avec ce modèle précis "
             "(paraphrase-multilingual-MiniLM-L12-v2)."
         )
     logger.info("[VDB-PG] Chargement modèle d'embedding : %s", _MODEL_PATH.name)
@@ -98,7 +100,7 @@ def _get_model():
 
 
 # ─────────────────────────────────────────────────────────────────────────
-# Helpers internes (reproduits de vdb_service.py pour cohérence métier)
+# Helpers internes (hérités de l'ancien backend Chroma pour cohérence métier)
 # ─────────────────────────────────────────────────────────────────────────
 
 
@@ -130,10 +132,8 @@ def _embed_query(text: str):
     cosine pgvector (`<=>`) est invariante à l'échelle pour des comparaisons
     *internes pgvector* — c'est ce qui compte pour la recherche.
 
-    Cohérence cross-store Chroma↔pgvector : validée empiriquement par
-    `tests/integration/test_corpus_facade.py::test_50_queries_match_at_least_90_percent`
-    (≥ 90 % de match observé). Si Phase D révèle un taux < 90 %, investiguer le
-    biais d'embedding ChromaDB (qui peut normaliser via `SentenceTransformerEmbeddingFunction`).
+    Cohérence historique Chroma↔pgvector : validée empiriquement en Phase D
+    (≥ 90 % de match sur 50 requêtes) avant la suppression de Chroma (#203).
     """
     model = _get_model()
     return model.encode(
@@ -147,9 +147,9 @@ def _best_result_pg(
     """Sélectionne la meilleure entrée parmi les candidats pgvector.
 
     Le scoring métier (saison + conditions) est délégué à
-    `season_scoring.score_entry` — logique partagée avec le backend Chroma
-    (`vdb_service._best_result`). Ce backend ne fait que son I/O : mapper les
-    `rows` SQL (conditions déjà en array Postgres) vers la structure de sortie.
+    `season_scoring.score_entry` (module partagé ; l'ex-backend Chroma qui
+    l'utilisait aussi a été retiré, #203). Ce backend ne fait que son I/O :
+    mapper les `rows` SQL (conditions déjà en array Postgres) vers la sortie.
 
     Args:
         rows: candidats `{id, intent, cultures, conditions, reponse_bambara,
@@ -182,7 +182,7 @@ def _best_result_pg(
                 "reponse_fr": row.get("reponse_fr", "") or "",
                 "score_validation": base,
                 "intent": row["intent"],
-                # Cohérence avec vdb_service : Chroma stockait `cultures` en CSV ;
+                # Héritage du contrat Chroma : `cultures` était stocké en CSV ;
                 # ici on retourne la 1re culture (la plus spécifique) en string.
                 "cultures": cultures_list[0] if cultures_list else "*",
             }
@@ -308,7 +308,7 @@ def ajouter_reponse_validee(
     ⚠️ STATUT (2026-08-05) : **aucun appelant de production** depuis ADR-0019.
     Conservée délibérément comme adapter pgvector de la **double-écriture**
     (ADR-0008 Phase C-D, à reprendre). Ne pas supprimer sans ADR. Cf.
-    `corpus_facade.ajouter_reponse_validee`.
+    l'historique d'ADR-0019 (#203).
 
     Format `document_text` (entrée dynamique) : `f"{reponse_fr} {' '.join(tags)}"`.
     Identique à `vdb_service.ajouter_reponse_validee` (vdb_service.py:315) — les
