@@ -37,6 +37,10 @@ soundfile>=0.12.1
 # (dette revelee par la reinstall Python 2026-07 — issue #313). Pin 1.2.1 =
 # version validee localement (compatible ctranslate2 4.8.1 + numpy 2.4).
 faster-whisper==1.2.1
+# librosa : chargement audio du provider ASR MMS-dyu (mms_dyu_provider.py:62).
+# Même dette que faster-whisper : importé au runtime, absent du requirements
+# (révélé par l'audit dioula #358). Pin = version validée localement.
+librosa==0.11.0
 
 # Audio conversion
 pydub>=0.25.1

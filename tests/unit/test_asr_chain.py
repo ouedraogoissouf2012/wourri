@@ -164,6 +164,20 @@ class TestASRChainAgriFallback:
         assert fallback.call_count == 1
 
     @pytest.mark.asyncio
+    async def test_no_second_pass_when_winner_is_the_agri_fallback(self):
+        """Pas de re-transcription quand le résultat vient déjà de
+        l'agri_fallback (#358 : depuis la réparation de MMS-dyu, il est à la
+        fois provider principal effectif et fallback — le re-lancer donnerait
+        le même texte pour ~45s de CPU perdues)."""
+        dyu = MockASRProvider("MMS-dyu", result="an ni wula min ye")  # pas agricole
+        chain = ASRChain(providers=[dyu], agri_fallback=dyu)
+
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == "an ni wula min ye"
+        assert dyu.call_count == 1  # UNE seule transcription, pas deux
+
+    @pytest.mark.asyncio
     async def test_fallback_not_triggered_for_short_text(self):
         """Pas de second passage si le texte est trop court (< 3 mots)."""
         p1 = MockASRProvider("P1", result="bon")  # Court, pas de mot agri
