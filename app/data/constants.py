@@ -20,6 +20,14 @@ IVORIAN_CITY_NAMES: list[str] = sorted(IVORIAN_CITIES.keys())
 
 # ---------------------------------------------------------------------------
 # LANGUES IVOIRIENNES — source unique pour ASR, TTS, et schemas
+#
+# ⚠️ ADR-0023 : la VOIX dioula runtime (facebook/mms-tts-dyu) ne vit PAS dans
+# ce registre — elle est servie par app/services/tts_dioula.py (cascade chat +
+# POST /api/tts/dioula). Ici, `bam` reste volontairement le code pivot :
+# côté ASR il déclenche la chaîne spécialisée bambara/dioula
+# (routers/asr.py — la faire quitter casserait le routage des vocaux dioula),
+# et l'entrée tts_model=mms-tts-bam sert le VRAI bambara (/api/tts/bambara).
+# Ne pas ajouter d'alias dioula→dyu ici sans traiter les DEUX consommateurs.
 # ---------------------------------------------------------------------------
 
 SUPPORTED_LANGUAGES: dict[str, dict] = {

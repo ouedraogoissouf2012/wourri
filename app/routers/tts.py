@@ -6,6 +6,7 @@ import asyncio
 from fastapi import APIRouter, HTTPException, Depends, Request
 from app.services.tts_french import synthesize_french, get_available_voices
 from app.services.tts_bambara import synthesize_bambara, synthesize_bambara_text, translate_to_bambara
+from app.services.tts_dioula import synthesize_dioula, synthesize_dioula_text
 from app.services.tts_ivoirian import (
     synthesize_ivorian,
     synthesize_ivorian_text,
@@ -36,10 +37,11 @@ async def text_to_speech(request: Request, body: TTSRequest):
     output_text = body.text
 
     if body.language == Language.DIOULA:
-        # Traduire en Bambara et générer l'audio
-        audio_url, bambara_text = await synthesize_bambara(body.text)
-        if bambara_text:
-            output_text = bambara_text
+        # ADR-0023 (#362) : language=dioula sert la VOIX DIOULA (mms-tts-dyu),
+        # plus le modèle bambara malien — traduction FR→dyu puis synthèse.
+        audio_url, dioula_text = await synthesize_dioula(body.text)
+        if dioula_text:
+            output_text = dioula_text
     else:
         # Générer l'audio en français
         audio_url = await synthesize_french(body.text)
@@ -84,6 +86,31 @@ async def tts_bambara(request: Request, text: str, is_french: bool = True):
 
     if not audio_url:
         raise HTTPException(status_code=500, detail="Échec TTS Bambara")
+
+    # ADR-0023 : cet endpoint sert le modèle BAMBARA (mms-tts-bam) — l'étiquette
+    # « dioula » historique mentait. Pour la voix dioula : POST /api/tts/dioula.
+    return TTSResponse(audio_url=audio_url, text=output_text, language="bambara")
+
+
+@router.post("/dioula", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
+@limiter.limit("10/minute")
+async def tts_dioula(request: Request, text: str, is_french: bool = True):
+    """
+    TTS en dioula ivoirien — VOIX mms-tts-dyu (ADR-0023, #362).
+
+    Même contrat que /bambara :
+    - **text**: Texte (français ou dioula)
+    - **is_french**: True si le texte est en français (traduit NLLB fra→dyu)
+    """
+    if is_french:
+        audio_url, dioula_text = await synthesize_dioula(text)
+        output_text = dioula_text or text
+    else:
+        audio_url = await asyncio.to_thread(synthesize_dioula_text, text)
+        output_text = text
+
+    if not audio_url:
+        raise HTTPException(status_code=500, detail="Échec TTS dioula")
 
     return TTSResponse(audio_url=audio_url, text=output_text, language="dioula")
 
