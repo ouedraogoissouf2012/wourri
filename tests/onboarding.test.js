@@ -167,12 +167,26 @@ describe("OnboardingMachine — STEPS.WAITING_CITY", () => {
         assert.match(sock.sent[0].msg.text, /Abidjan/);
     });
 
-    test("fallback dernier mot si ville inconnue", async () => {
-        const m = makeMachine();
+    test("ville non reconnue → redemande sans avancer (CITY_UNKNOWN)", async () => {
+        const sock = makeSockMock();
+        const m = makeMachine({ sock });
         const prefs = { step: STEPS.WAITING_CITY, city: null, language: null };
-        await m.processStep(prefs, "village inconnu", "u1", { isAudioMessage: false, isVoiceInput: false });
-        // extractCity fallback : dernier mot >3 chars capitalisé
-        assert.strictEqual(prefs.city, "Inconnu");
+        const result = await m.processStep(prefs, "village inconnu", "u1", { isAudioMessage: false, isVoiceInput: false });
+        // Fix cafard démo : on n'accepte plus un mot au hasard comme ville.
+        // La ville n'est pas validée → on reste à WAITING_CITY et on redemande.
+        assert.strictEqual(result.handled, true);
+        assert.strictEqual(prefs.city, null, "ville non reconnue ne doit pas etre enregistree");
+        assert.strictEqual(prefs.step, STEPS.WAITING_CITY, "reste a l'etape ville");
+        assert.match(sock.sent[0].msg.text, /reconnais pas|dɔn/i);
+    });
+
+    test("emoji seul → redemande sans accepter comme ville", async () => {
+        const sock = makeSockMock();
+        const m = makeMachine({ sock });
+        const prefs = { step: STEPS.WAITING_CITY, city: null, language: null };
+        await m.processStep(prefs, "👍", "u1", { isAudioMessage: false, isVoiceInput: false });
+        assert.strictEqual(prefs.city, null);
+        assert.strictEqual(prefs.step, STEPS.WAITING_CITY);
     });
 });
 
@@ -324,17 +338,16 @@ describe("OnboardingMachine — commandes (depuis STEPS.COMPLETE uniquement)", (
         assert.strictEqual(prefs.pendingQuestion, null);
     });
 
-    test("commande 'changer ville' depuis WAITING_CITY → traité comme nouvelle ville (pas comme commande)", async () => {
-        // C'est le comportement attendu : detectChangeCommand ne s'active qu'avec
-        // prefs.step === COMPLETE, donc depuis WAITING_CITY, "changer ville" est
-        // traité comme un nom de ville (extractCity → fallback dernier mot).
+    test("'changer ville' depuis WAITING_CITY → non reconnu comme ville, redemande", async () => {
+        // detectChangeCommand ne s'active qu'en COMPLETE. Depuis WAITING_CITY,
+        // "changer ville" n'est pas une ville valide (fix cafard démo) → on
+        // redemande au lieu d'enregistrer une ville="Ville" absurde.
         const m = makeMachine();
         const prefs = { step: STEPS.WAITING_CITY, city: null, language: null };
         const result = await m.processStep(prefs, "changer ville", "u1", { isAudioMessage: false, isVoiceInput: false });
         assert.strictEqual(result.handled, true);
-        assert.strictEqual(prefs.step, STEPS.WAITING_LANGUAGE);
-        // extractCity sur "changer ville" → fallback = "Ville" (dernier mot >3 chars capitalisé)
-        assert.strictEqual(prefs.city, "Ville");
+        assert.strictEqual(prefs.step, STEPS.WAITING_CITY, "reste a l'etape ville");
+        assert.strictEqual(prefs.city, null, "aucune ville absurde enregistree");
     });
 });
 
