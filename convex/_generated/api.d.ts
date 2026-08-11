@@ -9,6 +9,10 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as authorization from "../authorization.js";
+import type * as authz_authorize from "../authz/authorize.js";
+import type * as authz_policy from "../authz/policy.js";
+import type * as authz_types from "../authz/types.js";
 import type * as http from "../http.js";
 import type * as schema_alerts from "../schema/alerts.js";
 import type * as schema_billing from "../schema/billing.js";
@@ -26,6 +30,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  authorization: typeof authorization;
+  "authz/authorize": typeof authz_authorize;
+  "authz/policy": typeof authz_policy;
+  "authz/types": typeof authz_types;
   http: typeof http;
   "schema/alerts": typeof schema_alerts;
   "schema/billing": typeof schema_billing;
