@@ -1,0 +1,25 @@
+{
+  "name": "@wouri/convex-backend",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "type": "module",
+  "scripts": {
+    "convex:check": "convex dev --once",
+    "convex:codegen": "convex codegen",
+    "convex:dev": "convex dev",
+    "test:convex": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@convex-dev/better-auth": "^0.12.5",
+    "better-auth": "^1.6.26",
+    "convex": "^1.43.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "convex-test": "^0.0.55",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

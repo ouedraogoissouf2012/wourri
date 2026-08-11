@@ -1,6 +1,6 @@
 # ADR-0024 : transition vers le backend Convex multi-tenant (#372)
 
-**Statut** : proposée
+**Statut** : acceptée
 
 **Date** : 2026-08-11
 
@@ -24,7 +24,7 @@ métier, les conversations, les alertes, les sources, le feedback, l'audit et
 les traces d'exécution. Cette décision entre en conflit avec l'ADR-0001, qui
 avait choisi PostgreSQL comme magasin unique avant l'apparition de ce besoin.
 
-## Décision proposée
+## Décision
 
 1. La cible est Convex comme magasin unique des nouveaux domaines métier
    multi-tenant, avec une séparation stricte des déploiements développement,
@@ -82,8 +82,9 @@ avait choisi PostgreSQL comme magasin unique avant l'apparition de ce besoin.
   sa propre migration.
 - `docs/vision.md` doit être amendée après acceptation : FastAPI n'est plus
   l'unique point d'entrée de l'état métier, mais reste le service de calcul.
-- Aucun déploiement Convex, schéma ou transfert de données n'est lancé avant
-  passage des gates ci-dessus.
+- Le socle Convex et ses tests peuvent évoluer sur un déploiement anonyme sans
+  donnée personnelle. Les gates restent obligatoires avant tout déploiement
+  staging ou production, transfert de données ou exposition publique.
 
 ## Références
 
@@ -92,3 +93,8 @@ avait choisi PostgreSQL comme magasin unique avant l'apparition de ce besoin.
 - ADR-0001 et ADR-0008.
 - Documentation Convex : functions, internal functions, HTTP actions, auth et
   environment variables.
+
+## Historique
+
+- 2026-08-11 : proposée dans la PR #373.
+- 2026-08-11 : acceptée par Marcel dans l'issue #372.

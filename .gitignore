@@ -1,4 +1,7 @@
 # Python
+node_modules/
+.agents/
+.claude/
 __pycache__/
 **/__pycache__/
 *.py[cod]
