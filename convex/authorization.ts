@@ -4,3 +4,9 @@ export type {
   AuthorizationRequirement,
   AuthorizationScope,
 } from "./authz/types";
+export {
+  CAPABILITIES,
+  ALL_CAPABILITIES,
+  ROLE_PRESETS,
+} from "./authz/capabilities";
+export type { Capability, RolePreset } from "./authz/capabilities";
