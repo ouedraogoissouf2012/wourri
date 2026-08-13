@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit -p convex/tsconfig.json"
   },
   "dependencies": {
+    "@ai-sdk/provider": "3.0.3",
     "@ai-sdk/provider-utils": "4.0.6",
     "@convex-dev/agent": "0.6.4",
     "@convex-dev/better-auth": "^0.12.5",
