@@ -10,6 +10,7 @@
 
 import type * as aiops_auditread from "../aiops/auditread.js";
 import type * as aiops_flags from "../aiops/flags.js";
+import type * as aiops_health from "../aiops/health.js";
 import type * as aiops_registry from "../aiops/registry.js";
 import type * as aiops_replay from "../aiops/replay.js";
 import type * as aiops_shared from "../aiops/shared.js";
@@ -61,6 +62,10 @@ import type * as schema_language from "../schema/language.js";
 import type * as schema_observability from "../schema/observability.js";
 import type * as schema_tenancy from "../schema/tenancy.js";
 import type * as schema_weather from "../schema/weather.js";
+import type * as testing_contentHelpers from "../testing/contentHelpers.js";
+import type * as testing_fixtures from "../testing/fixtures.js";
+import type * as testing_orgHelpers from "../testing/orgHelpers.js";
+import type * as testing_seed from "../testing/seed.js";
 import type * as tools_getFarmerProfile from "../tools/getFarmerProfile.js";
 import type * as tools_getWeather from "../tools/getWeather.js";
 import type * as tools_searchKnowledge from "../tools/searchKnowledge.js";
@@ -78,6 +83,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "aiops/auditread": typeof aiops_auditread;
   "aiops/flags": typeof aiops_flags;
+  "aiops/health": typeof aiops_health;
   "aiops/registry": typeof aiops_registry;
   "aiops/replay": typeof aiops_replay;
   "aiops/shared": typeof aiops_shared;
@@ -129,6 +135,10 @@ declare const fullApi: ApiFromModules<{
   "schema/observability": typeof schema_observability;
   "schema/tenancy": typeof schema_tenancy;
   "schema/weather": typeof schema_weather;
+  "testing/contentHelpers": typeof testing_contentHelpers;
+  "testing/fixtures": typeof testing_fixtures;
+  "testing/orgHelpers": typeof testing_orgHelpers;
+  "testing/seed": typeof testing_seed;
   "tools/getFarmerProfile": typeof tools_getFarmerProfile;
   "tools/getWeather": typeof tools_getWeather;
   "tools/searchKnowledge": typeof tools_searchKnowledge;

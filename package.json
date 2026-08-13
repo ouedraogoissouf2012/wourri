@@ -8,7 +8,11 @@
     "convex:check": "convex dev --once",
     "convex:codegen": "convex codegen",
     "convex:dev": "convex dev",
+    "convex:deploy:staging": "convex deploy",
     "test:convex": "vitest run --config vitest.config.ts",
+    "convex:test:permissions": "vitest run --config vitest.config.ts convex/tenancy convex/authz",
+    "convex:test:alerts": "vitest run --config vitest.config.ts convex/alerts",
+    "convex:test:knowledge": "vitest run --config vitest.config.ts convex/knowledge convex/rag convex/weather",
     "typecheck": "tsc --noEmit -p convex/tsconfig.json"
   },
   "dependencies": {
