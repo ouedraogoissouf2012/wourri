@@ -5,6 +5,7 @@
 
 export const CAPABILITIES = {
   platformManage: "platform.manage",
+  organizationRead: "organization.read",
   organizationManage: "organization.manage",
   organizationMembersManage: "organization.members.manage",
   entitlementsManage: "entitlements.manage",
@@ -38,6 +39,7 @@ export const ROLE_PRESETS = {
   adcAdmin: ALL_CAPABILITIES,
   // SODEXAM — weather data provider and alert publisher.
   sodexamOperator: [
+    CAPABILITIES.organizationRead,
     CAPABILITIES.weatherPublish,
     CAPABILITIES.sourcesPublish,
     CAPABILITIES.alertsCreate,
@@ -48,6 +50,7 @@ export const ROLE_PRESETS = {
   ],
   // CNRA — agronomic knowledge provider.
   cnraOperator: [
+    CAPABILITIES.organizationRead,
     CAPABILITIES.knowledgeIngest,
     CAPABILITIES.knowledgePublish,
     CAPABILITIES.sourcesPublish,
@@ -58,6 +61,7 @@ export const ROLE_PRESETS = {
   ],
   // Cooperative / NGO client organization — manages its own farmers.
   clientAdmin: [
+    CAPABILITIES.organizationRead,
     CAPABILITIES.organizationManage,
     CAPABILITIES.organizationMembersManage,
     CAPABILITIES.farmersRead,
@@ -70,6 +74,7 @@ export const ROLE_PRESETS = {
     CAPABILITIES.analyticsRead,
   ],
   clientOperator: [
+    CAPABILITIES.organizationRead,
     CAPABILITIES.farmersRead,
     CAPABILITIES.farmersWrite,
     CAPABILITIES.alertsRead,
@@ -77,7 +82,11 @@ export const ROLE_PRESETS = {
     CAPABILITIES.analyticsRead,
   ],
   // Linguistic validator — scoped to the validation console.
-  linguist: [CAPABILITIES.linguisticValidate, CAPABILITIES.knowledgeRead],
+  linguist: [
+    CAPABILITIES.organizationRead,
+    CAPABILITIES.linguisticValidate,
+    CAPABILITIES.knowledgeRead,
+  ],
 } satisfies Record<string, Capability[]>;
 
 export type RolePreset = keyof typeof ROLE_PRESETS;
