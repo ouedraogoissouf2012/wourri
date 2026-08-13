@@ -48,6 +48,18 @@ membres et invitations. Les tables WOURI complètent cette base avec les
 politiques de rôles, grants de périmètre, entitlements, agriculteurs,
 conversations, alertes, provenance et actifs linguistiques.
 
+La création d'organisation par un utilisateur est désactivée. Lorsqu'un
+workflow d'opérateur crée une organisation Better Auth, le trigger Convex crée
+son profil WOURI dans l'état `provisioning`, sans politique ni permission. Une
+organisation n'est activée qu'après configuration explicite de son profil, de
+ses politiques et des assignments de rôles. Ce séquencement empêche qu'une
+organisation ou un membre nouvellement créé reçoive des droits implicites.
+
+L'email/password est disponible uniquement pour le développement local et sans
+vérification d'email. Staging et production gardent ce mécanisme désactivé tant
+qu'un fournisseur d'envoi, son callback de vérification et les origins de
+confiance n'ont pas été validés.
+
 FastAPI reste propriétaire du calcul, notamment ASR, TTS, NLU, LLM et audio.
 PostgreSQL et pgvector restent propriétaires du corpus IVR existant jusqu'à une
 décision de migration séparée. Aucune écriture double n'est admise entre ces

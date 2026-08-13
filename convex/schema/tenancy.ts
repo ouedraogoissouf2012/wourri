@@ -11,11 +11,18 @@ const organizationKind = v.union(
 export const tenancyTables = {
   organizationProfiles: defineTable({
     organizationId: v.string(),
-    kind: organizationKind,
-    legalName: v.string(),
-    status: v.union(v.literal("active"), v.literal("suspended")),
-    defaultZoneIds: v.array(v.string()),
+    kind: v.optional(organizationKind),
+    legalName: v.optional(v.string()),
+    status: v.union(
+      v.literal("provisioning"),
+      v.literal("active"),
+      v.literal("suspended"),
+    ),
   }).index("by_organizationId", ["organizationId"]),
+  organizationDefaultZones: defineTable({
+    organizationId: v.string(),
+    zoneId: v.string(),
+  }).index("by_organizationId_and_zoneId", ["organizationId", "zoneId"]),
   organizationRolePolicies: defineTable({
     organizationId: v.string(),
     key: v.string(),
@@ -33,6 +40,11 @@ export const tenancyTables = {
     revokedAt: v.optional(v.number()),
   })
     .index("by_organizationId_and_memberId", ["organizationId", "memberId"])
+    .index("by_organizationId_and_memberId_and_status", [
+      "organizationId",
+      "memberId",
+      "status",
+    ])
     .index("by_memberId_and_status", ["memberId", "status"]),
   membershipScopeGrants: defineTable({
     organizationId: v.string(),
@@ -43,5 +55,11 @@ export const tenancyTables = {
     expiresAt: v.optional(v.number()),
   })
     .index("by_organizationId_and_memberId", ["organizationId", "memberId"])
+    .index("by_organizationId_and_memberId_and_scopeType_and_scopeKey", [
+      "organizationId",
+      "memberId",
+      "scopeType",
+      "scopeKey",
+    ])
     .index("by_memberId_and_scopeType", ["memberId", "scopeType"]),
 };

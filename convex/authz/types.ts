@@ -1,17 +1,17 @@
 export type AuthorizationScope = {
   type: "zone" | "crop" | "group";
   key: string;
+  expiresAt?: number;
 };
 
 export type AuthorizationRequirement = {
-  organizationId: string;
   permission: string;
   scope?: AuthorizationScope;
   entitlement?: string;
 };
 
 export type AuthorizationSnapshot = {
-  organizationStatus: "active" | "suspended" | null;
+  organizationStatus: "active" | "provisioning" | "suspended" | null;
   session: { userId: string; organizationId: string; expiresAt: number } | null;
   member: { id: string; userId: string; organizationId: string } | null;
   assignment: {

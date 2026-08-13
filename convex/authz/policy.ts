@@ -23,35 +23,52 @@ const hasValidEntitlement = (
   );
 };
 
-const hasRequiredScope = (
+const hasQuerySafeEntitlement = (
   snapshot: AuthorizationSnapshot,
   requirement: AuthorizationRequirement,
 ) => {
-  if (snapshot.policy?.scopeMode === "organization") return true;
-  return requirement.scope !== undefined && snapshot.grants.some((grant) =>
-    scopeMatches(grant, requirement.scope!),
+  if (!requirement.entitlement) return true;
+  // A reactive query cannot safely reevaluate a time window as time passes.
+  // Time-bounded entitlements are consequently mutation-only until materialized.
+  return snapshot.entitlements.some((entitlement) =>
+    entitlement.key === requirement.entitlement &&
+    entitlement.enabled &&
+    entitlement.validFrom === 0 &&
+    entitlement.validUntil === undefined,
   );
+};
+
+const hasRequiredScope = (
+  snapshot: AuthorizationSnapshot,
+  requirement: AuthorizationRequirement,
+  now?: number,
+) => {
+  if (snapshot.policy?.scopeMode === "organization") return true;
+  return requirement.scope !== undefined && snapshot.grants.some((grant) => {
+    if (!scopeMatches(grant, requirement.scope!)) return false;
+    if (now === undefined) return grant.expiresAt === undefined;
+    return grant.expiresAt === undefined || grant.expiresAt > now;
+  });
 };
 
 const hasActiveRelationship = (
   snapshot: AuthorizationSnapshot,
   requirement: AuthorizationRequirement,
   subject: string,
-  now: number,
+  now?: number,
 ) => {
   const { session, member, assignment, policy } = snapshot;
   return (
     snapshot.organizationStatus === "active" &&
     session?.userId === subject &&
-    session.organizationId === requirement.organizationId &&
-    session.expiresAt > now &&
+    (now === undefined || session.expiresAt > now) &&
     member?.userId === subject &&
-    member.organizationId === requirement.organizationId &&
+    member.organizationId === session.organizationId &&
     assignment?.status === "active" &&
     assignment.memberId === member.id &&
-    assignment.organizationId === requirement.organizationId &&
+    assignment.organizationId === session.organizationId &&
     policy?.id === assignment.policyId &&
-    policy.organizationId === requirement.organizationId
+    policy.organizationId === session.organizationId
   );
 };
 
@@ -59,17 +76,18 @@ export const evaluateAuthorization = (
   snapshot: AuthorizationSnapshot,
   requirement: AuthorizationRequirement,
   subject: string,
-  now: number,
+  now?: number,
 ): AuthorizationContext | null => {
   if (!hasActiveRelationship(snapshot, requirement, subject, now)) return null;
   const { member, policy } = snapshot;
   if (!member || !policy) return null;
   if (!policy.permissions.includes(requirement.permission)) return null;
-  if (!hasRequiredScope(snapshot, requirement)) return null;
-  if (!hasValidEntitlement(snapshot, requirement, now)) return null;
+  if (!hasRequiredScope(snapshot, requirement, now)) return null;
+  if (now === undefined && !hasQuerySafeEntitlement(snapshot, requirement)) return null;
+  if (now !== undefined && !hasValidEntitlement(snapshot, requirement, now)) return null;
 
   return {
-    organizationId: requirement.organizationId,
+    organizationId: member.organizationId,
     memberId: member.id,
     rolePolicyId: policy.id,
     permissions: policy.permissions,

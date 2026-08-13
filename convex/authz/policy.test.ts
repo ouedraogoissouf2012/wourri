@@ -4,7 +4,6 @@ import type { AuthorizationRequirement, AuthorizationSnapshot } from "./types";
 
 const now = 1_800_000_000_000;
 const requirement: AuthorizationRequirement = {
-  organizationId: "org-a",
   permission: "alerts:send",
   scope: { type: "zone", key: "abidjan-nord" },
   entitlement: "alerts",
@@ -36,6 +35,18 @@ describe("DAT-07 authorization denials", () => {
     expect(allows(value)).toBeNull();
   });
 
+  it("denies an absent Better Auth session", () => {
+    const value = snapshot();
+    value.session = null;
+    expect(allows(value)).toBeNull();
+  });
+
+  it("denies a suspended organization", () => {
+    const value = snapshot();
+    value.organizationStatus = "suspended";
+    expect(allows(value)).toBeNull();
+  });
+
   it("denies a revoked WOURI role assignment", () => {
     const value = snapshot();
     value.assignment!.status = "revoked";
@@ -58,5 +69,9 @@ describe("DAT-07 authorization denials", () => {
     const value = snapshot();
     value.session!.organizationId = "org-b";
     expect(allows(value)).toBeNull();
+  });
+
+  it("fails closed for time-bounded query permissions", () => {
+    expect(evaluateAuthorization(snapshot(), requirement, "user-a")).toBeNull();
   });
 });

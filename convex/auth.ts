@@ -1,8 +1,12 @@
-import { createClient, type GenericCtx } from "@convex-dev/better-auth";
+import {
+  createClient,
+  type AuthFunctions,
+  type GenericCtx,
+} from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { betterAuth, type BetterAuthOptions } from "better-auth/minimal";
 import { organization } from "better-auth/plugins";
-import { components } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
 import authConfig from "./auth.config";
 import authSchema from "./betterAuth/schema";
@@ -16,10 +20,28 @@ const runtimeEnvironment = globalThis as typeof globalThis & {
 const configuredOrigin = () =>
   runtimeEnvironment.process?.env?.SITE_URL ?? localOrigin;
 
+const authFunctions: AuthFunctions = internal.auth;
+
 export const authComponent = createClient<DataModel, typeof authSchema>(
   components.betterAuth,
-  { local: { schema: authSchema } },
+  {
+    authFunctions,
+    local: { schema: authSchema },
+    triggers: {
+      organization: {
+        onCreate: async (ctx, organization) => {
+          await ctx.db.insert("organizationProfiles", {
+            organizationId: organization._id,
+            legalName: organization.name,
+            status: "provisioning",
+          });
+        },
+      },
+    },
+  },
 );
+
+export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi();
 
 export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
   ({
@@ -27,13 +49,13 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
     trustedOrigins: [configuredOrigin()],
     database: authComponent.adapter(ctx),
     emailAndPassword: {
-      enabled: true,
+      enabled: configuredOrigin() === localOrigin,
       minPasswordLength: 12,
-      requireEmailVerification: true,
+      requireEmailVerification: false,
     },
     plugins: [
       organization({
-        allowUserToCreateOrganization: true,
+        allowUserToCreateOrganization: false,
         creatorRole: "owner",
       }),
       convex({ authConfig }),
