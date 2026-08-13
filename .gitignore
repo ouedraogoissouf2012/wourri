@@ -87,3 +87,10 @@ export_*.py
 
 # Exceptions : tests organisés dans tests/
 !tests/**/test_*.py
+
+# Secrets Docker montes par docker-compose.staging.yml et docker-compose.prod.yml
+# (secrets.postgres_password.file et secrets.api_secret_key.file). Ces fichiers
+# contiennent le mot de passe PostgreSQL et la cle API en clair : les commiter
+# serait une fuite. Ils sont crees a la main sur le serveur, jamais versionnes.
+secrets/
+!secrets/.gitkeep
