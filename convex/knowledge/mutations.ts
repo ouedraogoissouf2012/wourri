@@ -2,13 +2,9 @@ import { v } from "convex/values";
 import { mutation, internalMutation } from "../_generated/server";
 import { authorizeMutation, CAPABILITIES } from "../authorization";
 import { recordAudit } from "../lib/audit";
+import { resolveAuditActor } from "../lib/actor";
 import { WouriError, ERROR_TYPES } from "../lib/errors";
 import * as model from "./model";
-
-const actorSubject = async (ctx: Parameters<typeof recordAudit>[0]) => {
-  const identity = await ctx.auth.getUserIdentity();
-  return identity?.subject ?? "unknown";
-};
 
 // KNO-01/KNO-03 — register a knowledge source (SODEXAM/CNRA). A global source is
 // published platform-wide; an organization source is scoped to the caller's org.
@@ -36,8 +32,7 @@ export const createKnowledgeSource = mutation({
       ctx,
       {
         organizationId: auth.organizationId,
-        actorSubject: await actorSubject(ctx),
-        actorMemberId: auth.memberId,
+        ...(await resolveAuditActor(ctx, auth)),
         action: "knowledge.source.create",
         resourceType: "knowledgeSources",
         resourceId: sourceId,
@@ -82,8 +77,7 @@ export const createKnowledgeSourceVersion = mutation({
       ctx,
       {
         organizationId: auth.organizationId,
-        actorSubject: await actorSubject(ctx),
-        actorMemberId: auth.memberId,
+        ...(await resolveAuditActor(ctx, auth)),
         action: "knowledge.sourceVersion.create",
         resourceType: "knowledgeSourceVersions",
         resourceId: versionId,

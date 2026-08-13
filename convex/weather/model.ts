@@ -34,6 +34,6 @@ export const latestValidObservation = async (
       q.eq("zoneId", zoneId).lte("validFrom", now),
     )
     .order("desc")
-    .take(10);
+    .take(25);
   return candidates.find((observation) => observation.validUntil > now) ?? null;
 };

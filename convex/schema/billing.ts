@@ -1,6 +1,9 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
+// organizationEntitlements is the enforced surface today (see lib/entitlements).
+// organizationSubscriptions and subscriptionEvents are reserved for the future
+// billing-provider integration and are not written by any function yet.
 export const billingTables = {
   organizationSubscriptions: defineTable({
     organizationId: v.string(),

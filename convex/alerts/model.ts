@@ -17,7 +17,6 @@ export type { AudienceRule } from "./audience";
 const ALERT_LIST_LIMIT = 100;
 const RULE_LIST_LIMIT = 500;
 const DELIVERY_SUMMARY_SCAN_LIMIT = 10000;
-const DELIVERY_LOOKUP_LIMIT = 200;
 
 export const alertStatusValidator = v.union(
   v.literal("draft"),
@@ -173,11 +172,25 @@ export const createDeliveriesForOrg = async (
   return farmerIds.length;
 };
 
+// Delivery state ranks. WhatsApp callbacks can arrive out of order, so a state
+// only ever advances: a late "delivered" after "read" is ignored, and terminal
+// outcomes (replied/failed) never regress to a progress state.
+const DELIVERY_RANK: Record<Doc<"alertDeliveries">["state"], number> = {
+  created: 0,
+  scheduled: 1,
+  sent: 2,
+  delivered: 3,
+  read: 4,
+  replied: 5,
+  failed: 5,
+};
+
 const applyDeliveryState = async (
   ctx: MutationCtx,
   delivery: Doc<"alertDeliveries">,
   state: Doc<"alertDeliveries">["state"],
 ) => {
+  if (DELIVERY_RANK[state] <= DELIVERY_RANK[delivery.state]) return delivery._id;
   await ctx.db.patch(delivery._id, {
     state,
     ...(state === "failed" ? { attemptCount: delivery.attemptCount + 1 } : {}),
@@ -207,11 +220,12 @@ export const setDeliveryStateByAlertAndFarmer = async (
   farmerId: Id<"farmers">,
   state: Doc<"alertDeliveries">["state"],
 ): Promise<Id<"alertDeliveries"> | null> => {
-  const deliveries = await ctx.db
+  const delivery = await ctx.db
     .query("alertDeliveries")
-    .withIndex("by_farmerId_and_state", (q) => q.eq("farmerId", farmerId))
-    .take(DELIVERY_LOOKUP_LIMIT);
-  const delivery = deliveries.find((row) => row.alertId === alertId);
+    .withIndex("by_alertId_and_farmerId", (q) =>
+      q.eq("alertId", alertId).eq("farmerId", farmerId),
+    )
+    .first();
   if (!delivery) return null;
   return applyDeliveryState(ctx, delivery, state);
 };

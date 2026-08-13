@@ -43,16 +43,20 @@ export const getFarmerForOrg = async (
   return farmer;
 };
 
-export const countActiveFarmersForOrg = async (
+// Bounded active-farmer count: reads at most `cap` rows. Enough to enforce a
+// plan limit (cap = limit + 1) without scanning a whole tenant, which would
+// break registration for the largest customers.
+export const countActiveFarmersBounded = async (
   ctx: Ctx,
   organizationId: string,
+  cap: number,
 ): Promise<number> => {
   const farmers = await ctx.db
     .query("farmers")
     .withIndex("by_organizationId_and_status", (q) =>
       q.eq("organizationId", organizationId).eq("status", "active"),
     )
-    .collect();
+    .take(cap);
   return farmers.length;
 };
 

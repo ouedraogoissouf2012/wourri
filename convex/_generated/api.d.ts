@@ -40,6 +40,7 @@ import type * as knowledge_mutations from "../knowledge/mutations.js";
 import type * as knowledge_queries from "../knowledge/queries.js";
 import type * as language_feedback from "../language/feedback.js";
 import type * as language_promote from "../language/promote.js";
+import type * as lib_actor from "../lib/actor.js";
 import type * as lib_audit from "../lib/audit.js";
 import type * as lib_entitlements from "../lib/entitlements.js";
 import type * as lib_errors from "../lib/errors.js";
@@ -113,6 +114,7 @@ declare const fullApi: ApiFromModules<{
   "knowledge/queries": typeof knowledge_queries;
   "language/feedback": typeof language_feedback;
   "language/promote": typeof language_promote;
+  "lib/actor": typeof lib_actor;
   "lib/audit": typeof lib_audit;
   "lib/entitlements": typeof lib_entitlements;
   "lib/errors": typeof lib_errors;

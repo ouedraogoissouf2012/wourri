@@ -74,4 +74,31 @@ describe("alert to conversation flow", () => {
       await t.run((ctx) => resolveAlertContext(ctx, "org-b", ids.contextId)),
     ).toBeNull();
   });
+
+  it("delivery state advances monotonically (out-of-order callbacks)", async () => {
+    const t = convexTest(schema, modules);
+    const { alertId, farmer } = await t.run(async (ctx) => {
+      const farmer = await createFarmerForOrg(ctx, "org-a", "a1", 1);
+      const alertId = await createAlertForOrg(ctx, "org-a", "m", { message: "x" }, 1);
+      await createDeliveriesForOrg(ctx, "org-a", alertId, [farmer], 1);
+      return { alertId, farmer };
+    });
+    await t.run((ctx) =>
+      setDeliveryStateByAlertAndFarmer(ctx, alertId, farmer, "read"),
+    );
+    // A late "delivered" callback must NOT regress a delivery already "read".
+    await t.run((ctx) =>
+      setDeliveryStateByAlertAndFarmer(ctx, alertId, farmer, "delivered"),
+    );
+    const state = await t.run(async (ctx) => {
+      const delivery = await ctx.db
+        .query("alertDeliveries")
+        .withIndex("by_alertId_and_farmerId", (q) =>
+          q.eq("alertId", alertId).eq("farmerId", farmer),
+        )
+        .first();
+      return delivery?.state;
+    });
+    expect(state).toBe("read");
+  });
 });

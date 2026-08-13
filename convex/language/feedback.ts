@@ -2,14 +2,13 @@ import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { authorize, authorizeMutation, CAPABILITIES } from "../authorization";
 import { recordAudit } from "../lib/audit";
+import { resolveAuditActor } from "../lib/actor";
 import { WouriError, ERROR_TYPES } from "../lib/errors";
 
 // LNG-04 / §24 / G09 — linguistic feedback lifecycle. A correction is captured,
 // reviewed and validated; validated corrections are promoted to the glossary or
 // corpus (see promote.ts) and prior versions are always kept.
 
-const actorSubject = async (ctx: Parameters<typeof recordAudit>[0]) =>
-  (await ctx.auth.getUserIdentity())?.subject ?? "unknown";
 
 export const submitFeedback = mutation({
   args: {
@@ -48,8 +47,7 @@ export const submitFeedback = mutation({
       ctx,
       {
         organizationId: auth.organizationId,
-        actorSubject: await actorSubject(ctx),
-        actorMemberId: auth.memberId,
+        ...(await resolveAuditActor(ctx, auth)),
         action: "linguistic.feedback.submit",
         resourceType: "linguisticFeedback",
         resourceId: id,
@@ -85,8 +83,7 @@ export const setFeedbackStatus = mutation({
       ctx,
       {
         organizationId: auth.organizationId,
-        actorSubject: await actorSubject(ctx),
-        actorMemberId: auth.memberId,
+        ...(await resolveAuditActor(ctx, auth)),
         action: "linguistic.feedback.status",
         resourceType: "linguisticFeedback",
         resourceId: args.feedbackId,

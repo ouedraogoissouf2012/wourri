@@ -4,7 +4,7 @@ import schema from "../schema";
 import {
   createFarmerForOrg,
   getFarmerForOrg,
-  countActiveFarmersForOrg,
+  countActiveFarmersBounded,
   addZoneLink,
 } from "../farmers/model";
 import { resolveAudience } from "../alerts/model";
@@ -27,7 +27,7 @@ describe("cross-organization isolation", () => {
     const farmerB = await t.run((ctx) => createFarmerForOrg(ctx, "org-b", "b1", 1));
     expect(await t.run((ctx) => getFarmerForOrg(ctx, "org-a", farmerB))).toBeNull();
     await t.run((ctx) => createFarmerForOrg(ctx, "org-a", "a1", 1));
-    expect(await t.run((ctx) => countActiveFarmersForOrg(ctx, "org-a"))).toBe(1);
+    expect(await t.run((ctx) => countActiveFarmersBounded(ctx, "org-a", 10))).toBe(1);
   });
 
   it("audience targeting stays within the organization", async () => {

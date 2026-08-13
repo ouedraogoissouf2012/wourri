@@ -57,8 +57,14 @@ export const searchKnowledge = action({
     const searchNamespace = async (namespace: string) => {
       try {
         return await rag.search(ctx, { namespace, query: args.query, filters, limit });
-      } catch {
-        return { results: [], entries: [] };
+      } catch (error) {
+        // A namespace with no ingested content yet is a normal empty result. Any
+        // other failure (embedding provider, dimension mismatch, index error) is
+        // a real system fault and must NOT be masked as "no evidence" — rethrow
+        // it so the trace records a genuine error instead of a false abstention.
+        const message = error instanceof Error ? error.message.toLowerCase() : "";
+        if (message.includes("namespace")) return { results: [], entries: [] };
+        throw error;
       }
     };
 

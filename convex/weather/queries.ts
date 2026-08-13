@@ -15,6 +15,10 @@ export const currentObservation = internalQuery({
     );
     if (!observation) return null;
     const provenance = await getProvenance(ctx, observation.sourceVersionId);
-    return { observation, provenance };
+    // Only expose provenance for globally published sources so a non-global
+    // source's authority/version can never leak cross-org via weather metadata.
+    const publicProvenance =
+      provenance?.source?.visibility === "global" ? provenance : null;
+    return { observation, provenance: publicProvenance };
   },
 });

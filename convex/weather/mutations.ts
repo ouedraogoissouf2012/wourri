@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { authorizeMutation, CAPABILITIES } from "../authorization";
 import { recordAudit } from "../lib/audit";
+import { resolveAuditActor } from "../lib/actor";
 import { WouriError, ERROR_TYPES } from "../lib/errors";
 import * as knowledge from "../knowledge/model";
 import * as model from "./model";
@@ -45,8 +46,7 @@ export const publishWeatherObservation = mutation({
       ctx,
       {
         organizationId: auth.organizationId,
-        actorSubject: (await ctx.auth.getUserIdentity())?.subject ?? "unknown",
-        actorMemberId: auth.memberId,
+        ...(await resolveAuditActor(ctx, auth)),
         action: "weather.observation.publish",
         resourceType: "weatherObservations",
         resourceId: observationId,

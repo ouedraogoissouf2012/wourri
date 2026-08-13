@@ -4,6 +4,7 @@ import type { MutationCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 import { authorizeMutation, CAPABILITIES } from "../authorization";
 import { recordAudit } from "../lib/audit";
+import { resolveAuditActor } from "../lib/actor";
 import { WouriError, ERROR_TYPES } from "../lib/errors";
 
 // G09 — promote a validated correction into the versioned glossary or corpus.
@@ -79,8 +80,7 @@ export const promoteToGlossary = mutation({
       ctx,
       {
         organizationId: auth.organizationId,
-        actorSubject: (await ctx.auth.getUserIdentity())?.subject ?? "unknown",
-        actorMemberId: auth.memberId,
+        ...(await resolveAuditActor(ctx, auth)),
         action: "linguistic.glossary.promote",
         resourceType: "glossaryTermVersions",
         resourceId: versionId,
@@ -145,8 +145,7 @@ export const promoteToCorpus = mutation({
       ctx,
       {
         organizationId: auth.organizationId,
-        actorSubject: (await ctx.auth.getUserIdentity())?.subject ?? "unknown",
-        actorMemberId: auth.memberId,
+        ...(await resolveAuditActor(ctx, auth)),
         action: "linguistic.corpus.promote",
         resourceType: "languageExampleVersions",
         resourceId: versionId,

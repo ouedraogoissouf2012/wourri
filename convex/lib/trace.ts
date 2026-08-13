@@ -39,7 +39,9 @@ export type TraceStep = {
   status: "ok" | "error" | "skipped";
   sourceVersionId?: Id<"knowledgeSourceVersions">;
   latencyMs?: number;
-  detail?: unknown;
+  // Already-serialized detail (the schema field is a string). Callers with a
+  // structured payload serialize it once before passing it here.
+  detail?: string;
 };
 
 export const appendTraceStep = async (
@@ -61,7 +63,7 @@ export const appendTraceStep = async (
     sourceVersionId: step.sourceVersionId,
     status: step.status,
     latencyMs: step.latencyMs,
-    detail: step.detail === undefined ? undefined : JSON.stringify(step.detail),
+    detail: step.detail,
     createdAt: now,
   });
 };

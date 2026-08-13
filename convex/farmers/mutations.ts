@@ -4,7 +4,7 @@ import type { MutationCtx } from "../_generated/server";
 import type { Id } from "../_generated/dataModel";
 import { authorizeMutation, CAPABILITIES } from "../authorization";
 import type { AuthorizationContext } from "../authorization";
-import { enforceEntitlementLimit } from "../lib/entitlements";
+import { requireEntitlement } from "../lib/entitlements";
 import { recordAudit } from "../lib/audit";
 import { ERROR_TYPES, WouriError } from "../lib/errors";
 import * as model from "./model";
@@ -56,8 +56,25 @@ export const registerFarmer = mutation({
         "Farmer already registered for this organization",
       );
     }
-    const activeCount = await model.countActiveFarmersForOrg(ctx, auth.organizationId);
-    await enforceEntitlementLimit(ctx, auth.organizationId, MAX_FARMERS_KEY, activeCount, now);
+    const entitlement = await requireEntitlement(
+      ctx,
+      auth.organizationId,
+      MAX_FARMERS_KEY,
+      now,
+    );
+    if (entitlement.limit !== undefined) {
+      const bounded = await model.countActiveFarmersBounded(
+        ctx,
+        auth.organizationId,
+        entitlement.limit + 1,
+      );
+      if (bounded + 1 > entitlement.limit) {
+        throw new WouriError(
+          ERROR_TYPES.PERMISSION,
+          `Entitlement '${MAX_FARMERS_KEY}' limit of ${entitlement.limit} reached`,
+        );
+      }
+    }
     const farmerId = await model.createFarmerForOrg(
       ctx,
       auth.organizationId,

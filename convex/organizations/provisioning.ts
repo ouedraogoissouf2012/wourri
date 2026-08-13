@@ -4,6 +4,7 @@ import type { MutationCtx } from "../_generated/server";
 import { ROLE_PRESETS, type RolePreset } from "../authz/capabilities";
 import { authorizeMutation, CAPABILITIES } from "../authorization";
 import { recordAudit } from "../lib/audit";
+import { resolveAuditActor } from "../lib/actor";
 import { WouriError, ERROR_TYPES } from "../lib/errors";
 
 // DAT-02 / §10 — organization provisioning. Better Auth owns the organization,
@@ -193,8 +194,7 @@ export const activateOrganization = mutation({
       ctx,
       {
         organizationId: args.organizationId,
-        actorSubject: (await ctx.auth.getUserIdentity())?.subject ?? "unknown",
-        actorMemberId: auth.memberId,
+        ...(await resolveAuditActor(ctx, auth)),
         action: "organization.activate",
         resourceType: "organizationProfiles",
         resourceId: profileId,

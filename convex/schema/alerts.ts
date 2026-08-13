@@ -56,6 +56,7 @@ export const alertTables = {
       "nextAttemptAt",
     ])
     .index("by_alertId_and_state", ["alertId", "state"])
+    .index("by_alertId_and_farmerId", ["alertId", "farmerId"])
     .index("by_farmerId_and_state", ["farmerId", "state"])
     .index("by_provider_and_providerMessageId", [
       "provider",

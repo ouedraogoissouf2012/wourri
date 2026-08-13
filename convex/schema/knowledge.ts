@@ -29,14 +29,7 @@ export const knowledgeTables = {
     contentHash: v.string(),
     status: v.union(v.literal("ready"), v.literal("rejected")),
   }).index("by_sourceVersionId", ["sourceVersionId"]),
-  knowledgeChunks: defineTable({
-    sourceVersionId: v.id("knowledgeSourceVersions"),
-    documentId: v.id("knowledgeDocuments"),
-    ordinal: v.number(),
-    content: v.string(),
-    contentHash: v.string(),
-    extractionMetadata: v.optional(v.string()),
-  })
-    .index("by_documentId_and_ordinal", ["documentId", "ordinal"])
-    .index("by_sourceVersionId", ["sourceVersionId"]),
+  // Searchable chunks live in the @convex-dev/rag component, keyed back to these
+  // documents via the RAG entry filters (sourceId/sourceVersionId). We do not
+  // keep a parallel hand-rolled chunk table.
 };
