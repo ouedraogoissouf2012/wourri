@@ -35,6 +35,30 @@ pnpm convex:check
 
 ## 2. Sélection staging vs production
 
+### Environnements provisionnés (team `djedjelipatrick`)
+
+Isolation stricte par PROJET Convex (DAT-01) :
+
+| Environnement | Projet Convex | Déploiement | URL |
+| --- | --- | --- | --- |
+| Développement local | `wouri` | `dev:avid-badger-569` | (dev, par développeur) |
+| Staging | `wouri-staging` | prod du projet staging | `https://spotted-chickadee-971.convex.cloud` |
+| Production | (à créer : projet dédié) | — | — |
+
+Le staging vit sur le déploiement de PRODUCTION du projet **séparé**
+`wouri-staging` : schéma, données et secrets totalement isolés du dev et de la
+future production. Secrets posés côté staging : `WOURI_ENV=staging`,
+`BETTER_AUTH_SECRET` (propre au staging, jamais celui du dev). `SITE_URL` reste à
+poser quand le frontend staging existera. Le seed de démonstration y est déjà
+chargé (6 organisations, membres, sources, fixture météo).
+
+Pour déployer/reséléctionner le staging : lier le projet
+(`npx convex dev --configure existing --project wouri-staging --team djedjelipatrick --once`)
+puis `npx convex deploy --yes` (cible la prod du projet staging). Toujours remettre
+`.env.local` sur le dev `wouri` après, pour ne pas perturber le développement local.
+
+### Mécanique de sélection
+
 Le déploiement ciblé dépend du contexte Convex (variable `CONVEX_DEPLOYMENT`) et
 du flag `--prod`. Chaque environnement a ses variables d'environnement propres,
 posées côté Convex (jamais dans un `.env` commité).
