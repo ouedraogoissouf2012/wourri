@@ -39,23 +39,46 @@ pnpm convex:check
 
 Isolation stricte par PROJET Convex (DAT-01) :
 
-| Environnement | Projet Convex | Déploiement | URL |
+| Environnement | Projet Convex (slug) | Déploiement ciblé | URL |
 | --- | --- | --- | --- |
 | Développement local | `wouri` | `dev:avid-badger-569` | (dev, par développeur) |
-| Staging | `wouri-staging` | prod du projet staging | `https://spotted-chickadee-971.convex.cloud` |
-| Production | (à créer : projet dédié) | — | — |
+| Staging | `wouri-staging-75d3f` | prod du projet staging | `https://spotted-chickadee-971.convex.cloud` |
+| Production | `wouri-prod` | prod du projet production | `https://grand-alligator-409.convex.cloud` |
 
-Le staging vit sur le déploiement de PRODUCTION du projet **séparé**
-`wouri-staging` : schéma, données et secrets totalement isolés du dev et de la
-future production. Secrets posés côté staging : `WOURI_ENV=staging`,
-`BETTER_AUTH_SECRET` (propre au staging, jamais celui du dev). `SITE_URL` reste à
-poser quand le frontend staging existera. Le seed de démonstration y est déjà
-chargé (6 organisations, membres, sources, fixture météo).
+Chaque environnement est un **projet Convex distinct** : schéma, données et
+secrets totalement isolés (DAT-01). Le `BETTER_AUTH_SECRET` est différent dans
+chacun. `SITE_URL` reste à poser dans chaque environnement quand les frontends
+correspondants existeront.
 
-Pour déployer/reséléctionner le staging : lier le projet
-(`npx convex dev --configure existing --project wouri-staging --team djedjelipatrick --once`)
-puis `npx convex deploy --yes` (cible la prod du projet staging). Toujours remettre
-`.env.local` sur le dev `wouri` après, pour ne pas perturber le développement local.
+| Environnement | `WOURI_ENV` | Données |
+| --- | --- | --- |
+| Staging | `staging` | seed de démonstration chargé (6 organisations, sources, fixture météo) |
+| Production | `production` | **vide** — aucune donnée de démonstration (§38) |
+
+`WOURI_ENV=production` **arme le garde-fou** : `seedStaging` y échoue avec
+« Seed refuse en production » (vérifié). Ne jamais changer cette valeur pour
+contourner le garde-fou.
+
+Attention au **slug** du projet : celui du staging porte un suffixe
+(`wouri-staging-75d3f`). Utiliser le slug exact, sinon la CLI crée un nouveau
+projet au lieu de lier l'existant.
+
+```powershell
+# Sélectionner un environnement (remplacer <slug> par le slug exact)
+npx convex dev --configure existing --team djedjelipatrick --project <slug> --dev-deployment cloud --once
+npx convex deploy --yes     # déploie vers la prod du projet sélectionné
+
+# TOUJOURS revenir sur le dev après une opération staging/production
+npx convex dev --configure existing --team djedjelipatrick --project wouri --dev-deployment cloud --once
+```
+
+Poser un secret : passer la valeur **sans guillemets** (des guillemets autour de
+la valeur seraient stockés dans le secret lui-même). Préférer une valeur
+hexadécimale, sans caractère à échapper :
+
+```powershell
+npx convex env set --prod BETTER_AUTH_SECRET <valeur_hex_64>
+```
 
 ### Mécanique de sélection
 
