@@ -34,7 +34,7 @@ export const alertTables = {
     organizationId: v.string(),
     alertId: v.id("alerts"),
     farmerId: v.id("farmers"),
-    threadId: v.optional(v.id("threads")),
+    conversationContextId: v.optional(v.id("conversationContexts")),
     provider: v.string(),
     providerMessageId: v.optional(v.string()),
     state: v.union(

@@ -15,12 +15,17 @@ import type * as authz_policy from "../authz/policy.js";
 import type * as authz_types from "../authz/types.js";
 import type * as http from "../http.js";
 import type * as schema_alerts from "../schema/alerts.js";
+import type * as schema_audit from "../schema/audit.js";
 import type * as schema_billing from "../schema/billing.js";
+import type * as schema_config from "../schema/config.js";
 import type * as schema_conversations from "../schema/conversations.js";
 import type * as schema_farmers from "../schema/farmers.js";
+import type * as schema_jobs from "../schema/jobs.js";
 import type * as schema_knowledge from "../schema/knowledge.js";
 import type * as schema_language from "../schema/language.js";
+import type * as schema_observability from "../schema/observability.js";
 import type * as schema_tenancy from "../schema/tenancy.js";
+import type * as schema_weather from "../schema/weather.js";
 
 import type {
   ApiFromModules,
@@ -36,12 +41,17 @@ declare const fullApi: ApiFromModules<{
   "authz/types": typeof authz_types;
   http: typeof http;
   "schema/alerts": typeof schema_alerts;
+  "schema/audit": typeof schema_audit;
   "schema/billing": typeof schema_billing;
+  "schema/config": typeof schema_config;
   "schema/conversations": typeof schema_conversations;
   "schema/farmers": typeof schema_farmers;
+  "schema/jobs": typeof schema_jobs;
   "schema/knowledge": typeof schema_knowledge;
   "schema/language": typeof schema_language;
+  "schema/observability": typeof schema_observability;
   "schema/tenancy": typeof schema_tenancy;
+  "schema/weather": typeof schema_weather;
 }>;
 
 /**
@@ -72,4 +82,6 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   betterAuth: import("../betterAuth/_generated/component.js").ComponentApi<"betterAuth">;
+  agent: import("@convex-dev/agent/_generated/component.js").ComponentApi<"agent">;
+  rag: import("@convex-dev/rag/_generated/component.js").ComponentApi<"rag">;
 };

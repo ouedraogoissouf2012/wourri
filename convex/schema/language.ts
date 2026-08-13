@@ -66,4 +66,43 @@ export const languageTables = {
     reviewerMemberId: v.string(),
     createdAt: v.number(),
   }).index("by_targetVersionId_and_createdAt", ["targetVersionId", "createdAt"]),
+  // §24 / LNG-04 / G09 — rich linguistic feedback record for the validator
+  // console. A validated record feeds glossary/corpus/examples; versions are
+  // kept, never silently overwritten.
+  linguisticFeedback: defineTable({
+    organizationId: v.optional(v.string()),
+    language: v.string(),
+    culture: v.optional(v.string()),
+    region: v.optional(v.string()),
+    audioStorageId: v.optional(v.id("_storage")),
+    rawTranscript: v.optional(v.string()),
+    validatedTranscript: v.optional(v.string()),
+    rawTranslation: v.optional(v.string()),
+    validatedTranslation: v.optional(v.string()),
+    translationDirection: v.optional(
+      v.union(v.literal("local_to_fr"), v.literal("fr_to_local")),
+    ),
+    generatedOutput: v.optional(v.string()),
+    audioRating: v.optional(v.number()),
+    naturalnessScore: v.optional(v.number()),
+    agriculturalVocabularyScore: v.optional(v.number()),
+    errorType: v.optional(v.string()),
+    comment: v.optional(v.string()),
+    reviewerMemberId: v.string(),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("needs_review"),
+      v.literal("validated"),
+      v.literal("rejected"),
+    ),
+    version: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_organizationId_and_status", ["organizationId", "status"])
+    .index("by_language_and_status", ["language", "status"])
+    .index("by_reviewerMemberId_and_createdAt", [
+      "reviewerMemberId",
+      "createdAt",
+    ]),
 };

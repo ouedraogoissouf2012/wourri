@@ -2,10 +2,12 @@ import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
 const organizationKind = v.union(
+  v.literal("adc"),
   v.literal("sodexam"),
   v.literal("cnra"),
   v.literal("cooperative"),
   v.literal("ngo"),
+  v.literal("other"),
 );
 
 export const tenancyTables = {

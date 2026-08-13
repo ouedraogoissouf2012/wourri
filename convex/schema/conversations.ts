@@ -1,47 +1,31 @@
 import { defineTable } from "convex/server";
 import { v } from "convex/values";
 
+// DAT-05 / §8 / §17 — WOURI business layer over the Agent component. The Agent
+// component owns messages and conversational memory; this table maps an Agent
+// thread to WHO speaks, FOR WHICH organization, IN WHICH context, and FROM WHICH
+// alert. originAlertId is what lets "Et pour mon cacao ?" recover the alert.
 export const conversationTables = {
-  threads: defineTable({
+  conversationContexts: defineTable({
     organizationId: v.string(),
     farmerId: v.id("farmers"),
+    agentThreadId: v.string(),
     channel: v.string(),
-    externalThreadKey: v.string(),
+    preferredLanguage: v.string(),
     originAlertId: v.optional(v.id("alerts")),
     status: v.union(v.literal("open"), v.literal("closed")),
-    retentionExpiresAt: v.optional(v.number()),
+    lastActivityAt: v.number(),
+    createdAt: v.number(),
   })
+    .index("by_agentThreadId", ["agentThreadId"])
     .index("by_organizationId_and_farmerId", ["organizationId", "farmerId"])
     .index("by_organizationId_and_originAlertId", [
       "organizationId",
       "originAlertId",
     ])
-    .index("by_organizationId_and_channel_and_externalThreadKey", [
+    .index("by_organizationId_and_channel_and_farmerId", [
       "organizationId",
       "channel",
-      "externalThreadKey",
+      "farmerId",
     ]),
-  threadMessages: defineTable({
-    organizationId: v.string(),
-    threadId: v.id("threads"),
-    direction: v.union(v.literal("inbound"), v.literal("outbound")),
-    providerMessageId: v.optional(v.string()),
-    content: v.optional(v.string()),
-    fileStorageId: v.optional(v.id("_storage")),
-    retentionExpiresAt: v.optional(v.number()),
-    createdAt: v.number(),
-  })
-    .index("by_threadId_and_createdAt", ["threadId", "createdAt"])
-    .index("by_organizationId_and_providerMessageId", [
-      "organizationId",
-      "providerMessageId",
-    ]),
-  threadMemories: defineTable({
-    organizationId: v.string(),
-    threadId: v.id("threads"),
-    kind: v.union(v.literal("summary"), v.literal("fact")),
-    content: v.string(),
-    expiresAt: v.optional(v.number()),
-    updatedAt: v.number(),
-  }).index("by_threadId_and_updatedAt", ["threadId", "updatedAt"]),
 };
