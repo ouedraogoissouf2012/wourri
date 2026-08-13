@@ -23,6 +23,7 @@ const {
     isReconnectable,
     describeDisconnectReason,
     MAX_ATTEMPTS,
+    RECONNECT_MAX_DELAY,
 } = require('./lib/reconnect');
 const { MessageQueue } = require('./lib/message_queue');
 const { CircuitBreaker, CircuitOpenError } = require('./lib/circuit_breaker');
@@ -188,11 +189,14 @@ function randomDelay(min, max) {
  *
  * Endpoints utilisés (côté wouri-api) :
  *   - français : POST /api/tts/french?text=...
- *   - dioula   : POST /api/tts/bambara?text=...&is_french=false
+ *   - dioula   : POST /api/tts/dioula?text=...&is_french=false
+ *     (ADR-0023 #362 : voix mms-tts-dyu — avant, /api/tts/bambara servait la
+ *      voix bambara MALIENNE pour les messages système alors que les réponses
+ *      du bot sortaient en voix dioula : deux voix pour le même utilisateur.)
  *
  * Note : on utilise /api/tts/french (et non /api/tts/) car ce dernier attend
  * un body JSON Pydantic TTSRequest, alors que /api/tts/french accepte le
- * texte en query param — cohérent avec /api/tts/bambara. Sans ça, l'appel
+ * texte en query param — cohérent avec /api/tts/dioula. Sans ça, l'appel
  * échoue en 422 (cas reproduit lors du warmup audio_cache).
  *
  * @param {string} text - Texte à synthétiser
@@ -202,7 +206,7 @@ function randomDelay(min, max) {
  */
 async function tryGenerateAudioFromText(text, isFrench, timeoutMs = 5000) {
     if (!text) return null;
-    const endpoint = isFrench ? '/api/tts/french' : '/api/tts/bambara';
+    const endpoint = isFrench ? '/api/tts/french' : '/api/tts/dioula';
     const params = isFrench ? { text } : { text, is_french: false };
     try {
         const ttsResponse = await axios.post(
@@ -466,8 +470,17 @@ async function connectWhatsApp() {
             }
 
             if (reconnectAttempt >= MAX_ATTEMPTS) {
-                logger.error(`[RECONNECT] Limite de ${MAX_ATTEMPTS} tentatives atteinte. Arret automatique.`);
-                logger.error('[RECONNECT] Verifiez la connexion reseau et redemarrez le serveur manuellement.');
+                // Auto-recovery : au lieu d'abandonner définitivement (le bot
+                // restait mort jusqu'à un restart manuel même si le réseau
+                // revenait), on fait une longue pause de récupération puis on
+                // RÉINITIALISE le compteur et on relance un cycle complet.
+                // Cadence : 1 nouveau cycle toutes les 60s → pas de hammer
+                // WhatsApp (risque ban), mais reconnexion garantie dès que le
+                // réseau est de retour.
+                logger.warn(`[RECONNECT] Limite de ${MAX_ATTEMPTS} tentatives atteinte. `
+                    + `Pause de recuperation ${RECONNECT_MAX_DELAY / 1000}s puis nouveau cycle...`);
+                reconnectAttempt = 0;
+                setTimeout(connectWhatsApp, RECONNECT_MAX_DELAY);
                 return;
             }
 
