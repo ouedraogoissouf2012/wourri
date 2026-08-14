@@ -25,6 +25,7 @@ const {
     MAX_ATTEMPTS,
     RECONNECT_MAX_DELAY,
 } = require('./lib/reconnect');
+const { createReconnectScheduler, cleanupSocket } = require('./lib/reconnect_scheduler');
 const { MessageQueue } = require('./lib/message_queue');
 const { CircuitBreaker, CircuitOpenError } = require('./lib/circuit_breaker');
 const { AudioCache } = require('./lib/audio_cache');
@@ -115,8 +116,17 @@ let sock = null;
 let qrCodeData = null;
 let isConnected = false;
 
-// Phase 2 Robustesse
-let reconnectAttempt = 0;  // Compteur de tentatives consécutives, reset à 0 après connexion réussie
+// Phase 2 Robustesse — planificateur de reconnexion idempotent (fix #308).
+// Garantit UNE seule reconnexion en vol malgré les 'close' rapprochés de Baileys
+// (anti fuite de sockets + anti hammering WhatsApp). État (attempt) exposé à /health.
+const reconnectScheduler = createReconnectScheduler({
+    connect: () => connectWhatsApp(),
+    computeDelay: computeBackoffDelay,
+    isReconnectable,
+    maxAttempts: MAX_ATTEMPTS,
+    maxDelay: RECONNECT_MAX_DELAY,
+    logger,
+});
 
 // Queue persistante des messages reçus (anti-perte si API backend down)
 const messageQueue = new MessageQueue({
@@ -423,6 +433,11 @@ async function connectWhatsApp() {
     const { version, isLatest } = await fetchLatestBaileysVersion();
     logger.info(`[BAILEYS] Version WhatsApp Web: ${version.join('.')} (latest: ${isLatest})`);
 
+    // fix #308 : détruire l'ancien socket AVANT d'en recréer un (retire les
+    // listeners + ferme la WebSocket) pour ne pas accumuler sockets/listeners
+    // zombies qui ré-émettraient 'close' → hammering WhatsApp.
+    cleanupSocket(sock, logger);
+
     sock = makeWASocket({
         version,
         auth: state,
@@ -458,42 +473,22 @@ async function connectWhatsApp() {
             isConnected = false;
             const statusCode = lastDisconnect?.error?.output?.statusCode;
             const reasonName = describeDisconnectReason(statusCode);
-            const reconnectable = isReconnectable(statusCode);
 
             logger.info(`[RECONNECT] Connexion fermee : ${reasonName} (code=${statusCode})`);
 
-            if (!reconnectable) {
-                logger.info(`[RECONNECT] Raison non-recuperable (${reasonName}). Action manuelle requise :`);
+            // fix #308 : le scheduler applique la garde anti-concurrence
+            // (une seule reconnexion planifiée), le backoff et l'auto-recovery.
+            const decision = reconnectScheduler.onClose(statusCode, reasonName);
+            if (decision.action === 'abort') {
                 logger.info('[RECONNECT]   - loggedOut/badSession : supprimez auth_baileys/ puis redemarrez');
                 logger.info('[RECONNECT]   - forbidden : compte WhatsApp possiblement banni, contactez Meta');
-                return;
             }
-
-            if (reconnectAttempt >= MAX_ATTEMPTS) {
-                // Auto-recovery : au lieu d'abandonner définitivement (le bot
-                // restait mort jusqu'à un restart manuel même si le réseau
-                // revenait), on fait une longue pause de récupération puis on
-                // RÉINITIALISE le compteur et on relance un cycle complet.
-                // Cadence : 1 nouveau cycle toutes les 60s → pas de hammer
-                // WhatsApp (risque ban), mais reconnexion garantie dès que le
-                // réseau est de retour.
-                logger.warn(`[RECONNECT] Limite de ${MAX_ATTEMPTS} tentatives atteinte. `
-                    + `Pause de recuperation ${RECONNECT_MAX_DELAY / 1000}s puis nouveau cycle...`);
-                reconnectAttempt = 0;
-                setTimeout(connectWhatsApp, RECONNECT_MAX_DELAY);
-                return;
-            }
-
-            const delay = computeBackoffDelay(reconnectAttempt);
-            reconnectAttempt++;
-            logger.info(`[RECONNECT] Tentative ${reconnectAttempt}/${MAX_ATTEMPTS} dans ${delay / 1000}s (backoff exponentiel)`);
-            setTimeout(connectWhatsApp, delay);
         }
 
         if (connection === 'open') {
             isConnected = true;
             qrCodeData = null;
-            reconnectAttempt = 0;  // Reset apres connexion reussie
+            reconnectScheduler.onOpen();  // Reset compteur + annule un timer en attente (fix #308)
             logger.info('\n========================================');
             logger.info('   WOURI CONNECTE A WHATSAPP!');
             logger.info('   Systeme d\'onboarding actif');
@@ -615,8 +610,9 @@ function computeHealthStatus() {
         unhealthy = true;
     }
 
-    if (reconnectAttempt > 0) {
-        reasons.push(`reconnect_in_progress=${reconnectAttempt}`);
+    const rcAttempt = reconnectScheduler.getState().attempt;
+    if (rcAttempt > 0) {
+        reasons.push(`reconnect_in_progress=${rcAttempt}`);
         degraded = true;
     }
     if (qstats.pending > 10) {
@@ -647,7 +643,7 @@ function buildHealthPayload() {
         uptime_seconds: Math.floor((Date.now() - PROCESS_STARTED_AT) / 1000),
         whatsapp: {
             connected: isConnected,
-            reconnectAttempt,
+            reconnectAttempt: reconnectScheduler.getState().attempt,
             maxAttempts: MAX_ATTEMPTS,
         },
         queue: messageQueue.stats,
