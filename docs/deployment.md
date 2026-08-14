@@ -537,6 +537,17 @@ docker compose -f docker-compose.prod.yml logs --tail 200 wouri-api
 
 ### Mettre à jour manuellement (sans CI)
 
+> **Migration one-shot #259 (installations existantes)** : AVANT le premier
+> déploiement du compose incluant le secret `api_secret_key_previous`, créer
+> le fichier VIDE — sinon Docker crée un répertoire fantôme au `up`
+> (« Is a directory » à la prochaine rotation) :
+>
+> ```bash
+> sudo touch /srv/wourri/secrets/api_secret_key_previous
+> sudo chmod 0640 /srv/wourri/secrets/api_secret_key_previous
+> sudo chown root:1000 /srv/wourri/secrets/api_secret_key_previous
+> ```
+
 ```bash
 cd /srv/wourri
 docker compose --env-file .env.prod -f docker-compose.prod.yml pull

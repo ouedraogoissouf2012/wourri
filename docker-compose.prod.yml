@@ -313,9 +313,13 @@ secrets:
   # être root:1000 mode 0640 (cf. deployment.md §5b), PAS 0600 root:root.
   api_secret_key:
     file: ./secrets/api_secret_key
-  # Issue #259 : cle precedente pour rotation dual-key. Le fichier DOIT
-  # exister (compose refuse un secret manquant) → cree VIDE a l'installation
-  # (deployment.md §5b) et rempli uniquement pendant une fenetre de rotation.
+  # Issue #259 : cle precedente pour rotation dual-key. Le fichier DOIT etre
+  # cree VIDE a l'installation (deployment.md §5b) : un fichier ABSENT au
+  # `up` ne fait PAS echouer compose — Docker cree silencieusement un
+  # REPERTOIRE fantome du meme nom cote hote (verifie Docker 29), qui fait
+  # ensuite echouer tout `tee` de rotation avec « Is a directory ».
+  # Installations EXISTANTES : creer le fichier AVANT de deployer ce compose
+  # (cf. deployment.md §Mettre a jour).
   api_secret_key_previous:
     file: ./secrets/api_secret_key_previous
 
