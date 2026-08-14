@@ -16,6 +16,15 @@ Ce module centralise les DEUX pour qu'il n'existe plus qu'un seul endroit
 où lire/modifier un texte ou un seuil météo, sans forcer une fusion des
 deux logiques qui casserait soit le dioula validé, soit le comportement
 actuel de l'API REST.
+
+Issue #357 (conversion météo en langage simple, dioula+FR uniquement pour
+ce lot) : `MeteoCondition.bam_template`/`fr_template` EST la table
+condition → message par langue demandée. Anglais (ADR-0015 EnglishHandler,
+DeepSeek direct sans cascade IVR) et les 6 autres langues ivoiriennes
+déclarées dans `SUPPORTED_LANGUAGES` restent hors périmètre de ce lot —
+décision explicite, pas un oubli. Ajouter une langue = ajouter un champ
+`{lang}_template` à `MeteoCondition` (pas de moteur de règles générique
+tant qu'une 3e langue n'est pas réellement demandée).
 """
 from __future__ import annotations
 
