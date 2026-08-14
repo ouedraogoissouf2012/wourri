@@ -25,6 +25,7 @@ du projet. Chaque décision passe par cet index et par le workflow du skill
 | [ADR-0017](0017-dashboard-observabilite-sans-pii.md) | Dashboard d’observabilité sans contenu PII | **accepté** | 2026-07-29 | Dashboard #41 sur PostgreSQL, métriques techniques sans messages/transcriptions, données protégées par `X-API-Key`. |
 | [ADR-0024](0024-deploiement-wourri-dokploy.md) | Déploiement Wourri sur l'hôte Dokploy existant (ADC) | **accepté** | 2026-08-13 | Cible réelle = VPS Contabo avec Dokploy/Traefik/Swarm déjà en place (pas la VM Scaleway du runbook). Déploiement via Dokploy, interne only, build serveur depuis Git. **Option A retenue** (3 services natifs Dokploy). |
 | [ADR-0025](0025-retention-logs-pii-artci.md) | Rétention et purge des logs PII (conformité ARTCI) | **accepté** | 2026-08-14 | Issue #215 : fichiers de log datés append-only (aucun rename, sûr multi-worker) + purge quotidienne in-app. Logs applicatifs 30 j, feedback pseudonymisé 365 j. Politique : [docs/compliance/artci-logs.md](../compliance/artci-logs.md). |
+| [ADR-0027](0027-decision-nemo-installer-ou-retirer.md) | Décision NeMo Soloni : installer `nemo-toolkit` ou retirer le provider | **proposé** | 2026-08-14 | #358 : NeMo déclaré mais jamais exécuté (package `nemo` non installé). Comparatif retirer (recommandé) vs installer vs statu quo. **Décision réservée à Ruben.** Complète [ADR-0022](0022-composition-chaine-asr-dioula.md). |
 
 ## ADRs à rédiger (roadmap, issus de [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md))
 
