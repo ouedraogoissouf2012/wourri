@@ -16,8 +16,12 @@ Trois verifications :
    par le compose (warning, pas erreur — peut etre legitime pour des outils
    externes comme cron, healthchecks ping, etc.).
 
-3. Les noms de variables critiques sont stables entre les fichiers (POSTGRES_*,
-   WOURI_API_KEY) — verification implicite via la 1ere check.
+3. Les noms de variables critiques sont stables entre les fichiers
+   (POSTGRES_*) — verification implicite via la 1ere check.
+   NOTE (#257) : WOURI_API_KEY est sortie du perimetre — la cle vit dans le
+   fichier secret ./secrets/api_secret_key (deployment.md §5b), hors de
+   portee d'un check statique CI (le fichier n'existe que sur la VM). La
+   verification runtime = fail-fast des services + `test -s` documente §5b.
 
 ## Usage
 

@@ -218,8 +218,12 @@ services:
       USER_PREFS_FILE: /app/data/user_preferences.json
       PENDING_MESSAGES_FILE: /app/data/pending_messages.json
     secrets:
-      # Issue #257 : même fichier source que api_secret_key (cf. bloc secrets).
-      - wouri_api_key
+      # Issue #257 : la clé du whatsapp-server EST la clé API (contrat
+      # X-API-Key, ADR-0012) → on RÉUTILISE l'unique secret api_secret_key
+      # sous un alias local (target). Un seul secret déclaré → impossible de
+      # faire diverger les deux clés par un chemin dupliqué.
+      - source: api_secret_key
+        target: wouri_api_key
     volumes:
       # auth_baileys : session WhatsApp persistante. PERTE = re-scan QR manuel.
       - wa_auth:/app/auth_baileys
@@ -273,12 +277,12 @@ volumes:
 secrets:
   postgres_password:
     file: ./secrets/postgres_password
+  # api_secret_key : partagé wouri-api + whatsapp-server (#257, alias
+  # `wouri_api_key` via source/target au niveau du service). ⚠ Compose
+  # non-swarm bind-monte le fichier AVEC ses permissions hôte : les deux
+  # conteneurs tournent en uid 1000 (`wourri`, `node`) → le fichier doit
+  # être root:1000 mode 0640 (cf. deployment.md §5b), PAS 0600 root:root.
   api_secret_key:
-    file: ./secrets/api_secret_key
-  # Issue #257 : la clé du whatsapp-server EST la clé API (contrat X-API-Key,
-  # ADR-0012) → même fichier source que api_secret_key. Un seul point de
-  # vérité : une rotation met à jour UN fichier, les 2 services suivent.
-  wouri_api_key:
     file: ./secrets/api_secret_key
   # api_secret_key_previous : a ajouter dans une PR de suivi apres le merge
   # de #245 (PR qui ajoute le champ api_secret_key_previous dans Settings).

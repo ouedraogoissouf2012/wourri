@@ -156,12 +156,20 @@ services:
       NODE_ENV: production       # NODE_ENV=production meme en staging (Express opt)
       PORT: 3001
       WOURI_API_URL: http://wouri-api:8000
-      WOURI_API_KEY: ${WOURI_API_KEY:?WOURI_API_KEY manquant dans .env.staging}
+      # Issue #257 : MÊME pattern fichier qu'en prod — staging doit exercer
+      # la branche code réellement exécutée en prod (lecture fichier, alias
+      # secret, permissions), pas seulement le fallback env.
+      WOURI_API_KEY_FILE: /run/secrets/wouri_api_key
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       TZ: UTC
       USER_PREFS_FILE: /app/data/user_preferences.json
       PENDING_MESSAGES_FILE: /app/data/pending_messages.json
+    secrets:
+      # Issue #257 : réutilisation de l'unique secret api_secret_key sous
+      # alias (cf. docker-compose.prod.yml — même raison, même mécanisme).
+      - source: api_secret_key
+        target: wouri_api_key
     volumes:
       - wa_auth:/app/auth_baileys
       - wa_audio_cache:/app/audio_cache
