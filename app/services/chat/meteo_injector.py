@@ -18,6 +18,8 @@ Refs :
 """
 from __future__ import annotations
 
+from app.services.weather_conditions import classify_meteo
+
 
 def build_meteo_bambara(
     weather_data: dict | None,
@@ -48,24 +50,9 @@ def build_meteo_bambara(
     precip = weather_data.get("precipitation", 0)
     city_name = weather_data.get("city", city)
 
-    if code >= 95:
-        bam = f"{city_name} kɔnɔ sanfɛla bɛ na. Aw ka aw ka dòn ni aw ka fɛnw bɛɛ lakana joona!"
-        fr = f"Un orage arrive sur {city_name}. Mettez à l'abri vos grains et affaires immédiatement !"
-    elif code >= 61 or precip > 5:
-        bam = f"{city_name} kɔnɔ sanji bɛ na. Aw ka aw ka dòn ni aw ka fɛnw lakana, sanji bɛ se ka u bɔsi. Foro labɛnni waati ye sisan ye!"
-        fr = f"La pluie arrive sur {city_name}. Protégez vos grains et affaires. C'est le moment de préparer le champ !"
-    elif code >= 51 or precip > 0:
-        bam = f"{city_name} kɔnɔ sanji fɛrɛn bɛ na. Sɛnɛ daminɛ waati ɲuman ye sisan ye."
-        fr = f"Légère pluie sur {city_name}. C'est un bon moment pour commencer les semis."
-    elif code == 3:
-        bam = f"{city_name} kɔnɔ sankolo bɛ fara. Sanji bɛ se ka na. Aw ka foro labɛn sisan."
-        fr = f"Ciel couvert sur {city_name}. La pluie peut venir. Préparez votre champ maintenant."
-    elif temp > 33:
-        bam = f"{city_name} kɔnɔ tile ka jugu, sanji tɛ. Aw ka aw ka sɛnɛ kalan dɔn kosɛbɛ ani aw yɛrɛw lakana tile la."
-        fr = f"Chaleur intense sur {city_name}, pas de pluie. Irriguez bien vos cultures et protégez-vous du soleil."
-    else:
-        bam = f"{city_name} kɔnɔ tile bɛ ɲɛ, sanji tɛ sisan. Aw ka aw ka sɛnɛ kalan dɔn ni ji."
-        fr = f"Ciel dégagé sur {city_name}, pas de pluie. Pensez à arroser vos cultures."
+    condition = classify_meteo(temp, precip, code)
+    bam = condition.bam_template.format(city=city_name)
+    fr = condition.fr_template.format(city=city_name)
 
     if cultures:
         noms_bam = [c["bambara"] for c in cultures]

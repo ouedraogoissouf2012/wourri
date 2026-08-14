@@ -10,6 +10,12 @@ import time
 logger = logging.getLogger(__name__)
 from app.data.cities import get_city, get_all_cities
 from app.config import get_settings
+from app.services.weather_conditions import (
+    RAIN_ADVICE_FR,
+    STORM_ADVICE_FR,
+    STORM_THRESHOLD_CODE,
+    TEMP_ADVICE_FR,
+)
 
 settings = get_settings()
 
@@ -129,31 +135,27 @@ async def get_weather(city_name: str) -> dict | None:
 
 
 def generate_farming_advice(temperature: float, precipitation: float, weather_code: int) -> str:
-    """Génère des conseils agricoles basés sur la météo"""
+    """Génère des conseils agricoles basés sur la météo (axes cumulables : pluie, température, orage)"""
 
     advices = []
 
     # Conseils basés sur la pluie
-    if precipitation > 10:
-        advices.append("Fortes pluies prévues. Évitez les travaux au champ et protégez vos récoltes.")
-    elif precipitation > 2:
-        advices.append("Pluies modérées. Bon moment pour les semis si le sol est préparé.")
-    elif precipitation > 0:
-        advices.append("Légères pluies. Conditions favorables pour l'arrosage naturel.")
-    else:
-        advices.append("Pas de pluie prévue. Pensez à irriguer vos cultures si nécessaire.")
+    for threshold, message in RAIN_ADVICE_FR:
+        if threshold is None or precipitation > threshold:
+            advices.append(message)
+            break
 
     # Conseils basés sur la température
-    if temperature > 35:
-        advices.append("Chaleur intense. Travaillez tôt le matin ou tard le soir. Hydratez-vous.")
-    elif temperature > 30:
-        advices.append("Température chaude. Protégez les jeunes plants du soleil direct.")
-    elif temperature < 20:
-        advices.append("Température fraîche. Bonnes conditions pour les cultures maraîchères.")
+    for comparator, threshold, message in TEMP_ADVICE_FR:
+        if (comparator == "gt" and temperature > threshold) or (
+            comparator == "lt" and temperature < threshold
+        ):
+            advices.append(message)
+            break
 
     # Conseils basés sur les orages
-    if weather_code >= 95:
-        advices.append("Orages prévus. Mettez vos outils à l'abri et évitez les zones découvertes.")
+    if weather_code >= STORM_THRESHOLD_CODE:
+        advices.append(STORM_ADVICE_FR)
 
     return " ".join(advices)
 
