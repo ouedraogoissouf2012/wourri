@@ -110,3 +110,16 @@ def test_intent_classifier_handles_10_agricultural_scenarios(
 
     assert intent == expected_intent
     assert 0.0 <= confidence <= 1.0
+
+
+@pytest.mark.parametrize("phrase", ["sini sanji bɛna na wa", "sini"])
+def test_concept_extractor_recognizes_temps_demain(extractor, phrase):
+    """Issue #355 — 'sini' (demain) est reconnu comme concept temporel.
+
+    'sini' est deja atteste dans corpus_ivr.json (arachide_saison_001).
+    Concept de reconnaissance uniquement : aucune reponse dioula n'est
+    generee a partir de ce concept sans validation native (ADR-0014).
+    """
+    concepts = extractor.extract(phrase)
+
+    assert "TEMPS_DEMAIN" in concepts

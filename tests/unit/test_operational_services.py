@@ -16,12 +16,14 @@ from app.services import weather
 @pytest.fixture(autouse=True)
 def reset_module_state():
     weather._weather_cache.clear()
+    weather._forecast_cache.clear()
     _ffmpeg._ffmpeg_path = None
     _ffmpeg._loudnorm_supported = None
     audio_cleanup._cleanup_task = None
     conversation_history._conversation_history.clear()
     yield
     weather._weather_cache.clear()
+    weather._forecast_cache.clear()
     _ffmpeg._ffmpeg_path = None
     _ffmpeg._loudnorm_supported = None
     if audio_cleanup._cleanup_task and not audio_cleanup._cleanup_task.done():
@@ -133,6 +135,119 @@ class TestWeather:
             ),
         ):
             assert await weather.get_weather("Man") is None
+
+    @pytest.mark.asyncio
+    async def test_get_weather_forecast_tomorrow_returns_none_for_unknown_city(self):
+        with patch("app.services.weather.get_city", return_value=None):
+            assert await weather.get_weather_forecast_tomorrow("Inconnue") is None
+
+    @pytest.mark.asyncio
+    async def test_get_weather_forecast_tomorrow_maps_daily_index_1_and_caches_it(self):
+        """index 0 = aujourd'hui, index 1 = demain (forecast_days=2) — verifie que
+        c'est bien l'index 1 qui est utilise, pas l'index 0."""
+        response = MagicMock(status_code=200)
+        response.json.return_value = {
+            "daily": {
+                "time": ["2026-08-14", "2026-08-15"],
+                "weather_code": [0, 61],
+                "temperature_2m_max": [30, 27],
+                "temperature_2m_min": [22, 21],
+                "precipitation_probability_max": [10, 80],
+            },
+        }
+        client = MagicMock()
+        client.get = AsyncMock(return_value=response)
+        context = MagicMock()
+        context.__aenter__ = AsyncMock(return_value=client)
+        context.__aexit__ = AsyncMock(return_value=False)
+
+        with (
+            patch(
+                "app.services.weather.get_city",
+                return_value={
+                    "name": "Bouaké",
+                    "region": "Gbêkê",
+                    "lat": 7.69,
+                    "lon": -5.03,
+                },
+            ),
+            patch(
+                "app.services.weather.httpx.AsyncClient",
+                return_value=context,
+            ),
+        ):
+            result = await weather.get_weather_forecast_tomorrow("Bouaké")
+
+        assert result["city"] == "Bouaké"
+        assert result["date"] == "2026-08-15"
+        assert result["weather_code"] == 61
+        assert result["weather_description"] == "Pluie légère"
+        assert result["temperature_max"] == 27
+        assert result["temperature_min"] == 21
+        assert result["precipitation_probability"] == 80
+        assert weather._get_cached_forecast("bouaké") == result
+
+    @pytest.mark.asyncio
+    async def test_get_weather_forecast_tomorrow_returns_cached_value_without_network(self):
+        weather._forecast_cache["abidjan"] = {
+            "data": {"city": "Abidjan", "date": "2026-08-15"},
+            "timestamp": time.time(),
+        }
+
+        with patch("app.services.weather.httpx.AsyncClient") as client_factory:
+            result = await weather.get_weather_forecast_tomorrow("Abidjan")
+
+        assert result == {"city": "Abidjan", "date": "2026-08-15"}
+        client_factory.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_get_weather_forecast_tomorrow_handles_missing_daily_data(self):
+        response = MagicMock(status_code=200)
+        response.json.return_value = {"daily": {"time": ["2026-08-14"]}}  # 1 seul jour
+        client = MagicMock()
+        client.get = AsyncMock(return_value=response)
+        context = MagicMock()
+        context.__aenter__ = AsyncMock(return_value=client)
+        context.__aexit__ = AsyncMock(return_value=False)
+
+        city = {"name": "Man", "region": "Tonkpi", "lat": 7.4, "lon": -7.5}
+        with (
+            patch("app.services.weather.get_city", return_value=city),
+            patch(
+                "app.services.weather.httpx.AsyncClient",
+                return_value=context,
+            ),
+        ):
+            assert await weather.get_weather_forecast_tomorrow("Man") is None
+
+    @pytest.mark.asyncio
+    async def test_get_weather_forecast_tomorrow_handles_http_and_transport_errors(self):
+        response = MagicMock(status_code=503)
+        client = MagicMock()
+        client.get = AsyncMock(return_value=response)
+        context = MagicMock()
+        context.__aenter__ = AsyncMock(return_value=client)
+        context.__aexit__ = AsyncMock(return_value=False)
+
+        city = {"name": "Man", "region": "Tonkpi", "lat": 7.4, "lon": -7.5}
+        with (
+            patch("app.services.weather.get_city", return_value=city),
+            patch(
+                "app.services.weather.httpx.AsyncClient",
+                return_value=context,
+            ),
+        ):
+            assert await weather.get_weather_forecast_tomorrow("Man") is None
+
+        context.__aenter__ = AsyncMock(side_effect=RuntimeError("network"))
+        with (
+            patch("app.services.weather.get_city", return_value=city),
+            patch(
+                "app.services.weather.httpx.AsyncClient",
+                return_value=context,
+            ),
+        ):
+            assert await weather.get_weather_forecast_tomorrow("Man") is None
 
     @pytest.mark.parametrize(
         ("temperature", "precipitation", "code", "fragments"),

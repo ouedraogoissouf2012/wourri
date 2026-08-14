@@ -23,6 +23,7 @@ settings = get_settings()
 # CACHE MÉTÉO - 15 minutes
 # ========================================
 _weather_cache = {}  # { "city_name": { "data": {...}, "timestamp": 123456 } }
+_forecast_cache = {}  # { "city_name": { "data": {...}, "timestamp": 123456 } } — prévision J+1 (issue #355)
 CACHE_DURATION = 15 * 60  # 15 minutes en secondes
 
 
@@ -48,6 +49,21 @@ def set_cached_weather(city_name: str, data: dict):
         "timestamp": time.time()
     }
     logger.info(f"[MÉTÉO] Cache SET pour {city_name}")
+
+
+def _get_cached_forecast(city_name: str) -> dict | None:
+    """Récupère la prévision J+1 depuis le cache si elle est encore valide."""
+    city_lower = city_name.lower()
+    if city_lower in _forecast_cache:
+        cached = _forecast_cache[city_lower]
+        if time.time() - cached["timestamp"] < CACHE_DURATION:
+            return cached["data"]
+    return None
+
+
+def _set_cached_forecast(city_name: str, data: dict) -> None:
+    """Stocke la prévision J+1 dans le cache."""
+    _forecast_cache[city_name.lower()] = {"data": data, "timestamp": time.time()}
 
 # Codes météo WMO
 WEATHER_CODES = {
@@ -129,6 +145,69 @@ async def get_weather(city_name: str) -> dict | None:
 
     except Exception as e:
         logger.error(f"[MÉTÉO] Erreur API: {e}")
+        return None
+
+    return None
+
+
+async def get_weather_forecast_tomorrow(city_name: str) -> dict | None:
+    """Récupère la prévision météo du lendemain (J+1) via Open-Meteo (issue #355).
+
+    Distinct de `get_weather()` (météo instantanée) : appelle le même
+    endpoint `/forecast` avec le paramètre `daily` au lieu de `current`.
+    Cache séparé (15 min) pour ne pas invalider le cache météo actuelle.
+    """
+    cached = _get_cached_forecast(city_name)
+    if cached:
+        return cached
+
+    city = get_city(city_name)
+    if not city:
+        return None
+
+    url = f"{settings.openmeteo_base_url}/forecast"
+    params = {
+        "latitude": city["lat"],
+        "longitude": city["lon"],
+        "daily": "precipitation_probability_max,weather_code,temperature_2m_max,temperature_2m_min",
+        "timezone": "Africa/Abidjan",
+        "forecast_days": 2,
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.get(url, params=params)
+
+            if response.status_code == 200:
+                data = response.json()
+                daily = data.get("daily", {})
+
+                # index 0 = aujourd'hui, index 1 = demain (forecast_days=2)
+                times = daily.get("time", [])
+                if len(times) < 2:
+                    return None
+
+                weather_code = daily.get("weather_code", [0, 0])[1]
+                temp_max = daily.get("temperature_2m_max", [0, 0])[1]
+                temp_min = daily.get("temperature_2m_min", [0, 0])[1]
+                precip_proba = daily.get("precipitation_probability_max", [0, 0])[1]
+
+                result = {
+                    "city": city["name"],
+                    "region": city["region"],
+                    "date": times[1],
+                    "temperature_max": temp_max,
+                    "temperature_min": temp_min,
+                    "precipitation_probability": precip_proba,
+                    "weather_code": weather_code,
+                    "weather_description": WEATHER_CODES.get(weather_code, "Inconnu"),
+                }
+
+                _set_cached_forecast(city_name, result)
+                return result
+
+    except Exception as e:
+        logger.error(f"[MÉTÉO] Erreur API prévision J+1: {e}")
         return None
 
     return None
