@@ -360,7 +360,7 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
         if wav_path and os.path.exists(wav_path):
             try:
                 os.remove(wav_path)
-            except:
+            except Exception:
                 pass
 
 
@@ -439,7 +439,7 @@ async def transcribe_audio_bytes(audio_bytes: bytes, filename: str = "audio.wav"
         if os.path.exists(temp_path):
             try:
                 os.remove(temp_path)
-            except:
+            except Exception:
                 pass
 
 

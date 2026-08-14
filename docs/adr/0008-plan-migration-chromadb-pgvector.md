@@ -534,3 +534,15 @@ pgvector seul. Avant cela, le code Chroma reste récupérable via `git revert`.
   scripts/phase_d_load_test.py, flag corpus_storage_mode, dépendance chromadb.
   La table corpus_divergences reste en base (données historiques, coût nul).
   data/chroma_ivr/ : suppression manuelle laissée à l'opérateur.
+- **2026-08-14 (issue #188 close, sans objet)** : #188 demandait de re-mesurer
+  en staging le ratio de latence pgvector/Chroma (critère #5 Phase D, seuil
+  ≤ 1.5, mesuré 1.58-1.68 en dev local intensif) une fois un staging Wourri
+  déployé. Devenu sans objet : le mode `dual` qui permettait la comparaison
+  n'existe plus depuis la Phase E (2026-08-09, ci-dessus) — ChromaDB, le
+  script `phase_d_load_test.py` et l'endpoint `/admin/corpus-divergence-report`
+  sont supprimés, pgvector est le backend unique. Il n'y a plus rien à
+  comparer : re-mesurer le ratio pgvector/Chroma supposerait de réintroduire
+  Chroma (cassé sous numpy 2.x, cf. 2026-08-09) uniquement pour le benchmark.
+  Si la latence pgvector en prod devient un problème mesuré (métriques
+  `admin_metrics_enabled`, ADR-0017), l'optimiser directement (pool sizing,
+  index ivfflat, warm-up) sans repasser par une comparaison à Chroma.

@@ -862,6 +862,14 @@
         "humidite"
       ]
     },
+    "TEMPS_DEMAIN": {
+      "label_fr": "demain",
+      "keywords": [
+        "sini",
+        "demain"
+      ],
+      "note": "issue #355 — 'sini' deja atteste dans corpus_ivr.json (arachide_saison_001: 'sini sanni' = 'des demain', reponse_fr alignee). Concept de reconnaissance uniquement (routage current vs forecast J+1), aucune nouvelle formulation dioula generee a partir de ce concept sans validation native (ADR-0014)."
+    },
     "ROLE_PROPRIETAIRE": {
       "label_fr": "propriétaire de champ",
       "keywords": [
