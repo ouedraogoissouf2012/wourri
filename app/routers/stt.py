@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.middleware.admin_metrics import set_request_metric_context
 from app.models.schemas import Language
+from app.routers._audio_upload import MAX_AUDIO_BYTES
 from app.security import limiter, require_api_key
 from app.services import stt_whisper
 from app.services.deepseek import correct_stt_transcription
@@ -62,7 +63,7 @@ async def transcribe_audio(
     if not audio_bytes:
         raise HTTPException(status_code=400, detail="Fichier audio vide")
 
-    if len(audio_bytes) > 10 * 1024 * 1024:
+    if len(audio_bytes) > MAX_AUDIO_BYTES:
         raise HTTPException(status_code=413, detail="Fichier audio trop volumineux (max 10 MB)")
 
     # Transcrire
