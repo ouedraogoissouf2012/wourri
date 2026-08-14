@@ -49,12 +49,12 @@ def _run_negatif(req):
 def redirect_files(tmp_path, monkeypatch):
     """Redirige les fichiers JSONL du router vers un dossier temporaire."""
     cand = tmp_path / "feedback_candidates.jsonl"
-    log = tmp_path / "feedback.jsonl"
     neg = tmp_path / "feedback_negatif.jsonl"
     monkeypatch.setattr(fb, "FEEDBACK_CANDIDATES_LOG", str(cand))
-    monkeypatch.setattr(fb, "FEEDBACK_LOG", str(log))
+    # ADR-0025 : le log général est mensuel (feedback-YYYY-MM.jsonl) dans LOG_DIR
+    monkeypatch.setattr(fb, "LOG_DIR", str(tmp_path))
     monkeypatch.setattr(fb, "FEEDBACK_NEGATIF_LOG", str(neg))
-    return SimpleNamespace(candidates=cand, log=log, negatif=neg)
+    return SimpleNamespace(candidates=cand, log_dir=tmp_path, negatif=neg)
 
 
 def _req(**kw):

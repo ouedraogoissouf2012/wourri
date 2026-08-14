@@ -166,7 +166,7 @@ services:
       - wa_auth:/app/auth_baileys
       - wa_audio_cache:/app/audio_cache
       - wa_data:/app/data
-      - wa_logs:/app/logs
+      # wa_logs retiré (#215, ADR-0025) : pino loggue uniquement sur stdout.
     healthcheck:
       test: ["CMD", "curl", "--silent", "--fail", "http://localhost:3001/health"]
       interval: 15s
@@ -273,8 +273,7 @@ volumes:
     name: wourri_staging_wa_audio_cache
   wa_data:
     name: wourri_staging_wa_data
-  wa_logs:
-    name: wourri_staging_wa_logs
+  # wa_logs : retiré (#215, ADR-0025) — aucun écrivain (pino → stdout).
   alloy_data:
     name: wourri_staging_alloy_data
 

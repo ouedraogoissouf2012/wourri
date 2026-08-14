@@ -1,15 +1,27 @@
 """
 C5 - Reporting feedback Wourri
-Lit logs/feedback.jsonl et produit des stats par intent / culture / source.
+Lit logs/feedback-YYYY-MM.jsonl (mensuels, ADR-0025) + l'éventuel legacy
+logs/feedback.jsonl, et produit des stats par intent / culture / source.
 Sortie : console + logs/rapport_feedback.json
 """
+import glob
 import json
 import os
 from collections import defaultdict
 from datetime import datetime
 
-FEEDBACK_LOG = os.path.join(os.path.dirname(__file__), "logs", "feedback.jsonl")
-RAPPORT_PATH = os.path.join(os.path.dirname(__file__), "logs", "rapport_feedback.json")
+LOG_DIR      = os.path.join(os.path.dirname(__file__), "logs")
+FEEDBACK_LOG = os.path.join(LOG_DIR, "feedback.jsonl")  # legacy pré-ADR-0025
+RAPPORT_PATH = os.path.join(LOG_DIR, "rapport_feedback.json")
+
+
+def _feedback_files():
+    """Fichiers feedback à lire : legacy éventuel + mensuels triés."""
+    files = []
+    if os.path.exists(FEEDBACK_LOG):
+        files.append(FEEDBACK_LOG)
+    files.extend(sorted(glob.glob(os.path.join(LOG_DIR, "feedback-*.jsonl"))))
+    return files
 
 INTENT_LABELS = {
     "CONSEIL_PRODUCTION":         "Conseil production",
@@ -47,17 +59,16 @@ CULTURE_LABELS = {
 
 
 def charger_feedbacks():
-    if not os.path.exists(FEEDBACK_LOG):
-        return []
     lignes = []
-    with open(FEEDBACK_LOG, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    lignes.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
+    for path in _feedback_files():
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        lignes.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        pass
     return lignes
 
 
@@ -158,7 +169,7 @@ def main():
     feedbacks = charger_feedbacks()
 
     if not feedbacks:
-        print(f"Aucun feedback trouve dans : {FEEDBACK_LOG}")
+        print(f"Aucun feedback trouve dans : {LOG_DIR} (feedback-*.jsonl)")
         print("Le fichier sera cree automatiquement apres les premiers retours utilisateurs.")
         # Creer un rapport vide pour reference
         rapport_vide = {

@@ -81,6 +81,14 @@ class Settings(BaseSettings):
     # Langue TTS ivoirienne par défaut
     default_ivorian_language: str = "bam"
 
+    # ========== Rétention logs PII (issue #215, ADR-0025) ==========
+    # Durées de conservation appliquées par la purge quotidienne
+    # (app/core/log_retention.py). Justifications : docs/compliance/artci-logs.md.
+    # - logs applicatifs wourri-YYYY-MM-DD.log : transcriptions en clair → 30 j
+    # - feedback-YYYY-MM.jsonl : pseudonymisés, reporting C5 saisonnier → 365 j
+    log_retention_days: int = 30
+    feedback_retention_days: int = 365
+
     # ========== Sécurité PII (P0-05) ==========
     # Salt pour anonymisation SHA-256 des user_id dans les logs
     # Générer une valeur aléatoire stable en prod :

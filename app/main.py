@@ -32,9 +32,10 @@ from app.data.cities import get_all_cities
 _psutil_proc = psutil.Process()
 
 settings = get_settings()
+LOG_DIR = os.path.join(os.path.dirname(__file__), "..", "logs")
 setup_logging(
     log_level="DEBUG" if settings.debug else "INFO",
-    log_dir=os.path.join(os.path.dirname(__file__), "..", "logs"),
+    log_dir=LOG_DIR,
 )
 logger = logging.getLogger(__name__)
 
@@ -169,6 +170,19 @@ async def lifespan(app: FastAPI):
         logger.error("[PRELOAD] Nettoyage audio: ERREUR - %s", e)
         preload_issues.append("Nettoyage audio")
 
+    # 7. Démarrer la purge de rétention des logs PII (issue #215, ADR-0025)
+    try:
+        from app.core.log_retention import start_log_retention_scheduler
+        start_log_retention_scheduler(LOG_DIR)
+        logger.info(
+            "[PRELOAD] Rétention logs: OK (logs > %dj / feedback > %dj purgés)",
+            settings.log_retention_days,
+            settings.feedback_retention_days,
+        )
+    except Exception as e:
+        logger.error("[PRELOAD] Rétention logs: ERREUR - %s", e)
+        preload_issues.append("Rétention logs")
+
     if preload_issues:
         logger.warning(
             "[PRELOAD] Demarrage termine avec %d service(s) indisponible(s): %s",
@@ -182,8 +196,10 @@ async def lifespan(app: FastAPI):
     yield
 
     # Arrêt propre
+    from app.core.log_retention import stop_log_retention_scheduler
     from app.services.audio_cleanup import stop_cleanup_scheduler
     from app.services.model_registry import registry
+    stop_log_retention_scheduler()
     stop_cleanup_scheduler()
     registry.unload_all()
     logger.info("WOURI - Arrêt")
