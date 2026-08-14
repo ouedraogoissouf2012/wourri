@@ -39,11 +39,14 @@ const { UserPrefs, STEPS, DEFAULT_USER_LANGUAGE } = require('./lib/user_prefs');
 
 // Phase 3 Observabilité — logger structuré pino JSON
 const { logger } = require('./lib/logger');
+// Issue #257 — pattern Docker secrets *_FILE (miroir de app/config.py côté API)
+const { readSecret } = require('./lib/secrets');
 
 // Configuration
 const PORT = process.env.PORT || 3001;
 const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
-const WOURI_API_KEY = process.env.WOURI_API_KEY || '';
+// Priorité WOURI_API_KEY_FILE (secret monté en fichier) puis WOURI_API_KEY (env)
+const WOURI_API_KEY = readSecret('WOURI_API_KEY', { logger });
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
 const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
 const AUDIO_CACHE_FOLDER = path.join(__dirname, 'audio_cache');
