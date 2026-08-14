@@ -147,6 +147,19 @@ RUN python -c "from sentence_transformers import SentenceTransformer; \
 SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'); \
 print('[BUILD] paraphrase-multilingual-MiniLM-L12-v2 preloaded')"
 
+# 5. Modele d'embedding du corpus IVR sauvegarde au chemin LOCAL exige par
+#    app/services/corpus_service.py (_MODEL_PATH = <repo>/modeles_manuels/...).
+#    Ce service exige ce dossier SANS fallback HuggingFace (contrairement a
+#    scripts/import_corpus_ivr.py qui, lui, retombe sur le modele HF). Sans
+#    cette etape, modeles_manuels/ n'est PAS embarque dans l'image → toute
+#    recherche corpus leve RuntimeError → fallback DeepSeek+NLLB (dioula
+#    hors-corpus au lieu du dioula valide). On sauvegarde le MEME modele que
+#    l'import (paraphrase-multilingual-MiniLM-L12-v2) → embeddings coherents.
+RUN python -c "from sentence_transformers import SentenceTransformer; \
+SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2') \
+.save('/app/modeles_manuels/paraphrase-multilingual-MiniLM-L12-v2'); \
+print('[BUILD] modele embedding corpus sauvegarde dans modeles_manuels')"
+
 # Déclaration explicite des volumes attendus en runtime.
 # Si l'opérateur lance `docker run` sans monter ces volumes, Docker affichera
 # un avertissement (volumes anonymes créés) → on évite la régression
