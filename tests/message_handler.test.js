@@ -298,6 +298,45 @@ test("step COMPLETE + API success: markSuccess + sendResponse", async () => {
     assert.equal(sendResponseCalls.length, 1);
 });
 
+test("[#300] markSuccess I/O échoue APRÈS l'API : la réponse est quand même envoyée (jamais sacrifiée)", async () => {
+    // Simule une erreur d'écriture disque (pending_messages.json) sur markSuccess.
+    const calls = [];
+    const messageQueue = {
+        add: async (e) => { calls.push({ method: "add", e }); },
+        markSuccess: async (id) => {
+            calls.push({ method: "markSuccess", id });
+            throw new Error("EIO pending_messages.json");
+        },
+        markFailure: async (id, err) => { calls.push({ method: "markFailure", id, err }); },
+    };
+    messageQueue._calls = calls;
+    const deps = makeDefaultDeps({ messageQueue });
+    const handler = createMessageHandler(deps);
+    await handler({ messages: [makeMsg({ text: "Comment planter le maïs ?" })] });
+
+    const sendResponseCalls = deps.responseSender._calls.filter((c) => c.method === "sendResponse");
+    const sendExcuseCalls = deps.responseSender._calls.filter((c) => c.method === "sendExcuse");
+    const markFailureCalls = calls.filter((c) => c.method === "markFailure");
+    // La réponse (data obtenu de l'API) doit être délivrée malgré l'échec de bookkeeping.
+    assert.equal(sendResponseCalls.length, 1, "sendResponse doit être appelé même si markSuccess jette");
+    // Aucune excuse "indisponible" trompeuse (la réponse a bien été obtenue).
+    assert.equal(sendExcuseCalls.length, 0, "pas d'excuse alors que la réponse est obtenue et envoyée");
+    // L'erreur d'I/O ne doit PAS être requalifiée en markFailure (le message a RÉUSSI à l'API).
+    assert.equal(markFailureCalls.length, 0, "pas de markFailure sur une erreur de bookkeeping post-succès");
+});
+
+test("[#300] sendResponse est appelé AVANT markSuccess (réponse prioritaire sur le bookkeeping)", async () => {
+    const order = [];
+    const deps = makeDefaultDeps();
+    const origSend = deps.responseSender.sendResponse;
+    deps.responseSender.sendResponse = async (args) => { order.push("sendResponse"); return origSend(args); };
+    const origMark = deps.messageQueue.markSuccess;
+    deps.messageQueue.markSuccess = async (id) => { order.push("markSuccess"); return origMark(id); };
+    const handler = createMessageHandler(deps);
+    await handler({ messages: [makeMsg({ text: "Quand semer le riz ?" })] });
+    assert.deepEqual(order, ["sendResponse", "markSuccess"]);
+});
+
 test("API CircuitOpenError: markFailure + sendExcuse(unavailable), pas de sendResponse", async () => {
     const circuitErr = new CircuitOpenError("wouri-api");
     const deps = makeDefaultDeps({
