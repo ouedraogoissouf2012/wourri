@@ -1,13 +1,54 @@
-"""Helpers partagés pour les tests d'intégration Wourri (Sprint F Phase D).
+"""Helpers partagés pour les tests d'intégration Wourri.
 
-Pattern Helpers partagés (cf. règles projet Sprint D.4) : extraction déclenchée
-au **4e consommateur** (test_corpus_schema + test_corpus_facade + nouveau
-test_corpus_divergence_report → seuil atteint).
-
-Avant Phase D, `_postgres_reachable` était dupliqué dans 2 fichiers avec
-cross-références inline. Phase D ajoute un 3e/4e fichier → extraction.
+Consommateurs actuels :
+- `postgres_reachable` : test_corpus_schema, test_admin_dashboard_metrics.
+- `ml_subprocess_env`  : test_corpus_schema, test_ml_subprocess_stability.
 """
 from __future__ import annotations
+
+import os
+
+
+def ml_subprocess_env(**extra: str) -> dict:
+    """Env durci pour tout subprocess Python qui recharge un modèle ML (torch,
+    SentenceTransformer, transformers…) alors que le process parent a déjà
+    initialisé la même pile numérique.
+
+    Garde OpenMP/MKL — pourquoi il reste (issue #189 + ADR-0011) :
+    Sur Windows, torch et SentenceTransformer embarquent chacun une copie du
+    runtime Intel OpenMP (`libiomp5md.dll`). Quand un subprocess recharge cette
+    pile pendant que le parent l'a déjà chargée, le double-load peut :
+      - crasher le subprocess avec ACCESS_VIOLATION `0xC0000005`
+        (`returncode=3221225477`) — symptôme observé au smoke Phase D (#189) ;
+      - déclencher le `mkl_malloc: failed to allocate memory` documenté dans
+        ADR-0011 (§bug du 2026-05-07) sous pression mémoire.
+    `KMP_DUPLICATE_LIB_OK=TRUE` autorise explicitement le double-load OpenMP ;
+    `OMP_NUM_THREADS=1` réduit la pression thread/mémoire qui aggrave le mkl.
+
+    Ce garde est un **heisenbug environnement-dépendant** (versions de torch /
+    MKL / OpenMP, machine, CI). Il n'est plus reproductible sur la config dev
+    actuelle (torch 2.13 / ST 5.6, cf. test-sentinelle
+    `test_ml_subprocess_stability.py`), mais on le CONSERVE : le retirer parce
+    qu'« il ne crashe plus ici » risque de faire revenir le crash sur une autre
+    machine/CI, pour un coût nul (ces variables ne changent pas le résultat de
+    l'inférence, seulement le chargement des libs). Ne pas prendre pour du
+    dead-config : c'est une défense volontaire, tracée #189 + ADR-0011.
+
+    Args:
+        **extra: variables à injecter dans l'env (ex. POSTGRES_URL=...).
+
+    Returns:
+        Une copie de os.environ + `extra`, sur laquelle le garde OpenMP/MKL est
+        appliqué EN DERNIER : il prime toujours, même si `extra` (ou l'env hôte)
+        tentait de le désactiver — sinon un caller pourrait involontairement
+        rouvrir le crash #189 que cette fonction existe pour prévenir.
+    """
+    env = os.environ.copy()
+    env.update(extra)
+    # Garde appliqué en dernier : non-surchargeable par extra/l'env hôte.
+    env["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+    env["OMP_NUM_THREADS"] = "1"
+    return env
 
 
 def postgres_reachable(url: str) -> bool:

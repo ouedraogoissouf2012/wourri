@@ -15,7 +15,6 @@ Référence : ADR-0008 §Phase B (5 critères de sortie).
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -34,7 +33,7 @@ _EXPECTED_VERSION = _CORPUS["version"]
 # test/prod encodée dans la signature : le skipif ci-dessous a besoin d'une
 # valeur falsy pour décider de skip le module entier proprement.
 from app.db.url_resolver import resolve_postgres_url  # noqa: E402
-from tests.integration._helpers import postgres_reachable  # noqa: E402
+from tests.integration._helpers import ml_subprocess_env, postgres_reachable  # noqa: E402
 
 _URL = resolve_postgres_url(raise_on_missing=False)
 _REACHABLE = postgres_reachable(_URL)
@@ -50,24 +49,11 @@ pytestmark = pytest.mark.skipif(
 
 
 def _import_subprocess_env() -> dict:
-    """Construit l'env du subprocess `import_corpus_ivr.py`.
+    """Env du subprocess `import_corpus_ivr.py` : garde OpenMP/MKL + POSTGRES_URL.
 
-    #189 : `KMP_DUPLICATE_LIB_OK=TRUE` + `OMP_NUM_THREADS=1` préviennent
-    l'ACCESS_VIOLATION Windows (returncode 0xC0000005) causé par le double-load
-    des DLL OpenMP de torch, quand un test parent a déjà chargé
-    SentenceTransformer avant que ce subprocess ne le recharge. C'est le
-    contournement standard documenté pour cette classe de crash.
-
-    Durcissement PRÉVENTIF : le crash a été observé au smoke Phase D mais n'est
-    pas reproductible sur toutes les configs (non reproduit sur dev Windows le
-    2026-08-06). Ces variables ne changent PAS le résultat de l'import — elles
-    éliminent seulement le conflit de chargement OpenMP.
+    Garde #189/ADR-0011 documenté dans `ml_subprocess_env` (source unique).
     """
-    env = os.environ.copy()
-    env["POSTGRES_URL"] = _URL
-    env["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-    env["OMP_NUM_THREADS"] = "1"
-    return env
+    return ml_subprocess_env(POSTGRES_URL=_URL)
 
 
 @pytest.fixture(scope="module")
