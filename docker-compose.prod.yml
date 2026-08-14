@@ -201,7 +201,11 @@ services:
       PORT: 3001
       # URL backend : host = nom du service Docker (réseau interne).
       WOURI_API_URL: http://wouri-api:8000
-      WOURI_API_KEY: ${WOURI_API_KEY:?WOURI_API_KEY manquant dans .env.prod}
+      # Issue #257 : pattern Docker secrets aligné sur wouri-api (#213).
+      # lib/secrets.js::readSecret lit le fichier (prioritaire, trim) avec
+      # fallback env WOURI_API_KEY — plus de clé en clair dans l'environnement
+      # (invisible dans docker inspect / compose config).
+      WOURI_API_KEY_FILE: /run/secrets/wouri_api_key
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # Sprint I.c.1 review OPS M3 : TZ UTC partout.
@@ -213,6 +217,9 @@ services:
       # quand même les bons chemins).
       USER_PREFS_FILE: /app/data/user_preferences.json
       PENDING_MESSAGES_FILE: /app/data/pending_messages.json
+    secrets:
+      # Issue #257 : même fichier source que api_secret_key (cf. bloc secrets).
+      - wouri_api_key
     volumes:
       # auth_baileys : session WhatsApp persistante. PERTE = re-scan QR manuel.
       - wa_auth:/app/auth_baileys
@@ -267,6 +274,11 @@ secrets:
   postgres_password:
     file: ./secrets/postgres_password
   api_secret_key:
+    file: ./secrets/api_secret_key
+  # Issue #257 : la clé du whatsapp-server EST la clé API (contrat X-API-Key,
+  # ADR-0012) → même fichier source que api_secret_key. Un seul point de
+  # vérité : une rotation met à jour UN fichier, les 2 services suivent.
+  wouri_api_key:
     file: ./secrets/api_secret_key
   # api_secret_key_previous : a ajouter dans une PR de suivi apres le merge
   # de #245 (PR qui ajoute le champ api_secret_key_previous dans Settings).

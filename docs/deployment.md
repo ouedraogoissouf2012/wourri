@@ -179,8 +179,9 @@ sudo chown root:root .env.prod
 sudo chmod 600 .env.prod
 sudo nano .env.prod
 # Remplir les valeurs non-secrètes : POSTGRES_USER, POSTGRES_DB, ALLOWED_ORIGINS,
-# LOG_LEVEL, CORPUS_STORAGE_MODE, API_IMAGE_TAG, WA_IMAGE_TAG, HEALTHCHECKS_*,
-# WOURI_API_KEY (toujours utilisée par whatsapp-server side, cf. §5b note).
+# LOG_LEVEL, CORPUS_STORAGE_MODE, API_IMAGE_TAG, WA_IMAGE_TAG, HEALTHCHECKS_*.
+# (#257 : WOURI_API_KEY n'est PLUS lue depuis .env.prod — le whatsapp-server
+# lit le Docker secret wouri_api_key, cf. §5b.)
 # Génération recommandée pour les chaînes aléatoires :
 #   openssl rand -base64 32
 ```
@@ -218,21 +219,21 @@ sudo ls -la /srv/wourri/secrets/
 #   -rw------- 1 root root  ... api_secret_key
 ```
 
-#### Particularité whatsapp-server
+#### Particularité whatsapp-server (résolue par #257)
 
-`whatsapp-server` (Node.js) lit toujours `WOURI_API_KEY` depuis env var
-(env-based pattern, pas FILE). Pour cohérence :
-- Le contenu de `/srv/wourri/secrets/api_secret_key` DOIT être identique à
-  `WOURI_API_KEY` dans `.env.prod`
-- À chaque rotation, mettre à jour les **deux** sources
-- Une issue backlog est ouverte pour migrer whatsapp-server vers le même
-  pattern `*_FILE` (nécessite modif `app-baileys.js` côté Node, cross-repo)
+Depuis #257, `whatsapp-server` lit sa clé via le pattern `*_FILE` comme l'API :
+`WOURI_API_KEY_FILE=/run/secrets/wouri_api_key` (fallback env `WOURI_API_KEY`
+conservé pour compat dev — cf. `lib/secrets.js` branche `whatsappServeur`).
 
-```bash
-# Synchroniser .env.prod avec le fichier secret
-API_KEY=$(sudo cat /srv/wourri/secrets/api_secret_key)
-sudo sed -i "s|^WOURI_API_KEY=.*|WOURI_API_KEY=$API_KEY|" /srv/wourri/.env.prod
-```
+Le secret compose `wouri_api_key` pointe vers **le même fichier** que
+`api_secret_key` (la clé du whatsapp-server EST la clé API — contrat
+`X-API-Key`, ADR-0012) :
+
+- **un seul fichier à créer** : `/srv/wourri/secrets/api_secret_key` (cf. §5b) ;
+- **un seul fichier à mettre à jour en rotation** — plus de duplication
+  `.env.prod` ↔ fichier secret, plus de risque de désynchronisation ;
+- `WOURI_API_KEY` peut être retirée de `.env.prod` (elle n'est plus lue par
+  le compose).
 
 #### Backup hors-VM (obligatoire)
 
@@ -559,6 +560,13 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
 ### Rotation du `WOURI_API_KEY` (zero-downtime, issue #222)
 
 Le secret est partagé entre `wouri-api` (validation `X-API-Key`) et `whatsapp-server` (envoi `X-API-Key`).
+
+> **Note #257** : le whatsapp-server lit désormais la clé depuis le fichier
+> secret partagé `/srv/wourri/secrets/api_secret_key` (plus depuis `.env.prod`).
+> Dans la procédure ci-dessous, l'étape « nouvelle clé » consiste à écrire le
+> **fichier secret** (pas de `sed` sur `WOURI_API_KEY` dans `.env.prod`). La
+> procédure complète « rotation avec secrets » (y compris la clé précédente en
+> fichier) est livrée avec #259.
 
 > **Issue #222 livrée** : `wouri-api` accepte désormais **2 clés simultanément** pendant une fenêtre de rotation. La procédure ci-dessous fait une rotation **zero-downtime** (vs ~30 s de 401 garantis avant).
 
