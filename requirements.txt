@@ -24,8 +24,11 @@ httpx==0.26.0
 pydantic==2.5.3
 pydantic-settings==2.1.0
 
-# TTS
-edge-tts==6.1.9
+# TTS francais — Piper (voix locale fr_FR-tom-medium). Le CLI `piper` est
+# fourni par piper-tts ; le modele est telecharge dans l'image (Dockerfile.prod)
+# et pointe par PIPER_MODEL_FR au runtime. edge-tts retire : dependance morte,
+# jamais importee dans le code (cf. docs/AUDIT_DIOULA_2026-08.md).
+piper-tts==1.6.1
 
 # ML/AI (Hugging Face)
 transformers>=4.36.0
