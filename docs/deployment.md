@@ -625,8 +625,11 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
 
 # 5. Restart whatsapp-server → relit /run/secrets/wouri_api_key (= le même
 #    fichier api_secret_key) → envoie désormais la nouvelle clé.
+#    ⚠ `restart`, PAS `up -d` : pour ce service seul le CONTENU du fichier
+#    secret a changé (aucune env), invisible du hash de config compose —
+#    `up -d` ne redémarrerait rien et wa continuerait avec l'ancienne clé.
 #    Si pendant la fenetre wa envoie encore l'ancienne (race), wouri-api accepte.
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d whatsapp-server
+docker compose --env-file .env.prod -f docker-compose.prod.yml restart whatsapp-server
 
 # 6. Vérifier que les 2 services repartent OK :
 curl -fsS http://127.0.0.1:8000/health
