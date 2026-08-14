@@ -17,18 +17,18 @@ const { readSecret } = require("../lib/secrets");
 const { makeFsMock } = require("./_helpers");
 
 describe("readSecret — priorité fichier", () => {
-    test("_FILE défini et lisible → contenu du fichier, trim appliqué", () => {
+    test("_FILE défini et lisible → contenu du fichier prioritaire sur l'env, trim appliqué", () => {
         const fs = makeFsMock({ initial: { "/run/secrets/wouri_api_key": "  cle_fichier  \n" } });
         const env = { WOURI_API_KEY_FILE: "/run/secrets/wouri_api_key", WOURI_API_KEY: "cle_env" };
 
         assert.strictEqual(readSecret("WOURI_API_KEY", { env, fs }), "cle_fichier");
     });
 
-    test("le fichier gagne même si l'env brut est défini", () => {
-        const fs = makeFsMock({ initial: { "/s/k": "du_fichier" } });
-        const env = { WOURI_API_KEY_FILE: "/s/k", WOURI_API_KEY: "de_l_env" };
+    test("BOM UTF-8 retiré (fichier réécrit via éditeur Windows) — parité X-API-Key", () => {
+        const fs = makeFsMock({ initial: { "/s/k": "﻿cle_bom\n" } });
+        const env = { WOURI_API_KEY_FILE: "/s/k" };
 
-        assert.strictEqual(readSecret("WOURI_API_KEY", { env, fs }), "du_fichier");
+        assert.strictEqual(readSecret("WOURI_API_KEY", { env, fs }), "cle_bom");
     });
 });
 
@@ -50,11 +50,14 @@ describe("readSecret — fallbacks env", () => {
         assert.strictEqual(warns.length, 1);
     });
 
-    test("fichier vide (ou blancs) → fallback env", () => {
+    test("fichier vide (ou blancs) → fallback env, warning loggé (misconfig visible)", () => {
         const fs = makeFsMock({ initial: { "/s/vide": "   \n" } });
+        const warns = [];
+        const logger = { warn: (...a) => warns.push(a) };
         const env = { WOURI_API_KEY_FILE: "/s/vide", WOURI_API_KEY: "cle_env" };
 
-        assert.strictEqual(readSecret("WOURI_API_KEY", { env, fs }), "cle_env");
+        assert.strictEqual(readSecret("WOURI_API_KEY", { env, fs, logger }), "cle_env");
+        assert.strictEqual(warns.length, 1);
     });
 
     test("_FILE défini mais chaîne vide → fallback env sans lecture", () => {

@@ -66,7 +66,14 @@ function authHeaders() {
 // backend protege. Le laisser demarrer donnerait un container "healthy" mais
 // fonctionnellement inutilisable.
 if (process.env.NODE_ENV === 'production' && !WOURI_API_KEY) {
-    logger.fatal('[SECURITY] WOURI_API_KEY non definie en production — demarrage refuse');
+    // #257 : nommer la vraie cause — si WOURI_API_KEY_FILE est defini, le
+    // probleme est le FICHIER (vide/illisible/absent, cf. warn [SECRETS]
+    // au-dessus), pas la variable d'env.
+    logger.fatal(
+        process.env.WOURI_API_KEY_FILE
+            ? `[SECURITY] Cle vide : WOURI_API_KEY_FILE=${process.env.WOURI_API_KEY_FILE} illisible ou vide (voir warn [SECRETS]) — demarrage refuse`
+            : '[SECURITY] WOURI_API_KEY non definie en production — demarrage refuse'
+    );
     process.exit(1);
 }
 
