@@ -82,9 +82,13 @@ describe("city_resolver — isValidCity", () => {
         assert.strictEqual(isValidCity("dalwa"), true);
     });
 
-    test("Ville inconnue → false", () => {
-        assert.strictEqual(isValidCity("paris"), false);
-        assert.strictEqual(isValidCity("xyz"), false);
+    test("[#309] Bruit trop court → false ; mot plausible (même hors CI) → true (garde tolérant)", () => {
+        // #309 : le garde n'est plus une liste blanche stricte des ~60 villes.
+        // Un mot alphabétique plausible est accepté (petites communes CI hors
+        // KNOWN_CITIES) — au prix d'accepter aussi des mots plausibles non-CI
+        // (tradeoff explicitement assumé par l'issue #309).
+        assert.strictEqual(isValidCity("xyz"), false);   // 3 lettres → trop court
+        assert.strictEqual(isValidCity("paris"), true);  // plausible (non-CI accepté, tradeoff #309)
     });
 
     test("Sous-chaîne courte de ville connue → false (Sprint H.2b correctif #161)", () => {
@@ -100,6 +104,51 @@ describe("city_resolver — isValidCity", () => {
         assert.strictEqual(isValidCity("ko"), false);
         assert.strictEqual(isValidCity("da"), false);
         assert.strictEqual(isValidCity("be"), false);
+    });
+});
+
+describe("city_resolver — isValidCity fix #309 (NFD accents + garde tolérant)", () => {
+    test("villes KNOWN accentuées correctement écrites → true (normalisation NFD)", () => {
+        for (const city of [
+            "Odienné", "Séguéla", "Ferkessédougou", "Duékoué", "Danané",
+            "Agnibilékrou", "Zuénoula", "Béoumi", "Soubré", "M'Bahiakro",
+        ]) {
+            assert.strictEqual(isValidCity(city), true, `${city} doit être acceptée`);
+        }
+    });
+
+    test("petites communes CI hors KNOWN_CITIES → true (garde tolérant)", () => {
+        for (const city of [
+            "Adzopé", "Tiassalé", "Bongouanou", "Oumé", "Sikensi",
+            "Akoupé", "Guitry", "Zoukougbeu",
+        ]) {
+            assert.strictEqual(isValidCity(city), true, `${city} doit être acceptée`);
+        }
+    });
+
+    test("bruit évident → false (salutations, confirmations, politesse, emoji, trop court)", () => {
+        for (const noise of [
+            "Salut", "salut", "ok", "OK", "merci", "Merci", "bonjour",
+            "oui", "non", "👍", "😀", "🌾", "", "  ", "ab", "ko",
+        ]) {
+            assert.strictEqual(isValidCity(noise), false, `${JSON.stringify(noise)} doit être rejeté`);
+        }
+    });
+
+    test("normalisation accents : casse + diacritiques insensibles", () => {
+        assert.strictEqual(isValidCity("ODIENNÉ"), true);
+        assert.strictEqual(isValidCity("odienne"), true);
+        assert.strictEqual(isValidCity("Odienné"), true);
+    });
+
+    test("saisie avec préposition → true (mot ville plausible présent)", () => {
+        assert.strictEqual(isValidCity("je suis à Adzopé"), true);
+        assert.strictEqual(isValidCity("ville de Oumé"), true);
+    });
+
+    test("phrase 100% parasites → false", () => {
+        assert.strictEqual(isValidCity("salut merci"), false);
+        assert.strictEqual(isValidCity("ok merci bonjour"), false);
     });
 });
 
@@ -129,18 +178,22 @@ describe("city_resolver — Sprint H.2b — isValidCity DoS + faux positifs (iss
         assert.strictEqual(isValidCity("daloa est ma ville"), true);
     });
 
-    test("Correction STT matchée par word-boundary : 'main' → true (correction pour Man)", () => {
-        // CITY_CORRECTIONS contient "main" → "man". Le word-boundary permet de matcher
-        // "main" comme mot entier mais PAS "mainstream" (qui contient "main" en préfixe).
-        assert.strictEqual(isValidCity("main"), true);  // mot entier
-        assert.strictEqual(isValidCity("mainstream"), false);  // sous-chaîne — faux positif corrigé
+    test("Correction STT 'main' → true (Man) ; word-boundary ne matche pas 'mainstream' comme ville", () => {
+        // CITY_CORRECTIONS contient "main" → "man". Word-boundary matche "main"
+        // mot entier mais pas "main" en préfixe de "mainstream".
+        assert.strictEqual(isValidCity("main"), true);
+        // #309 : "mainstream" n'est PAS reconnu comme la ville Man (word-boundary),
+        // mais le garde tolérant l'accepte comme mot alphabétique plausible.
+        assert.strictEqual(isValidCity("mainstream"), true);
     });
 
-    test("Texte hors-sujet → false (anti-faux-positif)", () => {
-        // Ces textes ne contiennent aucune ville comme mot entier.
-        assert.strictEqual(isValidCity("paris est belle"), false);
-        assert.strictEqual(isValidCity("xyz random text"), false);
-        assert.strictEqual(isValidCity(""), false);
+    test("[#309] Vide/emoji/parasite → false ; phrase avec un mot plausible → true (tradeoff)", () => {
+        assert.strictEqual(isValidCity(""), false);       // vide
+        assert.strictEqual(isValidCity("👍"), false);      // emoji seul
+        assert.strictEqual(isValidCity("salut"), false);  // salutation (parasite)
+        // Le bruit ciblé = salutations/emoji/trop court, pas les phrases quelconques :
+        // une phrase contenant un mot alphabétique plausible passe le garde.
+        assert.strictEqual(isValidCity("paris est belle"), true);
     });
 });
 
