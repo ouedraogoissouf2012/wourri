@@ -199,10 +199,15 @@ sudo chmod 0700 /srv/wourri/secrets
 sudo chown root:root /srv/wourri/secrets
 
 # 1. POSTGRES_PASSWORD : lu nativement par l'image postgres via
-#    POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+#    POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password, ET (#258) par
+#    wouri-api (url_resolver assemble l'URL depuis ce même secret).
+#    ⚠ PERMISSIONS (#258) : compose non-swarm bind-monte avec les perms hôte.
+#    L'entrypoint postgres lit en root (OK), mais wouri-api tourne en
+#    USER wourri uid 1000 → groupe 1000 en lecture : root:1000 mode 0640
+#    (0600 root:root = EACCES au boot de l'API).
 echo -n "$(openssl rand -base64 32)" | sudo tee /srv/wourri/secrets/postgres_password >/dev/null
-sudo chmod 0600 /srv/wourri/secrets/postgres_password
-sudo chown root:root /srv/wourri/secrets/postgres_password
+sudo chmod 0640 /srv/wourri/secrets/postgres_password
+sudo chown root:1000 /srv/wourri/secrets/postgres_password
 
 # 2. API_SECRET_KEY : lu par app/config.py::_read_file_secret() via
 #    API_SECRET_KEY_FILE=/run/secrets/api_secret_key

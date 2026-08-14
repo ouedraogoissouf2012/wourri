@@ -104,6 +104,17 @@ def test_postgres_url_env_reste_prioritaire(env_components, tmp_path):
     assert resolve_postgres_url() == "postgresql+psycopg://direct:d@h:5/db"
 
 
+def test_password_fichier_avec_bom_utf8(env_components, tmp_path):
+    """Un BOM U+FEFF (fichier réécrit via éditeur Windows) est retiré —
+    parité avec lib/secrets.js côté whatsapp-server (.trim() JS)."""
+    secret = tmp_path / "pw"
+    secret.write_bytes("﻿cle_bom\n".encode("utf-8"))
+    _set_base(env_components)
+    env_components.setenv("POSTGRES_PASSWORD_FILE", str(secret))
+
+    assert ":cle_bom@" in resolve_postgres_url()
+
+
 def test_password_caracteres_speciaux_encode(env_components):
     """Un mot de passe avec :/@ doit être URL-encodé (sinon l'URL est fausse)."""
     _set_base(env_components)

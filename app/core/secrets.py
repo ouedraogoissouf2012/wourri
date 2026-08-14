@@ -38,4 +38,8 @@ def read_file_secret(name: str) -> str:
     p = Path(file_path)
     if not p.is_file():
         return ""
-    return p.read_text(encoding="utf-8").strip()
+    # utf-8-sig : retire un éventuel BOM U+FEFF en tête (secret réécrit via
+    # un éditeur Windows). Sans ça, l'API comparerait '﻿KEY' à la clé
+    # 'KEY' envoyée par le whatsapp-server (dont le .trim() JS retire le BOM)
+    # → 403 permanents quasi indiagnosticables. Parité avec lib/secrets.js.
+    return p.read_text(encoding="utf-8-sig").strip()
