@@ -3,7 +3,7 @@ WOURI - Router TTS (Text-to-Speech)
 Support multi-langues ivoiriennes
 """
 import asyncio
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends
 from app.services.tts_french import synthesize_french, get_available_voices
 from app.services.tts_bambara import synthesize_bambara, synthesize_bambara_text, translate_to_bambara
 from app.services.tts_dioula import synthesize_dioula, synthesize_dioula_text
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/api/tts", tags=["TTS"])
 
 
 @router.post("/", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
-async def text_to_speech(request: Request, body: TTSRequest):
+async def text_to_speech(body: TTSRequest):
     """
     Convertit du texte en audio
 
@@ -56,7 +56,7 @@ async def text_to_speech(request: Request, body: TTSRequest):
 
 
 @router.post("/french", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
-async def tts_french(request: Request, text: str):
+async def tts_french(text: str):
     """TTS en français uniquement"""
     audio_url = await synthesize_french(text)
 
@@ -67,7 +67,7 @@ async def tts_french(request: Request, text: str):
 
 
 @router.post("/bambara", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
-async def tts_bambara(request: Request, text: str, is_french: bool = True):
+async def tts_bambara(text: str, is_french: bool = True):
     """
     TTS en Bambara
 
@@ -90,7 +90,7 @@ async def tts_bambara(request: Request, text: str, is_french: bool = True):
 
 
 @router.post("/dioula", response_model=TTSResponse, dependencies=[Depends(require_api_key)])
-async def tts_dioula(request: Request, text: str, is_french: bool = True):
+async def tts_dioula(text: str, is_french: bool = True):
     """
     TTS en dioula ivoirien — VOIX mms-tts-dyu (ADR-0023, #362).
 
@@ -121,7 +121,7 @@ async def list_voices():
 # ============ TRADUCTION ============
 
 @router.post("/translate", response_model=TranslateResponse, dependencies=[Depends(require_api_key)])
-async def translate(request: Request, body: TranslateRequest):
+async def translate(body: TranslateRequest):
     """
     Traduit du texte vers le Bambara
 
@@ -175,7 +175,7 @@ async def ivorian_tts_status():
 
 
 @router.post("/ivorian/{language_code}", dependencies=[Depends(require_api_key)])
-async def tts_ivorian_language(request: Request, language_code: str, text: str):
+async def tts_ivorian_language(language_code: str, text: str):
     """
     TTS pour une langue ivoirienne spécifique
 
@@ -218,7 +218,7 @@ async def tts_ivorian_language(request: Request, language_code: str, text: str):
 
 
 @router.post("/ivorian", dependencies=[Depends(require_api_key)])
-async def tts_ivorian_auto(request: Request, text: str, language: str = "bam"):
+async def tts_ivorian_auto(text: str, language: str = "bam"):
     """
     TTS ivoirien avec détection automatique de langue par alias
 

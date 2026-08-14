@@ -67,6 +67,14 @@ def _build_app(security_module):
     async def target():
         return {"ok": True}
 
+    @application.get("/autre")
+    async def autre():
+        return {"ok": True}
+
+    @application.get("/param/{item}")
+    async def with_param(item: str):
+        return {"item": item}
+
     @application.get("/health")
     @security_module.limiter.exempt
     async def health():
@@ -88,6 +96,32 @@ def test_rate_limit_env_effectif_429_au_dela(monkeypatch):
 
     assert codes[:3] == [200, 200, 200]
     assert codes[3] == 429
+
+
+def test_limite_globale_partagee_entre_routes(monkeypatch):
+    """ADR-0018 « limite GLOBALE unique » : le compteur est partagé entre
+    routes distinctes (application_limits, scope global) — pas un budget
+    neuf par chemin (piège default_limits/key_style=url de slowapi)."""
+    sec = _reload_security(monkeypatch, RATE_LIMIT="3/minute", API_SECRET_KEY="k")
+    client = TestClient(_build_app(sec))
+
+    codes = [client.get("/t").status_code, client.get("/autre").status_code,
+             client.get("/t").status_code, client.get("/autre").status_code]
+
+    assert codes[:3] == [200, 200, 200]
+    assert codes[3] == 429
+
+
+def test_path_params_ne_fragmentent_pas_le_compteur(monkeypatch):
+    """Faire tourner un path param (/param/0, /param/1, ...) ne crée pas des
+    compteurs distincts : le débit agrégé reste borné par RATE_LIMIT."""
+    sec = _reload_security(monkeypatch, RATE_LIMIT="3/minute", API_SECRET_KEY="k")
+    client = TestClient(_build_app(sec))
+
+    codes = [client.get(f"/param/{i}").status_code for i in range(6)]
+
+    assert 429 in codes
+    assert codes[3:] == [429, 429, 429]
 
 
 def test_health_exempt_de_la_limite(monkeypatch):
@@ -178,6 +212,37 @@ def test_xff_ne_fragmente_pas_le_compteur(monkeypatch):
     ]
 
     assert 429 in codes
+
+
+def test_proxy_headers_middleware_reel_defaut_sur(monkeypatch):
+    """Traverse le VRAI ProxyHeadersMiddleware d'uvicorn (celui qui honore
+    FORWARDED_ALLOW_IPS) : avec la confiance par défaut (loopback), un XFF
+    forgé ne change pas l'IP client → le compteur global tient. Le test
+    négatif (trusted='*') documente le danger que la config interdit."""
+    from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+    sec = _reload_security(monkeypatch, RATE_LIMIT="3/minute", API_SECRET_KEY="k")
+
+    # Confiance par défaut (127.0.0.1) : client TestClient = "testclient",
+    # non fiable → XFF ignoré → 429 malgré la rotation d'IP forgées.
+    app_sure = ProxyHeadersMiddleware(_build_app(sec), trusted_hosts="127.0.0.1")
+    client = TestClient(app_sure)
+    codes = [
+        client.get("/t", headers={"X-Forwarded-For": f"10.9.9.{i}"}).status_code
+        for i in range(5)
+    ]
+    assert 429 in codes
+
+    # Contre-exemple trusted='*' (la valeur que .env.prod.template INTERDIT) :
+    # chaque IP forgée obtient son compteur global → plus aucun 429.
+    sec2 = _reload_security(monkeypatch, RATE_LIMIT="3/minute", API_SECRET_KEY="k")
+    app_ouverte = ProxyHeadersMiddleware(_build_app(sec2), trusted_hosts="*")
+    client2 = TestClient(app_ouverte)
+    codes2 = [
+        client2.get("/t", headers={"X-Forwarded-For": f"10.8.8.{i}"}).status_code
+        for i in range(5)
+    ]
+    assert codes2 == [200] * 5  # démonstration du bypass si mal configuré
 
 
 # ─────────────────────────────────────────────

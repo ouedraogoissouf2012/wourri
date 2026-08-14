@@ -25,7 +25,7 @@ import json
 import logging
 import os
 from datetime import date, datetime
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import Optional, List
 from app.security import require_api_key
@@ -87,7 +87,7 @@ def _log_feedback(entry: dict):
 
 
 @router.post("/positif", dependencies=[Depends(require_api_key)])
-async def feedback_positif(request: Request, req: FeedbackRequest):
+async def feedback_positif(req: FeedbackRequest):
     """
     Feedback 👍 — l'utilisateur a apprécié la réponse.
 
@@ -152,7 +152,7 @@ async def feedback_positif(request: Request, req: FeedbackRequest):
 
 
 @router.post("/negatif", dependencies=[Depends(require_api_key)])
-async def feedback_negatif(request: Request, req: FeedbackRequest):
+async def feedback_negatif(req: FeedbackRequest):
     """
     Feedback 👎 — l'utilisateur n'a pas apprécié la réponse.
     Logue dans feedback-YYYY-MM.jsonl (général) + feedback_negatif.jsonl (dédié corpus).

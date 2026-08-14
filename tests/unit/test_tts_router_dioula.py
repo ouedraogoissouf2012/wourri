@@ -11,22 +11,13 @@ import asyncio
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from starlette.requests import Request
 
 import app.routers.tts as tts_router
 from app.models.schemas import Language, TTSRequest
 
-
-def _make_request() -> Request:
-    scope = {
-        "type": "http",
-        "method": "POST",
-        "path": "/api/tts/dioula",
-        "headers": [],
-        "client": ("127.0.0.1", 12345),
-        "query_string": b"",
-    }
-    return Request(scope)
+# NOTE (#307, ADR-0018) : le paramètre `request: Request` des routes TTS a été
+# retiré (il n'était exigé que par les décorateurs slowapi supprimés) — les
+# appels directs n'ont plus besoin de fabriquer un faux Request.
 
 
 def test_tts_dioula_endpoint_uses_dyu_voice_for_dioula_text():
@@ -37,7 +28,7 @@ def test_tts_dioula_endpoint_uses_dyu_voice_for_dioula_text():
         tts_router, "synthesize_bambara_text"
     ) as spy_bam:
         resp = asyncio.run(
-            tts_router.tts_dioula(_make_request(), text="N bɛ baara la", is_french=False)
+            tts_router.tts_dioula(text="N bɛ baara la", is_french=False)
         )
 
     spy_dyu.assert_called_once_with("N bɛ baara la")
@@ -54,7 +45,7 @@ def test_tts_dioula_endpoint_translates_french_via_dyu_pipeline():
         new=AsyncMock(return_value=("/static/audio/dyu_y.ogg", "Aw ni sɔgɔma")),
     ) as spy:
         resp = asyncio.run(
-            tts_router.tts_dioula(_make_request(), text="Bonjour", is_french=True)
+            tts_router.tts_dioula(text="Bonjour", is_french=True)
         )
 
     spy.assert_awaited_once_with("Bonjour")
@@ -74,7 +65,6 @@ def test_generic_tts_language_dioula_routes_to_dyu_not_bam():
     ) as spy_bam:
         resp = asyncio.run(
             tts_router.text_to_speech(
-                _make_request(),
                 TTSRequest(text="Merci", language=Language.DIOULA),
             )
         )
@@ -92,7 +82,7 @@ def test_tts_bambara_endpoint_is_honestly_labeled():
         tts_router, "synthesize_bambara_text", return_value="/static/audio/bam_x.ogg"
     ):
         resp = asyncio.run(
-            tts_router.tts_bambara(_make_request(), text="malo", is_french=False)
+            tts_router.tts_bambara(text="malo", is_french=False)
         )
 
     assert resp.language == "bambara"
@@ -104,6 +94,6 @@ def test_tts_dioula_endpoint_500_when_synthesis_fails():
     with patch.object(tts_router, "synthesize_dioula_text", return_value=None):
         with pytest.raises(HTTPException) as exc:
             asyncio.run(
-                tts_router.tts_dioula(_make_request(), text="x", is_french=False)
+                tts_router.tts_dioula(text="x", is_french=False)
             )
     assert exc.value.status_code == 500

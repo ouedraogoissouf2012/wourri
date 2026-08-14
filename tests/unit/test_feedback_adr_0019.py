@@ -19,30 +19,16 @@ import json
 from types import SimpleNamespace
 
 import pytest
-from starlette.requests import Request
 
 import app.routers.feedback as fb
 
 
-def _make_request() -> Request:
-    """Construit un vrai starlette.Request minimal (exigé par le décorateur slowapi)."""
-    scope = {
-        "type": "http",
-        "method": "POST",
-        "path": "/api/feedback/positif",
-        "headers": [],
-        "client": ("127.0.0.1", 12345),
-        "query_string": b"",
-    }
-    return Request(scope)
-
-
 def _run_positif(req):
-    return asyncio.run(fb.feedback_positif(_make_request(), req))
+    return asyncio.run(fb.feedback_positif(req))
 
 
 def _run_negatif(req):
-    return asyncio.run(fb.feedback_negatif(_make_request(), req))
+    return asyncio.run(fb.feedback_negatif(req))
 
 
 @pytest.fixture

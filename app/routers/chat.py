@@ -66,7 +66,7 @@ async def chat(request: Request, body: ChatRequest):
 
 
 @router.post("/simple", dependencies=[Depends(require_api_key)])
-async def chat_simple(request: Request, message: str, city: str = "Abidjan"):
+async def chat_simple(message: str, city: str = "Abidjan"):
     """
     Version simple du chat (paramètres en query)
 

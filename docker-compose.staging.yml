@@ -113,6 +113,10 @@ services:
       API_SECRET_KEY_PREVIOUS: ${WOURI_API_KEY_PREVIOUS:-}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       LOG_LEVEL: ${LOG_LEVEL:-debug}  # debug par defaut staging (plus de signal)
+      # Issue #307 / ADR-0018 : aligne sur la prod — le staging doit exercer
+      # la même config de rate limiting (sinon il ne valide pas la prod).
+      RATE_LIMIT: ${RATE_LIMIT:-120/minute}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
       HF_HOME: /app/.cache/huggingface
       TRANSFORMERS_CACHE: /app/.cache/huggingface
     secrets:

@@ -41,9 +41,16 @@ except ValueError as exc:
         'style "120/minute", "10/second" ou "1000/hour" (cf. .env.example).'
     ) from exc
 
+# application_limits et PAS default_limits : dans slowapi, les default_limits
+# sont comptés PAR CHEMIN D'URL (key_style="url" → un compteur neuf pour
+# chaque /api/weather/<ville> distincte : un attaquant qui fait tourner un
+# path param obtient un débit agrégé illimité + une croissance non bornée des
+# clés en mémoire). Les application_limits portent le scope "global"
+# (extension.py:198) → UN compteur par IP pour toute l'app = la « limite
+# globale unique » de l'ADR-0018.
 limiter = Limiter(
     key_func=get_remote_address,
-    default_limits=[_settings.rate_limit],
+    application_limits=[_settings.rate_limit],
 )
 
 # ── API Key header ─────────────────────────────────────────────────────────────

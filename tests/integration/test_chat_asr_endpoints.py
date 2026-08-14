@@ -25,8 +25,14 @@ def client():
         from app.routers import asr, chat
 
         app = FastAPI()
+        # Câblage IDENTIQUE à app/main.py (#307, ADR-0018) : sans le
+        # middleware, les default/application_limits ne s'appliquent pas —
+        # un limiter posé seul sur app.state serait de la config morte.
+        from app.middleware.rate_limit import ApiKeyExemptRateLimitMiddleware
+
         app.state.limiter = limiter
         app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+        app.add_middleware(ApiKeyExemptRateLimitMiddleware)
         app.include_router(chat.router)
         app.include_router(asr.router)
 
