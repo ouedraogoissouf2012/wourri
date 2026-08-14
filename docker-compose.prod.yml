@@ -134,19 +134,20 @@ services:
       # valeur résiduelle dans .env.prod est ignorée par l'app.
       # Sprint I.c.1 review OPS M3 : TZ UTC partout.
       TZ: UTC
-      # Issue #213 + #222 : combinaison Docker secret (cle courante) + env var
-      # (cle precedente dual-key pour rotation zero-downtime).
+      # Issues #213 + #222 + #259 : les DEUX cles (courante + precedente) en
+      # Docker secrets — plus aucune cle en clair dans l'environnement.
       #
-      # - API_SECRET_KEY_FILE : monte par Docker secret, lu par _read_file_secret()
-      #   dans app/config.py et utilise pour override `api_secret_key` au demarrage.
+      # - API_SECRET_KEY_FILE : cle courante, lue par _read_file_secret()
+      #   dans app/config.py (override `api_secret_key` au demarrage).
       #   Renommage WOURI_API_KEY → API_SECRET_KEY introduit en PR #245 (issue #222).
-      # - API_SECRET_KEY_PREVIOUS : env var simple, vide en temps normal, remplie
-      #   5 min pendant une rotation (dual-key zero-downtime).
-      #
-      # API_SECRET_KEY_PREVIOUS_FILE (pattern secrets pour la cle precedente)
-      # sera ajoute dans une PR de suivi (issue creee post-merge #245 pour aligner
-      # la cle precedente sur le pattern Docker secrets).
+      # - API_SECRET_KEY_PREVIOUS_FILE (#259) : cle precedente pour la fenetre
+      #   de rotation dual-key. Le fichier existe TOUJOURS (cree VIDE a
+      #   l'installation, cf. deployment.md §5b) : vide = pas de rotation en
+      #   cours ; rempli ~5 min pendant une rotation zero-downtime.
+      # - API_SECRET_KEY_PREVIOUS (env) : fallback legacy conserve — utilise
+      #   seulement si le fichier est vide/absent.
       API_SECRET_KEY_FILE: /run/secrets/api_secret_key
+      API_SECRET_KEY_PREVIOUS_FILE: /run/secrets/api_secret_key_previous
       API_SECRET_KEY_PREVIOUS: ${WOURI_API_KEY_PREVIOUS:-}
       # CORS : laisser vide pour mode strict (pas de frontend web en Sprint I).
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
@@ -164,6 +165,8 @@ services:
       # Issue #258 : même secret que le service postgres — un seul point de
       # vérité pour le mot de passe (url_resolver lit POSTGRES_PASSWORD_FILE).
       - postgres_password
+      # Issue #259 : cle precedente (fichier vide hors fenetre de rotation).
+      - api_secret_key_previous
     volumes:
       # Cache modèles ML : volume nommé persistant. Évite re-téléchargement
       # de PyTorch + Whisper + NLLB + MMS-dyu à chaque redéploiement.
@@ -310,8 +313,11 @@ secrets:
   # être root:1000 mode 0640 (cf. deployment.md §5b), PAS 0600 root:root.
   api_secret_key:
     file: ./secrets/api_secret_key
-  # api_secret_key_previous : a ajouter dans une PR de suivi apres le merge
-  # de #245 (PR qui ajoute le champ api_secret_key_previous dans Settings).
+  # Issue #259 : cle precedente pour rotation dual-key. Le fichier DOIT
+  # exister (compose refuse un secret manquant) → cree VIDE a l'installation
+  # (deployment.md §5b) et rempli uniquement pendant une fenetre de rotation.
+  api_secret_key_previous:
+    file: ./secrets/api_secret_key_previous
 
 # ╭──────────────────────────────────────────────────────────────────────╮
 # │ Réseau interne — isolation des services entre eux                    │

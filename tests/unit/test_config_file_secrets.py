@@ -96,9 +96,42 @@ def test_get_settings_override_api_secret_key_depuis_fichier(monkeypatch, tmp_pa
     assert s.api_secret_key == "file_based_secret"
 
 
-# NOTE : test API_SECRET_KEY_PREVIOUS_FILE differe a une PR de suivi apres
-# le merge de PR #245 (issue #222 dual-key, qui introduit le champ
-# api_secret_key_previous dans Settings).
+def test_api_secret_key_previous_from_file(monkeypatch, tmp_path):
+    """Issue #259 : API_SECRET_KEY_PREVIOUS_FILE override la valeur env
+    (rotation zero-downtime avec Docker secrets, sans clé en clair)."""
+    secret_file = tmp_path / "api_secret_key_previous"
+    secret_file.write_text("  ancienne_cle_fichier \n", encoding="utf-8")
+
+    cfg = _reload_config(
+        monkeypatch,
+        {
+            "API_SECRET_KEY": "cle_courante",
+            "API_SECRET_KEY_PREVIOUS": "ancienne_env",  # ← devrait etre IGNORE
+            "API_SECRET_KEY_PREVIOUS_FILE": str(secret_file),
+        },
+    )
+
+    s = cfg.get_settings()
+    assert s.api_secret_key_previous == "ancienne_cle_fichier"
+
+
+def test_api_secret_key_previous_fichier_vide_fallback_env(monkeypatch, tmp_path):
+    """Fichier previous VIDE (etat normal hors rotation : fichier cree vide
+    dans /srv/wourri/secrets/) → fallback env, et env vide → '' (pas de
+    fenetre dual-key ouverte par accident)."""
+    empty_file = tmp_path / "api_secret_key_previous"
+    empty_file.write_text("", encoding="utf-8")
+
+    cfg = _reload_config(
+        monkeypatch,
+        {
+            "API_SECRET_KEY": "cle_courante",
+            "API_SECRET_KEY_PREVIOUS": "",
+            "API_SECRET_KEY_PREVIOUS_FILE": str(empty_file),
+        },
+    )
+
+    assert cfg.get_settings().api_secret_key_previous == ""
 
 
 def test_get_settings_pas_de_file_env_garde_valeur_env(monkeypatch):
