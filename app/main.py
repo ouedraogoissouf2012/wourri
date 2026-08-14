@@ -236,13 +236,23 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Rate limiting — 10 req/min par IP
+# Rate limiting (issue #307, ADR-0018) : limite GLOBALE unique pilotée par
+# RATE_LIMIT (.env, défaut 120/minute) via default_limits — AUCUN décorateur
+# par route (un @limiter.limit override default_limits → config morte).
+# Le trafic authentifié par clé API interne (whatsapp-server) est exempté par
+# ApiKeyExemptRateLimitMiddleware (exemption cryptographique, pas de
+# sentinelle IP → insensible à X-Forwarded-For).
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Dashboard #41 / ADR-0017 : métadonnées techniques uniquement, jamais le
 # corps, les headers, l'IP, le user_id, la transcription ou la query string.
 app.add_middleware(AdminMetricsMiddleware)
+
+# Ajouté APRÈS AdminMetricsMiddleware → s'exécute AVANT (plus externe) :
+# une requête throttlée est rejetée au plus tôt, sans traverser la pile.
+from app.middleware.rate_limit import ApiKeyExemptRateLimitMiddleware
+app.add_middleware(ApiKeyExemptRateLimitMiddleware)
 
 # CORS — permissif uniquement en dev (test interface locale showcase.html)
 # En production, restreindre via une allow-list explicite (ADR-0011 futur).
@@ -291,6 +301,7 @@ async def home(request: Request):
 
 
 @app.get("/health")
+@limiter.exempt
 async def health():
     """Verifie l'etat de l'application + observabilité modèles ML.
 

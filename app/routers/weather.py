@@ -5,13 +5,12 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from app.services.weather import get_weather, get_all_cities_weather
 from app.data.cities import get_all_cities, get_city, search_cities
 from app.models.schemas import WeatherData, CityInfo
-from app.security import require_api_key, limiter
+from app.security import require_api_key
 
 router = APIRouter(prefix="/api/weather", tags=["Météo"])
 
 
 @router.get("/{city_name}", response_model=WeatherData, dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def weather_by_city(request: Request, city_name: str):
     """
     Récupère la météo d'une ville de Côte d'Ivoire
@@ -30,7 +29,6 @@ async def weather_by_city(request: Request, city_name: str):
 
 
 @router.get("/", response_model=list[WeatherData], dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def weather_all(request: Request):
     """Récupère la météo des principales villes"""
     return await get_all_cities_weather()

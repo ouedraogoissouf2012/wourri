@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
 from app.services import rag_knowledge
-from app.security import require_api_key, limiter
+from app.security import require_api_key
 
 router = APIRouter(prefix="/api/rag", tags=["RAG - Connaissances"])
 
@@ -22,7 +22,6 @@ class DocumentInput(BaseModel):
 
 
 @router.post("/search", dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def search_knowledge(request: Request, query: SearchQuery):
     """
     Recherche dans la base de connaissances agricoles.
@@ -47,7 +46,6 @@ async def search_knowledge(request: Request, query: SearchQuery):
 
 
 @router.post("/add", dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def add_document(request: Request, doc: DocumentInput):
     """
     Ajoute un document a la base de connaissances.
@@ -74,7 +72,6 @@ async def add_document(request: Request, doc: DocumentInput):
 
 
 @router.post("/init", dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def init_knowledge_base(request: Request):
     """
     Initialise la base avec des connaissances agricoles par defaut.
@@ -101,7 +98,6 @@ async def get_rag_status():
 
 
 @router.get("/documents", dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def list_documents(request: Request):
     """Liste tous les documents de la base"""
     docs = [

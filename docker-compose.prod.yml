@@ -156,6 +156,14 @@ services:
       # in-app). Justifications : docs/compliance/artci-logs.md.
       LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
       FEEDBACK_RETENTION_DAYS: ${FEEDBACK_RETENTION_DAYS:-365}
+
+      # Issue #307 / ADR-0018 : limite globale de rate limiting (le trafic
+      # whatsapp-server authentifié par X-API-Key est exempté).
+      RATE_LIMIT: ${RATE_LIMIT:-120/minute}
+      # ADR-0018 : IPs de confiance pour X-Forwarded-For (uvicorn
+      # --proxy-headers). Défaut = loopback (sûr). Au Sprint J (reverse
+      # proxy), mettre l'IP du proxy — JAMAIS '*' (bypass rate limiting).
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
       # HuggingFace cache : pointe vers le volume monté
       HF_HOME: /app/.cache/huggingface
       TRANSFORMERS_CACHE: /app/.cache/huggingface

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, Request
 
 from app.middleware.admin_metrics import set_request_metric_context
 from app.models.schemas import ChatRequest, ChatResponse, Language
-from app.security import limiter, require_api_key
+from app.security import require_api_key
 from app.services.chat_service import get_chat_service
 from app.services.deepseek import chat_with_deepseek
 from app.services.weather import get_weather
@@ -21,7 +21,6 @@ router = APIRouter(prefix="/api/chat", tags=["Chat"])
 
 
 @router.post("/", response_model=ChatResponse, dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def chat(request: Request, body: ChatRequest):
     """
     Envoie un message à l'assistant WOURI.
@@ -67,7 +66,6 @@ async def chat(request: Request, body: ChatRequest):
 
 
 @router.post("/simple", dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def chat_simple(request: Request, message: str, city: str = "Abidjan"):
     """
     Version simple du chat (paramètres en query)
