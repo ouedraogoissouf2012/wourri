@@ -199,10 +199,15 @@ sudo chmod 0700 /srv/wourri/secrets
 sudo chown root:root /srv/wourri/secrets
 
 # 1. POSTGRES_PASSWORD : lu nativement par l'image postgres via
-#    POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password
+#    POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password, ET (#258) par
+#    wouri-api (url_resolver assemble l'URL depuis ce même secret).
+#    ⚠ PERMISSIONS (#258) : compose non-swarm bind-monte avec les perms hôte.
+#    L'entrypoint postgres lit en root (OK), mais wouri-api tourne en
+#    USER wourri uid 1000 → groupe 1000 en lecture : root:1000 mode 0640
+#    (0600 root:root = EACCES au boot de l'API).
 echo -n "$(openssl rand -base64 32)" | sudo tee /srv/wourri/secrets/postgres_password >/dev/null
-sudo chmod 0600 /srv/wourri/secrets/postgres_password
-sudo chown root:root /srv/wourri/secrets/postgres_password
+sudo chmod 0640 /srv/wourri/secrets/postgres_password
+sudo chown root:1000 /srv/wourri/secrets/postgres_password
 
 # 2. API_SECRET_KEY : lu par app/config.py::_read_file_secret() via
 #    API_SECRET_KEY_FILE=/run/secrets/api_secret_key
@@ -618,15 +623,21 @@ Le module `app/security.py` est couvert par `tests/unit/test_security.py` (6 tes
 
 ### Rotation du `POSTGRES_PASSWORD`
 
+> **#258** : le mot de passe vit UNIQUEMENT dans le fichier secret
+> `/srv/wourri/secrets/postgres_password` — `wouri-api` assemble son URL via
+> `POSTGRES_PASSWORD_FILE` (`app/db/url_resolver.py`), plus de copie dans
+> `.env.prod`.
+
 ```bash
 # 1. Changer le mot de passe dans Postgres
 docker compose -f docker-compose.prod.yml exec postgres \
   psql -U wourri -d wourri_prod -c "ALTER USER wourri PASSWORD 'NEW_PWD';"
 
-# 2. L'écrire dans .env.prod
-sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=NEW_PWD|" /srv/wourri/.env.prod
+# 2. L'écrire dans le fichier secret (UNIQUE source de vérité)
+echo -n "NEW_PWD" | sudo tee /srv/wourri/secrets/postgres_password >/dev/null
 
-# 3. Restart wouri-api (postgres n'a pas besoin de redémarrer pour cette opération)
+# 3. Restart wouri-api (postgres n'a pas besoin de redémarrer pour cette
+#    opération ; il ne relit POSTGRES_PASSWORD_FILE qu'à l'initdb)
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
 ```
 
@@ -862,7 +873,7 @@ docker compose -f docker-compose.prod.yml exec postgres \
 | `pull access denied` sur `ghcr.io` | Image privée + pas loggé | `docker login ghcr.io` (cf. §6) |
 | `permission denied` sur `/app/auth_baileys` | Volume créé en root | `docker compose down && docker volume rm wourri_wa_auth && docker compose up -d` (perd session) |
 | Migration Alembic timeout | 2 workers uvicorn démarrent en parallèle | TOUJOURS appliquer les migrations AVANT `up -d` (cf. `run_migrations.sh`) |
-| `password authentication failed` Postgres | Clé `.env.prod` désynchronisée avec password réel | Cf. §Rotation POSTGRES_PASSWORD |
+| `password authentication failed` Postgres | Fichier secret `postgres_password` désynchronisé avec le password réel (#258 : plus de copie `.env.prod`) | Cf. §Rotation POSTGRES_PASSWORD |
 | Workflow CI échoue à `Login to GHCR` | Repo privé sans `packages: write` | Vérifier `permissions:` dans `.github/workflows/deploy-api.yml` |
 
 ---

@@ -115,9 +115,17 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     environment:
-      # URL Postgres : host = nom du service Docker (`postgres`, pas localhost).
-      # Driver `+psycopg` requis (psycopg 3.x utilisé par requirements.txt).
-      POSTGRES_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-wourri_prod}
+      # Issue #258 : URL assemblée PAR L'APPLICATION (app/db/url_resolver.py)
+      # depuis les composants ci-dessous + le Docker secret postgres_password.
+      # Fini la duplication du mot de passe (avant : 1× secret pour postgres,
+      # 1× ${POSTGRES_PASSWORD} interpolé ici, visible docker inspect).
+      # Host = nom du service Docker (`postgres`, pas localhost) ; le driver
+      # `+psycopg` (psycopg 3.x) est fixé par url_resolver.
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB:-wourri_prod}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
       # Active les garde-fous Settings : secret API obligatoire, debug force off
       # et CORS production. Sans cette valeur, l'application restait en mode dev.
       ENV: production
@@ -149,6 +157,9 @@ services:
     secrets:
       # Issue #213 : monte en read-only dans /run/secrets/ du container.
       - api_secret_key
+      # Issue #258 : même secret que le service postgres — un seul point de
+      # vérité pour le mot de passe (url_resolver lit POSTGRES_PASSWORD_FILE).
+      - postgres_password
     volumes:
       # Cache modèles ML : volume nommé persistant. Évite re-téléchargement
       # de PyTorch + Whisper + NLLB + MMS-dyu à chaque redéploiement.
