@@ -28,6 +28,7 @@ const {
 const { MessageQueue } = require('./lib/message_queue');
 const { CircuitBreaker, CircuitOpenError } = require('./lib/circuit_breaker');
 const { AudioCache } = require('./lib/audio_cache');
+const { createPendingReplayer } = require('./lib/pending_replay');
 
 // Sprint D.1 — extraction god file : modules locaux
 const { extractCity, isValidCity } = require('./lib/city_resolver');
@@ -358,65 +359,31 @@ async function isApiHealthy() {
     }
 }
 
-// Phase 2 — Notifier les utilisateurs ayant des messages en attente apres reconnexion WhatsApp
-// Le format (audio/texte) s'adapte au format du DERNIER message reçu de chaque utilisateur.
+// Phase 2 / fix #299 — Rejeu de la queue apres reconnexion WhatsApp.
 //
-// IMPORTANT (correction 2026-05-07) : on vérifie d'abord que l'API backend est UP.
-// Sinon on envoie "Je suis de retour" alors que seul WhatsApp a reconnecté
-// (l'API peut être encore down). Les messages restent en queue, on retentera à la
-// prochaine reconnexion WhatsApp.
-async function notifyPendingUsers() {
-    const pending = messageQueue.getPending();
-    if (pending.length === 0) return;
-
-    // Healthcheck API : ne pas mentir à l'utilisateur sur le retour du service
-    if (!(await isApiHealthy())) {
-        logger.info(`[QUEUE] API encore indisponible, ${pending.length} message(s) restent en queue (pas de notification "back")`);
-        return;
-    }
-
-    // Pour chaque utilisateur : retenir le DERNIER message reçu (pour adapter le format)
-    const lastMessageByUser = new Map();
-    for (const msg of pending) {
-        if (!msg.userNumber) continue;
-        const existing = lastMessageByUser.get(msg.userNumber);
-        if (!existing || new Date(msg.createdAt) > new Date(existing.createdAt)) {
-            lastMessageByUser.set(msg.userNumber, msg);
-        }
-    }
-
-    logger.info(`[QUEUE] Notification de ${lastMessageByUser.size} utilisateur(s) ayant des messages en attente`);
-
-    for (const [userNumber, lastMsg] of lastMessageByUser) {
-        try {
-            const isVoiceInput = lastMsg.payload?.isVoiceInput === true;
-            // Langue ACTUELLE de l'utilisateur (peut avoir changé depuis l'ajout en queue).
-            // Justification : le message "back" dit "Je suis de retour, pose-moi à nouveau
-            // ta question". L'utilisateur va re-poser dans sa langue actuelle, donc on lui
-            // répond dans sa langue actuelle (et non figée au moment de l'ajout en queue).
-            //
-            // Lecture directe de userPrefs.data[userNumber] au lieu de userPrefs.get(),
-            // pour éviter le side effect de création d'entrée par défaut pour un
-            // utilisateur disparu du fichier user_preferences.json.
-            const language =
-                userPrefs.data[userNumber]?.language
-                || lastMsg.payload?.language
-                || DEFAULT_USER_LANGUAGE;
-            await responseSender.sendExcuse(userNumber, {
-                isVoiceInput,
-                language,
-                kind: 'back',
-            });
-            // Retirer les messages en attente de cet utilisateur (deja repondus avec excuse)
-            const userMessages = pending.filter((m) => m.userNumber === userNumber);
-            for (const m of userMessages) {
-                await messageQueue.markSuccess(m.id);
-            }
-        } catch (err) {
-            logger.error(`[QUEUE] Erreur notification ${userNumber} : ${err.message}`);
-        }
-    }
-}
+// AVANT (bug #299) : on envoyait une excuse "Je suis de retour, repose ta
+// question" puis on JETAIT tous les messages en attente (markSuccess) SANS
+// jamais rejouer le payload contre /api/chat/. La promesse "aucun message
+// perdu" etait donc factuellement fausse : l'utilisateur devait tout retaper.
+//
+// APRES : chaque message en attente est REJOUE contre le backend et la vraie
+// reponse est envoyee a l'utilisateur. Le healthcheck API (ne pas rejouer si
+// l'API est encore down) est conserve DANS le replayer. Voir lib/pending_replay.js
+// pour les decisions (ordre chrono, feedback dernier message uniquement,
+// markSuccess APRES envoi, anti-flood, isolation par utilisateur).
+const replayPendingMessages = createPendingReplayer({
+    messageQueue,
+    userPrefs,
+    responseSender,
+    apiCircuitBreaker,
+    axios,
+    apiUrl: WOURI_API_URL,
+    authHeaders,
+    isApiHealthy,
+    randomDelay,
+    logger,
+    DEFAULT_USER_LANGUAGE,
+});
 
 // ========================================
 // CONNEXION WHATSAPP
@@ -525,8 +492,8 @@ async function connectWhatsApp() {
                 }
             }).catch(() => {});
 
-            // Notifier les utilisateurs en attente (queue Phase 2)
-            await notifyPendingUsers();
+            // Rejouer les messages en attente (queue Phase 2, fix #299)
+            await replayPendingMessages();
         }
     });
 
