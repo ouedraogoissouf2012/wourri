@@ -103,6 +103,22 @@ describe("createReconnectScheduler — garde anti-concurrence (#308 / #310 item5
         assert.strictEqual(getConnectCalls(), 0);
     });
 
+    test("[#398] abort (401) purge un timer de reconnexion DÉJÀ armé", () => {
+        const { scheduler, timers, getConnectCalls } = makeScheduler();
+        // 408 (récupérable) arme un timer...
+        scheduler.onClose(408);
+        assert.strictEqual(scheduler.getState().scheduled, true);
+        assert.strictEqual(timers.activeCount(), 1);
+        // ...puis 401 (loggedOut) arrive AVANT son tir → doit purger le timer.
+        const res = scheduler.onClose(401);
+        assert.strictEqual(res.action, "abort");
+        assert.strictEqual(scheduler.getState().scheduled, false, "garde relâché");
+        assert.strictEqual(scheduler.getState().hasTimer, false, "timer purgé");
+        assert.strictEqual(timers.scheduled[0].cleared, true, "clearTimeout appelé");
+        assert.strictEqual(timers.activeCount(), 0, "plus aucun timer en vol");
+        assert.strictEqual(getConnectCalls(), 0, "aucune reconnexion lancée");
+    });
+
     test("backoff exponentiel : le délai suit computeDelay(attempt) et attempt s'incrémente", () => {
         const { scheduler, timers } = makeScheduler();
         scheduler.onClose(408);

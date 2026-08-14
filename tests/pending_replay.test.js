@@ -314,4 +314,20 @@ describe("createPendingReplayer — fix #299 rejeu réel de la queue", () => {
         const ids = s.queue.getPending().map((m) => m.id);
         assert.deepStrictEqual(ids, ["bad"]);
     });
+
+    test("[#398] user absent des prefs → PAS d'entrée fantôme, rejeu depuis le payload", async () => {
+        const s = makeSetup(); tmpDir = s.tmpDir;
+        await s.queue.load();
+        // uGHOST n'a JAMAIS d'entrée prefs (aucun userPrefs.get()), mais un message
+        // est en queue. Avant #398, userPrefs.get() y créait une entrée par défaut.
+        await s.queue.add({ id: "m1", userNumber: "uGHOST", payload: { messageText: "Q1", language: "dioula", city: "Korhogo" } });
+
+        await s.replayer();
+
+        assert.strictEqual(s.userPrefs.data["uGHOST"], undefined, "aucune entrée fantôme créée");
+        assert.strictEqual(s.rs.calls.length, 1, "réponse rejouée malgré l'absence de prefs");
+        assert.strictEqual(s.rs.calls[0].userNumber, "uGHOST");
+        assert.strictEqual(s.rs.calls[0].prefs.language, "dioula", "langue reprise du payload");
+        assert.strictEqual(s.queue.getPending().length, 0, "message rejoué puis retiré");
+    });
 });
