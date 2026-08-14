@@ -585,6 +585,104 @@ describe("OnboardingMachine — fix bug #260 substring collision feedback", () =
 
 
 // ─────────────────────────────────────────────
+// Fix bug #269 — frontiere de mot Unicode (lettres dioula ɲ ɔ ɛ)
+//
+// `\b` en JS reste ASCII-only meme avec le flag `u` : `\bɲuman\b` ne matchait
+// jamais car ɲ (U+0272) n'est pas dans [A-Za-z0-9_]. Un agriculteur envoyant
+// "ɲuman" seul (= "bien") n'etait plus reconnu comme thumbsUp (regression
+// silencieuse vs PR #264). Fix : lookarounds negatifs sur [\p{L}\p{N}_].
+//
+// Ce bloc couvre les criteres de done de l'issue + la desambiguisation
+// DOWN-avant-UP sur messages mixtes (defense en profondeur preservee).
+// ─────────────────────────────────────────────
+
+describe("OnboardingMachine — fix bug #269 frontiere Unicode dioula", () => {
+    // Helper : joue un message en WAITING_FEEDBACK, renvoie { result, axios, sock }.
+    async function runFeedback(messageText) {
+        const sock = makeSockMock();
+        const axios = makeAxiosMock([{ status: 200, data: {} }]);
+        const m = makeMachine({ sock, axios });
+        const prefs = {
+            step: STEPS.WAITING_FEEDBACK,
+            pendingFeedback: { intent: "CULTURE_MAIS" },
+        };
+        const result = await m.processStep(prefs, messageText, "u1", {
+            isAudioMessage: false,
+            isVoiceInput: false,
+        });
+        return { result, axios, sock };
+    }
+
+    test("[fix #269] 'ɲuman' seul (dioula = bien) → endpoint positif", async () => {
+        const { result, axios } = await runFeedback("ɲuman");
+        assert.strictEqual(result.handled, true);
+        assert.strictEqual(axios.calls.length, 1);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/positif$/);
+    });
+
+    test("[fix #269] 'numan' seul (variante sans ɲ) → endpoint positif", async () => {
+        const { result, axios } = await runFeedback("numan");
+        assert.strictEqual(result.handled, true);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/positif$/);
+    });
+
+    test("[fix #269] 'ɲuman' entoure de ponctuation → endpoint positif", async () => {
+        // Frontiere Unicode : la ponctuation n'est ni \p{L} ni \p{N}, donc borne OK.
+        const { result, axios } = await runFeedback("ɲuman!");
+        assert.strictEqual(result.handled, true);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/positif$/);
+    });
+
+    test("[fix #269 anti-reg] 'te ɲuman' (negation dioula) → endpoint negatif", async () => {
+        const { result, axios } = await runFeedback("te ɲuman");
+        assert.strictEqual(result.handled, true);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/negatif$/);
+    });
+
+    test("[fix #269 anti-reg] 'pas bon' (negation FR 2 mots) → endpoint negatif", async () => {
+        const { result, axios } = await runFeedback("pas bon");
+        assert.strictEqual(result.handled, true);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/negatif$/);
+    });
+
+    test("[fix #269 anti-reg] 'bonjour' ne matche PAS thumbsUp (collision 'bon')", async () => {
+        // Parite avec l'ancien \b : la continuation 'jour' (lettres) bloque la borne.
+        const { result, axios, sock } = await runFeedback("bonjour");
+        assert.strictEqual(result.handled, true);
+        assert.strictEqual(axios.calls.length, 0);
+        assert.ok(
+            sock.sent.some(s => /jaabi|👍|👎/.test(s.msg.text)),
+            "Message re-demande envoye"
+        );
+    });
+
+    // ── Desambiguisation DOWN-avant-UP (messages mixtes) ──
+    // processStep teste thumbsDown EN PREMIER (onboarding.js). Un message
+    // contenant a la fois un mot positif et un mot negatif doit tomber en NEGATIF.
+
+    test("[fix #269 desambig] 'oui mais c'est pas bon' (mixte) → NEGATIF", async () => {
+        const { result, axios } = await runFeedback("oui mais c'est pas bon");
+        assert.strictEqual(result.handled, true);
+        assert.strictEqual(axios.calls.length, 1);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/negatif$/);
+    });
+
+    test("[fix #269 desambig] 'bien mais te ɲuman' (mixte dioula) → NEGATIF", async () => {
+        const { result, axios } = await runFeedback("bien mais te ɲuman");
+        assert.strictEqual(result.handled, true);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/negatif$/);
+    });
+
+    test("[fix #269 desambig] 'ɲuman' pur reste POSITIF (pas de mot negatif)", async () => {
+        // Contre-preuve : sans mot negatif, la desambiguisation laisse passer POSITIF.
+        const { result, axios } = await runFeedback("ɲuman kosɛbɛ");
+        assert.strictEqual(result.handled, true);
+        assert.match(axios.calls[0].url, /\/api\/feedback\/positif$/);
+    });
+});
+
+
+// ─────────────────────────────────────────────
 // Edge cases coverage — followup session 2026-05-30
 // Note : 2 tests "te ɲuman" et "pas bon" → endpoint negatif deja
 // inclus dans PR #264 (fix bug #260). Ce bloc ajoute 6 tests
