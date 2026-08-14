@@ -306,7 +306,8 @@ node --test tests/circuit_breaker.test.js tests/message_queue.test.js tests/reco
 |---|---|---|---|
 | `PORT` | `3001` | non | Port d'écoute Express |
 | `WOURI_API_URL` | `http://localhost:8000` | non | URL de l'API backend |
-| `WOURI_API_KEY` | (vide) | **oui en prod** | Clé partagée avec backend (header `X-API-Key`) |
+| `WOURI_API_KEY` | (vide) | **oui en prod** | Clé partagée avec backend (header `X-API-Key`) — fallback si `WOURI_API_KEY_FILE` absent/illisible |
+| `WOURI_API_KEY_FILE` | (vide) | non | #257 : fichier secret contenant la clé (**prioritaire** sur `WOURI_API_KEY` — `lib/secrets.js`) |
 | `NODE_ENV` | `development` | non | `production` active certains warnings sécurité |
 | `HUMAN_DELAY_PROFILE` | `fast` | non | Profil des délais "simulation humaine" (`fast` \| `natural` \| `off`, cf. `lib/human_delays.js`). `natural` = valeurs historiques anti-ban, rollback en 1 env var |
 
@@ -319,4 +320,4 @@ node --test tests/circuit_breaker.test.js tests/message_queue.test.js tests/reco
 | Connexion perdue | Auto-reconnexion 3s après déconnexion. Vérifier les logs |
 | Session expirée (~2 semaines inactivité) | Re-scan QR via `/qr-page` |
 | Backend `wouri-api` down | Messages échoués (pas de queue actuellement, à corriger Phase Robustesse) |
-| `WOURI_API_KEY non definie en production` | Définir `WOURI_API_KEY` dans `.env` |
+| `WOURI_API_KEY non definie en production` | Prod #257 : vérifier le fichier `WOURI_API_KEY_FILE` (non vide, lisible uid 1000) — prioritaire sur l'env. Dev : définir `WOURI_API_KEY` dans `.env` |

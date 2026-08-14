@@ -39,11 +39,14 @@ const { UserPrefs, STEPS, DEFAULT_USER_LANGUAGE } = require('./lib/user_prefs');
 
 // Phase 3 Observabilité — logger structuré pino JSON
 const { logger } = require('./lib/logger');
+// Issue #257 — pattern Docker secrets *_FILE (miroir de app/config.py côté API)
+const { readSecret } = require('./lib/secrets');
 
 // Configuration
 const PORT = process.env.PORT || 3001;
 const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
-const WOURI_API_KEY = process.env.WOURI_API_KEY || '';
+// Priorité WOURI_API_KEY_FILE (secret monté en fichier) puis WOURI_API_KEY (env)
+const WOURI_API_KEY = readSecret('WOURI_API_KEY', { logger });
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
 const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
 const AUDIO_CACHE_FOLDER = path.join(__dirname, 'audio_cache');
@@ -63,7 +66,14 @@ function authHeaders() {
 // backend protege. Le laisser demarrer donnerait un container "healthy" mais
 // fonctionnellement inutilisable.
 if (process.env.NODE_ENV === 'production' && !WOURI_API_KEY) {
-    logger.fatal('[SECURITY] WOURI_API_KEY non definie en production — demarrage refuse');
+    // #257 : nommer la vraie cause — si WOURI_API_KEY_FILE est defini, le
+    // probleme est le FICHIER (vide/illisible/absent, cf. warn [SECRETS]
+    // au-dessus), pas la variable d'env.
+    logger.fatal(
+        process.env.WOURI_API_KEY_FILE
+            ? `[SECURITY] Cle vide : WOURI_API_KEY_FILE=${process.env.WOURI_API_KEY_FILE} illisible ou vide (voir warn [SECRETS]) — demarrage refuse`
+            : '[SECURITY] WOURI_API_KEY non definie en production — demarrage refuse'
+    );
     process.exit(1);
 }
 

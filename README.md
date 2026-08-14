@@ -124,7 +124,8 @@ L'utilisateur peut envoyer ces messages pour ajuster ses préférences :
 |---|---|---|---|
 | `PORT` | `3001` | non | Port Express |
 | `WOURI_API_URL` | `http://localhost:8000` | non | URL de l'API backend Wourri |
-| `WOURI_API_KEY` | (vide) | **oui en prod** | Clé partagée backend (`X-API-Key`) |
+| `WOURI_API_KEY` | (vide) | **oui en prod**¹ | Clé partagée backend (`X-API-Key`) — fallback si `WOURI_API_KEY_FILE` absent/illisible |
+| `WOURI_API_KEY_FILE` | (vide) | non | #257 : chemin d'un fichier secret contenant la clé (**prioritaire** sur `WOURI_API_KEY` ; en prod compose : `/run/secrets/wouri_api_key`) |
 | `NODE_ENV` | `development` | non | `production` active warnings sécurité + force JSON logs |
 | `LOG_LEVEL` | `info` | non | Niveau pino : `trace`/`debug`/`info`/`warn`/`error`/`fatal`/`silent` |
 
@@ -178,9 +179,16 @@ Vérifier les logs pour le code de déconnexion :
 
 Re-scanner via `http://localhost:3001/qr-page`.
 
-### `WOURI_API_KEY non definie en production`
+### `WOURI_API_KEY non definie en production` / clé vide
 
-Définir `WOURI_API_KEY` dans `.env` (la même clé que `API_SECRET_KEY` côté backend).
+- **Prod compose (#257)** : la clé vient du fichier secret
+  (`WOURI_API_KEY_FILE=/run/secrets/wouri_api_key`). Vérifier que le fichier
+  hôte existe, est NON VIDE et lisible par uid 1000 (cf. wouri-api
+  `docs/deployment.md` §5b). Définir `WOURI_API_KEY` en env ne sert à rien
+  tant que `WOURI_API_KEY_FILE` pointe un fichier lisible non vide (priorité
+  au fichier).
+- **Dev local** : définir `WOURI_API_KEY` dans `.env` (la même clé que
+  `API_SECRET_KEY` côté backend).
 
 ### L'API backend est down
 
