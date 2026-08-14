@@ -40,7 +40,13 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Installation des dépendances Python en couche cacheable
 # (requirements.txt change moins souvent que le code)
 COPY requirements.txt /tmp/requirements.txt
+# torch CPU-only depuis l'index PyTorch AVANT le reste : evite la pile CUDA
+# nvidia (~11 Go inutiles sur un serveur CPU). `torch>=2.1.0` du requirements
+# est alors deja satisfait par 2.13.0+cpu → pip ne le re-telecharge pas.
+# Mesure conteneur : torch CUDA+nvidia ~11 Go vs torch CPU 754 Mo
+# (image attendue ~19 Go → ~5 Go).
 RUN pip install --upgrade pip setuptools wheel \
+    && pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu \
     && pip install -r /tmp/requirements.txt
 
 
