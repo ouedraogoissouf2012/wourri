@@ -231,5 +231,5 @@ async def check_deepseek_status() -> bool:
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.get(url, headers=headers)
             return response.status_code == 200
-    except:
+    except Exception:
         return False
