@@ -47,24 +47,25 @@ _FIXTURE_OGG = Path(__file__).parent / "fixtures" / "sample_tone.ogg"
 # ─────────────────────────────────────────────────────────────────────────
 
 
-class RealWavAssertingProvider(ASRProvider):
-    """Provider stub qui CAPTURE le WAV produit par la vraie conversion ffmpeg.
+class RealFfmpegStubProvider(ASRProvider):
+    """Provider stub qui exerce la VRAIE conversion ffmpeg puis renvoie une
+    transcription bambara connue (sans modèle ML).
 
-    `transcribe_wav` reçoit le chemin d'un WAV produit par la vraie conversion
-    ffmpeg (via `ASRChain`/`prepared_wav_16k`), lit son contenu (le fichier est
-    nettoyé à la sortie du contexte, donc on capture les octets ici) et renvoie
-    une transcription bambara connue — sans charger de modèle ML.
-
-    La VÉRIFICATION du WAV se fait au niveau du test (`assert_produced_valid_wav`)
-    APRÈS l'appel HTTP : une assertion levée ici serait avalée par le try/except
-    de `ASRChain._try_chain` et ne pourrait pas faire échouer le test avec le bon
-    diagnostic.
+    Le test E2E doit prouver que ffmpeg convertit réellement l'audio, quel que
+    soit le point où la chaîne déclenche l'inférence — et ce point diffère selon
+    la version de la chaîne :
+      - chaîne « historique » : appelle `provider.transcribe(bytes, ext)` (le
+        provider convertit lui-même) ;
+      - chaîne #301 : convertit UNE fois en amont et appelle
+        `provider.transcribe_wav(wav_path)` avec le WAV déjà prêt.
+    Le stub implémente les DEUX chemins et capture le contenu du WAV 16k dans les
+    deux cas → le test est indépendant de la version de la chaîne (pas de
+    couplage inter-PR avec #301).
     """
 
     def __init__(self, transcription: str):
         self._transcription = transcription
-        self.received_wav: Optional[str] = None
-        self.captured_bytes: Optional[bytes] = None
+        self.captured_wav_bytes: Optional[bytes] = None
 
     @property
     def name(self) -> str:
@@ -74,25 +75,44 @@ class RealWavAssertingProvider(ASRProvider):
         return True
 
     def transcribe_wav(self, wav_path: str) -> Optional[str]:
-        self.received_wav = wav_path
-        # Capture le contenu MAINTENANT : prepared_wav_16k nettoie le WAV à la
-        # sortie du contexte, il n'existera plus au moment des assertions du test.
-        self.captured_bytes = Path(wav_path).read_bytes()
+        # Chemin chaîne #301 : le WAV a déjà été converti en amont par ffmpeg.
+        self.captured_wav_bytes = Path(wav_path).read_bytes()
         return self._transcription
 
-    def assert_produced_valid_wav(self) -> None:
-        """Prouve, hors du chemin avalé, que ffmpeg a produit un WAV 16k mono.
+    async def transcribe(self, audio_bytes: bytes, file_extension: str = "ogg") -> Optional[str]:
+        # Chemin chaîne historique : le provider convertit lui-même via la VRAIE
+        # conversion ffmpeg, puis capture le WAV produit.
+        import os
+        import tempfile
 
-        Levée au niveau du test → échec explicite si la conversion ffmpeg casse.
-        """
-        assert self.received_wav is not None, "transcribe_wav n'a jamais été appelé"
-        assert self.received_wav.endswith(".wav")
-        assert self.captured_bytes is not None
+        from app.services.asr.audio_utils import convert_to_wav_16k
+
+        tmp_dir = tempfile.mkdtemp(prefix="e2e_asr_")
+        src = os.path.join(tmp_dir, f"in.{file_extension}")
+        wav = os.path.join(tmp_dir, "out.wav")
+        try:
+            with open(src, "wb") as f:
+                f.write(audio_bytes)
+            assert convert_to_wav_16k(src, wav), "conversion ffmpeg échouée"
+            self.captured_wav_bytes = Path(wav).read_bytes()
+            return self._transcription
+        finally:
+            for p in (src, wav):
+                if os.path.exists(p):
+                    os.remove(p)
+            os.rmdir(tmp_dir)
+
+    def assert_produced_valid_wav(self) -> None:
+        """Prouve que ffmpeg a produit un WAV 16k mono (échec explicite sinon)."""
+        assert self.captured_wav_bytes is not None, (
+            "ni transcribe ni transcribe_wav n'a été appelé — la chaîne n'a pas "
+            "exercé le provider"
+        )
         assert (
-            self.captured_bytes[:4] == b"RIFF" and self.captured_bytes[8:12] == b"WAVE"
-        ), f"En-tête WAV invalide : {self.captured_bytes[:12]!r}"
-        # Vérifie les paramètres attendus du WAV converti (16 kHz mono).
-        with wave.open(io.BytesIO(self.captured_bytes), "rb") as wav_file:
+            self.captured_wav_bytes[:4] == b"RIFF"
+            and self.captured_wav_bytes[8:12] == b"WAVE"
+        ), f"En-tête WAV invalide : {self.captured_wav_bytes[:12]!r}"
+        with wave.open(io.BytesIO(self.captured_wav_bytes), "rb") as wav_file:
             assert wav_file.getframerate() == 16000, (
                 f"sample rate attendu 16000, obtenu {wav_file.getframerate()}"
             )
@@ -134,7 +154,7 @@ class TestAudioPipelineWiring:
         """
         # Chaîne ASR réelle mais avec un provider stub → la conversion ffmpeg
         # (prepared_wav_16k) tourne POUR DE VRAI ; seule l'inférence est stubbée.
-        stub_provider = RealWavAssertingProvider("malo sɛnɛ wagati")
+        stub_provider = RealFfmpegStubProvider("malo sɛnɛ wagati")
         stub_chain = ASRChain(providers=[stub_provider])
 
         nlu_service = MagicMock()
@@ -214,7 +234,7 @@ class TestAudioPipelineWiring:
 
     def test_transcribe_only_converts_and_returns_text(self, client, audio_bytes):
         """`/transcribe` (sans traduction) : OGG → ffmpeg réel → texte ASR."""
-        stub_provider = RealWavAssertingProvider("kaba sɛnɛ")
+        stub_provider = RealFfmpegStubProvider("kaba sɛnɛ")
         stub_chain = ASRChain(providers=[stub_provider])
 
         with patch("app.routers.asr.get_asr_chain", return_value=stub_chain):
@@ -244,11 +264,8 @@ class TestAudioPipelineFullML:
         """OGG réel → vraie chaîne ASR → chat → vrai TTS dioula → audio écrit.
 
         Ne pré-suppose pas le contenu transcrit (le ton 440 Hz n'est pas de la
-        parole) : vérifie seulement que le parcours ne casse pas et que, si une
-        réponse audio est produite, son URL pointe vers /static/audio/.
+        parole) : vérifie seulement que le parcours ne casse pas.
         """
-        from app.services.asr import get_asr_chain
-
         resp = client.post(
             "/api/asr/transcribe-and-translate",
             files={"audio": ("q.ogg", io.BytesIO(audio_bytes), "audio/ogg")},
@@ -259,6 +276,3 @@ class TestAudioPipelineFullML:
         assert resp.status_code in {200, 500}, resp.text
         if resp.status_code == 200:
             assert "transcription" in resp.json()
-        # Le singleton de chaîne doit exposer le contrat #301.
-        for provider in get_asr_chain().providers:
-            assert hasattr(provider, "transcribe_wav")
