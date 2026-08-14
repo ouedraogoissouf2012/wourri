@@ -153,9 +153,13 @@ def _best_result_pg(
 
     Args:
         rows: candidats `{id, intent, cultures, conditions, reponse_bambara,
-            reponse_fr, score_validation}` retournés par la requête SQL.
+            reponse_fr, score_validation, distance}` retournés par la requête SQL
+            (`distance` = distance cosine pgvector, instrumentation #297).
         season: saison courante, injectable pour les tests ; par défaut
             `season_scoring.get_current_season()`.
+
+    Returns: dict du meilleur candidat, incluant la clé `distance` (celle du row
+    retenu, ou `None` si non fournie). Aucun filtrage sur la distance en A1.
     """
     if not rows:
         return None
@@ -185,7 +189,28 @@ def _best_result_pg(
                 # Héritage du contrat Chroma : `cultures` était stocké en CSV ;
                 # ici on retourne la 1re culture (la plus spécifique) en string.
                 "cultures": cultures_list[0] if cultures_list else "*",
+                # #297 A1 (ADR-0028) : distance cosine pgvector du candidat retenu,
+                # exposée pour observation (instrumentation) et futur gating A2.
+                # `None` si absente (ex. appel direct sans colonne `distance` en test).
+                "distance": row.get("distance"),
             }
+
+    if best is not None:
+        # #297 A1 : INSTRUMENTATION SEULE — on LOGGE la distance du best retenu,
+        # AUCUN rejet/gating (réservé à la phase A2). Le best est sélectionné par
+        # le season-scoring, pas par la distance mini → la distance loggée est
+        # celle du row effectivement retenu.
+        distance = best["distance"]
+        if distance is not None:
+            logger.info(
+                "[VDB-PG] best=%s distance=%.4f score=%.3f intent=%s",
+                best["id"], float(distance), best_score, best["intent"],
+            )
+        else:
+            logger.info(
+                "[VDB-PG] best=%s distance=n/a score=%.3f intent=%s",
+                best["id"], best_score, best["intent"],
+            )
 
     return best
 
@@ -193,7 +218,10 @@ def _best_result_pg(
 def _query_candidates(intent: str, query_text: str, culture_filter: Optional[str]) -> list[dict]:
     """Exécute une requête SQL pgvector avec filtres intent + culture optionnels.
 
-    Retourne jusqu'à 5 candidats ordonnés par distance cosine croissante.
+    Retourne jusqu'à 5 candidats ordonnés par distance cosine croissante. Chaque
+    row inclut la clé `distance` (distance cosine pgvector `<=>` du candidat à la
+    requête) — instrumentation #297 (ADR-0028 A1), sans coût d'index puisque
+    l'expression est déjà calculée par l'`ORDER BY`.
     """
     from sqlalchemy import text
 
@@ -204,7 +232,8 @@ def _query_candidates(intent: str, query_text: str, culture_filter: Optional[str
         sql = text(
             """
             SELECT id, intent, cultures, conditions, reponse_bambara, reponse_fr,
-                   score_validation
+                   score_validation,
+                   embedding <=> CAST(:query_emb AS vector) AS distance
             FROM corpus_entries
             WHERE intent = :intent
               AND cultures && ARRAY[:culture]::text[]
@@ -217,7 +246,8 @@ def _query_candidates(intent: str, query_text: str, culture_filter: Optional[str
         sql = text(
             """
             SELECT id, intent, cultures, conditions, reponse_bambara, reponse_fr,
-                   score_validation
+                   score_validation,
+                   embedding <=> CAST(:query_emb AS vector) AS distance
             FROM corpus_entries
             WHERE intent = :intent
             ORDER BY embedding <=> CAST(:query_emb AS vector)

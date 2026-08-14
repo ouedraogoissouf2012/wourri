@@ -52,17 +52,24 @@ class NLUResult:
 class NLUService:
     """Service NLU principal — singleton."""
 
-    # Seuil de confiance minimum pour utiliser la phrase reconstruite
-    MIN_CONFIDENCE_THRESHOLD = 0.2
-
-    def __init__(self, concepts_path: str):
+    def __init__(self, concepts_path: str, min_confidence: Optional[float] = None):
         """Charge la configuration NLU depuis le fichier JSON.
 
         Args:
             concepts_path: Chemin vers dictionnaires/nlu_concepts.json
+            min_confidence: seuil de confiance minimum pour utiliser la phrase
+                reconstruite. Injectable (tests, DIP) ; si `None`, lu depuis
+                `settings.nlu_min_confidence` (issue #297 — externalisation du
+                hardcode historique 0.2, valeur par défaut inchangée).
         """
         if not os.path.exists(concepts_path):
             raise FileNotFoundError(f"[NLU] Fichier concepts non trouvé: {concepts_path}")
+
+        if min_confidence is None:
+            from app.config import settings
+
+            min_confidence = settings.nlu_min_confidence
+        self._min_confidence = float(min_confidence)
 
         with open(concepts_path, "r", encoding="utf-8") as f:
             self._config = json.load(f)
@@ -119,7 +126,7 @@ class NLUService:
         is_greeting_only = (intent == "SALUTATION_SEULE")
 
         if not is_out_of_scope and not is_greeting_only:
-            if confidence >= self.MIN_CONFIDENCE_THRESHOLD:
+            if confidence >= self._min_confidence:
                 french_sentence = self._builder.build(
                     intent=intent,
                     concepts=concepts,
@@ -157,7 +164,7 @@ class NLUService:
             "total_concepts": len(concepts),
             "total_intents": len(intents),
             "total_keywords": total_keywords,
-            "min_confidence_threshold": self.MIN_CONFIDENCE_THRESHOLD,
+            "min_confidence_threshold": self._min_confidence,
         }
 
 

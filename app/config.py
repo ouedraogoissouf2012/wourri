@@ -197,6 +197,20 @@ class Settings(BaseSettings):
     # Code langue {lang}_{script} parmi les 1672 langues supportées (ex: "dyu_Latn", "bam_Latn")
     omnilingual_default_lang: str = "dyu_Latn"
 
+    # ========== Qualité IVR (issue #297, ADR-0028) ==========
+    # Phase A1 = INSTRUMENTATION SEULE : ces réglages n'induisent AUCUN rejet.
+    #
+    # Seuil de confiance NLU minimum pour utiliser la phrase reconstruite,
+    # externalisé de NLUService.MIN_CONFIDENCE_THRESHOLD (#297). Défaut historique
+    # conservé (0.2) → comportement inchangé. ge/le : une confiance vit dans [0,1].
+    nlu_min_confidence: float = Field(default=0.2, ge=0.0, le=1.0)
+    # Distance cosine pgvector (`<=>`, intervalle [0,2]) maximale tolérée pour
+    # accepter un match IVR. DÉCLARÉ mais NON UTILISÉ en A1 (aucun gating) —
+    # réservé à la phase A2. Valeur PROVISOIRE (1.0) : sera CALIBRÉE en A2 à partir
+    # de la distribution des distances observées via l'instrumentation A1
+    # (logs "[VDB-PG] best=... distance=..."). Ne pas s'appuyer dessus pour l'instant.
+    ivr_max_semantic_distance: float = Field(default=1.0, ge=0.0, le=2.0)
+
     @property
     def is_production(self) -> bool:
         return self.env.lower() == "production"
