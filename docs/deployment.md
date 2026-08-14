@@ -618,15 +618,21 @@ Le module `app/security.py` est couvert par `tests/unit/test_security.py` (6 tes
 
 ### Rotation du `POSTGRES_PASSWORD`
 
+> **#258** : le mot de passe vit UNIQUEMENT dans le fichier secret
+> `/srv/wourri/secrets/postgres_password` — `wouri-api` assemble son URL via
+> `POSTGRES_PASSWORD_FILE` (`app/db/url_resolver.py`), plus de copie dans
+> `.env.prod`.
+
 ```bash
 # 1. Changer le mot de passe dans Postgres
 docker compose -f docker-compose.prod.yml exec postgres \
   psql -U wourri -d wourri_prod -c "ALTER USER wourri PASSWORD 'NEW_PWD';"
 
-# 2. L'écrire dans .env.prod
-sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=NEW_PWD|" /srv/wourri/.env.prod
+# 2. L'écrire dans le fichier secret (UNIQUE source de vérité)
+echo -n "NEW_PWD" | sudo tee /srv/wourri/secrets/postgres_password >/dev/null
 
-# 3. Restart wouri-api (postgres n'a pas besoin de redémarrer pour cette opération)
+# 3. Restart wouri-api (postgres n'a pas besoin de redémarrer pour cette
+#    opération ; il ne relit POSTGRES_PASSWORD_FILE qu'à l'initdb)
 docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
 ```
 
@@ -862,7 +868,7 @@ docker compose -f docker-compose.prod.yml exec postgres \
 | `pull access denied` sur `ghcr.io` | Image privée + pas loggé | `docker login ghcr.io` (cf. §6) |
 | `permission denied` sur `/app/auth_baileys` | Volume créé en root | `docker compose down && docker volume rm wourri_wa_auth && docker compose up -d` (perd session) |
 | Migration Alembic timeout | 2 workers uvicorn démarrent en parallèle | TOUJOURS appliquer les migrations AVANT `up -d` (cf. `run_migrations.sh`) |
-| `password authentication failed` Postgres | Clé `.env.prod` désynchronisée avec password réel | Cf. §Rotation POSTGRES_PASSWORD |
+| `password authentication failed` Postgres | Fichier secret `postgres_password` désynchronisé avec le password réel (#258 : plus de copie `.env.prod`) | Cf. §Rotation POSTGRES_PASSWORD |
 | Workflow CI échoue à `Login to GHCR` | Repo privé sans `packages: write` | Vérifier `permissions:` dans `.github/workflows/deploy-api.yml` |
 
 ---

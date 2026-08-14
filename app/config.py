@@ -3,7 +3,6 @@ WOURI - Configuration
 """
 from pydantic_settings import BaseSettings
 from functools import lru_cache
-from pathlib import Path
 import logging
 import os
 import sys
@@ -11,26 +10,10 @@ import sys
 logger = logging.getLogger(__name__)
 
 
-def _read_file_secret(name: str) -> str:
-    """Lit le contenu du fichier référencé par `{NAME}_FILE` env var.
-
-    Issue #213 — pattern Docker secrets. Le compose monte les fichiers de
-    secrets dans `/run/secrets/<nom>`, puis définit dans environment :
-        API_SECRET_KEY_FILE=/run/secrets/api_secret_key
-    Pydantic Settings lit la valeur d'env `API_SECRET_KEY` (vide), donc on
-    surcharge dans `get_settings()` en lisant le fichier ici.
-
-    Backward-compat : si `{NAME}_FILE` n'est pas défini OU le fichier est
-    introuvable, retourne `""` → l'opérateur qui n'a pas migré garde le
-    comportement précédent (lecture depuis `.env`).
-    """
-    file_path = os.getenv(f"{name}_FILE")
-    if not file_path:
-        return ""
-    p = Path(file_path)
-    if not p.is_file():
-        return ""
-    return p.read_text(encoding="utf-8").strip()
+# Issue #258 : helper extrait vers app/core/secrets.py (2e consommateur :
+# app/db/url_resolver.py pour POSTGRES_PASSWORD_FILE). L'alias privé est
+# conservé — get_settings() et les importeurs historiques restent valides.
+from app.core.secrets import read_file_secret as _read_file_secret
 
 
 class Settings(BaseSettings):
