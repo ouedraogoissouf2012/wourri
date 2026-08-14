@@ -6,11 +6,9 @@ RobotsMali/soloni-114m-tdt-ctc-v0 avec décodeur malsd_batch.
 """
 import logging
 import os
-import tempfile
 from typing import Optional
 
 from app.services.asr.base import ASRProvider
-from app.services.asr.audio_utils import transcribe_with_temp_files
 
 logger = logging.getLogger(__name__)
 
@@ -85,8 +83,8 @@ class NemoSoloniASR(ASRProvider):
             return None
         return self._get_model()
 
-    def _transcribe_wav(self, wav_path: str) -> Optional[str]:
-        """Transcrit un WAV 16kHz avec NeMo TDT."""
+    def _infer_wav(self, wav_path: str) -> Optional[str]:
+        """Inférence brute NeMo TDT sur un WAV 16kHz (sans post-traitement)."""
         model = self._get_model()
         if model is None:
             return None
@@ -109,13 +107,9 @@ class NemoSoloniASR(ASRProvider):
             logger.error("[%s] Erreur inférence: %s", self.name, e, exc_info=True)
             return None
 
-    async def transcribe(self, audio_bytes: bytes, file_extension: str = "ogg") -> Optional[str]:
-        if not self.is_available():
-            return None
-
-        result = await transcribe_with_temp_files(
-            audio_bytes, file_extension, self._transcribe_wav, self.name,
-        )
+    def transcribe_wav(self, wav_path: str) -> Optional[str]:
+        """Transcrit un WAV 16kHz (inférence + normalisation bambara)."""
+        result = self._infer_wav(wav_path)
 
         # Post-traitement : normalisation bambara
         if result:

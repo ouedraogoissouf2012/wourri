@@ -3,14 +3,14 @@ WOURI - Utilitaires audio partagés par tous les ASR providers.
 
 Mutualise la conversion WAV 16kHz + gestion des fichiers temporaires.
 """
-import asyncio
+import contextlib
 import logging
 import os
 import re
 import subprocess
 import tempfile
 import uuid
-from typing import Optional, Callable
+from typing import Optional, Iterator
 
 logger = logging.getLogger(__name__)
 
@@ -45,30 +45,42 @@ def convert_to_wav_16k(input_path: str, output_path: str) -> bool:
         return False
 
 
-async def transcribe_with_temp_files(
-    audio_bytes: bytes,
-    file_extension: str,
-    sync_transcribe_fn: Callable[[str], Optional[str]],
-    provider_name: str,
-) -> Optional[str]:
-    """Pipeline commun : bytes → fichier temp → WAV 16kHz → transcription → cleanup.
+def _safe_prefix(label: str) -> str:
+    """Neutralise les séparateurs de chemin d'un nom lisible.
+
+    Le nom lisible d'un provider peut contenir des caractères invalides pour
+    un nom de fichier (ex. "MMS-generic (Bambara/Dioula)"). On les remplace
+    avant de construire les chemins temporaires, sinon le "/" créerait un
+    sous-dossier inexistant.
+    """
+    return re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
+
+
+@contextlib.contextmanager
+def prepared_wav_16k(audio_bytes: bytes, file_extension: str, label: str) -> Iterator[Optional[str]]:
+    """Convertit `audio_bytes` en WAV 16kHz UNE fois et yield son chemin.
+
+    Écrit les bytes dans un fichier temp, convertit via ffmpeg, puis yield le
+    chemin du WAV 16k (ou `None` si la conversion échoue). Les deux fichiers
+    temporaires (source + WAV) sont nettoyés à la sortie du contexte, même en
+    cas d'exception.
+
+    #301 : mutualise la conversion pour que la chaîne ASR ne convertisse qu'une
+    seule fois un audio partagé par plusieurs providers (avant : chaque provider
+    reconvertissait — 2 à 4 fois le même audio par requête).
 
     Args:
         audio_bytes: Contenu brut de l'audio.
         file_extension: Extension source (ogg, mp3, wav...).
-        sync_transcribe_fn: Fonction synchrone qui transcrit un WAV 16kHz.
-        provider_name: Nom du provider (pour les logs et noms de fichiers).
+        label: Nom lisible (provider/chaîne) — logs + préfixe des fichiers temp.
 
-    Returns:
-        Texte transcrit, ou None si échec.
+    Yields:
+        Le chemin du WAV 16k prêt, ou `None` si la conversion a échoué.
     """
     os.makedirs(_TEMP_DIR, exist_ok=True)
 
     temp_id = uuid.uuid4()
-    # Le nom lisible d'un provider peut contenir des séparateurs de chemin
-    # (ex. "MMS-generic (Bambara/Dioula)"). Ils doivent être neutralisés
-    # avant de construire les noms de fichiers temporaires.
-    prefix = re.sub(r"[^a-z0-9]+", "_", provider_name.lower()).strip("_")
+    prefix = _safe_prefix(label)
     temp_path = os.path.join(_TEMP_DIR, f"{prefix}_{temp_id}.{file_extension}")
     wav_path = os.path.join(_TEMP_DIR, f"{prefix}_{temp_id}.wav")
 
@@ -77,11 +89,10 @@ async def transcribe_with_temp_files(
             f.write(audio_bytes)
 
         if not convert_to_wav_16k(temp_path, wav_path):
-            logger.error("[%s] Échec conversion WAV", provider_name)
-            return None
-
-        result = await asyncio.to_thread(sync_transcribe_fn, wav_path)
-        return result
+            logger.error("[%s] Échec conversion WAV", label)
+            yield None
+        else:
+            yield wav_path
 
     finally:
         for path in [temp_path, wav_path]:

@@ -9,6 +9,7 @@ Usage :
     chain = get_asr_chain()
     text = await chain.transcribe(audio_bytes, "ogg")
 """
+import asyncio
 import logging
 from typing import Optional
 
@@ -57,14 +58,30 @@ class ASRChain:
     ) -> Optional[str]:
         """Transcrit l'audio en essayant chaque provider dans l'ordre.
 
+        #301 : l'audio est converti en WAV 16kHz UNE seule fois en amont, puis
+        le WAV prêt est partagé entre tous les providers (et l'agri_fallback) via
+        `ASRProvider.transcribe_wav`. Avant, chaque provider reconvertissait —
+        2 à 4 conversions ffmpeg du même audio par requête.
+
         Si un provider réussit mais sans mot-clé agricole détecté,
         et qu'un agri_fallback est configuré, tente le fallback.
         """
-        result, winner = await self._try_chain(audio_bytes, file_extension)
+        from app.services.asr.audio_utils import prepared_wav_16k
+
+        with prepared_wav_16k(audio_bytes, file_extension, "ASRChain") as wav_path:
+            if wav_path is None:
+                # Conversion échouée : rien à transcrire.
+                return None
+            return await self._transcribe_wav(wav_path)
+
+    async def _transcribe_wav(self, wav_path: str) -> Optional[str]:
+        """Orchestration sur un WAV 16k déjà converti (cascade + agri_fallback)."""
+        from app.services.asr_normalizer import normalize_asr_output
+
+        result, winner = await self._try_chain(wav_path)
 
         # Normalisation post-ASR (corrections exactes + fuzzy matching NLU)
         if result:
-            from app.services.asr_normalizer import normalize_asr_output
             normalized = normalize_asr_output(result)
             if normalized != result:
                 logger.info("[ASRChain] Normalisé: '%s' → '%s'", result, normalized)
@@ -87,15 +104,16 @@ class ASRChain:
                         "[ASRChain] Pas de mot agricole détecté → second passage %s",
                         self._agri_fallback.name,
                     )
-                    fallback_result = await self._agri_fallback.transcribe(
-                        audio_bytes, file_extension,
+                    # Réutilise le MÊME WAV déjà converti (#301) — pas de
+                    # reconversion pour le second passage.
+                    fallback_result = await asyncio.to_thread(
+                        self._agri_fallback.transcribe_wav, wav_path,
                     )
                     if fallback_result:
                         # Même normalisation que le résultat principal (revue
                         # #358 F1 : le texte du fallback partait brut — les
                         # corrections exactes/fuzzy ne s'y appliquaient pas,
                         # et le check agricole ratait les formes corrigibles).
-                        from app.services.asr_normalizer import normalize_asr_output
                         fallback_result = normalize_asr_output(fallback_result)
                     if fallback_result and self._has_agri_keywords(fallback_result):
                         logger.info(
@@ -110,10 +128,9 @@ class ASRChain:
 
     async def _try_chain(
         self,
-        audio_bytes: bytes,
-        file_extension: str,
+        wav_path: str,
     ) -> tuple[Optional[str], Optional[ASRProvider]]:
-        """Essaie chaque provider dans l'ordre.
+        """Essaie chaque provider dans l'ordre sur un WAV 16k déjà converti.
 
         Retourne (résultat, provider gagnant) — le provider sert à éviter un
         second passage agricole redondant quand le gagnant est déjà
@@ -125,7 +142,7 @@ class ASRChain:
                 continue
 
             try:
-                result = await provider.transcribe(audio_bytes, file_extension)
+                result = await asyncio.to_thread(provider.transcribe_wav, wav_path)
                 if result:
                     logger.info("[ASRChain] %s → '%s'", provider.name, result)
                     return result, provider

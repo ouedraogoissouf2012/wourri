@@ -9,10 +9,11 @@ Valide :
 - Le filtre agri_fallback fonctionne (second passage si pas de mot agricole)
 - Liskov : tout ASRProvider est substituable
 """
+import contextlib
 import pytest
 from typing import Optional
-from unittest.mock import AsyncMock
 
+from app.services.asr import audio_utils
 from app.services.asr.base import ASRProvider
 from app.services.asr.chain import ASRChain, AGRI_KEYWORDS
 
@@ -20,7 +21,11 @@ from app.services.asr.chain import ASRChain, AGRI_KEYWORDS
 # --- Mock providers pour les tests ---
 
 class MockASRProvider(ASRProvider):
-    """Provider de test configurable."""
+    """Provider de test configurable.
+
+    #301 : l'inférence part d'un WAV déjà converti (`transcribe_wav`), la
+    conversion étant faite une seule fois en amont par la chaîne.
+    """
 
     def __init__(self, provider_name: str, available: bool = True, result: Optional[str] = None):
         self._name = provider_name
@@ -35,9 +40,24 @@ class MockASRProvider(ASRProvider):
     def is_available(self) -> bool:
         return self._available
 
-    async def transcribe(self, audio_bytes: bytes, file_extension: str = "ogg") -> Optional[str]:
+    def transcribe_wav(self, wav_path: str) -> Optional[str]:
         self.call_count += 1
         return self._result
+
+
+@pytest.fixture(autouse=True)
+def stub_conversion(monkeypatch):
+    """Neutralise la conversion ffmpeg : la chaîne reçoit un WAV factice.
+
+    `ASRChain.transcribe` convertit via `prepared_wav_16k` (#301). En test on
+    remplace ce context manager par un yield d'un chemin bidon — aucune I/O ni
+    ffmpeg, on teste uniquement l'orchestration de la chaîne.
+    """
+    @contextlib.contextmanager
+    def fake_prepared(audio_bytes, file_extension, label):
+        yield "/tmp/fake_16k.wav"
+
+    monkeypatch.setattr(audio_utils, "prepared_wav_16k", fake_prepared)
 
 
 class TestASRProviderABC:
@@ -126,7 +146,7 @@ class TestASRChainBasic:
             @property
             def name(self): return "Crash"
             def is_available(self): return True
-            async def transcribe(self, audio_bytes, ext="ogg"):
+            def transcribe_wav(self, wav_path):
                 raise RuntimeError("crash!")
 
         p2 = MockASRProvider("Backup", result="recovered")

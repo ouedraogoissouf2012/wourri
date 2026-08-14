@@ -20,7 +20,6 @@ import logging
 from typing import Optional
 
 from app.services.asr.base import ASRProvider
-from app.services.asr.audio_utils import transcribe_with_temp_files
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +102,7 @@ class OmnilingualASR(ASRProvider):
 
         return registry.get(registry_key, loader=_load)
 
-    def _transcribe_wav(self, wav_path: str) -> Optional[str]:
+    def transcribe_wav(self, wav_path: str) -> Optional[str]:
         """Transcrit un WAV 16kHz avec Omnilingual."""
         pipeline = self._get_pipeline()
         if pipeline is None:
@@ -119,21 +118,11 @@ class OmnilingualASR(ASRProvider):
             if not transcriptions:
                 return ""
 
-            return transcriptions[0].strip()
+            transcription = transcriptions[0].strip()
+            if transcription:
+                logger.info("[%s] Transcription: '%s'", self.name, transcription)
+            return transcription
 
         except Exception as e:
             logger.error("[%s] Erreur transcription: %s", self.name, e, exc_info=True)
             return None
-
-    async def transcribe(self, audio_bytes: bytes, file_extension: str = "ogg") -> Optional[str]:
-        if not self.is_available():
-            return None
-
-        result = await transcribe_with_temp_files(
-            audio_bytes, file_extension, self._transcribe_wav, self.name,
-        )
-
-        if result:
-            logger.info("[%s] Transcription: '%s'", self.name, result)
-
-        return result
