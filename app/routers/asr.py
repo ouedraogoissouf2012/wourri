@@ -9,8 +9,9 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 
 from app.data.constants import get_asr_languages
 from app.middleware.admin_metrics import set_request_metric_context
+from app.routers._audio_upload import read_audio_within_limits, resolve_extension
 from app.security import limiter, require_api_key
-from app.services.asr import get_asr_chain, get_generic_asr_chain
+from app.services.asr import ASRChain, get_asr_chain, get_generic_asr_chain
 from app.services.tts_bambara import translate_to_french
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,24 @@ logger = logging.getLogger(__name__)
 IVORIAN_ASR_LANGUAGES = get_asr_languages()
 
 router = APIRouter(prefix="/api/asr", tags=["ASR"])
+
+
+def _validate_language(language: str) -> None:
+    """Rejette une langue non supportée (400)."""
+    if language not in IVORIAN_ASR_LANGUAGES:
+        supported = list(IVORIAN_ASR_LANGUAGES.keys())
+        raise HTTPException(
+            status_code=400,
+            detail=f"Langue '{language}' non supportee. Langues disponibles: {supported}",
+        )
+
+
+def _resolve_chain(language: str) -> ASRChain:
+    """Chaîne ASR pour la langue : spécialisée bambara/dioula pour `bam`,
+    générique pour les autres langues ivoiriennes."""
+    if language == "bam":
+        return get_asr_chain()
+    return get_generic_asr_chain(language)
 
 
 def _run_nlu(bambara_text: str) -> dict:
@@ -58,33 +77,10 @@ async def transcribe_audio(
     - **audio**: Fichier audio (WAV, OGG, MP3, WEBM)
     - **language**: Code de la langue (bam, ati, dyi, myk, gud, adj, dnj, wob)
     """
-    if language not in IVORIAN_ASR_LANGUAGES:
-        supported = list(IVORIAN_ASR_LANGUAGES.keys())
-        raise HTTPException(
-            status_code=400,
-            detail=f"Langue '{language}' non supportee. Langues disponibles: {supported}"
-        )
-
-    try:
-        audio_bytes = await audio.read()
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Erreur lecture fichier: {str(e)}")
-
-    if len(audio_bytes) > 10 * 1024 * 1024:
-        raise HTTPException(status_code=413, detail="Fichier audio trop volumineux (max 10 MB)")
-
-    if len(audio_bytes) == 0:
-        raise HTTPException(status_code=400, detail="Fichier audio vide")
-
-    filename = audio.filename or "audio.ogg"
-    extension = filename.split(".")[-1].lower()
-    if extension not in ["wav", "ogg", "mp3", "webm", "m4a"]:
-        extension = "ogg"
-
-    if language == "bam":
-        chain = get_asr_chain()
-    else:
-        chain = get_generic_asr_chain(language)
+    _validate_language(language)
+    audio_bytes = await read_audio_within_limits(audio)
+    extension = resolve_extension(audio.filename)
+    chain = _resolve_chain(language)
 
     set_request_metric_context(request, asr_success=False)
     transcription = await chain.transcribe(audio_bytes, extension)
@@ -119,38 +115,15 @@ async def transcribe_and_translate(
 
     Traduction disponible uniquement pour bam (Bambara/Dioula)
     """
-    if language not in IVORIAN_ASR_LANGUAGES:
-        supported = list(IVORIAN_ASR_LANGUAGES.keys())
-        raise HTTPException(
-            status_code=400,
-            detail=f"Langue '{language}' non supportee. Langues disponibles: {supported}"
-        )
-
-    try:
-        audio_bytes = await audio.read()
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Erreur lecture fichier: {str(e)}")
-
-    if len(audio_bytes) > 10 * 1024 * 1024:
-        raise HTTPException(status_code=413, detail="Fichier audio trop volumineux (max 10 MB)")
-
-    if len(audio_bytes) == 0:
-        raise HTTPException(status_code=400, detail="Fichier audio vide")
-
-    filename = audio.filename or "audio.ogg"
-    extension = filename.split(".")[-1].lower()
-    if extension not in ["wav", "ogg", "mp3", "webm", "m4a"]:
-        extension = "ogg"
-
+    _validate_language(language)
+    audio_bytes = await read_audio_within_limits(audio)
+    extension = resolve_extension(audio.filename)
     lang_name = IVORIAN_ASR_LANGUAGES[language][0]
 
     # Transcription ASR via chaîne de providers (Liskov : tous interchangeables)
     logger.info("[ASR] Transcription en %s...", language)
 
-    if language == "bam":
-        chain = get_asr_chain()
-    else:
-        chain = get_generic_asr_chain(language)
+    chain = _resolve_chain(language)
 
     set_request_metric_context(request, asr_success=False)
     transcription = await chain.transcribe(audio_bytes, extension)
