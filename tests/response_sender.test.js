@@ -285,7 +285,9 @@ describe("ResponseSender — sendResponse (DIOULA)", () => {
         assert.strictEqual(sock.sent[0].msg.ptt, true);
     });
 
-    test("audio_url absent + data.response → fallback texte FR (alphabétisés)", async () => {
+    test("[#302] audio_url absent + excuse audio INDISPO → dernier recours texte FR", async () => {
+        // getExcuseAudio par défaut = () => null → l'audio d'excuse est indispo,
+        // on retombe sur le texte FR (ultime recours).
         const sock = makeSockMock();
         const rs = makeSender({ sock });
         await rs.sendResponse({
@@ -299,12 +301,60 @@ describe("ResponseSender — sendResponse (DIOULA)", () => {
         assert.match(sock.sent[0].msg.text, /🇫🇷 Bonjour/);
     });
 
-    test("axios.get échoue + data.response → fallback texte FR", async () => {
+    test("[#302] axios.get échoue + excuse audio INDISPO → dernier recours texte FR", async () => {
         const sock = makeSockMock();
         const axios = makeAxiosMock([new Error("TTS API down")]);
         const rs = makeSender({ sock, axios });
         await rs.sendResponse({
             data: { response: "Bonjour", audio_url: "/tts/dy.ogg" },
+            prefs: { language: "dioula" },
+            isVoiceInput: false,
+            userNumber: "u1",
+            saveFn: () => {},
+        });
+        assert.strictEqual(sock.sent.length, 1);
+        assert.match(sock.sent[0].msg.text, /🇫🇷 Bonjour/);
+    });
+
+    // ── Fix #302 : fallback = audio d'excuse dioula pré-généré AVANT le texte FR ──
+
+    test("[#302] audio_url absent + excuse audio DISPO → audio d'excuse dioula (ptt), PAS de texte FR", async () => {
+        const sock = makeSockMock();
+        const rs = makeSender({ sock, getExcuseAudio: async () => Buffer.from("excuse-dioula-audio") });
+        await rs.sendResponse({
+            data: { response: "Bonjour" },
+            prefs: { language: "dioula" },
+            isVoiceInput: false,
+            userNumber: "u1",
+            saveFn: () => {},
+        });
+        assert.strictEqual(sock.sent.length, 1);
+        assert.ok(sock.sent[0].msg.audio, "un audio doit être envoyé");
+        assert.strictEqual(sock.sent[0].msg.ptt, true);
+        assert.strictEqual(sock.sent[0].msg.text, undefined, "pas de texte FR illisible");
+    });
+
+    test("[#302] audio_url présent mais download échoue + excuse audio DISPO → audio d'excuse dioula", async () => {
+        const sock = makeSockMock();
+        const axios = makeAxiosMock([new Error("download KO")]);
+        const rs = makeSender({ sock, axios, getExcuseAudio: async () => Buffer.from("excuse-dioula-audio") });
+        await rs.sendResponse({
+            data: { response: "Bonjour", audio_url: "/tts/dy.ogg" },
+            prefs: { language: "dioula" },
+            isVoiceInput: false,
+            userNumber: "u1",
+            saveFn: () => {},
+        });
+        assert.strictEqual(sock.sent.length, 1);
+        assert.ok(sock.sent[0].msg.audio, "un audio d'excuse doit être envoyé");
+        assert.strictEqual(sock.sent[0].msg.ptt, true);
+    });
+
+    test("[#302] getExcuseAudio JETTE → robustesse : dernier recours texte FR (jamais rien perdu)", async () => {
+        const sock = makeSockMock();
+        const rs = makeSender({ sock, getExcuseAudio: async () => { throw new Error("cache/TTS KO"); } });
+        await rs.sendResponse({
+            data: { response: "Bonjour" },
             prefs: { language: "dioula" },
             isVoiceInput: false,
             userNumber: "u1",
