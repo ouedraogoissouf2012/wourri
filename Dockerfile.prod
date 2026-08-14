@@ -57,7 +57,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     # D4 : cache HuggingFace persistant sur volume nommé en prod
     HF_HOME=/app/.cache/huggingface \
     TRANSFORMERS_CACHE=/app/.cache/huggingface \
-    HF_DATASETS_CACHE=/app/.cache/huggingface
+    HF_DATASETS_CACHE=/app/.cache/huggingface \
+    # Voix Piper FR pour le TTS francais (app/services/tts_french.py lit PIPER_MODEL_FR)
+    PIPER_MODEL_FR=/app/piper-voices/fr_FR-tom-medium.onnx
 
 # Dépendances système runtime UNIQUEMENT (pas de compilateurs).
 # libpq5 pour psycopg, libsndfile1 pour soundfile, ffmpeg pour pydub.
@@ -100,6 +102,17 @@ RUN mkdir -p /app/.cache/huggingface /app/static/audio /app/logs \
     && chown -R wourri:wourri /app
 
 USER wourri
+
+# Voix Piper FR (fr_FR-tom-medium, ~63 Mo) pour le TTS francais.
+# Le CLI `piper` vient du paquet piper-tts (requirements.txt) ; ici on ne
+# telecharge que le modele, au chemin pointe par PIPER_MODEL_FR. Sans lui,
+# synthesize_french() se degrade proprement (texte FR sans audio).
+RUN mkdir -p /app/piper-voices && \
+    curl -fsSL -o /app/piper-voices/fr_FR-tom-medium.onnx \
+      https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/tom/medium/fr_FR-tom-medium.onnx && \
+    curl -fsSL -o /app/piper-voices/fr_FR-tom-medium.onnx.json \
+      https://huggingface.co/rhasspy/piper-voices/resolve/main/fr/fr_FR/tom/medium/fr_FR-tom-medium.onnx.json && \
+    echo "[BUILD] voix Piper FR telechargee"
 
 # Issue #217 : préload des modèles HuggingFace essentiels pendant le build.
 # Cold-start passe de ~15 min à ~30 s (lecture depuis l'image vs download HF).
