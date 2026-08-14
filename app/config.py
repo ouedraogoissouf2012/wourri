@@ -1,11 +1,17 @@
 """
 WOURI - Configuration
 """
+from pydantic import Field
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 import logging
 import os
 import sys
+
+from app.core.log_retention import (
+    DEFAULT_FEEDBACK_RETENTION_DAYS,
+    DEFAULT_LOG_RETENTION_DAYS,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +69,20 @@ class Settings(BaseSettings):
 
     # Langue TTS ivoirienne par défaut
     default_ivorian_language: str = "bam"
+
+    # ========== Rétention logs PII (issue #215, ADR-0025) ==========
+    # Durées de conservation appliquées par la purge quotidienne
+    # (app/core/log_retention.py). Justifications : docs/compliance/artci-logs.md.
+    # - logs applicatifs wourri-YYYY-MM-DD.log : transcriptions en clair → 30 j
+    # - feedback-YYYY-MM.jsonl : pseudonymisés, reporting C5 saisonnier → 365 j
+    # ge=1 : une rétention ≤ 0 rendrait le fichier du jour candidat à la purge
+    # (perte des logs actifs) → refusée dès le chargement de la config.
+    log_retention_days: int = Field(default=DEFAULT_LOG_RETENTION_DAYS, ge=1)
+    feedback_retention_days: int = Field(default=DEFAULT_FEEDBACK_RETENTION_DAYS, ge=1)
+    # Interrupteur de la purge (LOG_RETENTION_ENABLED) : False dans la suite de
+    # tests (le lifespan TestClient purgerait le logs/ RÉEL du repo) et pour un
+    # gel ops ponctuel. La politique ARTCI exige True en production.
+    log_retention_enabled: bool = True
 
     # ========== Sécurité PII (P0-05) ==========
     # Salt pour anonymisation SHA-256 des user_id dans les logs

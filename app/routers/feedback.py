@@ -24,18 +24,22 @@ la file de revue native.
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import date, datetime
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from app.security import require_api_key, limiter
+from app.core.log_retention import DEFAULT_LOG_DIR, monthly_feedback_filename
 from app.core.pii_utils import anonymize_user_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/feedback", tags=["Feedback"])
 
-# Logs feedback
-FEEDBACK_LOG         = os.path.join(os.path.dirname(__file__), "..", "..", "logs", "feedback.jsonl")
+# Logs feedback — fichier MENSUEL feedback-YYYY-MM.jsonl (issue #215, ADR-0025) :
+# la purge de rétention supprime des fichiers entiers (atomique), jamais de
+# réécriture de lignes concurrente avec les appends des workers. LOG_DIR vient
+# de la source unique ADR-0025 (même dossier que la purge et le handler).
+LOG_DIR              = os.fspath(DEFAULT_LOG_DIR)
 FEEDBACK_NEGATIF_LOG = os.path.join(os.path.dirname(__file__), "..", "..", "data", "feedback_negatif.jsonl")
 # File de candidats à revue native (ADR-0019) : un 👍 sur une réponse DeepSeek
 # (deepseek_open) dépose ici un candidat. Il n'entre au corpus qu'après
@@ -62,11 +66,21 @@ class FeedbackRequest(BaseModel):
     source: Optional[str] = "unknown"  # ivr_exact | ivr_fallback | fallback_generic
 
 
+def _feedback_log_path() -> str:
+    """Chemin du fichier feedback du mois courant (ADR-0025).
+
+    date.today() (date locale du process, UTC en prod via TZ compose) — même
+    horloge que le handler de logs et la purge, pour que « fichier du mois
+    courant jamais purgé » reste vrai.
+    """
+    return os.path.join(LOG_DIR, monthly_feedback_filename(date.today()))
+
+
 def _log_feedback(entry: dict):
-    """Écrit une ligne JSONL dans le fichier de log feedback."""
+    """Écrit une ligne JSONL dans le fichier de log feedback du mois."""
     try:
-        os.makedirs(os.path.dirname(FEEDBACK_LOG), exist_ok=True)
-        with open(FEEDBACK_LOG, "a", encoding="utf-8") as f:
+        os.makedirs(LOG_DIR, exist_ok=True)
+        with open(_feedback_log_path(), "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except Exception as e:
         logger.error(f"[Feedback] Erreur log: {e}")
@@ -143,7 +157,7 @@ async def feedback_positif(request: Request, req: FeedbackRequest):
 async def feedback_negatif(request: Request, req: FeedbackRequest):
     """
     Feedback 👎 — l'utilisateur n'a pas apprécié la réponse.
-    Logue dans feedback.jsonl (général) + feedback_negatif.jsonl (dédié corpus).
+    Logue dans feedback-YYYY-MM.jsonl (général) + feedback_negatif.jsonl (dédié corpus).
     feedback_negatif.jsonl est lu par tools/analyze_feedback.py pour identifier
     les entrées corpus à réécrire en priorité.
     """

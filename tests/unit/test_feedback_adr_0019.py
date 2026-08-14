@@ -49,12 +49,12 @@ def _run_negatif(req):
 def redirect_files(tmp_path, monkeypatch):
     """Redirige les fichiers JSONL du router vers un dossier temporaire."""
     cand = tmp_path / "feedback_candidates.jsonl"
-    log = tmp_path / "feedback.jsonl"
     neg = tmp_path / "feedback_negatif.jsonl"
     monkeypatch.setattr(fb, "FEEDBACK_CANDIDATES_LOG", str(cand))
-    monkeypatch.setattr(fb, "FEEDBACK_LOG", str(log))
+    # ADR-0025 : le log général est mensuel (feedback-YYYY-MM.jsonl) dans LOG_DIR
+    monkeypatch.setattr(fb, "LOG_DIR", str(tmp_path))
     monkeypatch.setattr(fb, "FEEDBACK_NEGATIF_LOG", str(neg))
-    return SimpleNamespace(candidates=cand, log=log, negatif=neg)
+    return SimpleNamespace(candidates=cand, log_dir=tmp_path, negatif=neg)
 
 
 def _req(**kw):
@@ -68,6 +68,22 @@ def _req(**kw):
     )
     base.update(kw)
     return fb.FeedbackRequest(**base)
+
+
+def test_log_general_ecrit_dans_fichier_mensuel(redirect_files):
+    """ADR-0025 : le log général part dans feedback-YYYY-MM.jsonl du mois
+    courant (même horloge date.today() que le handler et la purge)."""
+    from datetime import date
+
+    from app.core.log_retention import monthly_feedback_filename
+
+    _run_positif(_req(source="ivr_exact"))
+
+    monthly = redirect_files.log_dir / monthly_feedback_filename(date.today())
+    assert monthly.exists()
+    entry = json.loads(monthly.read_text(encoding="utf-8").strip().splitlines()[0])
+    assert entry["vote"] == "positif"
+    assert entry["user"].startswith("usr_")  # pseudonymisé, jamais brut
 
 
 def test_positif_deepseek_open_deposits_candidate_not_corpus(redirect_files, monkeypatch):

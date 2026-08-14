@@ -151,6 +151,10 @@ services:
       # CORS : laisser vide pour mode strict (pas de frontend web en Sprint I).
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Issue #215 / ADR-0025 : rétention des logs PII (purge quotidienne
+      # in-app). Justifications : docs/compliance/artci-logs.md.
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
+      FEEDBACK_RETENTION_DAYS: ${FEEDBACK_RETENTION_DAYS:-365}
       # HuggingFace cache : pointe vers le volume monté
       HF_HOME: /app/.cache/huggingface
       TRANSFORMERS_CACHE: /app/.cache/huggingface
@@ -243,6 +247,12 @@ services:
       - wa_audio_cache:/app/audio_cache
       # data/ : user_preferences.json + pending_messages.json (cf. Sprint I.b).
       - wa_data:/app/data
+      # wa_logs : AUCUN écrivain (pino loggue sur stdout — lib/logger.js).
+      # Conservé uniquement parce que l'image déclare VOLUME /app/logs
+      # (Dockerfile.prod:85, branche whatsappServeur) : sans montage nommé,
+      # Docker créerait un volume ANONYME orphelin à chaque redeploy.
+      # Suppression complète = retirer d'abord la directive VOLUME côté
+      # whatsappServeur (tracé ADR-0025). Rétention : n/a (volume vide).
       - wa_logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "--silent", "--fail", "http://localhost:3001/health"]
@@ -267,6 +277,9 @@ volumes:
     name: wourri_hf_cache
   audio_output:
     name: wourri_audio_output
+  # api_logs : rétention bornée par la purge in-app (issue #215, ADR-0025) —
+  # logs applicatifs 30 j, feedback pseudonymisé 365 j. Politique complète :
+  # docs/compliance/artci-logs.md.
   api_logs:
     name: wourri_api_logs
   wa_auth:
@@ -275,6 +288,8 @@ volumes:
     name: wourri_wa_audio_cache
   wa_data:
     name: wourri_wa_data
+  # wa_logs : aucun écrivain (pino → stdout) — conservé tant que l'image wa
+  # déclare VOLUME /app/logs (cf. service whatsapp-server, ADR-0025).
   wa_logs:
     name: wourri_wa_logs
 

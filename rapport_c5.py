@@ -1,6 +1,7 @@
 """
 C5 - Reporting feedback Wourri
-Lit logs/feedback.jsonl et produit des stats par intent / culture / source.
+Lit logs/feedback-YYYY-MM.jsonl (mensuels, ADR-0025) + l'éventuel legacy
+logs/feedback.jsonl, et produit des stats par intent / culture / source.
 Sortie : console + logs/rapport_feedback.json
 """
 import json
@@ -8,8 +9,13 @@ import os
 from collections import defaultdict
 from datetime import datetime
 
-FEEDBACK_LOG = os.path.join(os.path.dirname(__file__), "logs", "feedback.jsonl")
-RAPPORT_PATH = os.path.join(os.path.dirname(__file__), "logs", "rapport_feedback.json")
+# Contrat de nommage ADR-0025 : même dossier et même matcher que la purge
+# (feedback_log_files rejette p.ex. un feedback-2025-07.bak.jsonl que la
+# purge ignorerait — évite les doubles comptes).
+from app.core.log_retention import DEFAULT_LOG_DIR, feedback_log_files
+
+LOG_DIR      = os.fspath(DEFAULT_LOG_DIR)
+RAPPORT_PATH = os.path.join(LOG_DIR, "rapport_feedback.json")
 
 INTENT_LABELS = {
     "CONSEIL_PRODUCTION":         "Conseil production",
@@ -47,17 +53,21 @@ CULTURE_LABELS = {
 
 
 def charger_feedbacks():
-    if not os.path.exists(FEEDBACK_LOG):
-        return []
     lignes = []
-    with open(FEEDBACK_LOG, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    lignes.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
+    for path in feedback_log_files(LOG_DIR):
+        try:
+            f = open(path, encoding="utf-8")
+        except FileNotFoundError:
+            # Purgé par la rétention in-app entre le listage et l'ouverture.
+            continue
+        with f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        lignes.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        pass
     return lignes
 
 
@@ -158,7 +168,7 @@ def main():
     feedbacks = charger_feedbacks()
 
     if not feedbacks:
-        print(f"Aucun feedback trouve dans : {FEEDBACK_LOG}")
+        print(f"Aucun feedback trouve dans : {LOG_DIR} (feedback-*.jsonl)")
         print("Le fichier sera cree automatiquement apres les premiers retours utilisateurs.")
         # Creer un rapport vide pour reference
         rapport_vide = {
