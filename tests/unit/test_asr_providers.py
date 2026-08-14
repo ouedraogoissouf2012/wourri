@@ -1,7 +1,8 @@
 """Tests des adapters ASR réels sans charger leurs modèles ML."""
+import contextlib
 import sys
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -25,26 +26,29 @@ class TestMMSDyuProvider:
             assert not provider.is_available()
 
     @pytest.mark.asyncio
-    async def test_transcribe_delegates_to_shared_audio_pipeline(self):
+    async def test_transcribe_converts_once_then_delegates_to_transcribe_wav(self):
+        """#301 : transcribe(bytes) convertit UNE fois puis appelle transcribe_wav."""
         provider = mms_dyu_provider.MMSDyuASR()
+
+        @contextlib.contextmanager
+        def fake_prepared(audio_bytes, file_extension, label):
+            assert audio_bytes == b"audio"
+            assert file_extension == "ogg"
+            yield "/tmp/prepared_16k.wav"
 
         with (
             patch.object(provider, "is_available", return_value=True),
             patch.object(
-                mms_dyu_provider,
-                "transcribe_with_temp_files",
-                new=AsyncMock(return_value="  malo sɛnɛ  "),
-            ) as shared_pipeline,
+                provider, "transcribe_wav", return_value="  malo sɛnɛ  "
+            ) as transcribe_wav,
+            patch(
+                "app.services.asr.audio_utils.prepared_wav_16k", fake_prepared
+            ),
         ):
             result = await provider.transcribe(b"audio", "ogg")
 
         assert result == "  malo sɛnɛ  "
-        shared_pipeline.assert_awaited_once_with(
-            b"audio",
-            "ogg",
-            provider._transcribe_wav,
-            provider.name,
-        )
+        transcribe_wav.assert_called_once_with("/tmp/prepared_16k.wav")
 
     @pytest.mark.asyncio
     async def test_transcribe_returns_none_when_unavailable(self):
@@ -69,7 +73,7 @@ class TestMMSDyuProvider:
             patch.object(mms_dyu_provider, "_torch", fake_torch),
             patch.dict(sys.modules, {"librosa": fake_librosa}),
         ):
-            result = provider._transcribe_wav("question.wav")
+            result = provider.transcribe_wav("question.wav")
 
         assert result == "i ni ce"
         fake_librosa.load.assert_called_once_with("question.wav", sr=16000)
@@ -82,13 +86,13 @@ class TestMMSDyuProvider:
     def test_transcribe_wav_handles_missing_model_and_inference_error(self):
         provider = mms_dyu_provider.MMSDyuASR()
         with patch.object(provider, "_get_model", return_value=None):
-            assert provider._transcribe_wav("question.wav") is None
+            assert provider.transcribe_wav("question.wav") is None
 
         with (
             patch.object(provider, "_get_model", side_effect=RuntimeError("model")),
             pytest.raises(RuntimeError, match="model"),
         ):
-            provider._transcribe_wav("question.wav")
+            provider.transcribe_wav("question.wav")
 
 
 class TestAdapterPathResolution:
@@ -142,30 +146,36 @@ class TestMMSGenericProvider:
         with patch.object(mms_generic_provider, "_torch_available", True):
             assert provider.is_available()
 
-    @pytest.mark.asyncio
-    async def test_transcribe_validates_language_and_uses_shared_pipeline(self):
+    def test_transcribe_wav_rejects_unknown_language(self):
+        """Une langue hors IVORIAN_ASR_LANGUAGES → None (garde déplacée dans
+        transcribe_wav avec le refactor #301)."""
         provider = mms_generic_provider.MMSGenericASR("unknown")
-        with patch.object(provider, "is_available", return_value=True):
-            assert await provider.transcribe(b"audio") is None
+        assert provider.transcribe_wav("question.wav") is None
 
-        provider.set_language("ati")
+    @pytest.mark.asyncio
+    async def test_transcribe_converts_once_then_delegates_to_transcribe_wav(self):
+        """#301 : transcribe(bytes) convertit UNE fois puis appelle transcribe_wav."""
+        provider = mms_generic_provider.MMSGenericASR("ati")
+
+        @contextlib.contextmanager
+        def fake_prepared(audio_bytes, file_extension, label):
+            assert audio_bytes == b"audio"
+            assert file_extension == "mp3"
+            yield "/tmp/prepared_16k.wav"
+
         with (
             patch.object(provider, "is_available", return_value=True),
             patch.object(
-                mms_generic_provider,
-                "transcribe_with_temp_files",
-                new=AsyncMock(return_value="réponse attié"),
-            ) as shared_pipeline,
+                provider, "transcribe_wav", return_value="réponse attié"
+            ) as transcribe_wav,
+            patch(
+                "app.services.asr.audio_utils.prepared_wav_16k", fake_prepared
+            ),
         ):
             result = await provider.transcribe(b"audio", "mp3")
 
         assert result == "réponse attié"
-        shared_pipeline.assert_awaited_once_with(
-            b"audio",
-            "mp3",
-            provider._transcribe_wav,
-            provider.name,
-        )
+        transcribe_wav.assert_called_once_with("/tmp/prepared_16k.wav")
 
     @pytest.mark.asyncio
     async def test_transcribe_returns_none_when_unavailable(self):
@@ -222,7 +232,7 @@ class TestMMSGenericProvider:
             patch.object(provider, "_load_audio", return_value=([0.1], 16000)),
             patch.object(mms_generic_provider, "_torch", fake_torch),
         ):
-            result = provider._transcribe_wav("question.wav")
+            result = provider.transcribe_wav("question.wav")
 
         assert result == "transcription"
         processor.assert_called_once_with(
@@ -237,11 +247,11 @@ class TestMMSGenericProvider:
             patch.object(provider, "_get_model", return_value=(MagicMock(), MagicMock())),
             patch.object(provider, "_load_audio", return_value=(None, None)),
         ):
-            assert provider._transcribe_wav("missing.wav") is None
+            assert provider.transcribe_wav("missing.wav") is None
 
         with patch.object(provider, "_get_model", side_effect=RuntimeError("model")):
             with pytest.raises(RuntimeError, match="model"):
-                provider._transcribe_wav("missing.wav")
+                provider.transcribe_wav("missing.wav")
 
 
 class TestNemoProvider:
@@ -257,27 +267,45 @@ class TestNemoProvider:
         with patch.object(nemo_provider, "_nemo_available", False):
             assert not provider.is_available()
 
-    @pytest.mark.asyncio
-    async def test_transcribe_normalizes_shared_pipeline_result(self):
+    def test_transcribe_wav_normalizes_inference_result(self):
+        """transcribe_wav = inférence brute (_infer_wav) + normalisation bambara."""
         provider = nemo_provider.NemoSoloniASR()
 
         with (
-            patch.object(provider, "is_available", return_value=True),
-            patch.object(
-                nemo_provider,
-                "transcribe_with_temp_files",
-                new=AsyncMock(return_value="MALO SENE"),
-            ) as shared_pipeline,
+            patch.object(provider, "_infer_wav", return_value="MALO SENE"),
             patch(
                 "app.services.asr_bambara_normalizer.normalize_bambara_asr",
                 return_value="malo sɛnɛ",
             ) as normalize,
         ):
-            result = await provider.transcribe(b"audio", "webm")
+            result = provider.transcribe_wav("question.wav")
 
         assert result == "malo sɛnɛ"
         normalize.assert_called_once_with("MALO SENE")
-        shared_pipeline.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_transcribe_converts_once_then_delegates_to_transcribe_wav(self):
+        """#301 : transcribe(bytes) convertit UNE fois puis appelle transcribe_wav."""
+        provider = nemo_provider.NemoSoloniASR()
+
+        @contextlib.contextmanager
+        def fake_prepared(audio_bytes, file_extension, label):
+            assert file_extension == "webm"
+            yield "/tmp/prepared_16k.wav"
+
+        with (
+            patch.object(provider, "is_available", return_value=True),
+            patch.object(
+                provider, "transcribe_wav", return_value="malo sɛnɛ"
+            ) as transcribe_wav,
+            patch(
+                "app.services.asr.audio_utils.prepared_wav_16k", fake_prepared
+            ),
+        ):
+            result = await provider.transcribe(b"audio", "webm")
+
+        assert result == "malo sɛnɛ"
+        transcribe_wav.assert_called_once_with("/tmp/prepared_16k.wav")
 
     @pytest.mark.asyncio
     async def test_transcribe_returns_none_when_unavailable(self):
@@ -294,7 +322,7 @@ class TestNemoProvider:
             ([], ""),
         ],
     )
-    def test_transcribe_wav_normalizes_nemo_result_shapes(
+    def test_infer_wav_normalizes_nemo_result_shapes(
         self,
         raw_result,
         expected,
@@ -310,14 +338,14 @@ class TestNemoProvider:
             patch.object(provider, "_get_model", return_value=model),
             patch.object(nemo_provider, "_torch", fake_torch),
         ):
-            result = provider._transcribe_wav("question.wav")
+            result = provider._infer_wav("question.wav")
 
         assert result == expected
 
-    def test_transcribe_wav_handles_missing_model_and_inference_error(self):
+    def test_infer_wav_handles_missing_model_and_inference_error(self):
         provider = nemo_provider.NemoSoloniASR()
         with patch.object(provider, "_get_model", return_value=None):
-            assert provider._transcribe_wav("question.wav") is None
+            assert provider._infer_wav("question.wav") is None
 
         model = MagicMock()
         model.transcribe.side_effect = RuntimeError("inference")
@@ -325,4 +353,4 @@ class TestNemoProvider:
             patch.object(provider, "_get_model", return_value=model),
             patch.object(nemo_provider, "_torch", MagicMock()),
         ):
-            assert provider._transcribe_wav("question.wav") is None
+            assert provider._infer_wav("question.wav") is None

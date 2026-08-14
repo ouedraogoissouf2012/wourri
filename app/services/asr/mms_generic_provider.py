@@ -9,7 +9,6 @@ import os
 from typing import Optional
 
 from app.services.asr.base import ASRProvider
-from app.services.asr.audio_utils import transcribe_with_temp_files
 from app.data.constants import get_asr_languages
 
 logger = logging.getLogger(__name__)
@@ -108,8 +107,12 @@ class MMSGenericASR(ASRProvider):
 
         return None, None
 
-    def _transcribe_wav(self, wav_path: str) -> Optional[str]:
+    def transcribe_wav(self, wav_path: str) -> Optional[str]:
         """Transcrit un WAV 16kHz avec MMS-1B-ALL."""
+        if self._language_code not in IVORIAN_ASR_LANGUAGES:
+            logger.warning("[%s] Langue '%s' non supportée", self.name, self._language_code)
+            return None
+
         result = self._get_model()
         if result is None:
             return None
@@ -135,25 +138,11 @@ class MMSGenericASR(ASRProvider):
 
             predicted_ids = _torch.argmax(logits, dim=-1)[0]
             transcription = processor.decode(predicted_ids)
-            return transcription.strip()
+            transcription = transcription.strip()
+            if transcription:
+                logger.info("[%s] Transcription: '%s'", self.name, transcription)
+            return transcription
 
         except Exception as e:
             logger.error("[%s] Erreur transcription: %s", self.name, e, exc_info=True)
             return None
-
-    async def transcribe(self, audio_bytes: bytes, file_extension: str = "ogg") -> Optional[str]:
-        if not self.is_available():
-            return None
-
-        if self._language_code not in IVORIAN_ASR_LANGUAGES:
-            logger.warning("[%s] Langue '%s' non supportée", self.name, self._language_code)
-            return None
-
-        result = await transcribe_with_temp_files(
-            audio_bytes, file_extension, self._transcribe_wav, self.name,
-        )
-
-        if result:
-            logger.info("[%s] Transcription: '%s'", self.name, result)
-
-        return result
