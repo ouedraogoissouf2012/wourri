@@ -176,8 +176,9 @@ passe par un plan validé explicitement avant code.
 
 - **God file** : `app-baileys.js` ~1300 lignes — à décomposer (Phase Modularisation)
 - **Pas de metrics Prometheus** : `/health` riche mais pas de `/metrics` scrape format
-- **Pas de retry automatique** des messages en queue : au démarrage, on envoie un
-  message d'excuse à l'utilisateur au lieu de retraiter (à améliorer en Phase Modularisation)
+- ~~**Pas de retry automatique** des messages en queue~~ : **résolu #299** — après
+  reconnexion, `lib/pending_replay.js` rejoue chaque message en attente contre
+  `/api/chat/` et envoie la vraie réponse (au lieu d'une excuse « repose ta question »).
 - **Nested folder pourri** : `whatsapp-server/whatsapp-server/` (issue P2-04, séparée)
 - ~~`npm audit`~~ : **résolu Sprint A** (0 vulnérabilité, PR #141 + #142)
 - ~~CORS permissif~~ : **résolu Sprint A** (allow-list via `ALLOWED_ORIGINS`, ADR-0012)
