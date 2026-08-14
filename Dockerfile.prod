@@ -197,6 +197,13 @@ EXPOSE 8000
 # uvicorn en mode prod : 2 workers, sans reload, log JSON propre.
 # Les workers permettent de gérer N requêtes concurrentes (~30 utilisateurs
 # WhatsApp simultanés visés pour le staging).
+#
+# --proxy-headers (ADR-0018 / #307) : uvicorn 0.27 ne fait confiance à
+# X-Forwarded-For QUE depuis FORWARDED_ALLOW_IPS (env var, défaut 127.0.0.1
+# = personne en pratique : le trafic Docker arrive en 172.x). Au Sprint J
+# (reverse proxy #202), renseigner FORWARDED_ALLOW_IPS avec l'IP du proxy —
+# JAMAIS '*' : un X-Forwarded-For forgé permettrait de tourner la clé du
+# rate limiting sur des IP fictives (bypass).
 CMD ["uvicorn", "app.main:app", \
      "--host", "0.0.0.0", \
      "--port", "8000", \

@@ -84,6 +84,15 @@ class Settings(BaseSettings):
     # gel ops ponctuel. La politique ARTCI exige True en production.
     log_retention_enabled: bool = True
 
+    # ========== Rate limiting (issue #307, ADR-0018) ==========
+    # Limite GLOBALE unique appliquée à toutes les routes via default_limits
+    # (middleware ApiKeyExemptRateLimitMiddleware). Le trafic authentifié par
+    # clé API interne (whatsapp-server) est exempté. Format lib `limits` :
+    # "120/minute", "10/second", "1000/hour". Validé au démarrage (fail-fast
+    # dans app/security.py). Compteurs en mémoire PAR worker uvicorn (2 en
+    # prod) : la limite effective agrégée peut atteindre ~2× la valeur.
+    rate_limit: str = "120/minute"
+
     # ========== Sécurité PII (P0-05) ==========
     # Salt pour anonymisation SHA-256 des user_id dans les logs
     # Générer une valeur aléatoire stable en prod :

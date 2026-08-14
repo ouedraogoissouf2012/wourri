@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from app.data.constants import get_asr_languages
 from app.middleware.admin_metrics import set_request_metric_context
 from app.routers._audio_upload import read_audio_within_limits, resolve_extension
-from app.security import limiter, require_api_key
+from app.security import require_api_key
 from app.services.asr import ASRChain, get_asr_chain, get_generic_asr_chain
 from app.services.tts_bambara import translate_to_french
 
@@ -65,7 +65,6 @@ def _run_nlu(bambara_text: str) -> dict:
 
 
 @router.post("/transcribe", dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def transcribe_audio(
     request: Request,
     audio: UploadFile = File(...),
@@ -101,7 +100,6 @@ async def transcribe_audio(
 
 
 @router.post("/transcribe-and-translate", dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def transcribe_and_translate(
     request: Request,
     audio: UploadFile = File(...),

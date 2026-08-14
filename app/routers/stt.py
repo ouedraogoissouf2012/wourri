@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from app.middleware.admin_metrics import set_request_metric_context
 from app.models.schemas import Language
 from app.routers._audio_upload import MAX_AUDIO_BYTES
-from app.security import limiter, require_api_key
+from app.security import require_api_key
 from app.services import stt_whisper
 from app.services.deepseek import correct_stt_transcription
 
@@ -39,7 +39,6 @@ def _map_iso_to_language(iso_code: str) -> Language:
 
 
 @router.post("/transcribe", dependencies=[Depends(require_api_key)])
-@limiter.limit("10/minute")
 async def transcribe_audio(
     request: Request,
     audio: UploadFile = File(...),
