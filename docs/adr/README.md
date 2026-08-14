@@ -23,6 +23,7 @@ du projet. Chaque décision passe par cet index et par le workflow du skill
 | [ADR-0013](0013-ssh-deploy-hardening-options.md) | Durcissement déploiement SSH (3 options) | **proposé** | 2026-05-30 | Analyse 3 options pour remplacer la clé SSH statique CI (BLOCKER B1-SEC issue #221) : self-hosted runner, Tailscale SSH, Scaleway OIDC. Recommandation : **Option B (Tailscale)** — meilleur ratio coût/bénéfice, audit logs centralisés synergiques avec ARTCI (#215). En attente validation Ruben. |
 | [ADR-0016](0016-migration-promtail-grafana-alloy.md) | Migration Promtail → Grafana Alloy | **accepté** | 2026-07-29 | Remplace le collecteur Promtail arrivé en fin de vie par Alloy 1.18.0, corrige la découverte Docker staging et conserve le pipeline Loki existant. |
 | [ADR-0017](0017-dashboard-observabilite-sans-pii.md) | Dashboard d’observabilité sans contenu PII | **accepté** | 2026-07-29 | Dashboard #41 sur PostgreSQL, métriques techniques sans messages/transcriptions, données protégées par `X-API-Key`. |
+| [ADR-0024](0024-deploiement-wourri-dokploy.md) | Déploiement Wourri sur l'hôte Dokploy existant (ADC) | **accepté** | 2026-08-13 | Cible réelle = VPS Contabo avec Dokploy/Traefik/Swarm déjà en place (pas la VM Scaleway du runbook). Déploiement via Dokploy, interne only, build serveur depuis Git. **Option A retenue** (3 services natifs Dokploy). |
 
 ## ADRs à rédiger (roadmap, issus de [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md))
 
