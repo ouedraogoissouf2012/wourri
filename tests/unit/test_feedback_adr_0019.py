@@ -70,6 +70,22 @@ def _req(**kw):
     return fb.FeedbackRequest(**base)
 
 
+def test_log_general_ecrit_dans_fichier_mensuel(redirect_files):
+    """ADR-0025 : le log général part dans feedback-YYYY-MM.jsonl du mois
+    courant (même horloge date.today() que le handler et la purge)."""
+    from datetime import date
+
+    from app.core.log_retention import monthly_feedback_filename
+
+    _run_positif(_req(source="ivr_exact"))
+
+    monthly = redirect_files.log_dir / monthly_feedback_filename(date.today())
+    assert monthly.exists()
+    entry = json.loads(monthly.read_text(encoding="utf-8").strip().splitlines()[0])
+    assert entry["vote"] == "positif"
+    assert entry["user"].startswith("usr_")  # pseudonymisé, jamais brut
+
+
 def test_positif_deepseek_open_deposits_candidate_not_corpus(redirect_files, monkeypatch):
     # Garde-fou : ajouter_reponse_validee ne DOIT PAS être appelé (ADR-0019).
     called = {"corpus": False}

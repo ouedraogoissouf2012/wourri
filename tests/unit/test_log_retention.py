@@ -14,7 +14,7 @@ from __future__ import annotations
 import logging
 import os
 import time
-from datetime import date, timedelta
+from datetime import date, datetime, time as dt_time, timedelta
 
 from app.core.log_retention import (
     dated_log_filename,
@@ -98,6 +98,36 @@ def test_purge_ignore_nom_invalide(tmp_path):
     assert deleted == []
 
 
+def test_purge_ignore_mois_00_et_13(tmp_path):
+    """Mois 00 : date(y,1,1)-1j donnerait décembre N-1 sans validation — le
+    contrat « nom invalide jamais supprimé » doit couvrir 00 comme 13/99."""
+    mois_00 = _touch(tmp_path / "feedback-2020-00.jsonl")
+    mois_13 = _touch(tmp_path / "feedback-2020-13.jsonl")
+
+    deleted = purge_old_logs(
+        tmp_path, log_retention_days=30, feedback_retention_days=365, today=TODAY
+    )
+
+    assert mois_00.exists()
+    assert mois_13.exists()
+    assert deleted == []
+
+
+def test_purge_retention_negative_refusee(tmp_path):
+    """Une rétention négative placerait le cutoff dans le futur → le fichier
+    du jour deviendrait candidat. Refus explicite."""
+    import pytest
+
+    with pytest.raises(ValueError):
+        purge_old_logs(
+            tmp_path, log_retention_days=-1, feedback_retention_days=365, today=TODAY
+        )
+    with pytest.raises(ValueError):
+        purge_old_logs(
+            tmp_path, log_retention_days=30, feedback_retention_days=-1, today=TODAY
+        )
+
+
 def test_purge_dossier_absent_retourne_vide(tmp_path):
     assert (
         purge_old_logs(
@@ -138,7 +168,9 @@ def test_purge_feedback_mensuel_au_dela_retention(tmp_path):
 
 def test_purge_legacy_wourri_log_par_mtime(tmp_path):
     legacy = _touch(tmp_path / "wourri.log")
-    vieux = time.time() - 31 * 24 * 3600
+    # mtime ancré sur TODAY (pas sur l'horloge réelle) : le test reste vrai
+    # quelle que soit la date d'exécution (cutoff = minuit de TODAY - 30 j).
+    vieux = datetime.combine(TODAY - timedelta(days=31), dt_time(12)).timestamp()
     os.utime(legacy, (vieux, vieux))
 
     purge_old_logs(
@@ -146,6 +178,23 @@ def test_purge_legacy_wourri_log_par_mtime(tmp_path):
     )
 
     assert not legacy.exists()
+
+
+def test_purge_legacy_respecte_le_parametre_today(tmp_path):
+    """Le cutoff mtime des legacy dérive du paramètre `today` (déterminisme) :
+    avec un today rétrograde, un legacy vieux de 31 j n'est PAS candidat."""
+    legacy = _touch(tmp_path / "wourri.log")
+    vieux = time.time() - 31 * 24 * 3600
+    os.utime(legacy, (vieux, vieux))
+
+    purge_old_logs(
+        tmp_path,
+        log_retention_days=30,
+        feedback_retention_days=365,
+        today=TODAY - timedelta(days=60),
+    )
+
+    assert legacy.exists()
 
 
 def test_purge_legacy_recent_conserve(tmp_path):
@@ -178,6 +227,28 @@ def test_purge_dry_run_ne_supprime_rien(tmp_path):
 
     assert old.exists()
     assert deleted == [old]
+
+
+# ─────────────────────────────────────────────
+# Scheduler — interrupteur LOG_RETENTION_ENABLED
+# ─────────────────────────────────────────────
+
+
+def test_scheduler_desactive_ne_purge_pas(tmp_path, monkeypatch):
+    """LOG_RETENTION_ENABLED=false (cas de la suite de tests) : aucun fichier
+    supprimé, aucune tâche créée — le lifespan TestClient est inoffensif."""
+    import app.core.log_retention as lr
+
+    old = _touch(tmp_path / "wourri-2020-01-01.log")
+
+    class _Disabled:
+        log_retention_enabled = False
+
+    monkeypatch.setattr("app.config.get_settings", lambda: _Disabled())
+    lr.start_log_retention_scheduler(tmp_path)
+
+    assert old.exists()
+    assert lr._retention_task is None
 
 
 # ─────────────────────────────────────────────

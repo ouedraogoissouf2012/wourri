@@ -4,24 +4,18 @@ Lit logs/feedback-YYYY-MM.jsonl (mensuels, ADR-0025) + l'éventuel legacy
 logs/feedback.jsonl, et produit des stats par intent / culture / source.
 Sortie : console + logs/rapport_feedback.json
 """
-import glob
 import json
 import os
 from collections import defaultdict
 from datetime import datetime
 
-LOG_DIR      = os.path.join(os.path.dirname(__file__), "logs")
-FEEDBACK_LOG = os.path.join(LOG_DIR, "feedback.jsonl")  # legacy pré-ADR-0025
+# Contrat de nommage ADR-0025 : même dossier et même matcher que la purge
+# (feedback_log_files rejette p.ex. un feedback-2025-07.bak.jsonl que la
+# purge ignorerait — évite les doubles comptes).
+from app.core.log_retention import DEFAULT_LOG_DIR, feedback_log_files
+
+LOG_DIR      = os.fspath(DEFAULT_LOG_DIR)
 RAPPORT_PATH = os.path.join(LOG_DIR, "rapport_feedback.json")
-
-
-def _feedback_files():
-    """Fichiers feedback à lire : legacy éventuel + mensuels triés."""
-    files = []
-    if os.path.exists(FEEDBACK_LOG):
-        files.append(FEEDBACK_LOG)
-    files.extend(sorted(glob.glob(os.path.join(LOG_DIR, "feedback-*.jsonl"))))
-    return files
 
 INTENT_LABELS = {
     "CONSEIL_PRODUCTION":         "Conseil production",
@@ -60,8 +54,13 @@ CULTURE_LABELS = {
 
 def charger_feedbacks():
     lignes = []
-    for path in _feedback_files():
-        with open(path, encoding="utf-8") as f:
+    for path in feedback_log_files(LOG_DIR):
+        try:
+            f = open(path, encoding="utf-8")
+        except FileNotFoundError:
+            # Purgé par la rétention in-app entre le listage et l'ouverture.
+            continue
+        with f:
             for line in f:
                 line = line.strip()
                 if line:

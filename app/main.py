@@ -32,7 +32,10 @@ from app.data.cities import get_all_cities
 _psutil_proc = psutil.Process()
 
 settings = get_settings()
-LOG_DIR = os.path.join(os.path.dirname(__file__), "..", "logs")
+# Dossier logs canonique — source unique partagée avec la purge de rétention
+# (ADR-0025) : writer et purge DOIVENT viser le même dossier.
+from app.core.log_retention import DEFAULT_LOG_DIR
+LOG_DIR = os.fspath(DEFAULT_LOG_DIR)
 setup_logging(
     log_level="DEBUG" if settings.debug else "INFO",
     log_dir=LOG_DIR,

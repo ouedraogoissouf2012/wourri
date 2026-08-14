@@ -28,7 +28,9 @@ class DatedFileHandler(logging.FileHandler):
     """
 
     def __init__(self, log_dir: str | Path, today_fn: Callable[[], date] = date.today):
-        self._log_dir = Path(log_dir)
+        # Résolu UNE fois à l'init (comme FileHandler.baseFilename via abspath,
+        # cf. stdlib) : un os.chdir() ultérieur ne déplace pas les logs.
+        self._log_dir = Path(os.path.abspath(os.fspath(log_dir)))
         self._log_dir.mkdir(parents=True, exist_ok=True)
         self._today_fn = today_fn
         self._current_day = today_fn()
@@ -41,15 +43,22 @@ class DatedFileHandler(logging.FileHandler):
     def emit(self, record: logging.LogRecord) -> None:
         # handle() détient déjà le verrou (RLock) du handler → la bascule de
         # fichier est atomique vis-à-vis des autres threads du process.
-        day = self._today_fn()
-        if day != self._current_day:
-            self._current_day = day
-            if self.stream:
-                self.stream.close()
-                self.stream = None
-            self.baseFilename = os.fspath(
-                (self._log_dir / dated_log_filename(day)).absolute()
-            )
+        try:
+            day = self._today_fn()
+            if day != self._current_day:
+                if self.stream:
+                    self.stream.close()
+                    self.stream = None
+                self.baseFilename = os.fspath(self._log_dir / dated_log_filename(day))
+                # Engagé APRÈS la bascule réussie : si close() lève (ENOSPC,
+                # verrou), le jour n'est pas avancé et la bascule sera
+                # retentée au prochain emit (close d'un stream fermé = no-op).
+                self._current_day = day
+        except Exception:
+            # Convention stdlib (cf. BaseRotatingHandler.emit) : les erreurs
+            # de rotation passent par handleError, jamais chez l'appelant.
+            self.handleError(record)
+            return
         super().emit(record)  # FileHandler réouvre le stream si None
 
 

@@ -225,8 +225,13 @@ services:
       - wa_audio_cache:/app/audio_cache
       # data/ : user_preferences.json + pending_messages.json (cf. Sprint I.b).
       - wa_data:/app/data
-      # NOTE (#215, ADR-0025) : le volume wa_logs a été retiré — pino loggue
-      # exclusivement sur stdout (lib/logger.js), aucun écrivain fichier.
+      # wa_logs : AUCUN écrivain (pino loggue sur stdout — lib/logger.js).
+      # Conservé uniquement parce que l'image déclare VOLUME /app/logs
+      # (Dockerfile.prod:85, branche whatsappServeur) : sans montage nommé,
+      # Docker créerait un volume ANONYME orphelin à chaque redeploy.
+      # Suppression complète = retirer d'abord la directive VOLUME côté
+      # whatsappServeur (tracé ADR-0025). Rétention : n/a (volume vide).
+      - wa_logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "--silent", "--fail", "http://localhost:3001/health"]
       interval: 15s
@@ -261,7 +266,10 @@ volumes:
     name: wourri_wa_audio_cache
   wa_data:
     name: wourri_wa_data
-  # wa_logs : retiré (#215, ADR-0025) — aucun écrivain (pino → stdout).
+  # wa_logs : aucun écrivain (pino → stdout) — conservé tant que l'image wa
+  # déclare VOLUME /app/logs (cf. service whatsapp-server, ADR-0025).
+  wa_logs:
+    name: wourri_wa_logs
 
 # ╭──────────────────────────────────────────────────────────────────────╮
 # │ Docker secrets (issue #213)                                          │

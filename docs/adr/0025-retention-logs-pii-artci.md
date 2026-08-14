@@ -133,8 +133,13 @@ Cadre imposé par l'issue #215 et le mandat du lot sécurité F2 :
 | Stdout Docker | `json-file` | taille : 10 Mo × 5 par service | Complément : borné en taille ; durée effective courte en pratique. Documenté dans `docs/compliance/artci-logs.md`. |
 | Files de travail corpus (`data/feedback_negatif.jsonl`, `data/feedback_candidates.jsonl`) | hors périmètre purge auto | jusqu'à traitement (revue native ADR-0019) | Ce sont des files de travail métier, pas des logs ; leur contenu (réponses du bot + hash pseudonymisés) ne contient pas de PII brute. |
 
-**Volume `wourri_wa_logs`** : supprimé du compose (aucun écrivain — infra
-morte). Les logs du whatsapp-server vivent sur stdout, bornés par `json-file`.
+**Volume `wourri_wa_logs`** : aucun écrivain (infra morte) — les logs du
+whatsapp-server vivent sur stdout, bornés par `json-file`. Le montage nommé est
+**conservé** dans les composes tant que l'image whatsapp-server déclare
+`VOLUME /app/logs` (`Dockerfile.prod:85`, branche `whatsappServeur`) : le
+retirer ferait créer un volume **anonyme** orphelin à chaque redeploy.
+Suppression complète tracée en travail induit (retrait de la directive VOLUME
+côté `whatsappServeur`, puis retrait du montage).
 
 **Chiffrement at-rest** : non retenu dans ce lot. Le VPS Contabo n'offre pas de
 chiffrement disque par défaut et un chiffrement LUKS impose une réinstallation
@@ -161,8 +166,11 @@ passage en production grand public.
   4. `app/main.py` : tâche quotidienne dans le lifespan (idempotente).
   5. `scripts/purge_logs.py` : CLI ops (`--dry-run`).
   6. `rapport_c5.py` : lecture glob `feedback-*.jsonl` + legacy.
-  7. `docker-compose.prod.yml` : retrait `wa_logs`, commentaire rétention sur
-     `api_logs` ; `.env.example` / `.env.prod.template` : nouvelles variables.
+  7. `docker-compose.prod.yml` / staging : commentaires rétention (`api_logs`)
+     et statut `wa_logs` (mort mais requis par la directive VOLUME de l'image) ;
+     `.env.example` / `.env.prod.template` : nouvelles variables.
+     Travail induit ultérieur : retirer `VOLUME /app/logs` du Dockerfile.prod
+     de la branche `whatsappServeur`, puis retirer le montage `wa_logs`.
   8. `docs/compliance/artci-logs.md` : politique complète (inventaire,
      finalités, durées, mécanisme, chiffrement, RPO/RTO logs).
   9. Tests unitaires : handler daté, purge (bornes, legacy, dry-run), chemin
@@ -191,3 +199,12 @@ passage en production grand public.
 - 2026-08-14 — rédaction et acceptation (lot sécurité F2, issue #215). Statut
   « accepté » porté par le mandat d'orchestration du lot (la direction — 
   politique documentée + purge automatique — est celle prescrite par l'issue).
+- 2026-08-14 — revue adversariale (10 angles) : durcissements intégrés —
+  interrupteur `LOG_RETENTION_ENABLED` (les tests d'intégration exécutent le
+  lifespan réel → purge désactivée sous pytest), rétentions validées `ge=1`
+  + refus des valeurs négatives dans `purge_old_logs` (une rétention négative
+  aurait rendu le fichier du jour candidat), scan par fichier protégé OSError
+  (course inter-workers), bascule de jour transactionnelle dans le handler,
+  CLI sans import de Settings (effets de bord d'import inadaptés à un cron),
+  horloge unifiée `date.today()` (writer/handler/purge), montage `wa_logs`
+  conservé (directive VOLUME de l'image — cf. §Décision).

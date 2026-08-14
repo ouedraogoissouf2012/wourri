@@ -47,7 +47,17 @@ purge automatique au-delà du seuil.
   purgés sur leur mtime avec la rétention de leur catégorie.
 - **Secours ops (manuel/cron)** : `python scripts/purge_logs.py [--dry-run]`
   — même logique, utilisable depuis l'hôte ou un exec conteneur, quel que soit
-  l'orchestrateur (compose ou Dokploy, cf. ADR-0024).
+  l'orchestrateur (compose ou Dokploy, cf. ADR-0024). Sans dépendance à la
+  config applicative (utilisable même si l'env de l'API est indisponible).
+- **Garde-fous** : rétentions validées ≥ 1 jour (config) et refus des valeurs
+  négatives (purge) — le fichier du jour/mois courant n'est jamais candidat ;
+  échec de suppression loggé en warning (un fichier PII insupprimable doit se
+  voir) ; `LOG_RETENTION_ENABLED=false` disponible pour gel ponctuel (les
+  tests l'utilisent ; la conformité exige `true` en production).
+- **Volume `wourri_wa_logs`** : aucun écrivain (pino → stdout). Montage
+  conservé uniquement à cause de la directive `VOLUME /app/logs` de l'image
+  whatsapp-server ; volume vide, rétention sans objet. Suppression complète
+  tracée dans l'ADR-0025.
 
 ## 4. RPO / RTO des logs
 

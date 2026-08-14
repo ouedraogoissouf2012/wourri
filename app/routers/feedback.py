@@ -24,12 +24,12 @@ la file de revue native.
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import date, datetime
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from app.security import require_api_key, limiter
-from app.core.log_retention import monthly_feedback_filename
+from app.core.log_retention import DEFAULT_LOG_DIR, monthly_feedback_filename
 from app.core.pii_utils import anonymize_user_id
 
 logger = logging.getLogger(__name__)
@@ -37,8 +37,9 @@ router = APIRouter(prefix="/api/feedback", tags=["Feedback"])
 
 # Logs feedback — fichier MENSUEL feedback-YYYY-MM.jsonl (issue #215, ADR-0025) :
 # la purge de rétention supprime des fichiers entiers (atomique), jamais de
-# réécriture de lignes concurrente avec les appends des workers.
-LOG_DIR              = os.path.join(os.path.dirname(__file__), "..", "..", "logs")
+# réécriture de lignes concurrente avec les appends des workers. LOG_DIR vient
+# de la source unique ADR-0025 (même dossier que la purge et le handler).
+LOG_DIR              = os.fspath(DEFAULT_LOG_DIR)
 FEEDBACK_NEGATIF_LOG = os.path.join(os.path.dirname(__file__), "..", "..", "data", "feedback_negatif.jsonl")
 # File de candidats à revue native (ADR-0019) : un 👍 sur une réponse DeepSeek
 # (deepseek_open) dépose ici un candidat. Il n'entre au corpus qu'après
@@ -66,18 +67,20 @@ class FeedbackRequest(BaseModel):
 
 
 def _feedback_log_path() -> str:
-    """Chemin du fichier feedback du mois courant (ADR-0025)."""
-    return os.path.join(
-        LOG_DIR, monthly_feedback_filename(datetime.utcnow().date())
-    )
+    """Chemin du fichier feedback du mois courant (ADR-0025).
+
+    date.today() (date locale du process, UTC en prod via TZ compose) — même
+    horloge que le handler de logs et la purge, pour que « fichier du mois
+    courant jamais purgé » reste vrai.
+    """
+    return os.path.join(LOG_DIR, monthly_feedback_filename(date.today()))
 
 
 def _log_feedback(entry: dict):
     """Écrit une ligne JSONL dans le fichier de log feedback du mois."""
     try:
-        path = _feedback_log_path()
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "a", encoding="utf-8") as f:
+        os.makedirs(LOG_DIR, exist_ok=True)
+        with open(_feedback_log_path(), "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except Exception as e:
         logger.error(f"[Feedback] Erreur log: {e}")
