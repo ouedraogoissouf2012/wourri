@@ -224,13 +224,26 @@ echo -n "$(openssl rand -base64 32)" | sudo tee /srv/wourri/secrets/api_secret_k
 sudo chmod 0640 /srv/wourri/secrets/api_secret_key
 sudo chown root:1000 /srv/wourri/secrets/api_secret_key
 
+# 3. API_SECRET_KEY_PREVIOUS (issue #259) : clé précédente pour la fenêtre
+#    de rotation dual-key. Créé VIDE (vide = aucune rotation en cours) —
+#    le fichier DOIT exister : sans lui, `docker compose up` crée un
+#    RÉPERTOIRE fantôme du même nom (piège documenté ci-dessous).
+#    ⚠ Permissions : lu par wouri-api (USER wourri uid 1000) → root:1000
+#    mode 0640, comme les autres secrets consommés par les conteneurs
+#    non-root (compose non-swarm bind-monte avec les perms hôte).
+sudo touch /srv/wourri/secrets/api_secret_key_previous
+sudo chmod 0640 /srv/wourri/secrets/api_secret_key_previous
+sudo chown root:1000 /srv/wourri/secrets/api_secret_key_previous
+
 # Vérification (les DEUX checks sont importants) :
 sudo ls -la /srv/wourri/secrets/
 # Doit afficher :
 #   drwx------ 2 root root  ...
 #   -rw-r----- 1 root 1000  ... postgres_password   (#258 : lu aussi par wouri-api uid 1000)
 #   -rw-r----- 1 root 1000  ... api_secret_key      (#257 : lu par api + wa, uid 1000)
-# ⚠ Chaque secret doit être un FICHIER NON VIDE. Deux pièges vérifiés :
+#   -rw-r----- 1 root 1000  ... api_secret_key_previous   (taille 0 hors rotation)
+# ⚠ Chaque secret doit être un FICHIER NON VIDE (sauf api_secret_key_previous,
+#   VIDE hors rotation). Deux pièges vérifiés :
 #   - fichier VIDE (touch, openssl en échec) : compose démarre quand même →
 #     clé '' → fail-fast Node exit(1) → crash-loop silencieux ;
 #   - fichier ABSENT au `up` : Docker crée un RÉPERTOIRE fantôme du même nom
@@ -238,6 +251,7 @@ sudo ls -la /srv/wourri/secrets/
 #     (« Is a directory ») tant qu'on n'a pas fait `sudo rmdir`.
 sudo test -s /srv/wourri/secrets/api_secret_key && echo "api_secret_key: OK (non vide)"
 sudo test -s /srv/wourri/secrets/postgres_password && echo "postgres_password: OK (non vide)"
+sudo test -f /srv/wourri/secrets/api_secret_key_previous && echo "api_secret_key_previous: OK (fichier présent)"
 ```
 
 #### Ordre de déploiement #257 (une seule fois, lors de la migration)
@@ -523,6 +537,17 @@ docker compose -f docker-compose.prod.yml logs --tail 200 wouri-api
 
 ### Mettre à jour manuellement (sans CI)
 
+> **Migration one-shot #259 (installations existantes)** : AVANT le premier
+> déploiement du compose incluant le secret `api_secret_key_previous`, créer
+> le fichier VIDE — sinon Docker crée un répertoire fantôme au `up`
+> (« Is a directory » à la prochaine rotation) :
+>
+> ```bash
+> sudo touch /srv/wourri/secrets/api_secret_key_previous
+> sudo chmod 0640 /srv/wourri/secrets/api_secret_key_previous
+> sudo chown root:1000 /srv/wourri/secrets/api_secret_key_previous
+> ```
+
 ```bash
 cd /srv/wourri
 docker compose --env-file .env.prod -f docker-compose.prod.yml pull
@@ -601,7 +626,12 @@ Le secret est partagé entre `wouri-api` (validation `X-API-Key`) et `whatsapp-s
 
 > **Issue #222 livrée** : `wouri-api` accepte désormais **2 clés simultanément** pendant une fenêtre de rotation. La procédure ci-dessous fait une rotation **zero-downtime** (vs ~30 s de 401 garantis avant).
 
-#### Procédure rotation zero-downtime
+#### Procédure rotation zero-downtime (pattern secrets — #257 + #259)
+
+Tout se joue dans **2 fichiers** de `/srv/wourri/secrets/` : `api_secret_key`
+(clé courante, lue par wouri-api ET whatsapp-server — même fichier source,
+cf. §5b) et `api_secret_key_previous` (clé précédente, vide hors rotation).
+Plus AUCUNE clé en clair dans `.env.prod`.
 
 ```bash
 # 1. Générer la nouvelle clé
@@ -611,23 +641,25 @@ NEW_KEY=$(openssl rand -base64 32)
 #    AVANT de l'écraser localement (filet de sécurité en cas d'oubli).
 OLD_KEY=$(sudo cat /srv/wourri/secrets/api_secret_key)
 
-# 3. Basculer :
-#    - WOURI_API_KEY_PREVIOUS = OLD dans .env.prod (acceptée temporairement
-#      par wouri-api — dual-key #222 ; passera en fichier secret avec #259)
-#    - api_secret_key (FICHIER) = NEW (utilisée par tous les nouveaux appels)
-sudo sed -i "s|^WOURI_API_KEY_PREVIOUS=.*|WOURI_API_KEY_PREVIOUS=$OLD_KEY|" /srv/wourri/.env.prod
+# 3. Basculer les 2 fichiers secrets :
+#    - api_secret_key_previous = OLD (acceptée temporairement par wouri-api)
+#    - api_secret_key          = NEW (utilisée par tous les nouveaux appels)
+echo -n "$OLD_KEY" | sudo tee /srv/wourri/secrets/api_secret_key_previous >/dev/null
 echo -n "$NEW_KEY" | sudo tee /srv/wourri/secrets/api_secret_key >/dev/null
 
-# 4. Restart wouri-api → accepte les 2 clés simultanément.
+# 4. Restart wouri-api → accepte les 2 clés simultanément
+#    (API_SECRET_KEY_FILE=NEW + API_SECRET_KEY_PREVIOUS_FILE=OLD).
+#    ⚠ `restart`, PAS `up -d` : seuls les CONTENUS des fichiers secrets ont
+#    changé — invisibles pour le hash de config compose, `up -d` répondrait
+#    « Container Running » sans rien redémarrer (rotation no-op silencieuse).
 #    Pendant cette etape, le whatsapp-server envoie ENCORE l'ancienne cle =>
-#    wouri-api ACCEPTE (grace a WOURI_API_KEY_PREVIOUS). Zero 401.
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
+#    wouri-api ACCEPTE (grace a la cle precedente). Zero 401.
+docker compose --env-file .env.prod -f docker-compose.prod.yml restart wouri-api
 
-# 5. Restart whatsapp-server → relit /run/secrets/wouri_api_key (= le même
-#    fichier api_secret_key) → envoie désormais la nouvelle clé.
-#    ⚠ `restart`, PAS `up -d` : pour ce service seul le CONTENU du fichier
-#    secret a changé (aucune env), invisible du hash de config compose —
-#    `up -d` ne redémarrerait rien et wa continuerait avec l'ancienne clé.
+# 5. Restart whatsapp-server (même raison : `restart`, pas `up -d` — seul le
+#    CONTENU du fichier secret a changé, invisible du hash de config compose)
+#    → relit /run/secrets/wouri_api_key (= le même fichier api_secret_key,
+#    cf. #257) → envoie désormais la nouvelle clé.
 #    Si pendant la fenetre wa envoie encore l'ancienne (race), wouri-api accepte.
 docker compose --env-file .env.prod -f docker-compose.prod.yml restart whatsapp-server
 
@@ -639,9 +671,11 @@ curl -fsS http://127.0.0.1:3001/health
 #    été émises avant le redémarrage de whatsapp-server avec l'ancienne clé)
 sleep 300
 
-# 8. Purger la clé précédente : seule la nouvelle clé est désormais valide.
-sudo sed -i "s|^WOURI_API_KEY_PREVIOUS=.*|WOURI_API_KEY_PREVIOUS=|" /srv/wourri/.env.prod
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
+# 8. Purger la clé précédente : fichier VIDÉ, pas supprimé (un secret
+#    absent au prochain `up` ferait créer un RÉPERTOIRE fantôme, cf. §5b).
+#    Seule la nouvelle clé est désormais valide. `restart` (contenu fichier).
+sudo truncate -s 0 /srv/wourri/secrets/api_secret_key_previous
+docker compose --env-file .env.prod -f docker-compose.prod.yml restart wouri-api
 
 # 9. Mettre à jour le coffre-fort avec la NOUVELLE clé (sinon perte irréversible
 #    à la prochaine rotation).
@@ -649,7 +683,7 @@ docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
 
 > **Garantie zero-downtime** : entre l'étape 4 et 8, **les 2 clés sont valides**. Aucune requête WhatsApp → API ne peut échouer pour cause de clé différente. Tu peux faire la rotation en pleine journée.
 
-> **Alerte automatique** : tant que `WOURI_API_KEY_PREVIOUS` est définie (non vide), `wouri-api` log un `WARNING` au démarrage pour rappeler de purger après la fenêtre :
+> **Alerte automatique** : tant que la clé précédente est définie (fichier `api_secret_key_previous` non vide, ou env legacy `WOURI_API_KEY_PREVIOUS`), `wouri-api` log un `WARNING` au démarrage pour rappeler de purger après la fenêtre :
 > ```
 > [SECURITY] API_SECRET_KEY_PREVIOUS définie → rotation en cours.
 > Les 2 clés sont acceptées. Pense à vider API_SECRET_KEY_PREVIOUS

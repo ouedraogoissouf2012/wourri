@@ -206,18 +206,21 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Retourne les settings (cached).
 
-    Issue #213 : si `API_SECRET_KEY_FILE` / `API_SECRET_KEY_PREVIOUS_FILE`
+    Issues #213 + #259 : si `API_SECRET_KEY_FILE` / `API_SECRET_KEY_PREVIOUS_FILE`
     sont définis (pattern Docker secrets), leur contenu OVERRIDE les
     valeurs lues depuis `.env`. Cela permet de stocker les secrets dans
     des fichiers mode 0600 sur la VM plutôt que dans des env vars
     (visibles via `docker inspect`).
     """
     # Construire les overrides depuis Docker secrets si présents.
-    # Note : API_SECRET_KEY_PREVIOUS_FILE pourra etre ajoute apres le merge
-    # de PR #245 (qui introduit le champ api_secret_key_previous).
     overrides: dict[str, str] = {}
     if file_secret := _read_file_secret("API_SECRET_KEY"):
         overrides["api_secret_key"] = file_secret
+    # Issue #259 : clé PRÉCÉDENTE en fichier (rotation zero-downtime sans
+    # remettre de clé en clair dans l'env). Fichier vide (état normal hors
+    # rotation) → pas d'override → fallback env/.env, '' par défaut.
+    if file_secret := _read_file_secret("API_SECRET_KEY_PREVIOUS"):
+        overrides["api_secret_key_previous"] = file_secret
 
     s = Settings(**overrides)
     # En production : forcer debug=False et exiger API_SECRET_KEY
