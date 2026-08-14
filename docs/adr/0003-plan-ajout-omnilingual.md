@@ -223,8 +223,32 @@ Supprimer le code mort identifié dans ADR-0002 (dupliquait le normalizer exista
 
 ---
 
+## Addendum — P1-02 : Bambara-ASR-v2 au benchmark Phase 3 (2026-08-14)
+
+> **Note de traçabilité (issue [#206](https://github.com/ouedraogoissouf2012/wourri/issues/206), action P1-02).**
+> ADR-0003 est **accepté** ; par convention (`README.md`), un ADR accepté n'est pas
+> réécrit — cet addendum est un **complément de traçabilité**, pas une révision de
+> la décision.
+
+L'action P1-02 (« ajouter Bambara-ASR-v2 au benchmark de la Phase 3 ») est
+**satisfaite** : le modèle `sudoping01/bambara-asr-v2` (Whisper-large-v2 fine-tuné,
+Apache 2.0, code-switching bambara-français natif) figure déjà comme **modèle M4**
+dans le protocole de benchmark qui exécute la Phase 3 de cet ADR :
+[docs/benchmarks/0001-asr-dioula-evaluation.md](../benchmarks/0001-asr-dioula-evaluation.md)
+(§2 tableau des modèles, note dédiée §2, ligne M4 du tableau de synthèse §7).
+
+- **Fichier porteur de P1-02** : le benchmark `0001-asr-dioula-evaluation.md` (le
+  livrable réel de la Phase 3), et non le corps du présent plan.
+- **Validation Ruben requise** : le benchmark 0001 est en statut *« proposé, en
+  attente de validation Ruben avant exécution »* (§ en-tête + §10 checklist). M4 y
+  reste soumis à cette validation avant toute exécution.
+- **Raison** (rappel PLAN_ACTION P1-02) : code-switching FR-bambara critique pour
+  les paysans ivoiriens qui mélangent les deux langues ; licence Apache 2.0
+  compatible usage commercial.
+
 ## Historique
 
 - **2026-04-22 (première rédaction)** : plan de migration complète avec feature flag + phases lourdes. Cadrage incorrect.
 - **2026-04-22 (révision)** : après exploration réelle du projet, reconnaissance de l'architecture multi-provider existante. Plan recadré en "ajout de provider". Phases allégées, suppression de la notion de "migration complète". Statut proposé, attend validation Ruben.
 - **2026-04-23 (accepté)** : Ruben valide le plan en chat. Statut basculé à `accepté`. Exécution effective conditionnée à la disponibilité d'environnement Colab/GPU et à la stabilité du benchmark.
+- **2026-08-14 (addendum P1-02)** : ajout d'une note de traçabilité (issue #206) actant que Bambara-ASR-v2 (M4) est déjà intégré au benchmark 0001 qui exécute la Phase 3, sous réserve de validation Ruben. Aucune modification de la décision. MAJ README index.
