@@ -157,3 +157,42 @@ def test_asr_transcribe_local_language_uses_generic_chain(client):
         {"asr_success": False},
         {"asr_success": True, "source": "asr"},
     ]
+
+
+def test_asr_transcribe_unsupported_language_returns_400(client):
+    """POST /api/asr/transcribe rejette une langue inconnue (400) AVANT tout
+    accès à la chaîne ASR (validation en amont, aucun modèle sollicité)."""
+    with patch("app.routers.asr.get_asr_chain") as default_chain, patch(
+        "app.routers.asr.get_generic_asr_chain"
+    ) as generic_chain:
+        response = client.post(
+            "/api/asr/transcribe",
+            files={"audio": ("question.ogg", io.BytesIO(b"fake-audio"), "audio/ogg")},
+            data={"language": "zz"},
+        )
+
+    assert response.status_code == 400
+    assert "zz" in response.json()["detail"]
+    default_chain.assert_not_called()
+    generic_chain.assert_not_called()
+
+
+def test_asr_transcribe_returns_500_when_transcription_none(client):
+    """Non-régression : si la chaîne renvoie None (modèle indisponible), la
+    route remonte un 500 explicite plutôt qu'un corps vide ou un 200 trompeur."""
+    chain = MagicMock()
+    chain.transcribe = AsyncMock(return_value=None)
+
+    with (
+        patch("app.routers.asr.get_asr_chain", return_value=chain),
+        patch("app.routers.asr.set_request_metric_context"),
+    ):
+        response = client.post(
+            "/api/asr/transcribe",
+            files={"audio": ("question.ogg", io.BytesIO(b"fake-audio"), "audio/ogg")},
+            data={"language": "bam"},
+        )
+
+    assert response.status_code == 500
+    assert "transcription" in response.json()["detail"].lower()
+    chain.transcribe.assert_awaited_once_with(b"fake-audio", "ogg")
