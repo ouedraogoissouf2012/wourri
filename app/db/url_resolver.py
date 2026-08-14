@@ -25,7 +25,7 @@ Sources lues, dans l'ordre de priorité :
 from __future__ import annotations
 
 import os
-from urllib.parse import quote_plus
+from urllib.parse import quote
 
 from app.core.secrets import read_file_secret
 
@@ -46,9 +46,12 @@ def _assemble_from_components(*, raise_on_incomplete: bool) -> str:
     db = os.getenv("POSTGRES_DB", "").strip()
     port = os.getenv("POSTGRES_PORT", "").strip() or "5432"
     # Priorité au Docker secret (un seul point de vérité), fallback env brut.
+    # PAS de strip() sur le mot de passe env : un mot de passe avec espaces
+    # de bord est légal et l'ancienne interpolation compose le passait tel
+    # quel (le fichier secret, lui, est strippé — newline de fin).
     password = read_file_secret("POSTGRES_PASSWORD") or os.getenv(
         "POSTGRES_PASSWORD", ""
-    ).strip()
+    )
 
     missing = [
         label
@@ -68,9 +71,12 @@ def _assemble_from_components(*, raise_on_incomplete: bool) -> str:
             )
         return ""
 
+    # quote(safe="") et PAS quote_plus : quote_plus encode l'espace en '+',
+    # que make_url/unquote de SQLAlchemy ne re-décode pas en espace → un mot
+    # de passe contenant un espace arriverait faux à Postgres.
     return (
-        f"postgresql+psycopg://{quote_plus(user)}:{quote_plus(password)}"
-        f"@{host}:{port}/{quote_plus(db)}"
+        f"postgresql+psycopg://{quote(user, safe='')}:{quote(password, safe='')}"
+        f"@{host}:{port}/{quote(db, safe='')}"
     )
 
 

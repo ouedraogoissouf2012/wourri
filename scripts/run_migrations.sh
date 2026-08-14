@@ -12,8 +12,11 @@
 #   docker compose -f docker-compose.prod.yml run --rm wouri-api \
 #       /app/scripts/run_migrations.sh
 #
-# Variables d'environnement attendues :
-#   POSTGRES_URL  postgresql+psycopg://user:pwd@host:5432/wourri_prod
+# Variables d'environnement attendues (issue #258 — 2 formes acceptées) :
+#   POSTGRES_URL   postgresql+psycopg://user:pwd@host:5432/wourri_prod
+#   OU composants  POSTGRES_HOST [+ POSTGRES_PORT] + POSTGRES_USER +
+#                  POSTGRES_DB + POSTGRES_PASSWORD_FILE|POSTGRES_PASSWORD
+#   (alembic/env.py résout via app/db/url_resolver.py — mêmes sources)
 #
 # Référence : ADR-0008 §Phase B (migrations Alembic versionnées).
 
@@ -22,9 +25,13 @@ set -euo pipefail
 # ──────────────────────────────────────────────────────────────────
 # 1. Pré-vérifications
 # ──────────────────────────────────────────────────────────────────
-if [[ -z "${POSTGRES_URL:-}" ]]; then
-    echo "[MIGRATIONS] ERREUR : POSTGRES_URL non définie."
-    echo "[MIGRATIONS] Configurez dans .env.prod (cf. .env.prod.template)."
+# Issue #258 : le compose prod ne passe plus POSTGRES_URL mais les composants
+# POSTGRES_* + le secret postgres_password. On vérifie qu'AU MOINS une des
+# deux formes est présente ; la résolution fine (composants incomplets →
+# message détaillé) est déléguée à url_resolver via alembic/env.py.
+if [[ -z "${POSTGRES_URL:-}" && -z "${POSTGRES_HOST:-}" ]]; then
+    echo "[MIGRATIONS] ERREUR : ni POSTGRES_URL ni POSTGRES_HOST définies."
+    echo "[MIGRATIONS] Configurez dans .env.prod / compose (cf. .env.prod.template, issue #258)."
     exit 1
 fi
 

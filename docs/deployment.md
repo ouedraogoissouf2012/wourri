@@ -228,8 +228,8 @@ sudo chown root:1000 /srv/wourri/secrets/api_secret_key
 sudo ls -la /srv/wourri/secrets/
 # Doit afficher :
 #   drwx------ 2 root root  ...
-#   -rw------- 1 root root  ... postgres_password
-#   -rw-r----- 1 root 1000  ... api_secret_key
+#   -rw-r----- 1 root 1000  ... postgres_password   (#258 : lu aussi par wouri-api uid 1000)
+#   -rw-r----- 1 root 1000  ... api_secret_key      (#257 : lu par api + wa, uid 1000)
 # ⚠ Chaque secret doit être un FICHIER NON VIDE. Deux pièges vérifiés :
 #   - fichier VIDE (touch, openssl en échec) : compose démarre quand même →
 #     clé '' → fail-fast Node exit(1) → crash-loop silencieux ;
@@ -672,9 +672,13 @@ docker compose -f docker-compose.prod.yml exec postgres \
 # 2. L'écrire dans le fichier secret (UNIQUE source de vérité)
 echo -n "NEW_PWD" | sudo tee /srv/wourri/secrets/postgres_password >/dev/null
 
-# 3. Restart wouri-api (postgres n'a pas besoin de redémarrer pour cette
-#    opération ; il ne relit POSTGRES_PASSWORD_FILE qu'à l'initdb)
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api
+# 3. Restart wouri-api — ⚠ `restart`, PAS `up -d` : seul le CONTENU du
+#    fichier secret a changé, invisible pour le hash de config compose →
+#    `up -d` répondrait « Container Running » sans rien redémarrer et l'API
+#    garderait l'ancien mot de passe (URL assemblée au boot).
+#    (postgres n'a pas besoin de redémarrer : il ne relit
+#    POSTGRES_PASSWORD_FILE qu'à l'initdb)
+docker compose --env-file .env.prod -f docker-compose.prod.yml restart wouri-api
 ```
 
 ### Sauvegardes automatiques (cron daily) — OBLIGATOIRE avant Sprint J

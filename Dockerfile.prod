@@ -91,8 +91,9 @@ COPY --from=builder --chown=wourri:wourri /opt/venv /opt/venv
 # Copie du code source (sélective — .dockerignore exclut le reste).
 # Ordre par fréquence de changement : moins fréquent d'abord = meilleur cache.
 # Sprint I.a review MAJOR-2 : alembic.ini est SAFE (sqlalchemy.url=vide,
-# l'URL réelle est injectée via env POSTGRES_URL → alembic/env.py la résout
-# via app/db/url_resolver.py). Aucun credential dans l'image.
+# l'URL réelle est résolue par alembic/env.py via app/db/url_resolver.py :
+# env POSTGRES_URL, ou composants POSTGRES_* + secret postgres_password
+# depuis #258). Aucun credential dans l'image.
 COPY --chown=wourri:wourri alembic.ini ./
 COPY --chown=wourri:wourri alembic/ ./alembic/
 COPY --chown=wourri:wourri db-init/ ./db-init/

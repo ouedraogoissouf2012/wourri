@@ -18,7 +18,16 @@ from app.db.url_resolver import resolve_postgres_url
 
 @pytest.fixture
 def env_components(monkeypatch, tmp_path):
-    """Env propre : pas d'URL directe, composants posés par le test."""
+    """Env propre : pas d'URL directe, composants posés par le test.
+
+    - chdir(tmp_path) : Settings lit `.env` du CWD (Config.env_file) — sur un
+      poste dev avec un .env contenant POSTGRES_URL, la source n°2 du
+      resolver court-circuiterait l'assemblage et ferait échouer ces tests
+      localement alors que la CI (sans .env) serait verte.
+    - cache_clear avant ET après : ne pas laisser un Settings pollué
+      (construit dans le tmp_path) aux autres fichiers de tests.
+    """
+    monkeypatch.chdir(tmp_path)
     for var in (
         "POSTGRES_URL",
         "POSTGRES_HOST",
@@ -29,12 +38,12 @@ def env_components(monkeypatch, tmp_path):
         "POSTGRES_PASSWORD_FILE",
     ):
         monkeypatch.delenv(var, raising=False)
-    # Settings est caché : purger pour que postgres_url reflète l'env nettoyée
-    # (le champ pydantic lit aussi POSTGRES_URL au moment de la construction).
     from app.config import get_settings
 
     get_settings.cache_clear()
-    return monkeypatch
+    yield monkeypatch
+    monkeypatch.undo()
+    get_settings.cache_clear()
 
 
 def _set_base(monkeypatch):
@@ -124,6 +133,21 @@ def test_password_caracteres_speciaux_encode(env_components):
 
     assert "p%40ss%3Aw%2Ford%251@postgres" in url
     assert "p@ss:w/ord" not in url
+
+
+def test_password_avec_espace_round_trip_sqlalchemy(env_components):
+    """Espace encodé %20 (PAS '+' : make_url/unquote ne re-décode pas '+')
+    et espaces de bord du mot de passe env PRÉSERVÉS (pas de strip —
+    l'ancienne interpolation compose passait la valeur telle quelle)."""
+    from sqlalchemy.engine.url import make_url
+
+    _set_base(env_components)
+    env_components.setenv("POSTGRES_PASSWORD", " mot de passe ")
+
+    url = resolve_postgres_url()
+
+    assert "%20mot%20de%20passe%20@" in url
+    assert make_url(url).password == " mot de passe "
 
 
 def test_port_custom_respecte(env_components):
