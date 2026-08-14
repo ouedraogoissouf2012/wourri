@@ -181,6 +181,37 @@ le besoin de plafonds différenciés émerge — non prématuré aujourd'hui.
      routers » ; format `RATE_LIMIT` invalide → refus au démarrage.
   - **Rollback** : réversible (réintroduire les décorateurs). Aucune migration
     de données.
+- **Périmètre et hypothèses (vérifiés en revue adversariale 2026-08-14)** :
+  - Le rate limiting couvre les **routes déclarées** uniquement : le mount
+    `/static` (dont les audios TTS), les 404 et les 405 sont hors périmètre
+    (slowapi exempte tout scope sans handler de route). Le throttling du
+    statique/du scan de chemins relève du reverse proxy **Sprint J #202** —
+    limitation assumée, à couvrir là-bas.
+  - Les **429 ne traversent pas** `AdminMetricsMiddleware` (le rejet est
+    volontairement le plus externe → coût minimal sous attaque). Conséquence :
+    une attaque throttlée est invisible du dashboard ADR-0017 ; un compteur
+    de 429 pourra être ajouté plus tard si le besoin d'observabilité émerge.
+    Protection d'abord, métrique ensuite — choix explicite.
+  - Hypothèse : uvicorn sert en TCP → `request.client` est toujours renseigné.
+    En cas de passage à un socket Unix (option possible avec le proxy
+    Sprint J), `get_remote_address` renverrait `127.0.0.1` pour TOUT le
+    trafic (un seul compteur mondial) → à réévaluer à ce moment-là.
+  - Le fail-fast `RATE_LIMIT` invalide se manifeste, avec uvicorn 0.27
+    `--workers 2`, par des workers morts + un parent vivant (pas de
+    supervision des workers avant uvicorn 0.30) : le conteneur passe
+    `unhealthy` via le healthcheck plutôt que de crasher franchement. Même
+    comportement que le garde `API_SECRET_KEY` préexistant — dette tracée :
+    upgrade uvicorn ≥ 0.30.
+  - slowapi 0.1.9 : son middleware ASGI casse le protocole sur les réponses
+    **multi-chunks** (réémission de `http.response.start`). Aucune route
+    limitée ne streame aujourd'hui — ne pas ajouter de
+    FileResponse/StreamingResponse sur une route limitée sans traiter ce
+    point (pin slowapi==0.1.9).
+  - `/api/health/memory` reste **limité** (contrairement à `/health`,
+    exempté pour la sonde Docker) : la route expose des infos process sans
+    authentification — la limite globale est sa seule protection. Un scraper
+    Prometheus futur devra soit s'authentifier (exemption), soit compter
+    dans le budget de son IP. Choix assumé.
 - **Verrous futurs** : passer plus tard à des limites par groupe (Option B)
   restera possible mais demandera de réintroduire de la config par famille.
 

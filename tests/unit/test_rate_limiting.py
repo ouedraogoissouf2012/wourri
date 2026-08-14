@@ -217,6 +217,25 @@ def test_is_valid_api_key_mode_dev_sans_cle(monkeypatch):
     assert sec.is_valid_api_key(None) is False
 
 
+def test_cle_non_ascii_rejetee_sans_crash(monkeypatch):
+    """Starlette décode les headers en latin-1 : un X-API-Key non-ASCII doit
+    donner « invalide » (et rester rate-limité), jamais un TypeError → 500
+    hors comptage (compare_digest(str, str) refuse le non-ASCII)."""
+    sec = _reload_security(monkeypatch, RATE_LIMIT="2/minute", API_SECRET_KEY="cle_prod")
+
+    assert sec.is_valid_api_key("caféÿ") is False
+
+    client = TestClient(_build_app(sec))
+    # Forme wire (bytes latin-1) : ce qu'enverrait un client forgé — httpx
+    # refuse les str non-ASCII mais accepte les bytes tels quels.
+    codes = [
+        client.get("/t", headers=[(b"x-api-key", "café".encode("latin-1"))]).status_code
+        for _ in range(4)
+    ]
+    assert 500 not in codes
+    assert 429 in codes
+
+
 def test_is_valid_api_key_courante_et_precedente(monkeypatch):
     sec = _reload_security(
         monkeypatch,

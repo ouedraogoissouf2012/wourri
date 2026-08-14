@@ -82,10 +82,15 @@ def is_valid_api_key(api_key: str | None) -> bool:
     """
     if not _API_SECRET_KEY or not api_key:
         return False
-    if _secrets.compare_digest(api_key, _API_SECRET_KEY):
+    # Comparaison sur BYTES : compare_digest(str, str) lève TypeError sur du
+    # non-ASCII, et Starlette décode les headers en latin-1 → un X-API-Key
+    # forgé avec un octet 0x80-0xFF ferait un 500 (non compté par le rate
+    # limiting) au lieu d'un simple « clé invalide ».
+    candidate = api_key.encode("utf-8")
+    if _secrets.compare_digest(candidate, _API_SECRET_KEY.encode("utf-8")):
         return True
     if _API_SECRET_KEY_PREVIOUS and _secrets.compare_digest(
-        api_key, _API_SECRET_KEY_PREVIOUS
+        candidate, _API_SECRET_KEY_PREVIOUS.encode("utf-8")
     ):
         return True
     return False
