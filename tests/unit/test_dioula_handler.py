@@ -236,6 +236,117 @@ async def test_cascade_parametres_transmis_correctement():
 
 
 # ─────────────────────────────────────────────
+# Niveau 2.5 — routage météo pur (issue #355 T4)
+# ─────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_meteo_pure_route_vers_reponse_construite_pas_deepseek():
+    """intent météo pur + IVR None → build_meteo_response répond, DeepSeek jamais appelé."""
+    nlu = _make_nlu(
+        intent="QUESTION_METEO_AGRICOLE",
+        concepts={"TEMPS_SAISON_PLUIE": True, "TEMPS_DEMAIN": True},
+    )
+    handler = DioulaHandler()
+    meteo_result = _make_chat_result("meteo_prevision", "Demain — pluie")
+
+    with patch(
+        "app.services.chat.ivr_searcher.try_ivr_exact",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "app.services.chat.ivr_searcher.try_ivr_concept",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "app.services.chat.meteo_responder.build_meteo_response",
+        new=AsyncMock(return_value=meteo_result),
+    ) as mock_meteo, patch(
+        "app.services.chat.deepseek_router.try_deepseek_dioula",
+        new=AsyncMock(),
+    ) as mock_ds:
+        result = await handler.process(
+            nlu=nlu,
+            weather_data=None,
+            city="Abidjan",
+            include_audio=False,
+            language=Language.DIOULA,
+            user_id="u1",
+        )
+
+    assert result is meteo_result
+    assert result.meta["source"] == "meteo_prevision"
+    mock_meteo.assert_called_once()
+    mock_ds.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_meteo_pure_none_retombe_sur_deepseek():
+    """intent météo pur mais build_meteo_response None (données indispo) → DeepSeek."""
+    nlu = _make_nlu(
+        intent="QUESTION_METEO_AGRICOLE",
+        concepts={"TEMPS_SAISON_PLUIE": True},
+    )
+    handler = DioulaHandler()
+    ds_result = _make_chat_result("deepseek_open")
+
+    with patch(
+        "app.services.chat.ivr_searcher.try_ivr_exact",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "app.services.chat.ivr_searcher.try_ivr_concept",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "app.services.chat.meteo_responder.build_meteo_response",
+        new=AsyncMock(return_value=None),
+    ) as mock_meteo, patch(
+        "app.services.chat.deepseek_router.try_deepseek_dioula",
+        new=AsyncMock(return_value=ds_result),
+    ) as mock_ds:
+        result = await handler.process(
+            nlu=nlu,
+            weather_data=None,
+            city="Abidjan",
+            include_audio=False,
+            language=Language.DIOULA,
+            user_id="u1",
+        )
+
+    assert result is ds_result
+    mock_meteo.assert_called_once()
+    mock_ds.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_intent_non_meteo_ne_declenche_pas_le_niveau_meteo():
+    """Un intent non météo ne doit JAMAIS appeler build_meteo_response."""
+    nlu = _make_nlu(intent="CONSEIL_PRODUCTION", concepts={"CULTURE_RIZ": True})
+    handler = DioulaHandler()
+
+    with patch(
+        "app.services.chat.ivr_searcher.try_ivr_exact",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "app.services.chat.ivr_searcher.try_ivr_concept",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "app.services.chat.meteo_responder.build_meteo_response",
+        new=AsyncMock(),
+    ) as mock_meteo, patch(
+        "app.services.chat.deepseek_router.try_deepseek_dioula",
+        new=AsyncMock(return_value=_make_chat_result("deepseek_open")),
+    ):
+        await handler.process(
+            nlu=nlu,
+            weather_data=None,
+            city="Abidjan",
+            include_audio=False,
+            language=Language.DIOULA,
+            user_id="u1",
+        )
+
+    mock_meteo.assert_not_called()
+
+
+# ─────────────────────────────────────────────
 # Backwards compatibility
 # ─────────────────────────────────────────────
 

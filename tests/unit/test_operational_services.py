@@ -153,6 +153,7 @@ class TestWeather:
                 "temperature_2m_max": [30, 27],
                 "temperature_2m_min": [22, 21],
                 "precipitation_probability_max": [10, 80],
+                "precipitation_sum": [0.0, 12.5],
             },
         }
         client = MagicMock()
@@ -185,6 +186,8 @@ class TestWeather:
         assert result["temperature_max"] == 27
         assert result["temperature_min"] == 21
         assert result["precipitation_probability"] == 80
+        # precipitation_sum (mm) distinct de la probabilité (%) — issue #355 T3
+        assert result["precipitation_mm"] == 12.5
         assert weather._get_cached_forecast("bouaké") == result
 
     @pytest.mark.asyncio

@@ -38,6 +38,9 @@ class DioulaHandler:
     La cascade preserve la priorite historique :
       1. Si `nlu.intent` existe : tenter IVR exact (intent + culture).
       2. Sinon ou si IVR exact echoue : tenter IVR concept (par culture seule).
+      2.5. Question météo PURE (`QUESTION_METEO_AGRICOLE`, issue #355 T4) :
+           réponse construite depuis Open-Meteo + templates dioula validés,
+           au lieu du fallback DeepSeek. Ignoré pour tout autre intent.
       3. Fallback final : DeepSeek + traduction NLLB FR→BAM + TTS dioula.
 
     Note : `try_ivr_concept` peut declencher `clarify_missing_culture` quand une
@@ -57,6 +60,10 @@ class DioulaHandler:
         """Orchestre la cascade 3 niveaux. Retourne TOUJOURS un ChatResult."""
         from app.services.chat.deepseek_router import try_deepseek_dioula
         from app.services.chat.ivr_searcher import try_ivr_concept, try_ivr_exact
+        from app.services.chat.meteo_responder import (
+            build_meteo_response,
+            is_pure_weather_intent,
+        )
 
         # Niveau 1 : IVR exact (uniquement si intent NLU detecte)
         if nlu.intent:
@@ -80,6 +87,22 @@ class DioulaHandler:
         )
         if result is not None:
             return result
+
+        # Niveau 2.5 : question météo PURE (issue #355 T4). Répondre depuis la
+        # prévision/météo construite (dioula validé, weather_conditions) plutôt
+        # que d'inventer du dioula via DeepSeek+NLLB. Placé APRÈS l'IVR : quand
+        # le corpus météo natif (T5) existera, try_ivr_exact gagnera
+        # (source=ivr_exact, critère de succès #355) sans re-toucher ce routage.
+        if is_pure_weather_intent(nlu):
+            result = await build_meteo_response(
+                nlu=nlu,
+                weather_data=weather_data,
+                city=city,
+                include_audio=include_audio,
+                language=language,
+            )
+            if result is not None:
+                return result
 
         # Niveau 3 : DeepSeek dioula + traduction NLLB + TTS
         return await try_deepseek_dioula(

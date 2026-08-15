@@ -17,7 +17,11 @@ from unittest.mock import patch
 
 import pytest
 
-from app.services.chat.meteo_injector import build_meteo_bambara, inject_meteo
+from app.services.chat.meteo_injector import (
+    build_meteo_bambara,
+    build_meteo_prevision,
+    inject_meteo,
+)
 
 
 # ─────────────────────────────────────────────
@@ -215,3 +219,94 @@ def test_inject_meteo_exception_calendrier_remplace_par_vide():
     assert "ici" in bam
     assert "Reponse:" in fr
     assert "ici" in fr
+
+
+# ─────────────────────────────────────────────
+# build_meteo_prevision — prévision J+1 (issue #355 T3)
+# ─────────────────────────────────────────────
+
+
+def _forecast(**over):
+    """Prévision J+1 par défaut (retour de get_weather_forecast_tomorrow)."""
+    base = {
+        "city": "Bouaké",
+        "region": "Gbêkê",
+        "date": "2026-08-15",
+        "temperature_max": 27,
+        "temperature_min": 21,
+        "precipitation_probability": 80,
+        "precipitation_mm": 12.5,
+        "weather_code": 65,
+        "weather_description": "Pluie forte",
+    }
+    base.update(over)
+    return base
+
+
+def test_build_prevision_forecast_none_message_generique():
+    """forecast=None → même message générique que build_meteo_bambara."""
+    bam, fr = build_meteo_prevision(None, "Abidjan")
+    assert "foro" in bam
+    assert "Surveillez" in fr
+    assert "Abidjan" not in bam
+
+
+def test_build_prevision_reutilise_template_dioula_valide():
+    """Le bambara sort TEL QUEL du template validé (weather_conditions),
+    aucune formulation inventée — code 65 → grosse pluie 'sanji'."""
+    bam, fr = build_meteo_prevision(_forecast(), "Bouaké")
+    assert "sanji" in bam  # template pluie validé
+    assert "Bouaké" in bam
+
+
+def test_build_prevision_fr_dit_demain_et_donne_proba_et_temperatures():
+    """Le FR est explicitement prévisionnel : 'Demain' + fenêtre chiffrée."""
+    bam, fr = build_meteo_prevision(_forecast(), "Bouaké")
+    assert "Demain" in fr
+    assert "21" in fr and "27" in fr  # température min–max
+    assert "80" in fr  # probabilité de pluie %
+    assert "probabilité" in fr.lower()
+
+
+def test_build_prevision_orage_reutilise_template_orage():
+    """code >= 95 → template orage validé ('sanfɛla')."""
+    bam, fr = build_meteo_prevision(_forecast(weather_code=95), "Man")
+    assert "sanfɛla" in bam
+    assert "orage" in fr.lower()
+
+
+def test_build_prevision_precip_mm_pilote_grosse_pluie_pas_la_proba():
+    """classify_meteo raisonne en mm : precip_mm>5 déclenche grosse pluie
+    même si weather_code est bas (la proba % n'est PAS passée à classify)."""
+    bam, fr = build_meteo_prevision(
+        _forecast(weather_code=0, precipitation_mm=10, precipitation_probability=40),
+        "Daloa",
+    )
+    assert "sanji" in bam  # grosse pluie via mm, pas via code
+
+
+def test_build_prevision_tolere_valeurs_null_openmeteo():
+    """Open-Meteo peut renvoyer null (proba/precip/temp) → pas de crash,
+    coalescence vers défauts sûrs (régression Finding 1 revue #355)."""
+    forecast = _forecast(
+        precipitation_probability=None,
+        precipitation_mm=None,
+        temperature_max=None,
+        temperature_min=None,
+        weather_code=None,
+    )
+    bam, fr = build_meteo_prevision(forecast, "Bouaké")
+    assert "Demain" in fr
+    assert "0%" in fr  # proba None → 0
+    assert isinstance(bam, str) and bam  # bambara non vide, pas d'exception
+
+
+def test_build_prevision_chaleur_via_temperature_max():
+    """temp_max > 33 sans pluie → template chaleur validé."""
+    bam, fr = build_meteo_prevision(
+        _forecast(weather_code=0, temperature_max=36, temperature_min=24,
+                  precipitation_mm=0, precipitation_probability=5),
+        "Korhogo",
+    )
+    assert "tile ka jugu" in bam
+    assert "5" in fr  # proba faible remontée
