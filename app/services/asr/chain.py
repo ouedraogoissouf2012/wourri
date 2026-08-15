@@ -76,7 +76,7 @@ class ASRChain:
 
     async def _transcribe_wav(self, wav_path: str) -> Optional[str]:
         """Orchestration sur un WAV 16k déjà converti (cascade + agri_fallback)."""
-        from app.services.asr_normalizer import normalize_asr_output
+        from app.services.asr.normalizer import normalize_asr_output
         from app.services.validation.lm_filter import get_lm_filter
 
         result, winner = await self._try_chain(wav_path)

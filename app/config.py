@@ -112,7 +112,7 @@ class Settings(BaseSettings):
     # dead config : aucun code ne le lisait, et le `VocabularyRegistry` / `_EXTRACTORS`
     # décrits dans ses commentaires n'ont jamais existé. Le vocabulaire réellement
     # utilisé est chargé par des chemins dédiés :
-    #   - normalisation post-ASR  → app/services/asr_normalizer.py (nlu_concepts.json)
+    #   - normalisation post-ASR  → app/services/asr/normalizer/ (nlu_concepts.json)
     #   - quality gate agricole   → app/services/asr/chain.py (AGRI_KEYWORDS hardcodés)
     #   - filtre langue OOV       → app/services/validation/lm_filter.py (lexique en paramètre)
     # Les datasets data/hf_datasets/{koumankan,findora}.json restent sur disque pour
