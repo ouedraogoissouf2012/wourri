@@ -173,6 +173,50 @@ def _phonological_variant_in_vocab(word_lower: str) -> Optional[str]:
     return None
 
 
+def _is_nasalization_only(word_lower: str, candidate: str) -> bool:
+    """Vrai si `word_lower` et `candidate` ne diffèrent que par un 'n' final.
+
+    Le 'n' final signale la nasalisation en bambara (ajout/suppression toléré) —
+    sources : An Ka Taa, Vydrin 2020. Sert à ne PAS rejeter un match fuzzy dont
+    la seule "consonne changée" est cette nasalisation.
+    """
+    return (
+        abs(len(word_lower) - len(candidate)) == 1
+        and (word_lower.endswith("n") or candidate.endswith("n"))
+        and (word_lower.rstrip("n") == candidate or candidate.rstrip("n") == word_lower
+             or word_lower[:-1] == candidate or candidate[:-1] == word_lower)
+    )
+
+
+def _best_fuzzy_match(word_lower: str, max_dist: int) -> tuple[Optional[str], int, int]:
+    """Meilleur candidat du vocabulaire NLU à distance de Levenshtein <= max_dist.
+
+    Départage : distance croissante, puis nombre de consonnes changées croissant
+    (les confusions voyelles sont plus probables en bambara : e/ɛ, o/ɔ, i/o).
+    Retourne (match|None, distance, consonnes_changées).
+    """
+    from rapidfuzz.distance import Levenshtein
+
+    best_match: Optional[str] = None
+    best_distance = max_dist + 1
+    best_consonant_changes = 999
+
+    for candidate in _NLU_VOCAB_LIST:
+        if abs(len(candidate) - len(word_lower)) > max_dist:
+            continue
+
+        dist = Levenshtein.distance(word_lower, candidate, score_cutoff=max_dist)
+        if dist <= max_dist:
+            cons = _consonant_changes(word_lower, candidate)
+            # Préférer : distance plus petite, puis moins de consonnes changées
+            if (dist < best_distance) or (dist == best_distance and cons < best_consonant_changes):
+                best_distance = dist
+                best_consonant_changes = cons
+                best_match = candidate
+
+    return best_match, best_distance, best_consonant_changes
+
+
 def _fuzzy_correct_word(word: str) -> str:
     """Corrige un mot par fuzzy matching contre le vocabulaire NLU.
 
@@ -202,37 +246,12 @@ def _fuzzy_correct_word(word: str) -> str:
         return phon_match
 
     try:
-        from rapidfuzz.distance import Levenshtein
-
-        best_match: Optional[str] = None
-        best_distance = max_dist + 1
-        best_consonant_changes = 999
-
-        for candidate in _NLU_VOCAB_LIST:
-            if abs(len(candidate) - len(word_lower)) > max_dist:
-                continue
-
-            dist = Levenshtein.distance(word_lower, candidate, score_cutoff=max_dist)
-            if dist <= max_dist:
-                cons = _consonant_changes(word_lower, candidate)
-                # Préférer : distance plus petite, puis moins de consonnes changées
-                if (dist < best_distance) or (dist == best_distance and cons < best_consonant_changes):
-                    best_distance = dist
-                    best_consonant_changes = cons
-                    best_match = candidate
+        best_match, best_distance, best_consonant_changes = _best_fuzzy_match(word_lower, max_dist)
 
         if best_match:
             # Sécurité : rejeter si des consonnes ont changé (risque de faux positif)
-            # SAUF : ajout/suppression de 'n' final = nasalisation bambara (documenté)
-            # Source : An Ka Taa, Vydrin 2020 — le 'n' final signale la nasalisation
-            is_nasal_only = (
-                abs(len(word_lower) - len(best_match)) == 1
-                and (word_lower.endswith("n") or best_match.endswith("n"))
-                and (word_lower.rstrip("n") == best_match or best_match.rstrip("n") == word_lower
-                     or word_lower[:-1] == best_match or best_match[:-1] == word_lower)
-            )
-
-            if best_consonant_changes > 0 and not is_nasal_only:
+            # SAUF : ajout/suppression de 'n' final = nasalisation bambara (documenté).
+            if best_consonant_changes > 0 and not _is_nasalization_only(word_lower, best_match):
                 logger.debug(
                     "[ASR-NORM] Fuzzy rejeté: '%s' → '%s' (consonnes changées=%d)",
                     word, best_match, best_consonant_changes,
@@ -274,14 +293,6 @@ def _apply_fuzzy_matching(text: str) -> str:
 _AGRI_VERBS: frozenset[str] = frozenset({
     "sɛnɛ", "sene", "tigɛ", "tige", "bɔ", "bo",
     "fere", "feere", "dumu", "mara", "filɛ", "file",
-})
-
-# Mots grammaticaux à ignorer (ne font pas partie du nom de culture)
-_GRAMMAR_WORDS: frozenset[str] = frozenset({
-    "n", "ne", "i", "a", "an", "aw", "u", "o",
-    "bɛ", "be", "tɛ", "te", "ye", "ma", "bɛna", "tɛna",
-    "fɛ", "fe", "ka", "la", "na", "ni", "wa",
-    "se", "kɛ", "ke", "don", "min",
 })
 
 # Mots qui ne doivent JAMAIS participer à une fusion culture
@@ -365,40 +376,18 @@ def _has_culture_word(text: str) -> bool:
     return False
 
 
-def _try_culture_reconstruction(text: str) -> str:
-    """Étape 4 : détection contextuelle de cultures par fusion de fragments.
+def _find_best_culture_fragment(words: list[str]) -> tuple[Optional[str], int, int, int]:
+    """Cherche la meilleure fusion de fenêtre (1, 2 ou 3 mots adjacents) qui
+    matche un nom de culture par Levenshtein (tolérance min(3, len//2)).
 
-    NeMo Soloni fragmente les mots qu'il ne connaît pas en petits mots
-    bambara valides. Exemples réels :
-        kakawo → ka ka aw / ka ka o / ka o / ka aw
-        kafe   → ka fɛ / ka fe
-        mangoro → mangogo
-
-    Cette étape :
-    1. Vérifie qu'un verbe agricole est présent (sɛnɛ, tigɛ, etc.)
-    2. Vérifie qu'aucune culture n'est déjà reconnue
-    3. Fusionne des fenêtres de 1, 2, 3 mots adjacents
-    4. Compare chaque fusion aux noms de cultures par Levenshtein
-    5. Remplace si match trouvé (tolérance : distance ≤ min(3, len//2))
+    Ignore les fenêtres contenant un verbe agricole ou un mot _NEVER_FUSE, et
+    les fusions < 4 caractères. Retourne (culture|None, start, end, distance).
+    Retourne (None, -1, -1, 999) si rapidfuzz est indisponible.
     """
-    if not _CULTURE_VOCAB:
-        return text
-
-    words = text.lower().split()
-
-    # Condition 1 : verbe agricole présent ?
-    has_agri_verb = any(w in _AGRI_VERBS for w in words)
-    if not has_agri_verb:
-        return text
-
-    # Condition 2 : culture déjà reconnue ?
-    if _has_culture_word(text):
-        return text
-
     try:
         from rapidfuzz.distance import Levenshtein
     except ImportError:
-        return text
+        return None, -1, -1, 999
 
     best_match: Optional[str] = None
     best_distance = 999
@@ -440,6 +429,40 @@ def _try_culture_reconstruction(text: str) -> str:
                     best_match = culture_correct
                     best_start = i
                     best_end = i + window_size
+
+    return best_match, best_start, best_end, best_distance
+
+
+def _try_culture_reconstruction(text: str) -> str:
+    """Étape 4 : détection contextuelle de cultures par fusion de fragments.
+
+    NeMo Soloni fragmente les mots qu'il ne connaît pas en petits mots
+    bambara valides. Exemples réels :
+        kakawo → ka ka aw / ka ka o / ka o / ka aw
+        kafe   → ka fɛ / ka fe
+        mangoro → mangogo
+
+    Cette étape :
+    1. Vérifie qu'un verbe agricole est présent (sɛnɛ, tigɛ, etc.)
+    2. Vérifie qu'aucune culture n'est déjà reconnue
+    3. Fusionne des fenêtres de 1, 2, 3 mots adjacents (_find_best_culture_fragment)
+    4. Remplace si match trouvé (tolérance : distance ≤ min(3, len//2))
+    """
+    if not _CULTURE_VOCAB:
+        return text
+
+    words = text.lower().split()
+
+    # Condition 1 : verbe agricole présent ?
+    has_agri_verb = any(w in _AGRI_VERBS for w in words)
+    if not has_agri_verb:
+        return text
+
+    # Condition 2 : culture déjà reconnue ?
+    if _has_culture_word(text):
+        return text
+
+    best_match, best_start, best_end, best_distance = _find_best_culture_fragment(words)
 
     if best_match and best_start >= 0:
         # Reconstruire la phrase avec le mot de culture correct
