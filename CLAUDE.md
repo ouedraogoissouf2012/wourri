@@ -9,7 +9,7 @@ pour la Côte d'Ivoire et le Mali.
 
 - **Technologie** : Node.js + Express + [@whiskeysockets/baileys](https://github.com/WhiskeySockets/Baileys) (lib non-officielle WhatsApp Web)
 - **Rôle** : passerelle entre les utilisateurs WhatsApp et l'API Wourri (FastAPI Python, voisin)
-- **Fichier prod actif** : [`app-baileys.js`](app-baileys.js) (1155 lignes, à refactorer en phase ultérieure)
+- **Fichier prod actif** : [`app-baileys.js`](app-baileys.js) (~535 lignes — composition root : config, état partagé, câblage, cycle de vie Baileys, startup/shutdown)
 - **Port par défaut** : `3001` (override possible via `.env` `PORT=...`)
 
 ## Décision projet — pourquoi Baileys et pas WhatsApp Cloud API officielle
@@ -56,13 +56,19 @@ whatsapp-server/
 │   ├── message_queue.js   # Queue persistante anti-perte (Phase 2)
 │   ├── circuit_breaker.js # Circuit breaker pour API backend (Phase 2)
 │   ├── logger.js          # Logger structuré pino JSON (Phase 3)
-│   └── audio_cache.js     # Cache disque des audios d'excuse (fallback API down)
+│   ├── audio_cache.js     # Cache disque des audios d'excuse (fallback API down)
+│   ├── excuse_audio.js    # Sous-système audio d'excuse : EXCUSE_MSG + TTS + cache (extrait 2026-08)
+│   ├── health.js          # Calcul du statut de santé /health + /ready (extrait 2026-08)
+│   └── status_routes.js   # Routes HTTP statut/admin + page QR (extrait 2026-08)
 ├── tests/                 # Tests unitaires (node:test natif)
 │   ├── reconnect.test.js
 │   ├── message_queue.test.js
 │   ├── circuit_breaker.test.js
 │   ├── logger.test.js
-│   └── audio_cache.test.js
+│   ├── audio_cache.test.js
+│   ├── excuse_audio.test.js
+│   ├── health.test.js
+│   └── status_routes.test.js
 ├── package.json           # Dépendances figées (versions exactes, pas de ^)
 ├── .env                   # Secrets (gitignored)
 ├── .gitignore
@@ -174,7 +180,7 @@ passe par un plan validé explicitement avant code.
 
 ### Dette technique connue
 
-- **God file** : `app-baileys.js` ~1300 lignes — à décomposer (Phase Modularisation)
+- **God file** : `app-baileys.js` — modularisation en cours. Sous-systèmes déjà extraits : audio d'excuse (`lib/excuse_audio.js`), santé (`lib/health.js`), routes statut (`lib/status_routes.js`). Passé de ~1300 à ~535 lignes. **Reste** : la god-function `connectWhatsApp` (~130 l, handler `connection.update` inline)
 - **Pas de metrics Prometheus** : `/health` riche mais pas de `/metrics` scrape format
 - ~~**Pas de retry automatique** des messages en queue~~ : **résolu #299** — après
   reconnexion, `lib/pending_replay.js` rejoue chaque message en attente contre
@@ -192,7 +198,7 @@ Phases prévues / réalisées :
 5. ✅ **Sécurité** Sprint A : CORS strict + rate limiting + npm audit clean (ADR-0012, PRs #141/#142/#143)
 6. ⏳ Tests d'intégration end-to-end + CI GitHub Actions
 7. ⏳ Déploiement : Dockerfile + PM2/systemd + runbook
-8. ⏳ Modularisation : décomposer `app-baileys.js`
+8. 🔄 Modularisation : décomposer `app-baileys.js` (excuse_audio + health + status_routes extraits 2026-08 ; reste `connectWhatsApp`)
 
 ### Sécurité — CORS et rate limiting (ADR-0012)
 

@@ -28,8 +28,11 @@ const {
 const { createReconnectScheduler, cleanupSocket } = require('./lib/reconnect_scheduler');
 const { MessageQueue } = require('./lib/message_queue');
 const { CircuitBreaker, CircuitOpenError } = require('./lib/circuit_breaker');
-const { AudioCache } = require('./lib/audio_cache');
 const { createPendingReplayer } = require('./lib/pending_replay');
+// Modularisation (2026-08) — sous-systèmes extraits de app-baileys.js (god file → lib/)
+const { ExcuseAudio, EXCUSE_MSG } = require('./lib/excuse_audio');
+const { HealthReporter } = require('./lib/health');
+const { registerStatusRoutes } = require('./lib/status_routes');
 
 // Sprint D.1 — extraction god file : modules locaux
 const { extractCity, isValidCity } = require('./lib/city_resolver');
@@ -201,129 +204,24 @@ function randomDelay(min, max) {
     return new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
 }
 
-/**
- * Génère un audio TTS à partir d'un texte fixe (best-effort).
- *
- * Utilisé pour les messages d'indisponibilité audio quand l'utilisateur
- * a envoyé un vocal. Si l'API TTS est down ou prend trop de temps,
- * retourne null et le caller doit fallback sur du texte.
- *
- * Endpoints utilisés (côté wouri-api) :
- *   - français : POST /api/tts/french?text=...
- *   - dioula   : POST /api/tts/dioula?text=...&is_french=false
- *     (ADR-0023 #362 : voix mms-tts-dyu — avant, /api/tts/bambara servait la
- *      voix bambara MALIENNE pour les messages système alors que les réponses
- *      du bot sortaient en voix dioula : deux voix pour le même utilisateur.)
- *
- * Note : on utilise /api/tts/french (et non /api/tts/) car ce dernier attend
- * un body JSON Pydantic TTSRequest, alors que /api/tts/french accepte le
- * texte en query param — cohérent avec /api/tts/dioula. Sans ça, l'appel
- * échoue en 422 (cas reproduit lors du warmup audio_cache).
- *
- * @param {string} text - Texte à synthétiser
- * @param {boolean} isFrench - true → Edge-TTS français, false → MMS dioula
- * @param {number} [timeoutMs=5000] - Timeout court pour ne pas bloquer
- * @returns {Promise<Buffer|null>} Buffer audio OGG/Opus, ou null si échec
- */
-async function tryGenerateAudioFromText(text, isFrench, timeoutMs = 5000) {
-    if (!text) return null;
-    const endpoint = isFrench ? '/api/tts/french' : '/api/tts/dioula';
-    const params = isFrench ? { text } : { text, is_french: false };
-    try {
-        const ttsResponse = await axios.post(
-            `${WOURI_API_URL}${endpoint}`,
-            null,
-            { params, timeout: timeoutMs, headers: authHeaders() }
-        );
-        const audioUrl = ttsResponse.data?.audio_url;
-        if (!audioUrl) return null;
-        const fullUrl = audioUrl.startsWith('http')
-            ? audioUrl
-            : `${WOURI_API_URL}${audioUrl}`;
-        const audioResp = await axios.get(fullUrl, {
-            responseType: 'arraybuffer',
-            timeout: timeoutMs,
-        });
-        return Buffer.from(audioResp.data);
-    } catch (err) {
-        logger.info(
-            `[EXCUSE-AUDIO] Génération ${isFrench ? 'FR' : 'dioula'} échouée (${err.code || (err.message || '').substring(0, 80)}) — fallback texte`
-        );
-        return null;
-    }
-}
-
-// Textes des messages d'indisponibilité (utilisés pour TTS si vocal, sinon texte)
-const EXCUSE_MSG = {
-    // Circuit OPEN : "je rencontre un problème"
-    UNAVAILABLE_FR: "Je rencontre un problème technique temporaire. Je te répondrai dès que possible.",
-    UNAVAILABLE_DIOULA: "N bɛ baara la sisan. N bɛna jaabi i ma joona.",
-    UNAVAILABLE_BILINGUAL:
-        '🌾 N bɛ baara la sisan. N bɛna jaabi i ma joona.\n\n---\n🌾 Je rencontre un problème technique temporaire. Je te répondrai dès que possible.',
-    // Reconnexion WA : "je suis de retour"
-    BACK_FR: "Je suis de retour. Pose-moi à nouveau ta question.",
-    BACK_DIOULA: "N nana segin. I ka ɲinini ci tugu n ma.",
-    BACK_BILINGUAL:
-        '🌾 Aw ni ce, n nana segin. Aw ka ɲinini ci tugu n ma.\n\n---\n🌾 Je suis de retour. Pose-moi à nouveau ta question.',
-};
-
-// Cache disque des 4 audios d'excuse fixes (kind × langue).
-// Permet d'envoyer un audio dioula même quand l'API TTS est down, en
-// rejouant un fichier pré-généré quand l'API était UP.
-const audioCache = new AudioCache({
+// Modularisation — sous-système audio d'excuse (textes EXCUSE_MSG + génération
+// TTS best-effort + cache disque). Extrait vers lib/excuse_audio.js.
+const excuseAudio = new ExcuseAudio({
+    apiUrl: WOURI_API_URL,
+    authHeaders,
     cacheDir: AUDIO_CACHE_FOLDER,
-    generateAudio: tryGenerateAudioFromText,
+    axios,
     logger,
 });
 
-/** Liste des 4 entrées d'excuse à pré-générer au démarrage. */
-function buildExcuseCacheEntries() {
-    return [
-        { key: 'unavailable_dioula', text: EXCUSE_MSG.UNAVAILABLE_DIOULA, isFrench: false },
-        { key: 'unavailable_french', text: EXCUSE_MSG.UNAVAILABLE_FR, isFrench: true },
-        { key: 'back_dioula', text: EXCUSE_MSG.BACK_DIOULA, isFrench: false },
-        { key: 'back_french', text: EXCUSE_MSG.BACK_FR, isFrench: true },
-    ];
-}
-
-/**
- * Récupère l'audio d'excuse pour {kind, isFrench}.
- *
- * Stratégie : cache disque d'abord (rapide, fonctionne même si API down).
- * Cache miss → tentative online via tryGenerateAudioFromText. En cas de
- * succès online, on remplit le cache pour la prochaine fois (best-effort,
- * non-bloquant).
- *
- * @returns {Promise<Buffer|null>} Buffer audio OGG/Opus, ou null si échec total
- */
-async function getExcuseAudio({ kind, isFrench }) {
-    const key = `${kind === 'back' ? 'back' : 'unavailable'}_${isFrench ? 'french' : 'dioula'}`;
-    const cached = await audioCache.get(key);
-    if (cached) {
-        logger.info({ key, bytes: cached.length }, '[EXCUSE-AUDIO] Cache hit');
-        return cached;
-    }
-    const text = isFrench
-        ? (kind === 'back' ? EXCUSE_MSG.BACK_FR : EXCUSE_MSG.UNAVAILABLE_FR)
-        : (kind === 'back' ? EXCUSE_MSG.BACK_DIOULA : EXCUSE_MSG.UNAVAILABLE_DIOULA);
-    const fresh = await tryGenerateAudioFromText(text, isFrench);
-    if (fresh) {
-        audioCache.save(key, fresh).catch((err) =>
-            logger.warn({ err, key }, '[EXCUSE-AUDIO] Save cache fail (non-bloquant)')
-        );
-        return fresh;
-    }
-    return null;
-}
-
-// Sprint D.2 — instancier ResponseSender maintenant que EXCUSE_MSG + getExcuseAudio
-// sont définis. `sock` reste null pour l'instant : il est assigné dans connectWhatsApp
-// juste après `sock = makeWASocket(...)`.
+// Sprint D.2 — instancier ResponseSender (EXCUSE_MSG + getExcuseAudio fournis par
+// excuseAudio). `sock` reste null pour l'instant : il est assigné dans
+// connectWhatsApp juste après `sock = makeWASocket(...)`.
 responseSender = new ResponseSender({
     axios,
     apiUrl: WOURI_API_URL,
     randomDelay,
-    getExcuseAudio,
+    getExcuseAudio: excuseAudio.getExcuseAudio,
     EXCUSE_MSG,
     logger,
 });
@@ -480,7 +378,7 @@ async function connectWhatsApp() {
                     return;
                 }
                 try {
-                    const stats = await audioCache.warmup(buildExcuseCacheEntries());
+                    const stats = await excuseAudio.warmup();
                     logger.info({ ...stats }, '[AUDIO-CACHE] Warmup termine');
                 } catch (err) {
                     logger.warn({ err }, '[AUDIO-CACHE] Warmup erreur');
@@ -526,232 +424,44 @@ async function connectWhatsApp() {
 }
 
 // ========================================
-// ROUTES API EXPRESS
+// ROUTES API EXPRESS (extraites → lib/status_routes.js)
 // ========================================
 
-app.get('/', (req, res) => {
-    res.json({
-        status: 'running',
-        name: 'WOURI WhatsApp Server',
-        connected: isConnected,
-        users: Object.keys(userPrefs.data).length
-    });
-});
-
-app.get('/status', (req, res) => {
-    res.json({
-        connected: isConnected,
-        qrCode: qrCodeData,
-        users: Object.keys(userPrefs.data).length
-    });
-});
-
-// ========================================
-// HEALTHCHECK & READINESS (Phase 3 Observabilité)
-// ========================================
-
-// Timestamp démarrage process pour calculer l'uptime
+// Timestamp démarrage process pour calculer l'uptime (consommé par /health)
 const PROCESS_STARTED_AT = Date.now();
 
-// Charge la version applicative depuis package.json (single source of truth)
+// Version applicative depuis package.json (single source of truth)
 const APP_VERSION = (() => {
     try { return require('./package.json').version || 'unknown'; } catch (_) { return 'unknown'; }
 })();
 
-/**
- * Calcule le statut global du serveur Wourri WhatsApp.
- *
- * - unhealthy : WhatsApp déconnecté OU circuit OPEN OU messages morts dans la queue
- * - degraded  : reconnexion en cours OU pile de messages en attente > 10
- * - ok        : tout va bien
- *
- * @returns {{status: 'ok'|'degraded'|'unhealthy', reasons: string[]}}
- */
-function computeHealthStatus() {
-    const reasons = [];
-    let unhealthy = false;
-    let degraded = false;
-
-    if (!isConnected) {
-        reasons.push('whatsapp_disconnected');
-        unhealthy = true;
-    }
-    const circuitState = apiCircuitBreaker.state;
-    if (circuitState === 'OPEN') {
-        reasons.push('api_circuit_open');
-        unhealthy = true;
-    }
-    const qstats = messageQueue.stats;
-    if (qstats.dead > 0) {
-        reasons.push(`queue_dead_messages=${qstats.dead}`);
-        unhealthy = true;
-    }
-
-    const rcAttempt = reconnectScheduler.getState().attempt;
-    if (rcAttempt > 0) {
-        reasons.push(`reconnect_in_progress=${rcAttempt}`);
-        degraded = true;
-    }
-    if (qstats.pending > 10) {
-        reasons.push(`queue_pending_high=${qstats.pending}`);
-        degraded = true;
-    }
-    if (circuitState === 'HALF_OPEN') {
-        reasons.push('api_circuit_half_open');
-        degraded = true;
-    }
-
-    let status = 'ok';
-    if (unhealthy) status = 'unhealthy';
-    else if (degraded) status = 'degraded';
-
-    return { status, reasons };
-}
-
-/**
- * Construit le payload complet de /health avec toutes les stats.
- */
-function buildHealthPayload() {
-    const { status, reasons } = computeHealthStatus();
-    return {
-        status,
-        reasons,
-        version: APP_VERSION,
-        uptime_seconds: Math.floor((Date.now() - PROCESS_STARTED_AT) / 1000),
-        whatsapp: {
-            connected: isConnected,
-            reconnectAttempt: reconnectScheduler.getState().attempt,
-            maxAttempts: MAX_ATTEMPTS,
-        },
-        queue: messageQueue.stats,
-        apiCircuit: apiCircuitBreaker.stats,
-        users: Object.keys(userPrefs.data).length,
-    };
-}
-
-// /health : healthcheck riche, toujours 200 (le statut est dans le body)
-app.get('/health', (req, res) => {
-    res.json(buildHealthPayload());
+// Rapporteur de santé (Phase 3 Observabilité) — logique extraite → lib/health.js.
+// L'état mutable (isConnected, attempt de reconnexion) est passé par getters afin
+// de rester live : ces valeurs changent après la construction du reporter.
+// Note (rebase 2026-08) : l'attempt vient désormais du reconnectScheduler (#308).
+const healthReporter = new HealthReporter({
+    getIsConnected: () => isConnected,
+    getReconnectAttempt: () => reconnectScheduler.getState().attempt,
+    apiCircuitBreaker,
+    messageQueue,
+    userPrefs,
+    appVersion: APP_VERSION,
+    processStartedAt: PROCESS_STARTED_AT,
+    maxAttempts: MAX_ATTEMPTS,
 });
 
-// /ready : Kubernetes readiness probe — 200 si prêt, 503 sinon
-app.get('/ready', (req, res) => {
-    const payload = buildHealthPayload();
-    const ready = payload.status === 'ok';
-    res.status(ready ? 200 : 503).json({
-        status: payload.status,
-        ready,
-        reasons: payload.reasons,
-    });
-});
-
-app.get('/users', (req, res) => {
-    // Retourne les preferences de tous les utilisateurs (sans numero complet pour confidentialite)
-    const users = Object.entries(userPrefs.data).map(([number, prefs]) => ({
-        number: number.substring(0, 8) + '***',
-        city: prefs.city,
-        language: prefs.language,
-        step: prefs.step
-    }));
-    res.json(users);
-});
-
-app.get('/qr', (req, res) => {
-    if (qrCodeData) {
-        res.json({ qr: qrCodeData });
-    } else if (isConnected) {
-        res.json({ message: 'Deja connecte' });
-    } else {
-        res.json({ message: 'QR code pas encore genere' });
-    }
-});
-
-app.get('/qr-page', async (req, res) => {
-    let qrImageHtml = '';
-    let statusMessage = '';
-
-    if (isConnected) {
-        statusMessage = '<div style="color: #4CAF50; font-size: 24px;">✅ CONNECTE A WHATSAPP!</div>';
-    } else if (qrCodeData) {
-        try {
-            const qrDataUrl = await QRCode.toDataURL(qrCodeData, { width: 300 });
-            qrImageHtml = `<img src="${qrDataUrl}" alt="QR Code" style="border: 4px solid #25D366; border-radius: 10px;">`;
-            statusMessage = '<div style="color: #FFA500;">⏳ En attente de scan...</div>';
-        } catch (err) {
-            statusMessage = '<div style="color: red;">Erreur generation QR</div>';
-        }
-    } else {
-        statusMessage = '<div style="color: #888;">QR code en cours de generation...</div>';
-    }
-
-    res.send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>WOURI - Connexion WhatsApp</title>
-        <meta charset="UTF-8">
-        <meta http-equiv="refresh" content="5">
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                min-height: 100vh;
-                margin: 0;
-                background: linear-gradient(135deg, #075E54 0%, #128C7E 100%);
-                color: white;
-            }
-            .container {
-                background: white;
-                padding: 40px;
-                border-radius: 20px;
-                text-align: center;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            }
-            h1 { color: #075E54; margin-bottom: 10px; }
-            h2 { color: #666; font-weight: normal; margin-top: 0; }
-            .qr-container { margin: 20px 0; }
-            .instructions { color: #666; margin-top: 20px; text-align: left; }
-            .instructions ol { padding-left: 20px; }
-            .refresh-note { color: #999; font-size: 12px; margin-top: 15px; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>🌾 WOURI</h1>
-            <h2>Assistant Agricole WhatsApp</h2>
-            <div class="qr-container">${qrImageHtml}</div>
-            ${statusMessage}
-            <div class="instructions">
-                <strong>Pour connecter WhatsApp:</strong>
-                <ol>
-                    <li>Ouvrez WhatsApp sur votre telephone</li>
-                    <li>Allez dans Parametres > Appareils lies</li>
-                    <li>Appuyez sur "Lier un appareil"</li>
-                    <li>Scannez ce QR code</li>
-                </ol>
-            </div>
-            <div class="refresh-note">Page auto-refresh toutes les 5 secondes</div>
-        </div>
-    </body>
-    </html>
-    `);
-});
-
-app.post('/logout', async (req, res) => {
-    try {
-        if (sock) {
-            await sock.logout();
-        }
-        if (fs.existsSync(AUTH_FOLDER)) {
-            fs.rmSync(AUTH_FOLDER, { recursive: true });
-        }
-        res.json({ success: true, message: 'Deconnecte' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+// Enregistrement des routes /, /status, /health, /ready, /users, /qr, /qr-page,
+// /logout. L'état mutable (isConnected, qrCodeData, sock — réassigné au
+// reconnect) est passé par getters pour que les routes lisent l'état live.
+registerStatusRoutes(app, {
+    getIsConnected: () => isConnected,
+    getQrCodeData: () => qrCodeData,
+    getSock: () => sock,
+    userPrefs,
+    authFolder: AUTH_FOLDER,
+    fs,
+    QRCode,
+    health: healthReporter,
 });
 
 // ========================================
