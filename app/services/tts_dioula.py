@@ -9,11 +9,15 @@ de prononciation et de vocabulaire.
 Modèles utilisés:
 - TTS: facebook/mms-tts-dyu (Dioula)
 - Traduction: facebook/nllb-200-distilled-600M (dyu_Latn)
+
+Modularisation 2026-08 : la prosodie/segmentation est dans tts_dioula_prosody.py
+et l'orchestration de traduction dans tts_dioula_translation.py. Ce fichier ne
+garde que le cœur TTS (modèle, DSP, synthèse) et re-exporte translate_to_dioula
+/ translate_dioula_to_french pour compat des callsites.
 """
 import asyncio
 import uuid
 import os
-import subprocess
 import logging
 from app.config import get_settings
 
@@ -79,301 +83,21 @@ def get_tts_model_dioula():
     return registry.get("tts_dioula", loader=_load_tts_dioula)
 
 
-def _get_nllb():
-    """Retourne le modèle NLLB partagé via TranslationService (pas de doublon mémoire)."""
-    from app.services.translation import get_translation_service
-    return get_translation_service().get_nllb_model_and_tokenizer()
+# Prosodie / segmentation : extraite vers tts_dioula_prosody.py (modularisation
+# 2026-08). Consommée par synthesize_dioula_text ci-dessous.
+from app.services.tts_dioula_prosody import _split_sentences, _get_speaking_rate
 
-
-def _extract_french_greeting(text: str) -> tuple[str, str]:
-    """Extrait une expression française validée depuis le dictionnaire commun."""
-    from app.services.translation import Direction, get_translation_service
-
-    return get_translation_service().translate_leading_phrase(
-        text,
-        Direction.FR_TO_BAM,
-    )
-
-
-def _nllb_translate(text: str) -> str:
-    """Traduit un texte FR→Dioula via NLLB (sans gestion salutation)."""
-    model, tokenizer = _get_nllb()
-    if model is None:
-        return text
-
-    tokenizer.src_lang = "fra_Latn"
-
-    inputs = tokenizer(
-        text,
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        max_length=512
-    )
-
-    forced_bos_token_id = tokenizer.convert_tokens_to_ids("dyu_Latn")
-
-    with torch.no_grad():
-        generated_tokens = model.generate(
-            **inputs,
-            forced_bos_token_id=forced_bos_token_id,
-            max_length=512,
-            num_beams=5,
-            no_repeat_ngram_size=3,
-            repetition_penalty=1.2,
-            early_stopping=True
-        )
-
-    return tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
-
-
-def translate_to_dioula(french_text: str) -> str:
-    """Traduit du français vers le Dioula (dyu_Latn).
-    1. Détecte et extrait la salutation française (dictionnaire pur)
-    2. Traduit le reste via NLLB
-    3. Préfixe avec la salutation dioula correcte
-    """
-    from app.services.translation import Direction, get_translation_service
-    service = get_translation_service()
-
-    exact_translation = service.translate_exact_phrase(
-        french_text,
-        Direction.FR_TO_BAM,
-    )
-    if exact_translation:
-        return exact_translation
-
-    # 1. Extraire la salutation avant NLLB
-    greeting_dyu, remaining = _extract_french_greeting(french_text)
-
-    if not remaining:
-        # Texte = juste une salutation
-        return greeting_dyu if greeting_dyu else french_text
-
-    if not TORCH_AVAILABLE:
-        return french_text
-
-    # 2. Traduire le reste via NLLB
-    result = _nllb_translate(remaining)
-
-    # 3. Nettoyer les répétitions
-    result = clean_repetitions(result)
-
-    # 4. Préfixer avec la salutation dioula
-    if greeting_dyu:
-        result = f"{greeting_dyu}, {result}"
-
-    return result
-
-
-def clean_repetitions(text: str) -> str:
-    """Nettoie les répétitions dans le texte traduit"""
-    if not text:
-        return text
-
-    words = text.split()
-    if len(words) < 2:
-        return text
-
-    # Détecter et supprimer les répétitions de mots consécutifs
-    cleaned_words = [words[0]]
-    for i in range(1, len(words)):
-        # Ne pas ajouter si c'est une répétition du mot précédent
-        if words[i].lower() != words[i-1].lower():
-            cleaned_words.append(words[i])
-
-    # Détecter les répétitions de phrases
-    result = ' '.join(cleaned_words)
-
-    # Si le texte est très répétitif (plus de 50% de répétition), tronquer
-    unique_words = set(w.lower() for w in cleaned_words)
-    if len(unique_words) < len(cleaned_words) * 0.3:
-        # Trop répétitif, garder seulement la première partie
-        result = ' '.join(cleaned_words[:len(cleaned_words)//2])
-
-    return result
-
-
-def translate_dioula_to_french(dioula_text: str) -> str:
-    """Traduit du Dioula vers le Français via NLLB partagé"""
-    if not TORCH_AVAILABLE:
-        return dioula_text
-
-    model, tokenizer = _get_nllb()
-    if model is None:
-        return dioula_text
-
-    tokenizer.src_lang = "dyu_Latn"
-
-    inputs = tokenizer(
-        dioula_text,
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        max_length=512
-    )
-
-    forced_bos_token_id = tokenizer.convert_tokens_to_ids("fra_Latn")
-
-    with torch.no_grad():
-        generated_tokens = model.generate(
-            **inputs,
-            forced_bos_token_id=forced_bos_token_id,
-            max_length=512
-        )
-
-    result = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
-    return result
-
+# Traduction FR<->Dioula : extraite vers tts_dioula_translation.py. Re-export
+# pour compat des callsites (tests, synthesize_dioula ci-dessous).
+from app.services.tts_dioula_translation import (  # noqa: F401
+    translate_to_dioula,
+    translate_dioula_to_french,
+)
 
 # Sprint refactor 2026-05-28 : convert_wav_to_ogg deplace dans tts_common.py
 # (audit P1 #4 — DRY mutualisation tts_bambara/tts_dioula). Reexport pour
-# compat des callsites internes (synthesize_dioula_text:521 ci-dessous).
+# compat des callsites internes (synthesize_dioula_text ci-dessous).
 from app.services.tts_common import convert_wav_to_ogg  # noqa: F401
-
-
-_TECH_KEYWORDS = (
-    'NPK', 'santimɛtiri', 'nɔgɔ', 'kilogramu', 'literi', 'poursan',
-    'fertilisan', 'pestisidi', 'fungisidi', 'insektisidi', 'tɔnni',
-)
-
-# Marqueurs discursifs bambara → pause AVANT eux (découpage naturel)
-# Format : (pattern_regex, pause_secondes_apres_segment_precedent)
-_BAMBARA_DISCOURSE_MARKERS = [
-    (r'\bnka\b', 0.30),    # "mais / cependant"
-    (r'\bnɔ\b',  0.30),    # "alors / ensuite" (séquentiel)
-    (r'\bfɔlɔ\b', 0.25),   # "d'abord"
-    (r'\bkɔ\b',  0.25),    # "après ça" (souvent en fin de segment)
-]
-
-
-def _get_speaking_rate(sentence: str) -> float:
-    """Détermine le speaking_rate selon le type de phrase.
-
-    Valeurs calibrées pour MMS-TTS-DYU (VITS) — validées en production :
-    - Salutation courte  → 1.05 : naturel, presque normal
-    - Conseil agricole   → 1.15 : clair, fluide (défaut)
-    - Technique (NPK…)   → 1.25 : lent, bien articulé
-    """
-    import re
-    stripped = sentence.strip()
-    if re.match(r'^(Aw ni|Alu ni|I ni|A ni)', stripped) or (
-        stripped.endswith('!') and len(stripped.split()) <= 8
-    ):
-        return 1.05
-    if any(kw in stripped for kw in _TECH_KEYWORDS):
-        return 1.25
-    return 1.15
-
-
-def _split_on_bambara_markers(text: str) -> list[tuple[str, float]]:
-    """Découpe un segment sur les marqueurs discursifs bambara.
-    Retourne une liste de (fragment, pause_apres_en_secondes).
-    Ne découpe QUE si les deux parties résultantes ont chacune >= 4 mots
-    (évite les micro-fragments inutiles).
-    """
-    import re
-    result = [(text, 0.0)]
-
-    for pattern, pause in _BAMBARA_DISCOURSE_MARKERS:
-        new_result = []
-        for seg, seg_pause in result:
-            parts = re.split(r'(?=\s+' + pattern + r')', seg, maxsplit=2)
-            # Ne découper que si les deux parties ont chacune >= 4 mots
-            if len(parts) > 1 and all(len(p.strip().split()) >= 4 for p in parts if p.strip()):
-                for i, p in enumerate(parts):
-                    p = p.strip()
-                    if not p:
-                        continue
-                    is_last = (i == len(parts) - 1)
-                    new_result.append((p, seg_pause if is_last else pause))
-            else:
-                new_result.append((seg, seg_pause))
-        result = new_result
-
-    return result
-
-
-def _force_split_long(text: str, pause: float, max_words: int = 20) -> list[tuple[str, float]]:
-    """Découpe un segment > max_words mots en deux parties égales.
-    Coupe à la frontière de mot la plus proche du milieu.
-    """
-    words = text.split()
-    if len(words) <= max_words:
-        return [(text, pause)]
-
-    mid = len(words) // 2
-    first = ' '.join(words[:mid])
-    second = ' '.join(words[mid:])
-    return [(first, 0.30), (second, pause)]
-
-
-def _split_sentences(text: str) -> list[tuple[str, float]]:
-    """Découpe le texte en segments avec leur pause associée (en secondes).
-
-    Hiérarchie des pauses :
-    - !  →  0.50s  (exclamation)
-    - ?  →  0.50s  (question)
-    - .  →  0.45s  (fin de phrase)
-    - ,  →  0.20s  (respiration / virgule)
-    - marqueur bambara (nka, nɔ…) → 0.30s
-    - découpage forcé (>12 mots)  → 0.25s
-    """
-    import re
-    # Supprimer les templates {{...}}
-    text = re.sub(r'\{\{[^}]+\}\}', '', text).strip()
-    if not text:
-        return []
-
-    results: list[tuple[str, float]] = []
-
-    # Étape 1 : découper sur ponctuation forte (. ! ?)
-    strong_parts = re.split(r'(?<=[.!?])\s+', text)
-
-    for part in strong_parts:
-        part = part.strip()
-        if not part:
-            continue
-        # Pause selon le signe de ponctuation qui termine ce bloc
-        if part.endswith('!') or part.endswith('?'):
-            end_pause = 0.50
-        elif part.endswith('.'):
-            end_pause = 0.45
-        else:
-            end_pause = 0.40  # dernier fragment sans ponctuation
-
-        # Étape 2 : découper sur les virgules
-        comma_parts = re.split(r',\s*', part)
-
-        for ci, sub in enumerate(comma_parts):
-            sub = sub.strip()
-            if not sub:
-                continue
-            is_last_comma = (ci == len(comma_parts) - 1)
-            comma_pause = end_pause if is_last_comma else 0.20
-
-            # Étape 3 : découper sur marqueurs discursifs bambara
-            marker_segs = _split_on_bambara_markers(sub)
-            for mi, (seg, _) in enumerate(marker_segs):
-                is_last_marker = (mi == len(marker_segs) - 1)
-                seg_pause = comma_pause if is_last_marker else 0.30
-
-                # Étape 4 : forcer la coupure si segment encore trop long
-                results.extend(_force_split_long(seg, seg_pause))
-
-    # Filtrer les fragments vides ou trop courts (< 3 mots → fusionner avec le suivant)
-    cleaned: list[tuple[str, float]] = []
-    for s, p in results:
-        s = s.strip()
-        if not s:
-            continue
-        if len(s.split()) < 3 and cleaned:
-            # Fusionner ce micro-fragment avec le segment précédent
-            prev_s, _ = cleaned[-1]
-            cleaned[-1] = (prev_s + ' ' + s, p)
-        elif len(s.split()) >= 2 or (len(s.split()) == 1 and len(s) > 3):
-            cleaned.append((s, p))
-    return cleaned
 
 
 def _trim_leading_silence(waveform: np.ndarray, threshold: float = 0.01,

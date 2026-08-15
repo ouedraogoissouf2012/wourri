@@ -236,6 +236,63 @@ def get_whisper_model(model_name: str = None):
     return registry.get("whisper", loader=_load_whisper)
 
 
+# Prompt initial pour guider Faster-Whisper : aide à reconnaître les termes
+# agricoles et noms de villes ivoiriennes (contexte WOURI).
+_WHISPER_INITIAL_PROMPT = (
+    "Transcription français Côte d'Ivoire, contexte agricole. "
+    "Villes: Ferkessédougou, Korhogo, Bouaké, Yamoussoukro, Abidjan, "
+    "San-Pedro, Daloa, Divo, Man, Gagnoa, Bonoua, Soubré, Abengourou. "
+    "Cultures: banane, manioc, maïs, riz, cacao, café, igname, arachide, "
+    "palmier, hévéa, anacarde, coton, tomate, aubergine, piment, oignon, gombo. "
+    "Termes agricoles: planter, cultiver, récolter, semer, période, saison, "
+    "pluie, irrigation, engrais, pesticide, rendement, parcelle, tubercule."
+)
+
+
+def _collect_segments(segments) -> tuple[list[dict], str]:
+    """Matérialise les segments Faster-Whisper (générateur) en liste + texte concaténé."""
+    all_segments = []
+    transcribed_texts = []
+    for segment in segments:
+        all_segments.append({
+            "start": segment.start,
+            "end": segment.end,
+            "text": segment.text.strip()
+        })
+        transcribed_texts.append(segment.text.strip())
+    return all_segments, " ".join(transcribed_texts).strip()
+
+
+def _postprocess_transcription(transcribed_text: str, info, all_segments: list[dict]) -> dict | None:
+    """Corrige le texte, filtre les hallucinations, détecte le dioula et construit
+    le résultat. Retourne None si le texte est jugé être une hallucination."""
+    # Corriger les termes agricoles mal transcrits (AVANT les villes)
+    transcribed_text = correct_agricultural_terms(transcribed_text)
+    logger.info(f"[Faster-Whisper] Après correction agricole: '{transcribed_text}'")
+
+    # Corriger les noms de villes mal transcrits
+    transcribed_text = correct_city_names(transcribed_text)
+    logger.info(f"[Faster-Whisper] Après correction villes: '{transcribed_text}'")
+
+    # Vérifier si le résultat semble être une hallucination
+    if is_likely_hallucination(transcribed_text):
+        logger.warning(f"[Faster-Whisper] Détection d'hallucination possible, texte ignoré")
+        return None
+
+    # Détecter si l'audio était probablement en Dioula
+    likely_dioula = is_likely_dioula_input(transcribed_text, info.language_probability)
+    if likely_dioula:
+        logger.warning(f"[Faster-Whisper] ATTENTION: Audio probablement en Dioula, transcription peut être incorrecte")
+
+    return {
+        "text": transcribed_text,
+        "language": info.language,
+        "language_probability": info.language_probability,
+        "likely_dioula_input": likely_dioula,
+        "segments": all_segments
+    }
+
+
 def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
     """
     Transcrit un fichier audio en texte avec Faster-Whisper.
@@ -271,18 +328,6 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
         if model is None:
             return None
 
-        # Prompt initial pour guider la reconnaissance
-        # Ce prompt aide Whisper à mieux reconnaître les termes agricoles et villes ivoiriennes
-        initial_prompt = (
-            "Transcription français Côte d'Ivoire, contexte agricole. "
-            "Villes: Ferkessédougou, Korhogo, Bouaké, Yamoussoukro, Abidjan, "
-            "San-Pedro, Daloa, Divo, Man, Gagnoa, Bonoua, Soubré, Abengourou. "
-            "Cultures: banane, manioc, maïs, riz, cacao, café, igname, arachide, "
-            "palmier, hévéa, anacarde, coton, tomate, aubergine, piment, oignon, gombo. "
-            "Termes agricoles: planter, cultiver, récolter, semer, période, saison, "
-            "pluie, irrigation, engrais, pesticide, rendement, parcelle, tubercule."
-        )
-
         # Transcrire avec Faster-Whisper
         logger.info(f"[Faster-Whisper] Transcription avec modele {_MODEL_NAME}")
         logger.info(f"[Faster-Whisper] Fichier: {transcribe_path}")
@@ -300,7 +345,7 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
             log_prob_threshold=-1.0,
             no_speech_threshold=0.6,
             condition_on_previous_text=False,  # Éviter les hallucinations
-            initial_prompt=initial_prompt,
+            initial_prompt=_WHISPER_INITIAL_PROMPT,
             vad_filter=True,         # Filtrage VAD pour ignorer le silence
             vad_parameters={
                 "min_silence_duration_ms": 500,  # Silence min 500ms
@@ -308,48 +353,12 @@ def transcribe_audio(audio_path: str, language: str = "fr") -> dict | None:
             }
         )
 
-        # Collecter tous les segments
-        all_segments = []
-        transcribed_texts = []
-
-        for segment in segments:
-            all_segments.append({
-                "start": segment.start,
-                "end": segment.end,
-                "text": segment.text.strip()
-            })
-            transcribed_texts.append(segment.text.strip())
-
-        transcribed_text = " ".join(transcribed_texts).strip()
+        all_segments, transcribed_text = _collect_segments(segments)
         logger.info(f"[Faster-Whisper] Résultat brut: '{transcribed_text}'")
         logger.info(f"[Faster-Whisper] Langue détectée: {info.language} (prob: {info.language_probability:.2f})")
         logger.info(f"[Faster-Whisper] Durée audio: {info.duration:.1f}s")
 
-        # Corriger les termes agricoles mal transcrits (AVANT les villes)
-        transcribed_text = correct_agricultural_terms(transcribed_text)
-        logger.info(f"[Faster-Whisper] Après correction agricole: '{transcribed_text}'")
-
-        # Corriger les noms de villes mal transcrits
-        transcribed_text = correct_city_names(transcribed_text)
-        logger.info(f"[Faster-Whisper] Après correction villes: '{transcribed_text}'")
-
-        # Vérifier si le résultat semble être une hallucination
-        if is_likely_hallucination(transcribed_text):
-            logger.warning(f"[Faster-Whisper] Détection d'hallucination possible, texte ignoré")
-            return None
-
-        # Détecter si l'audio était probablement en Dioula
-        likely_dioula = is_likely_dioula_input(transcribed_text, info.language_probability)
-        if likely_dioula:
-            logger.warning(f"[Faster-Whisper] ATTENTION: Audio probablement en Dioula, transcription peut être incorrecte")
-
-        return {
-            "text": transcribed_text,
-            "language": info.language,
-            "language_probability": info.language_probability,
-            "likely_dioula_input": likely_dioula,
-            "segments": all_segments
-        }
+        return _postprocess_transcription(transcribed_text, info, all_segments)
 
     except Exception as e:
         logger.error(f"Erreur transcription Faster-Whisper: {e}", exc_info=True)
