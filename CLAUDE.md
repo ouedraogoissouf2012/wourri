@@ -315,6 +315,8 @@ node --test tests/circuit_breaker.test.js tests/message_queue.test.js tests/reco
 | `WOURI_API_URL` | `http://localhost:8000` | non | URL de l'API backend |
 | `WOURI_API_KEY` | (vide) | **oui en prod** | Clé partagée avec backend (header `X-API-Key`) — fallback si `WOURI_API_KEY_FILE` absent/illisible |
 | `WOURI_API_KEY_FILE` | (vide) | non | #257 : fichier secret contenant la clé (**prioritaire** sur `WOURI_API_KEY` — `lib/secrets.js`) |
+| `WA_ADMIN_KEY` | (vide) | **oui en prod** | L1 #408 : clé d'auth **ENTRANTE** (admin) — header `X-WA-Admin-Key` protégeant les routes statut/admin sauf `/health`+`/ready` (`lib/admin_auth.js`). Distincte de `WOURI_API_KEY` (sortante). Vide en prod → refus de démarrage |
+| `WA_ADMIN_KEY_FILE` | (vide) | non | L1 #408 : fichier secret pour `WA_ADMIN_KEY` (**prioritaire** ; prod compose : `/run/secrets/wa_admin_key`) |
 | `NODE_ENV` | `development` | non | `production` active certains warnings sécurité |
 | `HUMAN_DELAY_PROFILE` | `fast` | non | Profil des délais "simulation humaine" (`fast` \| `natural` \| `off`, cf. `lib/human_delays.js`). `natural` = valeurs historiques anti-ban, rollback en 1 env var |
 
@@ -325,6 +327,6 @@ node --test tests/circuit_breaker.test.js tests/message_queue.test.js tests/reco
 | QR code n'apparaît pas | Supprimer `auth_baileys/` puis redémarrer |
 | Port déjà utilisé | `npx kill-port 3001` (ou modifier `.env` `PORT=...`) |
 | Connexion perdue | Auto-reconnexion 3s après déconnexion. Vérifier les logs |
-| Session expirée (~2 semaines inactivité) | Re-scan QR via `/qr-page` |
+| Session expirée (~2 semaines inactivité) | Re-scan QR : le plus simple via les **logs** (`docker logs -f`, QR imprimé à l'appairage) ; sinon `curl -H "X-WA-Admin-Key: $WA_ADMIN_KEY" .../qr` — `/qr` et `/qr-page` protégées depuis #408 |
 | Backend `wouri-api` down | Messages échoués (pas de queue actuellement, à corriger Phase Robustesse) |
 | `WOURI_API_KEY non definie en production` | Prod #257 : vérifier le fichier `WOURI_API_KEY_FILE` (non vide, lisible uid 1000) — prioritaire sur l'env. Dev : définir `WOURI_API_KEY` dans `.env` |

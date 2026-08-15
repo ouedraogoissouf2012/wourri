@@ -46,12 +46,16 @@ const { UserPrefs, STEPS, DEFAULT_USER_LANGUAGE } = require('./lib/user_prefs');
 const { logger } = require('./lib/logger');
 // Issue #257 — pattern Docker secrets *_FILE (miroir de app/config.py côté API)
 const { readSecret } = require('./lib/secrets');
+// L1 (#408) — auth entrante admin (middleware + garde-fou demarrage)
+const { createAdminAuthMiddleware, adminKeyStartupError } = require('./lib/admin_auth');
 
 // Configuration
 const PORT = process.env.PORT || 3001;
 const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
 // Priorité WOURI_API_KEY_FILE (secret monté en fichier) puis WOURI_API_KEY (env)
 const WOURI_API_KEY = readSecret('WOURI_API_KEY', { logger });
+// Cle d'auth entrante admin (L1 #408) — meme pattern *_FILE que WOURI_API_KEY.
+const WA_ADMIN_KEY = readSecret('WA_ADMIN_KEY', { logger });
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
 const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
 const AUDIO_CACHE_FOLDER = path.join(__dirname, 'audio_cache');
@@ -79,6 +83,18 @@ if (process.env.NODE_ENV === 'production' && !WOURI_API_KEY) {
             ? `[SECURITY] Cle vide : WOURI_API_KEY_FILE=${process.env.WOURI_API_KEY_FILE} illisible ou vide (voir warn [SECRETS]) — demarrage refuse`
             : '[SECURITY] WOURI_API_KEY non definie en production — demarrage refuse'
     );
+    process.exit(1);
+}
+
+// Fail-closed L1 (#408) : en production, une auth entrante admin absente doit
+// empecher le demarrage (meme logique que le garde-fou WOURI_API_KEY ci-dessus).
+const _waAdminKeyError = adminKeyStartupError({
+    adminKey: WA_ADMIN_KEY,
+    nodeEnv: process.env.NODE_ENV,
+    keyFile: process.env.WA_ADMIN_KEY_FILE,
+});
+if (_waAdminKeyError) {
+    logger.fatal(_waAdminKeyError);
     process.exit(1);
 }
 
@@ -124,6 +140,15 @@ const publicRateLimit = rateLimit({
 app.use(publicRateLimit);
 
 app.use(express.json());
+
+// ===== Auth entrante admin (L1 #408) =====
+// Protege TOUTES les routes sauf /health et /ready (healthchecks Docker).
+// Header X-WA-Admin-Key, comparaison a temps constant, fail-closed si cle vide.
+app.use(createAdminAuthMiddleware({
+    adminKey: WA_ADMIN_KEY,
+    publicPaths: new Set(['/health', '/ready']),
+    logger,
+}));
 
 // Variables d'etat
 let sock = null;
