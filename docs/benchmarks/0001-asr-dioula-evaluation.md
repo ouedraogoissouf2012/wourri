@@ -40,6 +40,12 @@ deux langues dans un même vocal. À surveiller particulièrement dans l'évalua
 humaine (métriques Fidélité et Utilisabilité NLU). Source :
 [huggingface.co/sudoping01/bambara-asr-v2](https://huggingface.co/sudoping01/bambara-asr-v2).
 
+> **P1-02 (issue #206) — validation Ruben requise.** L'inclusion de M4 dans ce
+> benchmark satisfait l'action P1-02 du [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md)
+> et l'addendum d'[ADR-0003](../adr/0003-plan-ajout-omnilingual.md). Comme tout ce
+> protocole (cf. statut en-tête et §10), M4 reste **soumis à la validation de Ruben
+> avant exécution** du benchmark.
+
 ---
 
 ## 3. Dataset d'évaluation
