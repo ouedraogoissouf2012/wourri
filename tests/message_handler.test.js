@@ -30,6 +30,12 @@ const STEPS = {
 const MSG = {
     AUDIO_ERROR: { french: "Erreur audio", dioula: "Audio fɔli ma se" },
     AUDIO_FAILED: { french: "Audio incompris", dioula: "Audio fɔli ma se" },
+    OPTOUT_CONFIRMED: {
+        french: "Plus d'alertes",
+        dioula: "Dɔ sɔrɔla",
+        bilingual: "Plus d'alertes",
+        english: "No more alerts",
+    },
 };
 
 class CircuitOpenError extends Error {
@@ -461,4 +467,54 @@ test("onboarding.newMessageText: remplace messageText avant pipeline chat", asyn
     await handler({ messages: [makeMsg({ text: "Question originale" })] });
 
     assert.equal(capturedMessageText, "Question reformulee");
+});
+
+test("L5c #412 STOP : confirmation + pas d'onboarding ni de chat", async () => {
+    let onboardingCalled = false;
+    const optoutPosts = [];
+    const deps = makeDefaultDeps({
+        onboardingMachine: {
+            processStep: async () => {
+                onboardingCalled = true;
+                return { handled: null };
+            },
+        },
+        axios: {
+            post: async (url, body) => {
+                optoutPosts.push({ url, body });
+                return { status: 200 };
+            },
+        },
+    });
+    deps.convexUrl = "https://convex.test";
+    deps.callbackKey = "cb";
+    deps.organizationId = "org_adc";
+    deps.hmacSecret = "s3cr3t-test-vector";
+    const handler = createMessageHandler(deps);
+    await handler({ messages: [makeMsg({ text: "  arrêt  " })] });
+
+    assert.equal(onboardingCalled, false);
+    assert.equal(deps.messageQueue._calls.length, 0);
+    assert.ok(deps.sock.sent.some((s) => s.msg && s.msg.text === "Plus d'alertes"));
+    assert.equal(optoutPosts.length, 1);
+    assert.ok(optoutPosts[0].url.endsWith("/whatsapp/optout"));
+    assert.equal(optoutPosts[0].body.organizationId, "org_adc");
+    assert.ok(optoutPosts[0].body.contactRef);
+    assert.ok(!JSON.stringify(optoutPosts[0].body).includes("@s.whatsapp"));
+});
+
+test("L5c #412 STOP : Convex down → confirmation quand même", async () => {
+    const deps = makeDefaultDeps({
+        axios: {
+            post: async () => { throw Object.assign(new Error("down"), { code: "ECONNREFUSED" }); },
+        },
+    });
+    deps.convexUrl = "https://convex.test";
+    deps.callbackKey = "cb";
+    deps.organizationId = "org";
+    deps.hmacSecret = "s3cr3t-test-vector";
+    const handler = createMessageHandler(deps);
+    await handler({ messages: [makeMsg({ text: "STOP" })] });
+    assert.ok(deps.sock.sent.length >= 1);
+    assert.equal(deps.messageQueue._calls.length, 0);
 });
