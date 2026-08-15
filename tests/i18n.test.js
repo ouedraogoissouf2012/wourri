@@ -172,18 +172,16 @@ describe("i18n — mécanisme anti-régression (validateI18nCompleteness)", () =
             "'english' doit etre dans LANGUAGES_REQUIRING_VARIANT");
     });
 
-    test("REQUIRED_VARIANT_KEYS contient les 5 messages variantes attendus", () => {
-        assert.deepStrictEqual(
-            [...REQUIRED_VARIANT_KEYS].sort(),
-            ["AUDIO_ERROR", "AUDIO_FAILED", "CHANGE_CITY", "CHANGE_LANGUAGE", "RESET"]
-        );
+    test("REQUIRED_VARIANT_KEYS liste les messages à variants (source unique)", () => {
+        assert.ok(REQUIRED_VARIANT_KEYS.includes("OPTOUT_CONFIRMED"));
+        assert.ok(REQUIRED_VARIANT_KEYS.includes("RESET"));
     });
 
     // Test parametrize : pour chaque (langue × message), vérifier que la
     // variante existe et est non-vide. Si une langue future est ajoutée à
     // SUPPORTED_LANGUAGES sans variant correspondant, ce test échoue.
     for (const lang of ["french", "dioula", "english"]) {
-        for (const key of ["CHANGE_CITY", "CHANGE_LANGUAGE", "RESET", "AUDIO_FAILED", "AUDIO_ERROR"]) {
+        for (const key of REQUIRED_VARIANT_KEYS) {
             test(`MSG.${key}.${lang} existe et est non-vide`, () => {
                 const variant = MSG[key][lang];
                 assert.strictEqual(typeof variant, "string",

@@ -470,6 +470,10 @@ async function connectWhatsApp() {
         pino,
         axios,
         CircuitOpenError,
+        convexUrl: CONVEX_URL,
+        callbackKey: CONVEX_CALLBACK_KEY,
+        organizationId: process.env.WOURI_ORGANIZATION_ID || '',
+        hmacSecret: WOURI_CONTACTREF_HMAC_SECRET,
     });
     sock.ev.on('messages.upsert', messageHandler);
     // L2 #409 — statuts d'envoi (sent fiable ; delivered/read best-effort)
