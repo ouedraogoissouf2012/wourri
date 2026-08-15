@@ -122,11 +122,6 @@ def _load_nlu():
     return nlu
 
 
-def _load_nemo():
-    from app.services.asr.nemo_provider import preload_nemo_model
-    return preload_nemo_model()
-
-
 def _load_translation_dict():
     """Charge le dictionnaire de traduction (sans NLLB).
 
@@ -176,7 +171,6 @@ def _load_vdb():
 # Pour mesurer le scénario post-Phase 3 : `--skip nllb,whisper`.
 STEPS: list[tuple[str, str, Callable[[], object]]] = [
     ("nlu", "NLU JSON", _load_nlu),
-    ("nemo", "NeMo Soloni 114M (ASR bambara)", _load_nemo),
     ("translation_dict", "Translation Dictionnaire (15779 mots BAM->FR)", _load_translation_dict),
     ("nllb", "NLLB-200 distilled 600M (traduction)", _load_nllb),
     ("tts_bam", "TTS Bambara mms-tts-bam (VITS)", _load_tts_bambara),

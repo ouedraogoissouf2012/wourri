@@ -20,7 +20,6 @@ from app.config import get_settings
 from app.middleware.admin_metrics import AdminMetricsMiddleware
 from app.routers import weather, chat, tts, stt, rag, asr, feedback, admin
 from app.services.deepseek import check_deepseek_status
-from app.services.asr.nemo_provider import get_nemo_status
 from app.services.tts_bambara import check_models_status
 from app.services.stt_whisper import check_whisper_status
 from app.services.rag_knowledge import check_rag_status
@@ -70,25 +69,6 @@ def _preload_nlu() -> str | None:
     except Exception as e:
         logger.error("[PRELOAD] NLU: ERREUR - %s", e)
         return "NLU"
-    return None
-
-
-def _preload_nemo() -> str | None:
-    """Précharge l'ASR NeMo Soloni (decodeur TDT complet, bambara)."""
-    try:
-        from app.services.asr.nemo_provider import preload_nemo_model
-        logger.info("[PRELOAD] Chargement ASR NeMo Soloni (TDT, bambara)...")
-        nemo_model = preload_nemo_model()
-        if nemo_model is None:
-            logger.warning(
-                "[PRELOAD] ASR NeMo Soloni: INDISPONIBLE "
-                "(ASRChain utilisera les providers de fallback)"
-            )
-            return "ASR NeMo Soloni"
-        logger.info("[PRELOAD] ASR NeMo Soloni: OK")
-    except Exception as e:
-        logger.error("[PRELOAD] ASR NeMo Soloni: ERREUR - %s", e)
-        return "ASR NeMo Soloni"
     return None
 
 
@@ -188,10 +168,10 @@ def _preload_audio_cleanup() -> str | None:
     return None
 
 
-# Ordre de préchargement (significatif) : NLU → ASR → Translation → TTS → corpus → cleanup.
+# Ordre de préchargement (significatif) : NLU → Translation → TTS → corpus → cleanup.
+# ASR : plus de preload NeMo (ADR-0027) ; MMS-dyu se charge au 1er vocal.
 _PRELOADERS = (
     _preload_nlu,
-    _preload_nemo,
     _preload_translation,
     _preload_tts_bambara,
     _preload_tts_dioula,
@@ -380,7 +360,6 @@ async def health():
     hf_status = check_models_status()
     whisper_status = check_whisper_status()
     rag_status = check_rag_status()
-    nemo_status = get_nemo_status()
 
     # Observabilité ML (ADR-0011 Phase 4)
     loaded_keys = sorted(registry.list_loaded())
@@ -395,7 +374,6 @@ async def health():
             "weather": True,  # Open-Meteo est toujours disponible
             "tts_french": True,  # Edge-TTS est toujours disponible
             "tts_bambara": hf_status,
-            "asr_nemo": nemo_status,
             "stt_whisper": whisper_status,
             "rag_knowledge": rag_status
         },

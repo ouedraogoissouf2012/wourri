@@ -1,12 +1,11 @@
 """Tests des adapters ASR réels sans charger leurs modèles ML."""
 import contextlib
 import sys
-from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.services.asr import mms_dyu_provider, mms_generic_provider, nemo_provider
+from app.services.asr import mms_dyu_provider, mms_generic_provider
 
 
 class TestMMSDyuProvider:
@@ -254,103 +253,17 @@ class TestMMSGenericProvider:
                 provider.transcribe_wav("missing.wav")
 
 
-class TestNemoProvider:
-    def test_availability_requires_dependency_and_model_file(self):
-        provider = nemo_provider.NemoSoloniASR()
-        with (
-            patch.object(nemo_provider, "_nemo_available", True),
-            patch("app.services.asr.nemo_provider.os.path.exists", return_value=True),
-        ):
-            assert provider.name == "NeMo Soloni"
-            assert provider.is_available()
+class TestDefaultAsrChain:
+    def test_default_chain_starts_with_mms_dyu_without_nemo(self):
+        """ADR-0027 : NeMo retiré ; tête de chaîne = MMS-dyu."""
+        import app.services.asr as asr_pkg
 
-        with patch.object(nemo_provider, "_nemo_available", False):
-            assert not provider.is_available()
-
-    def test_transcribe_wav_normalizes_inference_result(self):
-        """transcribe_wav = inférence brute (_infer_wav) + normalisation bambara."""
-        provider = nemo_provider.NemoSoloniASR()
-
-        with (
-            patch.object(provider, "_infer_wav", return_value="MALO SENE"),
-            patch(
-                "app.services.asr_bambara_normalizer.normalize_bambara_asr",
-                return_value="malo sɛnɛ",
-            ) as normalize,
-        ):
-            result = provider.transcribe_wav("question.wav")
-
-        assert result == "malo sɛnɛ"
-        normalize.assert_called_once_with("MALO SENE")
-
-    @pytest.mark.asyncio
-    async def test_transcribe_converts_once_then_delegates_to_transcribe_wav(self):
-        """#301 : transcribe(bytes) convertit UNE fois puis appelle transcribe_wav."""
-        provider = nemo_provider.NemoSoloniASR()
-
-        @contextlib.contextmanager
-        def fake_prepared(audio_bytes, file_extension, label):
-            assert file_extension == "webm"
-            yield "/tmp/prepared_16k.wav"
-
-        with (
-            patch.object(provider, "is_available", return_value=True),
-            patch.object(
-                provider, "transcribe_wav", return_value="malo sɛnɛ"
-            ) as transcribe_wav,
-            patch(
-                "app.services.asr.audio_utils.prepared_wav_16k", fake_prepared
-            ),
-        ):
-            result = await provider.transcribe(b"audio", "webm")
-
-        assert result == "malo sɛnɛ"
-        transcribe_wav.assert_called_once_with("/tmp/prepared_16k.wav")
-
-    @pytest.mark.asyncio
-    async def test_transcribe_returns_none_when_unavailable(self):
-        provider = nemo_provider.NemoSoloniASR()
-        with patch.object(provider, "is_available", return_value=False):
-            assert await provider.transcribe(b"audio") is None
-
-    @pytest.mark.parametrize(
-        ("raw_result", "expected"),
-        [
-            (["  liste  "], "liste"),
-            (SimpleNamespace(text="  attribut  "), "attribut"),
-            ("  chaîne  ", "chaîne"),
-            ([], ""),
-        ],
-    )
-    def test_infer_wav_normalizes_nemo_result_shapes(
-        self,
-        raw_result,
-        expected,
-    ):
-        provider = nemo_provider.NemoSoloniASR()
-        model = MagicMock()
-        model.transcribe.return_value = (
-            raw_result if raw_result == [] else [raw_result]
-        )
-        fake_torch = MagicMock()
-
-        with (
-            patch.object(provider, "_get_model", return_value=model),
-            patch.object(nemo_provider, "_torch", fake_torch),
-        ):
-            result = provider._infer_wav("question.wav")
-
-        assert result == expected
-
-    def test_infer_wav_handles_missing_model_and_inference_error(self):
-        provider = nemo_provider.NemoSoloniASR()
-        with patch.object(provider, "_get_model", return_value=None):
-            assert provider._infer_wav("question.wav") is None
-
-        model = MagicMock()
-        model.transcribe.side_effect = RuntimeError("inference")
-        with (
-            patch.object(provider, "_get_model", return_value=model),
-            patch.object(nemo_provider, "_torch", MagicMock()),
-        ):
-            assert provider._infer_wav("question.wav") is None
+        asr_pkg._asr_chain = None
+        try:
+            chain = asr_pkg.get_asr_chain()
+            names = [p.name for p in chain.providers]
+            assert "NeMo Soloni" not in names
+            assert names[0] == "MMS-dyu"
+            assert any(n.startswith("MMS-generic") for n in names)
+        finally:
+            asr_pkg._asr_chain = None

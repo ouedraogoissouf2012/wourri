@@ -140,10 +140,10 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ### Profils memoire
 
 La strategie de chargement est definie par
-[ADR-0011](docs/adr/0011-strategie-prechargement-ml.md). NeMo, le
+[ADR-0011](docs/adr/0011-strategie-prechargement-ml.md). Le
 dictionnaire de traduction et les TTS actives servent le parcours Dioula
-principal. NLLB et Faster-Whisper restent charges au premier usage afin de
-reduire la pression RAM et page file au demarrage.
+principal. MMS-dyu se charge au premier vocal. NLLB et Faster-Whisper restent
+charges au premier usage afin de reduire la pression RAM au demarrage.
 
 Les mesures de reference ont ete obtenues sous Windows avec un seul processus
 API :
@@ -159,8 +159,8 @@ de modeles.
 
 | Profil | Machine cible | Configuration | Chargement au demarrage |
 |---|---:|---|---|
-| **Minimal Dioula** | 4 GB | `ENABLE_WHISPER=false`, `ENABLE_MMS_DYU=true`, `ENABLE_MMS_BAM=false`, `PRELOAD_TTS_DIOULA=true`, `PRELOAD_TTS_BAMBARA=false` | NeMo, dictionnaire, TTS Dioula et stockage IVR. NLLB reste lazy. |
-| **Standard multilingue** | 8 GB | Les cinq flags a `true` (valeurs par defaut) | NeMo, dictionnaire, TTS Bambara/Dioula et stockage IVR. Whisper et NLLB restent lazy. |
+| **Minimal Dioula** | 4 GB | `ENABLE_WHISPER=false`, `ENABLE_MMS_DYU=true`, `ENABLE_MMS_BAM=false`, `PRELOAD_TTS_DIOULA=true`, `PRELOAD_TTS_BAMBARA=false` | Dictionnaire, TTS Dioula et stockage IVR. NLLB reste lazy. |
+| **Standard multilingue** | 8 GB | Les cinq flags a `true` (valeurs par defaut) | Dictionnaire, TTS Bambara/Dioula et stockage IVR. Whisper et NLLB restent lazy. |
 | **Full / benchmark** | 16 GB | Profil standard, puis premier appel explicite aux chemins Whisper et NLLB | Tous les modeles sont presents en memoire apres le warm-up. Utiliser ce profil pour les mesures, pas pour forcer un preload contraire a l'ADR-0011. |
 
 Exemple minimal Dioula dans `.env` :

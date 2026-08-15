@@ -1,9 +1,9 @@
 # ADR-0027 — Décision NeMo Soloni : installer `nemo-toolkit` ou retirer le provider
 
-**Statut** : proposé
+**Statut** : accepté
 **Date** : 2026-08-14
 **Auteur(s)** : Claude (assistant) sous direction de Ouedraogo Issouf
-**Valideur** : Ouedraogo Issouf (Ruben) — **décision finale réservée à l'utilisateur (cf. #358)**
+**Valideur** : Ouedraogo Issouf (Ruben) — accepté 2026-08-15 (« tu peux aller », Option A)
 **Lié à** : issue #358 (checklist « Trancher NeMo »), [ADR-0022](0022-composition-chaine-asr-dioula.md) (ordre des providers), [ADR-0021](0021-dedup-provider-asr-nemo.md) (source unique du provider), [ADR-0011](0011-strategie-prechargement-ml.md) (préchargement)
 
 ---
@@ -133,12 +133,9 @@ retrait. Il ne modifie pas la décision d'ordre d'ADR-0022.
 
 ## Décision
 
-**En attente de validation Ruben (#358 : « décision Ruben »).** Cet ADR reste en
-statut **proposé** — il ne doit pas passer en « accepté » sans l'aval explicite de
-l'utilisateur.
+**Option A retenue** (retrait propre), acceptée par Ruben le 2026-08-15.
 
-**Recommandation motivée : Option A (retrait propre)**, sauf si une mesure WER
-démontre un gain NeMo. Justification :
+Justification :
 
 - Le seul transcripteur dioula réellement entraîné sur des voix dioula est
   l'adapter MMS-dyu (réparé #358) ; MMS-generic assure le fallback. **Retirer
@@ -182,5 +179,7 @@ démontre un gain NeMo. Justification :
 ## Historique
 
 - 2026-08-14 — rédaction initiale (statut **proposé**), après cartographie du
-  câblage NeMo réel. Recommandation Option A (retrait propre), **en attente de
-  validation Ruben** — décision finale réservée à l'utilisateur (#358).
+  câblage NeMo réel. Recommandation Option A (retrait propre).
+- 2026-08-15 — **accepté** Option A (validation Ruben). `asr_bambara_normalizer`
+  conservé (consommé par `asr_normalizer.py`). Modèle `.nemo` orphelin : hors
+  git, nettoyage disque ops (cache HF), pas de fichier repo à supprimer.
