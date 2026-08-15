@@ -211,6 +211,42 @@ class Settings(BaseSettings):
     # (logs "[VDB-PG] best=... distance=..."). Ne pas s'appuyer dessus pour l'instant.
     ivr_max_semantic_distance: float = Field(default=1.0, ge=0.0, le=2.0)
 
+    # ========== Filtre LM anti-hallucination ASR (ADR-0029, issue #94) ==========
+    # Rescoring KenLM (4-gram dioula CI) sur la transcription normalisée pour
+    # détecter les hallucinations ASR type "ka ka aw" (kakawo fragmenté).
+    # Câblé dans app/services/asr/chain.py APRÈS normalisation.
+    #
+    # OFF par défaut. Le filtre reste PASS-THROUGH (verdict HIGH, zéro impact)
+    # tant que ce flag est False OU que le binaire KenLM est absent → aucune
+    # régression du comportement ASR actuel. Activation en prod subordonnée à :
+    #   1. binaire KenLM provisionné en V3 (monté en volume, cf. ci-dessous) ;
+    #   2. benchmark WER sur ≥30 voix réelles + validation locuteur natif.
+    # Ces 2 pré-requis sont une DETTE tracée (#94 / ADR-0029), hors de cette PR.
+    enable_lm_rescoring: bool = False
+
+    # Binaire KenLM : chemin surchargeable via l'env KENLM_DYU_PATH (même pattern
+    # que MMS_DYU_ADAPTER_PATH — chemin d'artefact ML décidé au déploiement), lu
+    # dans app/services/validation/lm_filter.py. Défaut : data/models/kenlm_dyu_agri.binary.
+    # NE PAS versionner le binaire dans git. En V3, le monter en volume dans
+    # data/models/ (répertoire déjà gitignored ET dockerignored via `models/`,
+    # donc le binaire ne peut pas être commité ni embarqué par erreur), ex.
+    # docker-compose.prod.yml (service wouri-api) :
+    #   volumes: - ./data/models:/app/data/models:ro
+    # Le défaut du chemin pointant déjà là, KENLM_DYU_PATH n'est utile que pour
+    # un emplacement non standard.
+    #
+    # Seuils de verdict externalisés (calibrables sans redéploiement de code).
+    # Défauts = littérature ASR langues basse-ressource (Kumar et al. 2023).
+    # Field : hardening d'entrée — un seuil négatif/ratio hors [0,1] est refusé
+    # dès le chargement de la config (cohérent avec log_retention_days). Ordering
+    # attendu (non contraint tant que MEDIUM est inerte dans la chaîne) :
+    # lm_ppl_caution < lm_ppl_reject et lm_oov_caution <= lm_oov_reject.
+    lm_ppl_reject: float = Field(default=500.0, gt=0)       # ppl_norm > → REJECT (absurde)
+    lm_ppl_caution: float = Field(default=150.0, gt=0)      # ppl_norm 150-500 → MEDIUM (faible confiance)
+    lm_oov_reject: float = Field(default=0.40, ge=0, le=1)  # >40% mots hors-vocabulaire → REJECT
+    lm_oov_caution: float = Field(default=0.15, ge=0, le=1)  # 15-40% OOV → MEDIUM (faible confiance)
+    lm_repeat_max_reject: int = Field(default=3, ge=1)      # >3 répétitions d'un bigramme → REJECT
+
     @property
     def is_production(self) -> bool:
         return self.env.lower() == "production"

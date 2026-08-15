@@ -63,3 +63,11 @@ psycopg[binary]==3.3.4
 pgvector==0.4.2
 # sentence-transformers : embeddings du corpus (corpus_service + import).
 sentence-transformers>=2.2.0
+
+# ========== Filtre LM anti-hallucination ASR (ADR-0029, issue #94) ==========
+# `kenlm` (bindings Python de KenLM) n'est PAS installé par le stack principal :
+# il se compile depuis les sources (C++/Boost, pas de wheel universelle) et
+# casserait le build CI (runner sans toolchain) comme le dev Windows, alors que
+# le filtre est déjà pass-through sans lui (ENABLE_LM_RESCORING=False par défaut).
+# Dépendance optionnelle du déploiement V3, isolée dans requirements-kenlm.txt
+# (même pattern que requirements-omnilingual.txt). Dette tracée #94.

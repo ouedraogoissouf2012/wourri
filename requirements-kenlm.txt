@@ -1,0 +1,21 @@
+# WOURI - Dépendance filtre LM anti-hallucination ASR (ADR-0029, issue #94)
+#
+# Install séparé du requirements.txt principal pour éviter de casser le build :
+# `kenlm` se compile depuis les sources (C++/Boost) — pas de wheel universelle,
+# donc l'ajouter au stack principal casserait la CI (runner sans toolchain) et
+# le dev Windows. Le filtre est pass-through sans kenlm (ENABLE_LM_RESCORING=False
+# par défaut) : cette dépendance ne sert QUE pour l'activation en V3.
+#
+# Provisionnement V3 (dette tracée #94) — dans l'image prod (Dockerfile.prod) :
+#
+#     apt-get install -y build-essential cmake libboost-all-dev
+#     pip install -r requirements-kenlm.txt
+#
+# PUIS monter le binaire du modèle dans data/models/ (cf. app/config.py,
+# KENLM_DYU_PATH) et passer ENABLE_LM_RESCORING=True — uniquement APRÈS le
+# benchmark WER (≥30 voix réelles + validation locuteur natif).
+#
+# NB : figer une version exacte après validation de l'install sur l'image cible
+# (pas de pin ici tant que la version n'a pas été validée en V3 — on ne fige pas
+# une version non testée). Source de référence : https://github.com/kpu/kenlm
+kenlm

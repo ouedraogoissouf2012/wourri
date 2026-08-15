@@ -16,12 +16,15 @@ Usage :
         # score.ppl_norm bas = naturel, haut = improbable
 
 Activation :
-    - Variable config : ENABLE_LM_RESCORING (default: False)
-    - Fichier modèle : data/models/kenlm_dyu_agri.binary (entraîné sur Colab)
+    - Flag config : ENABLE_LM_RESCORING (default: False), injecté par get_lm_filter().
+    - Binaire KenLM : data/models/kenlm_dyu_agri.binary, chemin surchargeable via
+      l'env KENLM_DYU_PATH (même pattern que MMS_DYU_ADAPTER_PATH — artefact ML
+      monté en volume au déploiement V3, jamais versionné).
+    - Seuils (PPL/OOV/répétitions) : externalisés en config, injectés au constructeur.
 
 Feature flag :
-    Si le fichier KenLM n'existe pas ou ENABLE_LM_RESCORING=False,
-    le filtre est inactif et retourne toujours 'HIGH' (pass-through).
+    Si ENABLE_LM_RESCORING=False OU que le binaire KenLM est absent (ou kenlm non
+    installé), le filtre est inactif et retourne toujours 'HIGH' (pass-through).
 """
 import logging
 import os
@@ -34,14 +37,25 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 _PROJECT_ROOT = Path(__file__).parent.parent.parent.parent  # wouri-api/
-_DEFAULT_LM_PATH = _PROJECT_ROOT / "data" / "models" / "kenlm_dyu_agri.binary"
+# Chemin binaire KenLM — surchargeable via KENLM_DYU_PATH (même pattern que
+# MMS_DYU_ADAPTER_PATH dans mms_dyu_provider.py : artefact ML monté en volume au
+# déploiement V3, exclu de l'image et jamais versionné dans git).
+_DEFAULT_LM_PATH = Path(
+    os.getenv(
+        "KENLM_DYU_PATH",
+        str(_PROJECT_ROOT / "data" / "models" / "kenlm_dyu_agri.binary"),
+    )
+)
 
-# Seuils empiriques — à calibrer après première utilisation en prod
-# Source : littérature ASR langues basse-ressource (Kumar et al. 2023)
-PPL_REJECT = 500.0      # Au-delà → transcription absurde
-PPL_CAUTION = 150.0     # Entre 150-500 → faible confiance
-OOV_REJECT = 0.40       # Plus de 40% de mots hors-vocabulaire → probablement pas dyu
-REPEAT_MAX_REJECT = 3   # Plus de 3 répétitions du même bigramme
+# Seuils empiriques par défaut — externalisés en config (Settings.lm_*), injectés
+# au constructeur par get_lm_filter(). Ces constantes restent les valeurs par
+# défaut du constructeur (rétrocompat + tests qui n'injectent pas de seuils).
+# Source : littérature ASR langues basse-ressource (Kumar et al. 2023).
+PPL_REJECT = 500.0      # Au-delà → transcription absurde (REJECT)
+PPL_CAUTION = 150.0     # Entre 150-500 → faible confiance (MEDIUM). Attendu < PPL_REJECT.
+OOV_REJECT = 0.40       # Plus de 40% de mots hors-vocabulaire → probablement pas dyu (REJECT)
+OOV_CAUTION = 0.15      # Entre 15-40% → faible confiance (MEDIUM). Attendu <= OOV_REJECT.
+REPEAT_MAX_REJECT = 3   # Plus de 3 répétitions du même bigramme (REJECT)
 
 
 @dataclass
@@ -73,7 +87,18 @@ class DioulaLMFilter:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, model_path: Optional[Path] = None, lexicon: Optional[set] = None):
+    def __init__(
+        self,
+        model_path: Optional[Path] = None,
+        lexicon: Optional[set] = None,
+        *,
+        enabled: bool = False,
+        ppl_reject: float = PPL_REJECT,
+        ppl_caution: float = PPL_CAUTION,
+        oov_reject: float = OOV_REJECT,
+        oov_caution: float = OOV_CAUTION,
+        repeat_max_reject: int = REPEAT_MAX_REJECT,
+    ):
         if hasattr(self, '_initialized'):
             return
         self._initialized = True
@@ -81,10 +106,27 @@ class DioulaLMFilter:
         self.lm = None
         self.lexicon = lexicon or set()
         self.available = False
+        # Feature flag ENABLE_LM_RESCORING (ADR-0029, #94) : injecté par
+        # get_lm_filter() depuis la config. Défaut False = fail-safe (le filtre
+        # est OFF par défaut ; une construction directe n'active jamais le
+        # rescoring sans opt-in explicite). Si False → _load() n'active rien.
+        self.enabled = enabled
+        # Seuils de verdict injectés (externalisés en config).
+        self.ppl_reject = ppl_reject
+        self.ppl_caution = ppl_caution
+        self.oov_reject = oov_reject
+        self.oov_caution = oov_caution
+        self.repeat_max_reject = repeat_max_reject
         self._load()
 
     def _load(self):
         """Charge le modèle KenLM. Silencieux si indisponible."""
+        # Feature flag : filtre désactivé → inactif (pass-through), on ne
+        # charge même pas le binaire. Respecte ENABLE_LM_RESCORING (#94).
+        if not self.enabled:
+            logger.info("[LM-FILTER] ENABLE_LM_RESCORING=False — filtre inactif (pass-through)")
+            return
+
         # Vérifier que kenlm est installé
         try:
             import kenlm
@@ -152,12 +194,12 @@ class DioulaLMFilter:
         bigrams = list(zip(tokens, tokens[1:]))
         repeat_max = max(Counter(bigrams).values()) if bigrams else 0
 
-        # Verdict composite
-        if (ppl_norm > PPL_REJECT
-                or oov_ratio > OOV_REJECT
-                or repeat_max > REPEAT_MAX_REJECT):
+        # Verdict composite (tous les seuils injectés depuis la config).
+        if (ppl_norm > self.ppl_reject
+                or oov_ratio > self.oov_reject
+                or repeat_max > self.repeat_max_reject):
             verdict = "REJECT"
-        elif ppl_norm > PPL_CAUTION or oov_ratio > 0.15:
+        elif ppl_norm > self.ppl_caution or oov_ratio > self.oov_caution:
             verdict = "MEDIUM"
         else:
             verdict = "HIGH"
@@ -193,8 +235,24 @@ _default_filter: Optional[DioulaLMFilter] = None
 
 
 def get_lm_filter() -> DioulaLMFilter:
-    """Retourne l'instance singleton du filtre LM."""
+    """Retourne l'instance singleton du filtre LM.
+
+    Lit le flag ENABLE_LM_RESCORING et les 4 seuils depuis la config (ADR-0029,
+    #94) et les injecte au constructeur. Import local de get_settings pour éviter
+    tout couplage d'import au chargement du module (le filtre est importé
+    paresseusement par app/services/asr/chain.py).
+    """
     global _default_filter
     if _default_filter is None:
-        _default_filter = DioulaLMFilter()
+        from app.config import get_settings
+
+        settings = get_settings()
+        _default_filter = DioulaLMFilter(
+            enabled=settings.enable_lm_rescoring,
+            ppl_reject=settings.lm_ppl_reject,
+            ppl_caution=settings.lm_ppl_caution,
+            oov_reject=settings.lm_oov_reject,
+            oov_caution=settings.lm_oov_caution,
+            repeat_max_reject=settings.lm_repeat_max_reject,
+        )
     return _default_filter

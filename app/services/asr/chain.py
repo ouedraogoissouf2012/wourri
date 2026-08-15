@@ -77,6 +77,7 @@ class ASRChain:
     async def _transcribe_wav(self, wav_path: str) -> Optional[str]:
         """Orchestration sur un WAV 16k déjà converti (cascade + agri_fallback)."""
         from app.services.asr_normalizer import normalize_asr_output
+        from app.services.validation.lm_filter import get_lm_filter
 
         result, winner = await self._try_chain(wav_path)
 
@@ -87,44 +88,88 @@ class ASRChain:
                 logger.info("[ASRChain] Normalisé: '%s' → '%s'", result, normalized)
                 result = normalized
 
-        # Second passage agricole : inutile si le résultat vient déjà de
-        # l'agri_fallback lui-même (re-transcrire avec le même modèle donnerait
-        # le même texte pour ~45s de CPU — cas réel depuis la réparation #358
-        # où MMS-dyu est à la fois provider principal effectif et fallback).
+        # Filtre LM anti-hallucination (ADR-0029, #94), APRÈS normalisation.
+        # Pass-through (verdict HIGH) si ENABLE_LM_RESCORING=False OU binaire
+        # KenLM absent → ZÉRO régression (comportement historique préservé).
+        lm_reject = False
+        if result:
+            lm_score = get_lm_filter().score(result)
+            # Seul REJECT déclenche une dégradation (ADR-0029, périmètre #94).
+            # MEDIUM (faible confiance) est volontairement inerte ici — pas de
+            # is_suspect : une transcription douteuse mais plausible est conservée.
+            lm_reject = lm_score.verdict == "REJECT"
+            if lm_reject:
+                logger.info(
+                    "[ASRChain] LM: transcription suspecte "
+                    "(ppl=%.0f oov=%.2f repeat=%d) → dégradation",
+                    lm_score.ppl_norm, lm_score.oov_ratio, lm_score.repeat_max,
+                )
+
+        # Second passage agricole : déclenché par l'absence de mot-clé agricole
+        # (heuristique historique, ≥3 mots) OU par un verdict LM REJECT (#94).
+        # Inutile si le résultat vient déjà de l'agri_fallback lui-même
+        # (re-transcrire donnerait le même texte pour ~45s de CPU — cas réel
+        # depuis la réparation #358 où MMS-dyu est à la fois provider principal
+        # effectif et fallback).
         if (
             result
             and self._agri_fallback
             and winner is not self._agri_fallback
             and self._agri_fallback.is_available()
         ):
-            if not self._has_agri_keywords(result):
-                words_count = len(result.split())
-                if words_count >= 3:
+            no_agri = not self._has_agri_keywords(result)
+            trigger_agri = no_agri and len(result.split()) >= 3
+            if trigger_agri or lm_reject:
+                reason = "LM REJECT" if lm_reject else "pas de mot agricole"
+                logger.info(
+                    "[ASRChain] %s → second passage %s",
+                    reason, self._agri_fallback.name,
+                )
+                # Réutilise le MÊME WAV déjà converti (#301) — pas de
+                # reconversion pour le second passage.
+                fallback_result = await asyncio.to_thread(
+                    self._agri_fallback.transcribe_wav, wav_path,
+                )
+                if fallback_result:
+                    # Même normalisation que le résultat principal (revue
+                    # #358 F1 : le texte du fallback partait brut — les
+                    # corrections exactes/fuzzy ne s'y appliquaient pas,
+                    # et le check agricole ratait les formes corrigibles).
+                    fallback_result = normalize_asr_output(fallback_result)
+                if fallback_result and self._accept_fallback(fallback_result, lm_reject):
                     logger.info(
-                        "[ASRChain] Pas de mot agricole détecté → second passage %s",
+                        "[ASRChain] Fallback %s retenu",
                         self._agri_fallback.name,
                     )
-                    # Réutilise le MÊME WAV déjà converti (#301) — pas de
-                    # reconversion pour le second passage.
-                    fallback_result = await asyncio.to_thread(
-                        self._agri_fallback.transcribe_wav, wav_path,
-                    )
-                    if fallback_result:
-                        # Même normalisation que le résultat principal (revue
-                        # #358 F1 : le texte du fallback partait brut — les
-                        # corrections exactes/fuzzy ne s'y appliquaient pas,
-                        # et le check agricole ratait les formes corrigibles).
-                        fallback_result = normalize_asr_output(fallback_result)
-                    if fallback_result and self._has_agri_keywords(fallback_result):
-                        logger.info(
-                            "[ASRChain] Fallback %s a trouvé des mots agricoles",
-                            self._agri_fallback.name,
-                        )
-                        return fallback_result
-                    else:
-                        logger.info("[ASRChain] Fallback non concluant, on garde le résultat initial")
+                    return fallback_result
+                else:
+                    logger.info("[ASRChain] Fallback non concluant, on garde le résultat initial")
 
         return result
+
+    @staticmethod
+    def _accept_fallback(fallback_result: str, lm_reject: bool) -> bool:
+        """Décide si le second passage remplace le résultat initial.
+
+        Deux critères d'acceptation, selon ce qui a déclenché le second passage :
+
+        - Heuristique historique (absence de mot agricole) : on retient le
+          fallback s'il contient un mot-clé agricole.
+        - LM REJECT (#94) : on retient le fallback s'il est agricole OU si le LM
+          ne le juge plus absurde (verdict != REJECT) — une alternative plus
+          naturelle même sans mot agricole. Sinon aucune alternative n'est
+          meilleure → l'appelant garde l'original (marqué douteux dans les logs).
+
+        Quand le flag LM est OFF, `lm_reject` est toujours False : l'acceptation
+        se réduit au critère agricole historique → zéro régression.
+        """
+        if ASRChain._has_agri_keywords(fallback_result):
+            return True
+        if lm_reject:
+            from app.services.validation.lm_filter import get_lm_filter
+
+            return get_lm_filter().score(fallback_result).verdict != "REJECT"
+        return False
 
     async def _try_chain(
         self,

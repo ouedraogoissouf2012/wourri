@@ -16,6 +16,7 @@ from typing import Optional
 from app.services.asr import audio_utils
 from app.services.asr.base import ASRProvider
 from app.services.asr.chain import ASRChain, AGRI_KEYWORDS
+from app.services.validation import lm_filter
 
 
 # --- Mock providers pour les tests ---
@@ -43,6 +44,35 @@ class MockASRProvider(ASRProvider):
     def transcribe_wav(self, wav_path: str) -> Optional[str]:
         self.call_count += 1
         return self._result
+
+
+class _FakeLMFilter:
+    """Filtre LM déterministe : REJECT si le texte ∈ `reject_texts`, MEDIUM si
+    ∈ `medium_texts`, HIGH sinon. Enregistre chaque texte scoré dans `scored`
+    (pour vérifier que la chaîne score bien la forme NORMALISÉE). Évite toute
+    dépendance à kenlm dans les tests de chaîne."""
+
+    def __init__(self, reject_texts=(), medium_texts=()):
+        self._reject = set(reject_texts)
+        self._medium = set(medium_texts)
+        self.scored = []
+
+    def score(self, text: str) -> lm_filter.LMScore:
+        self.scored.append(text)
+        if text in self._reject:
+            verdict = "REJECT"
+        elif text in self._medium:
+            verdict = "MEDIUM"
+        else:
+            verdict = "HIGH"
+        return lm_filter.LMScore(
+            ppl_norm={"REJECT": 999.0, "MEDIUM": 200.0, "HIGH": 5.0}[verdict],
+            oov_ratio=0.0,
+            repeat_max=0,
+            verdict=verdict,
+            logprob=-1.0,
+            n_tokens=len(text.split()),
+        )
 
 
 @pytest.fixture(autouse=True)
@@ -276,3 +306,204 @@ class TestAgriKeywords:
     def test_has_agri_keywords_negative(self):
         """Aucun mot agricole détecté."""
         assert not ASRChain._has_agri_keywords("bonjour comment ça va")
+
+
+class TestASRChainLMFilter:
+    """Filtre LM anti-hallucination (ADR-0029, #94) câblé après normalisation.
+
+    NOTE : le pass-through avec flag OFF (comportement historique préservé) est
+    déjà couvert par TOUS les autres tests de ce fichier — ils s'exécutent avec
+    la config réelle (ENABLE_LM_RESCORING=False → verdict HIGH → aucun impact).
+    Cette classe couvre le comportement quand le filtre est ACTIF.
+    """
+
+    @pytest.fixture
+    def identity_normalizer(self, monkeypatch):
+        """Neutralise la normalisation post-ASR pour isoler la logique LM : le
+        texte scoré par le filtre est exactement celui produit par le provider."""
+        from app.services import asr_normalizer
+
+        monkeypatch.setattr(asr_normalizer, "normalize_asr_output", lambda t: t)
+
+    @staticmethod
+    def _patch_lm(monkeypatch, reject_texts=(), medium_texts=()):
+        fake = _FakeLMFilter(reject_texts, medium_texts)
+        monkeypatch.setattr(lm_filter, "get_lm_filter", lambda: fake)
+        return fake
+
+    @pytest.mark.asyncio
+    async def test_reject_triggers_second_pass_despite_agri_keywords(
+        self, monkeypatch, identity_normalizer,
+    ):
+        """Un verdict REJECT déclenche le 2e passage MÊME quand un mot agricole
+        est présent (l'heuristique historique ne l'aurait pas déclenché), et un
+        fallback plus naturel (LM != REJECT) est retenu même sans mot agricole."""
+        primary = "kaba tigɛ min don"  # 'kaba' agri → heuristique agri inactive
+        p1 = MockASRProvider("P1", result=primary)
+        fallback = MockASRProvider("Fallback", result="an bɛ taa so")  # pas de mot agri
+        self._patch_lm(monkeypatch, reject_texts={primary})  # primary REJECT, fallback HIGH
+
+        chain = ASRChain(providers=[p1], agri_fallback=fallback)
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == "an bɛ taa so"  # fallback retenu car LM ne le rejette plus
+        assert fallback.call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_active_lm_high_verdict_is_inert(
+        self, monkeypatch, identity_normalizer,
+    ):
+        """Un filtre ACTIF qui rend HIGH ne déclenche aucun 2e passage quand un
+        mot agricole est présent (parité avec le comportement pass-through)."""
+        primary = "kaba sɛnɛ wagati"
+        p1 = MockASRProvider("P1", result=primary)
+        fallback = MockASRProvider("Fallback", result="autre chose")
+        self._patch_lm(monkeypatch, reject_texts=set())  # tout HIGH
+
+        chain = ASRChain(providers=[p1], agri_fallback=fallback)
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == primary
+        assert fallback.call_count == 0
+
+    @pytest.mark.asyncio
+    async def test_reject_without_better_alternative_keeps_original(
+        self, monkeypatch, identity_normalizer,
+    ):
+        """REJECT déclenche le 2e passage, mais si le fallback est lui aussi jugé
+        REJECT (et non agricole), aucune alternative n'est meilleure → on garde
+        l'original (marqué douteux dans les logs)."""
+        primary = "kaba blalala"        # 'kaba' agri présent, mais LM REJECT
+        fallback_text = "wolo wolo wolo"  # non agricole
+        p1 = MockASRProvider("P1", result=primary)
+        fallback = MockASRProvider("Fallback", result=fallback_text)
+        self._patch_lm(monkeypatch, reject_texts={primary, fallback_text})
+
+        chain = ASRChain(providers=[p1], agri_fallback=fallback)
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == primary          # original conservé
+        assert fallback.call_count == 1   # 2e passage tenté mais rejeté
+
+    @pytest.mark.asyncio
+    async def test_reject_no_retry_when_winner_is_agri_fallback(
+        self, monkeypatch, identity_normalizer,
+    ):
+        """Garde-fou #358 préservé sous le nouveau déclencheur : si le gagnant
+        est déjà l'agri_fallback, pas de re-transcription même sous REJECT."""
+        dyu = MockASRProvider("MMS-dyu", result="kaba blabla")
+        self._patch_lm(monkeypatch, reject_texts={"kaba blabla"})
+        chain = ASRChain(providers=[dyu], agri_fallback=dyu)
+
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == "kaba blabla"
+        assert dyu.call_count == 1  # une seule transcription, pas de 2e passage
+
+    @pytest.mark.asyncio
+    async def test_reject_triggers_second_pass_on_short_non_agri_text(
+        self, monkeypatch, identity_normalizer,
+    ):
+        """CŒUR de #94 : un REJECT sur un texte COURT (<3 mots) et NON agricole —
+        que l'heuristique historique ignore doublement (porte ≥3 mots ET porte
+        agricole) — déclenche quand même le 2e passage grâce au LM."""
+        p1 = MockASRProvider("P1", result="ka ka")  # 2 mots, non agricole
+        fallback = MockASRProvider("Fallback", result="malo sɛnɛ")  # agricole
+        self._patch_lm(monkeypatch, reject_texts={"ka ka"})
+
+        chain = ASRChain(providers=[p1], agri_fallback=fallback)
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == "malo sɛnɛ"     # le LM a court-circuité les 2 portes
+        assert fallback.call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_lm_scores_normalized_text_not_raw(self, monkeypatch):
+        """Le filtre reçoit la forme NORMALISÉE (exigence ADR "APRÈS
+        normalisation"), pas le texte brut du provider. On N'utilise PAS
+        identity_normalizer : un vrai normaliseur mute le texte, et on inspecte
+        ce que le LM a réellement scoré."""
+        from app.services import asr_normalizer
+
+        monkeypatch.setattr(
+            asr_normalizer, "normalize_asr_output", lambda t: t.replace("kabaa", "kaba"),
+        )
+        p1 = MockASRProvider("P1", result="kabaa foo barbaz")  # brut (faute)
+        fake = self._patch_lm(monkeypatch, reject_texts=set())  # tout HIGH
+
+        chain = ASRChain(providers=[p1])
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == "kaba foo barbaz"          # normalisé
+        assert fake.scored == ["kaba foo barbaz"]    # le LM a scoré la forme normalisée
+        assert "kabaa foo barbaz" not in fake.scored  # jamais le texte brut
+
+    @pytest.mark.asyncio
+    async def test_active_high_lm_leaves_heuristic_path_unchanged(
+        self, monkeypatch, identity_normalizer,
+    ):
+        """Parité : avec un LM ACTIF rendant HIGH, le chemin HEURISTIQUE (primary
+        non agricole ≥3 mots) fonctionne comme sans LM — 2e passage déclenché par
+        l'absence de mot agricole, fallback non-agricole rejeté, original conservé."""
+        p1 = MockASRProvider("P1", result="an ni wula min ye")  # non agri, 5 mots
+        fallback = MockASRProvider("Fallback", result="texte sans agriculture")
+        self._patch_lm(monkeypatch, reject_texts=set())  # tout HIGH
+
+        chain = ASRChain(providers=[p1], agri_fallback=fallback)
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == "an ni wula min ye"  # heuristique déclenchée, fallback rejeté
+        assert fallback.call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_medium_verdict_does_not_trigger_second_pass(
+        self, monkeypatch, identity_normalizer,
+    ):
+        """Verrou : seul REJECT déclenche, pas is_suspect. Un verdict MEDIUM sur
+        un primary agricole (heuristique inactive) ne déclenche aucun 2e passage."""
+        primary = "kaba sɛnɛ wagati"
+        p1 = MockASRProvider("P1", result=primary)
+        fallback = MockASRProvider("Fallback", result="autre chose")
+        self._patch_lm(monkeypatch, medium_texts={primary})  # MEDIUM, pas REJECT
+
+        chain = ASRChain(providers=[p1], agri_fallback=fallback)
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == primary
+        assert fallback.call_count == 0
+
+    @pytest.mark.asyncio
+    async def test_reject_with_empty_fallback_keeps_original(
+        self, monkeypatch, identity_normalizer,
+    ):
+        """REJECT déclenche le 2e passage, mais si le fallback retourne None, les
+        gardes préservent l'original sans crash (pas de normalize(None))."""
+        primary = "ka ka ka"  # non agricole, REJECT
+        p1 = MockASRProvider("P1", result=primary)
+        fallback = MockASRProvider("Fallback", result=None)
+        self._patch_lm(monkeypatch, reject_texts={primary})
+
+        chain = ASRChain(providers=[p1], agri_fallback=fallback)
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == primary          # original conservé
+        assert fallback.call_count == 1   # 2e passage tenté, None ignoré
+
+    @pytest.mark.asyncio
+    async def test_reject_accepts_agri_fallback_even_if_lm_rejects_it(
+        self, monkeypatch, identity_normalizer,
+    ):
+        """Précédence : dans _accept_fallback, le critère agricole prime AVANT la
+        re-vérification LM. Un fallback agricole ET jugé REJECT par le LM est
+        quand même retenu."""
+        primary = "fereke fereke fereke"   # non agricole, REJECT
+        fallback_text = "kaba sɛnɛ"        # agricole, mais AUSSI REJECT
+        p1 = MockASRProvider("P1", result=primary)
+        fallback = MockASRProvider("Fallback", result=fallback_text)
+        self._patch_lm(monkeypatch, reject_texts={primary, fallback_text})
+
+        chain = ASRChain(providers=[p1], agri_fallback=fallback)
+        result = await chain.transcribe(b"audio", "ogg")
+
+        assert result == fallback_text     # agricole prime sur le verdict LM
+        assert fallback.call_count == 1
