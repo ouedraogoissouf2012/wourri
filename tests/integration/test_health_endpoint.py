@@ -18,8 +18,7 @@ from fastapi.testclient import TestClient
 @pytest.fixture
 def client():
     """Client de test FastAPI sans charger les modèles ML."""
-    with patch("app.services.nlu.get_nlu_service", return_value=None), \
-         patch("app.services.asr.nemo_provider.preload_nemo_model", return_value=None), \
+    with          patch("app.services.nlu.get_nlu_service", return_value=None), \
          patch("app.services.translation.get_translation_service") as mock_ts, \
          patch("app.services.tts_bambara.get_tts_model", return_value=(None, None)), \
          patch("app.services.tts_dioula.get_tts_model_dioula", return_value=(None, None)), \
@@ -63,20 +62,7 @@ class TestHealthEndpoint:
         for key in ("deepseek", "weather", "tts_french", "tts_bambara",
                     "stt_whisper", "rag_knowledge"):
             assert key in services, f"Clé manquante dans services: {key}"
-
-    def test_health_exposes_nemo_status(self, client):
-        """/health expose la disponibilité, le modèle et son chargement NeMo."""
-        expected = {
-            "nemo_available": False,
-            "model_path_exists": True,
-            "model_loaded": False,
-        }
-        with patch("app.main.check_deepseek_status",
-                   AsyncMock(return_value=True)), \
-             patch("app.main.get_nemo_status",
-                   return_value=expected):
-            response = client.get("/health")
-        assert response.json()["services"]["asr_nemo"] == expected
+        assert "asr_nemo" not in services
 
     def test_health_models_block_structure(self, client):
         """Le bloc `models` a la structure attendue."""

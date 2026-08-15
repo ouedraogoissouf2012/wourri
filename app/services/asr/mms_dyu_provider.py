@@ -13,9 +13,8 @@ from app.services.asr.base import ASRProvider
 
 logger = logging.getLogger(__name__)
 
-# Chemin de l'adapter — surchargeable via MMS_DYU_ADAPTER_PATH (même pattern
-# que NEMO_MODEL_PATH dans nemo_provider.py ; utile en Docker où l'adapter de
-# 3,86 Go est monté en volume, .dockerignore l'excluant de l'image).
+# Chemin de l'adapter — surchargeable via MMS_DYU_ADAPTER_PATH
+# (utile en Docker : adapter 3,86 Go monté en volume, exclu de l'image).
 # Défaut : racine du repo = 4 niveaux au-dessus de app/services/asr/ (fix #358 :
 # la formule à 3 .parent, copiée de l'ancien asr_mms_dyu.py un niveau moins
 # profond, résolvait vers app/modeles_manuels/ inexistant → is_available()

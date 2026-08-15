@@ -341,29 +341,6 @@ def main():
             "duration_s": 0,
         })
 
-    # --- Modèle 3 : NeMo Soloni (si disponible dans l'API) ---
-    try:
-        import sys
-        sys.path.insert(0, str(API_DIR))
-        from app.services.asr.nemo_provider import NemoSoloniASR  # noqa: F401 (disponibilité NeMo)
-        import asyncio
-
-        print(f"\n[Eval] Modèle NeMo Soloni (ASR actuel Wourri)...")
-
-        # Évaluation texte seul pour Soloni (pas d'audio terrain)
-        results.append({
-            "model": "NeMo Soloni TDT (actuel)",
-            "wer": 0.0,
-            "samples": len(test_records),
-            "audio_errors": 0,
-            "has_real_audio": False,
-            "duration_s": 0,
-            "note": "Évaluation audio requise pour WER réel"
-        })
-        print("  NeMo Soloni: disponible (évaluation audio requise pour WER)")
-    except Exception:
-        pass
-
     if results:
         print_report(results, output_path)
     else:
