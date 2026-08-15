@@ -39,20 +39,20 @@ setup_logging(
 logger = logging.getLogger(__name__)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Gestion du cycle de vie de l'application"""
-    preload_issues = []
+# ---------------------------------------------------------------------------
+# Préchargements de démarrage (issue #42, ADR-0011).
+#
+# Chaque _preload_* est autonome et testable unitairement : il journalise son
+# résultat et retourne le NOM du service à signaler comme indisponible (ajouté
+# à preload_issues), ou None si tout va bien. Les imports sont volontairement
+# LAZY (dans le corps) pour ne pas charger torch/transformers à l'import du
+# module. L'ordre d'exécution est significatif (NLU avant ASR, corpus après
+# translation) et fixé par _run_preloads.
+# ---------------------------------------------------------------------------
 
-    logger.info("=" * 50)
-    logger.info("WOURI - Démarrage")
-    logger.info("=" * 50)
-    logger.info("Version: %s", settings.app_version)
-    logger.info("Debug: %s", settings.debug)
-    logger.info("Villes disponibles: %d", len(get_all_cities()))
-    logger.info("=" * 50)
 
-    # 0. Précharger le service NLU (JSON seulement, très rapide ~10ms)
+def _preload_nlu() -> str | None:
+    """Précharge le service NLU (JSON seulement, très rapide ~10ms)."""
     try:
         from app.services.nlu import get_nlu_service
         logger.info("[PRELOAD] Chargement NLU (lexique concepts bambara)...")
@@ -62,12 +62,15 @@ async def lifespan(app: FastAPI):
             logger.info("[PRELOAD] NLU: OK (%d concepts, %d mots-clés)", stats['total_concepts'], stats['total_keywords'])
         else:
             logger.warning("[PRELOAD] NLU: désactivé (fichier nlu_concepts.json non trouvé)")
-            preload_issues.append("NLU")
+            return "NLU"
     except Exception as e:
         logger.error("[PRELOAD] NLU: ERREUR - %s", e)
-        preload_issues.append("NLU")
+        return "NLU"
+    return None
 
-    # 1. Précharger ASR NeMo Soloni (decodeur TDT complet, bambara)
+
+def _preload_nemo() -> str | None:
+    """Précharge l'ASR NeMo Soloni (decodeur TDT complet, bambara)."""
     try:
         from app.services.asr.nemo_provider import preload_nemo_model
         logger.info("[PRELOAD] Chargement ASR NeMo Soloni (TDT, bambara)...")
@@ -77,18 +80,22 @@ async def lifespan(app: FastAPI):
                 "[PRELOAD] ASR NeMo Soloni: INDISPONIBLE "
                 "(ASRChain utilisera les providers de fallback)"
             )
-            preload_issues.append("ASR NeMo Soloni")
-        else:
-            logger.info("[PRELOAD] ASR NeMo Soloni: OK")
+            return "ASR NeMo Soloni"
+        logger.info("[PRELOAD] ASR NeMo Soloni: OK")
     except Exception as e:
         logger.error("[PRELOAD] ASR NeMo Soloni: ERREUR - %s", e)
-        preload_issues.append("ASR NeMo Soloni")
+        return "ASR NeMo Soloni"
+    return None
 
-    # 2. Précharger le TranslationService (dictionnaire seul)
-    # NLLB-200 lazy-load (ADR-0011 Phase 3) : chargement à la 1re traduction
-    # hors-dictionnaire (rare car le dict couvre ~15779 mots BAM->FR +
-    # 22010 mots FR->BAM, ~90% des usages typiques).
-    # Coût accepté : ~5-15s sur la 1re traduction NLLB par démarrage.
+
+def _preload_translation() -> str | None:
+    """Précharge le TranslationService (dictionnaire seul).
+
+    NLLB-200 lazy-load (ADR-0011 Phase 3) : chargement à la 1re traduction
+    hors-dictionnaire (rare car le dict couvre ~15779 mots BAM->FR +
+    22010 mots FR->BAM, ~90% des usages typiques).
+    Coût accepté : ~5-15s sur la 1re traduction NLLB par démarrage.
+    """
     try:
         from app.services.translation import get_translation_service
         logger.info("[PRELOAD] Chargement du TranslationService (dictionnaire)...")
@@ -97,15 +104,17 @@ async def lifespan(app: FastAPI):
         logger.info("[PRELOAD] Dictionnaire: OK (%d mots)", stats['dictionnaire']['total_mots'])
     except Exception as e:
         logger.error("[PRELOAD] TranslationService: ERREUR - %s", e)
-        preload_issues.append("TranslationService")
+        return "TranslationService"
+    return None
 
-    # 3. Précharger TTS Bambara (selon flags issue #42)
-    #
-    # enable_mms_bam=False : ne charge JAMAIS (économise ~3 GB RAM, mais le
-    #   TTS Bambara devient indisponible — pour profils Linux/Mac avec
-    #   contraintes RAM strictes)
-    # preload_tts_bambara=False : ne pré-charge pas, charge au 1er appel
-    #   (différe la charge mais reste fonctionnel)
+
+def _preload_tts_bambara() -> str | None:
+    """Précharge le TTS Bambara selon les flags (issue #42).
+
+    enable_mms_bam=False : ne charge JAMAIS (économise ~3 GB RAM, TTS Bambara
+      indisponible — pour profils Linux/Mac à RAM contrainte).
+    preload_tts_bambara=False : ne pré-charge pas, charge au 1er appel.
+    """
     if settings.enable_mms_bam and settings.preload_tts_bambara:
         try:
             from app.services.tts_bambara import get_tts_model
@@ -113,18 +122,20 @@ async def lifespan(app: FastAPI):
             tts_bambara = get_tts_model()
             if not tts_bambara or not all(tts_bambara):
                 logger.warning("[PRELOAD] TTS Bambara: INDISPONIBLE")
-                preload_issues.append("TTS Bambara")
-            else:
-                logger.info("[PRELOAD] TTS Bambara: OK")
+                return "TTS Bambara"
+            logger.info("[PRELOAD] TTS Bambara: OK")
         except Exception as e:
             logger.error("[PRELOAD] TTS Bambara: ERREUR - %s", e)
-            preload_issues.append("TTS Bambara")
+            return "TTS Bambara"
     elif not settings.enable_mms_bam:
         logger.info("[PRELOAD] TTS Bambara: DESACTIVE (ENABLE_MMS_BAM=false)")
     else:
         logger.info("[PRELOAD] TTS Bambara: LAZY (PRELOAD_TTS_BAMBARA=false — chargement au 1er appel)")
+    return None
 
-    # 3b. Précharger TTS Dioula (voix ivoirienne) — flags identiques
+
+def _preload_tts_dioula() -> str | None:
+    """Précharge le TTS Dioula (voix ivoirienne) — flags identiques au Bambara."""
     if settings.enable_mms_dyu and settings.preload_tts_dioula:
         try:
             from app.services.tts_dioula import get_tts_model_dioula
@@ -132,42 +143,82 @@ async def lifespan(app: FastAPI):
             tts_dioula = get_tts_model_dioula()
             if not tts_dioula or not all(tts_dioula):
                 logger.warning("[PRELOAD] TTS Dioula: INDISPONIBLE")
-                preload_issues.append("TTS Dioula")
-            else:
-                logger.info("[PRELOAD] TTS Dioula: OK")
+                return "TTS Dioula"
+            logger.info("[PRELOAD] TTS Dioula: OK")
         except Exception as e:
             logger.error("[PRELOAD] TTS Dioula: ERREUR - %s", e)
-            preload_issues.append("TTS Dioula")
+            return "TTS Dioula"
     elif not settings.enable_mms_dyu:
         logger.info("[PRELOAD] TTS Dioula: DESACTIVE (ENABLE_MMS_DYU=false — economise ~3.8 GB)")
     else:
         logger.info("[PRELOAD] TTS Dioula: LAZY (PRELOAD_TTS_DIOULA=false — chargement au 1er appel)")
+    return None
 
-    # 4. Whisper STT français : lazy-load (ADR-0011 Phase 3)
-    # Chargement à la 1re requête vocale FR (mode `french` minoritaire selon
-    # le profil utilisateur cible : agriculteurs dioula majoritairement
-    # peu alphabétisés, modes `dioula`/`both` dominants).
-    # Coût accepté : ~30-60s sur le 1er vocal FR par démarrage.
-    # Timeout côté WhatsApp Baileys = 180s, marge confortable.
 
-    # 5. Pré-initialiser le corpus IVR — backend pgvector unique (ADR-0008
-    # Phase E terminée, #203 : Chroma et la façade multi-backend retirés).
+def _preload_corpus_ivr() -> str | None:
+    """Pré-initialise le corpus IVR — backend pgvector unique (ADR-0008
+    Phase E terminée, #203 : Chroma et la façade multi-backend retirés).
+
+    Note : Whisper STT français reste en lazy-load (ADR-0011 Phase 3) —
+    chargé à la 1re requête vocale FR (mode minoritaire), pas préchargé ici.
+    """
     try:
         from app.services.corpus_service import initialiser_vdb
         logger.info("[PRELOAD] Initialisation BD vectorielle IVR (corpus bambara pré-validé)...")
         initialiser_vdb()
     except Exception as e:
         logger.error("[PRELOAD] BD vectorielle IVR: ERREUR - %s", e)
-        preload_issues.append("BD vectorielle IVR")
+        return "BD vectorielle IVR"
+    return None
 
-    # 6. Démarrer le nettoyage automatique des fichiers audio
+
+def _preload_audio_cleanup() -> str | None:
+    """Démarre le nettoyage automatique des fichiers audio."""
     try:
         from app.services.audio_cleanup import start_cleanup_scheduler
         start_cleanup_scheduler()
         logger.info("[PRELOAD] Nettoyage audio: OK (fichiers > 7j supprimés automatiquement)")
     except Exception as e:
         logger.error("[PRELOAD] Nettoyage audio: ERREUR - %s", e)
-        preload_issues.append("Nettoyage audio")
+        return "Nettoyage audio"
+    return None
+
+
+# Ordre de préchargement (significatif) : NLU → ASR → Translation → TTS → corpus → cleanup.
+_PRELOADERS = (
+    _preload_nlu,
+    _preload_nemo,
+    _preload_translation,
+    _preload_tts_bambara,
+    _preload_tts_dioula,
+    _preload_corpus_ivr,
+    _preload_audio_cleanup,
+)
+
+
+def _run_preloads() -> list[str]:
+    """Exécute tous les préchargements dans l'ordre et retourne la liste des
+    services indisponibles (best-effort : un échec n'interrompt pas les autres)."""
+    issues: list[str] = []
+    for preloader in _PRELOADERS:
+        issue = preloader()
+        if issue:
+            issues.append(issue)
+    return issues
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Gestion du cycle de vie de l'application"""
+    logger.info("=" * 50)
+    logger.info("WOURI - Démarrage")
+    logger.info("=" * 50)
+    logger.info("Version: %s", settings.app_version)
+    logger.info("Debug: %s", settings.debug)
+    logger.info("Villes disponibles: %d", len(get_all_cities()))
+    logger.info("=" * 50)
+
+    preload_issues = _run_preloads()
 
     if preload_issues:
         logger.warning(
