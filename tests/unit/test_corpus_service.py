@@ -9,6 +9,7 @@ Pour les tests d'intégration avec vraie BDD, voir
 """
 from __future__ import annotations
 
+import logging
 from contextlib import contextmanager
 from unittest.mock import MagicMock, patch
 
@@ -380,3 +381,95 @@ class TestInitialiserVdb:
         sql_arg = mock_conn.execute.call_args[0][0]
         assert "count" in str(sql_arg).lower()
         assert "corpus_entries" in str(sql_arg).lower()
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Tests : instrumentation distance sémantique (#297 A1, ADR-0028)
+# ─────────────────────────────────────────────────────────────────────────
+
+
+class TestQueryCandidatesSelectsDistance:
+    """La requête SQL doit exposer la distance cosine (`AS distance`).
+
+    L'expression est déjà calculée par l'`ORDER BY <=>` (coût index nul) ; A1
+    ne fait que la remonter dans le SELECT pour observation.
+    """
+
+    _EXPECTED = "embedding <=> CAST(:query_emb AS vector) AS distance"
+
+    def _capture_sql(self, culture_filter) -> str:
+        captured: list[str] = []
+
+        def execute(*args, **kwargs):
+            captured.append(str(args[0]))
+            mock_result = MagicMock()
+            mock_result.__iter__ = lambda self: iter([])
+            return mock_result
+
+        mock_conn = MagicMock()
+        mock_conn.execute.side_effect = execute
+        mock_conn.__enter__.return_value = mock_conn
+        mock_conn.__exit__.return_value = False
+        mock_engine = MagicMock()
+        mock_engine.connect.return_value = mock_conn
+
+        corpus_service._get_engine.cache_clear()
+        with _patch_model(), patch.object(
+            corpus_service, "_get_engine", return_value=mock_engine
+        ):
+            corpus_service._query_candidates("CONSEIL_PRODUCTION", "riz", culture_filter)
+        return captured[0]
+
+    def test_sql_selects_distance_with_culture_filter(self):
+        assert self._EXPECTED in self._capture_sql("CULTURE_RIZ")
+
+    def test_sql_selects_distance_without_culture_filter(self):
+        assert self._EXPECTED in self._capture_sql(None)
+
+
+class TestBestResultDistancePropagation:
+    """`_best_result_pg` expose et LOGGE la distance du candidat retenu (A1)."""
+
+    def test_propagates_distance_of_selected_row_and_logs(self, caplog):
+        rows = [
+            {**_make_row("far", score=0.70), "distance": 0.80},
+            {**_make_row("near_best", score=0.95), "distance": 0.12},
+        ]
+        with caplog.at_level(logging.INFO, logger="app.services.corpus_service"):
+            best = corpus_service._best_result_pg(
+                rows, conditions=[], season="saison_seche"
+            )
+        assert best is not None
+        assert best["id"] == "near_best"          # sélection par season-scoring
+        assert best["distance"] == 0.12           # distance du row RETENU
+        assert any(
+            "best=near_best" in m and "distance=0.1200" in m for m in caplog.messages
+        )
+
+    def test_distance_is_that_of_best_not_the_closest(self, caplog):
+        """La distance loggée est celle du row RETENU, pas du plus proche.
+
+        Le candidat le plus proche (distance 0.10) n'est PAS retenu : la
+        sélection reste pilotée par le score. On vérifie qu'aucun gating sur la
+        distance n'a été introduit (A1 = zéro rejet).
+        """
+        rows = [
+            {**_make_row("closest", score=0.50), "distance": 0.10},
+            {**_make_row("high_score", score=0.99), "distance": 0.90},
+        ]
+        with caplog.at_level(logging.INFO, logger="app.services.corpus_service"):
+            best = corpus_service._best_result_pg(
+                rows, conditions=[], season="saison_seche"
+            )
+        assert best["id"] == "high_score"
+        assert best["distance"] == 0.90
+        assert any("distance=0.9000" in m for m in caplog.messages)
+
+    def test_missing_distance_is_none_and_does_not_crash(self, caplog):
+        """Robustesse : un row sans clé `distance` → `None` + log `n/a`, sans crash."""
+        rows = [_make_row("no_dist", score=0.8)]  # aucune clé 'distance'
+        with caplog.at_level(logging.INFO, logger="app.services.corpus_service"):
+            best = corpus_service._best_result_pg(rows, conditions=[])
+        assert best is not None
+        assert best["distance"] is None
+        assert any("best=no_dist" in m and "distance=n/a" in m for m in caplog.messages)
