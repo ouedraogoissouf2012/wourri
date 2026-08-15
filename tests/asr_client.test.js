@@ -600,3 +600,61 @@ describe("AsrClient — authHeaders dynamique", () => {
         assert.strictEqual(axiosMock.calls[1].headers["X-API-Key"], "dynamic-2");
     });
 });
+
+describe("AsrClient — X-Request-ID (L5a #412)", () => {
+    test("transcribeAudio propage requestId dans l'en-tete X-Request-ID", async () => {
+        const axiosMock = makeAxiosMock([{ status: 200, data: { text: "ok" } }]);
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({ "X-API-Key": "k" }),
+            logger: silentLogger,
+            axios: axiosMock,
+        });
+        await client.transcribeAudio(Buffer.from("a"), "audio.ogg", "queue-123");
+        assert.strictEqual(axiosMock.calls[0].headers["X-Request-ID"], "queue-123");
+    });
+
+    test("transcribeAudioBambara propage requestId dans l'en-tete X-Request-ID", async () => {
+        const axiosMock = makeAxiosMock([
+            { status: 200, data: { transcription: "i ni ce", french_translation: "bonjour" } },
+        ]);
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger: silentLogger,
+            axios: axiosMock,
+        });
+        await client.transcribeAudioBambara(Buffer.from("a"), "audio.ogg", "queue-456");
+        assert.strictEqual(axiosMock.calls[0].headers["X-Request-ID"], "queue-456");
+    });
+
+    test("sans requestId : aucun en-tete X-Request-ID (l'API en genere un)", async () => {
+        const axiosMock = makeAxiosMock([{ status: 200, data: { text: "ok" } }]);
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger: silentLogger,
+            axios: axiosMock,
+        });
+        await client.transcribeAudio(Buffer.from("a"));
+        assert.ok(!("X-Request-ID" in axiosMock.calls[0].headers));
+    });
+
+    test("fallback Bambara->Whisper FR : requestId present sur les DEUX appels", async () => {
+        const err = new Error("MMS down");
+        err.code = "ETIMEDOUT";
+        const axiosMock = makeAxiosMock([
+            err,
+            { status: 200, data: { text: "fallback" } },
+        ]);
+        const client = new AsrClient({
+            apiUrl: "http://localhost:8000",
+            authHeaders: () => ({}),
+            logger: silentLogger,
+            axios: axiosMock,
+        });
+        await client.transcribeAudioBambara(Buffer.from("a"), "audio.ogg", "queue-789");
+        assert.strictEqual(axiosMock.calls[0].headers["X-Request-ID"], "queue-789");
+        assert.strictEqual(axiosMock.calls[1].headers["X-Request-ID"], "queue-789");
+    });
+});
