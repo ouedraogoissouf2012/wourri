@@ -5,9 +5,10 @@
 # sur `ghcr.io`, puis (optionnellement) déclenche un déploiement SSH
 # sur la VM Scaleway.
 #
-# Le déploiement est GATED par une repo variable `DEPLOY_API_ENABLED=true`
-# (Settings → Secrets and variables → Actions → Variables). Tant qu'elle
-# n'est pas définie, le workflow se contente de build+push.
+# Le déploiement SSH est GATED par `DEPLOY_API_ENABLED=true`.
+# ADR-0013 Option D + ADR-0024 : la prod est Dokploy, PAS ce job SSH.
+# Ne pas activer le flag (réintroduirait une clé SSH CI vers une cible obsolète).
+# Tant que le flag est absent, le workflow se contente de build+push GHCR.
 #
 # Secrets requis pour activer le déploiement (Settings → Secrets) :
 #   - SCALEWAY_HOST     : IP ou hostname de la VM

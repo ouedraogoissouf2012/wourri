@@ -1,13 +1,49 @@
 # ADR-0013 — Durcissement du déploiement SSH (3 options à arbitrer)
 
-**Statut** : proposé
-**Date** : 2026-05-30
+**Statut** : accepté (addendum 2026-08-15)
+**Date** : 2026-05-30 — addendum 2026-08-15
 **Auteur** : Claude (sous direction Ruben)
-**Valideur** : Ruben (en attente — cet ADR documente l'analyse pour décision)
+**Valideur** : Ruben — addendum Dokploy 2026-08-15
 
 ---
 
-## Contexte
+## Addendum 2026-08-15 — la cible Scaleway n'existe plus
+
+**[ADR-0024](0024-deploiement-wourri-dokploy.md) (accepté)** a changé la cible
+de production : VPS Contabo + **Dokploy** (build Git sur le serveur), pas une
+VM Scaleway + `appleboy/ssh-action`.
+
+Conséquence pour #221 :
+
+- Le risque B1 (clé SSH CI → `wourri@vm` Scaleway) **ne s'applique plus au
+  chemin prod**. Dokploy clone le repo et build ; il n'y a pas de job CI qui
+  SSH pour déployer.
+- `deploy-api.yml` existe encore mais le job SSH est **gated**
+  (`DEPLOY_API_ENABLED`). Tant que cette variable n'est pas `true`, le
+  workflow ne fait que build+push GHCR. **Ne pas l'activer** : ce serait
+  réintroduire le risque B1 sur une cible obsolète.
+- Le risque restant est **l'accès admin humain** (`marcel@` Contabo / UI
+  Dokploy), pas le pipeline CI. Tailscale reste une option *admin*, pas un
+  prérequis pour déployer.
+
+### Option D — Dokploy-native (héritée d'ADR-0024) — **retenue**
+
+- **Description** : le déploiement prod = Dokploy. Pas de self-hosted runner
+  pour déployer. Pas de Tailscale dans le chemin CI. Pas d'OIDC Scaleway.
+- **Avantages** : zéro clé SSH CI sur le chemin réel ; pas de runner à
+  maintenir ; aligné sur l'infra déjà en place.
+- **Inconvénients assumés** : `deploy-api.yml` legacy reste dans le repo
+  (inactif sans flag). Accès admin serveur = SSH/Dokploy classiques (hors
+  #221).
+- **Travail induit** : documenter ici + dans #221. Ne pas implémenter A/B/C.
+- **Rollback** : aucun — c'est l'état déjà en prod.
+
+Les options A/B/C ci-dessous restent la **trace 2026-05** (Scaleway). Elles
+ne doivent plus être exécutées telles quelles.
+
+---
+
+## Contexte (historique 2026-05-30)
 
 ### Déclencheur
 
@@ -280,7 +316,10 @@ docker push GHCR + un trigger Scaleway pour redéployer).
 
 ## Décision
 
-**Option recommandée : B — Tailscale SSH**
+**2026-08-15 — Option D retenue** (Dokploy-native). Les options A/B/C visaient
+Scaleway + `appleboy/ssh-action`. Ce chemin n'est plus la prod.
+
+**2026-05-30 — recommandation historique (obsolète) : B — Tailscale SSH**
 
 ### Justification
 
@@ -433,8 +472,9 @@ session.
 
 ## Historique
 
-- **2026-05-30 (rédaction)** : ADR brouillon rédigé pour proposer une
-  décision long terme sur le hardening SSH du déploiement CI. 3 options
-  analysées, recommandation **Option B (Tailscale SSH)** argumentée.
-  Statut **proposé** — en attente validation Ruben pour passer à
-  **accepté** + plan d'exécution.
+- **2026-05-30 (rédaction)** : ADR brouillon. 3 options Scaleway, recommandation
+  historique **Option B (Tailscale SSH)**. Statut **proposé**.
+- **2026-08-15 (addendum)** : ADR-0024 a rendu A/B/C inapplicables au chemin
+  prod. **Option D** (Dokploy-native) retenue. Statut **accepté**. #221
+  closeable : pas d'implémentation Tailscale/runner. Accès admin Contabo =
+  sujet séparé si besoin.
