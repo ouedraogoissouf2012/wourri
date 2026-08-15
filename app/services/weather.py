@@ -169,7 +169,7 @@ async def get_weather_forecast_tomorrow(city_name: str) -> dict | None:
     params = {
         "latitude": city["lat"],
         "longitude": city["lon"],
-        "daily": "precipitation_probability_max,weather_code,temperature_2m_max,temperature_2m_min",
+        "daily": "precipitation_probability_max,precipitation_sum,weather_code,temperature_2m_max,temperature_2m_min",
         "timezone": "Africa/Abidjan",
         "forecast_days": 2,
     }
@@ -191,6 +191,10 @@ async def get_weather_forecast_tomorrow(city_name: str) -> dict | None:
                 temp_max = daily.get("temperature_2m_max", [0, 0])[1]
                 temp_min = daily.get("temperature_2m_min", [0, 0])[1]
                 precip_proba = daily.get("precipitation_probability_max", [0, 0])[1]
+                # precipitation_sum = cumul en mm (quantité), distinct de la
+                # probabilité %. Nécessaire pour classify_meteo qui raisonne en
+                # mm (issue #355 T3 : conseil agronomique qualitatif).
+                precip_mm = daily.get("precipitation_sum", [0, 0])[1]
 
                 result = {
                     "city": city["name"],
@@ -199,6 +203,7 @@ async def get_weather_forecast_tomorrow(city_name: str) -> dict | None:
                     "temperature_max": temp_max,
                     "temperature_min": temp_min,
                     "precipitation_probability": precip_proba,
+                    "precipitation_mm": precip_mm,
                     "weather_code": weather_code,
                     "weather_description": WEATHER_CODES.get(weather_code, "Inconnu"),
                 }
