@@ -305,6 +305,12 @@ app.add_middleware(AdminMetricsMiddleware)
 from app.middleware.rate_limit import ApiKeyExemptRateLimitMiddleware
 app.add_middleware(ApiKeyExemptRateLimitMiddleware)
 
+# Corrélation X-Request-ID (L5a #412) — ajouté en dernier ⇒ middleware le plus
+# externe : request_id lu (ou généré) tôt, disponible pour tout le reste et
+# renvoyé dans l'en-tête de réponse.
+from app.middleware.request_id import RequestIdMiddleware
+app.add_middleware(RequestIdMiddleware)
+
 # CORS — permissif uniquement en dev (test interface locale showcase.html)
 # En production, restreindre via une allow-list explicite (ADR-0011 futur).
 if not settings.is_production:
