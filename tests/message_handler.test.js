@@ -189,6 +189,48 @@ test("message texte normal: flux complet declenche jusqu'a sendResponse", async 
     assert.equal(deps.messageQueue._calls.filter((c) => c.method === "markSuccess").length, 1);
 });
 
+test("L5a #412: l'appel /api/chat/ porte X-Request-ID = id Baileys du message", async () => {
+    const msg = makeMsg({ text: "Comment cultiver le riz ?" });
+    const axiosCalls = [];
+    const deps = makeDefaultDeps({
+        axios: {
+            post: async (url, body, opts) => {
+                axiosCalls.push({ url, opts });
+                return { data: { reply: "ok", audio_url: null } };
+            },
+        },
+    });
+    const handler = createMessageHandler(deps);
+    await handler({ messages: [msg] });
+
+    const chatCall = axiosCalls.find((c) => c.url.includes("/api/chat/"));
+    assert.ok(chatCall, "appel /api/chat/ attendu");
+    assert.strictEqual(chatCall.opts.headers["X-Request-ID"], msg.key.id);
+});
+
+test("L5a #412: l'ASR recoit requestId = id Baileys (meme id que /api/chat/)", async () => {
+    const msg = makeMsg({ audio: { url: "http://x", mediaKey: "k" } });
+    const asrCalls = [];
+    const deps = makeDefaultDeps({
+        userPrefsState: { step: STEPS.COMPLETE, city: "Abidjan", language: "dioula" },
+        asrClient: {
+            transcribeAudioBambara: async (buf, name, requestId) => {
+                asrCalls.push({ requestId });
+                return { text: "I ni ce", is_bambara: true, bambara_text: "I ni ce" };
+            },
+            transcribeAudio: async (buf, name, requestId) => {
+                asrCalls.push({ requestId });
+                return { text: "hello", is_bambara: false };
+            },
+        },
+    });
+    const handler = createMessageHandler(deps);
+    await handler({ messages: [msg] });
+
+    assert.strictEqual(asrCalls.length, 1);
+    assert.strictEqual(asrCalls[0].requestId, msg.key.id);
+});
+
 // ─────────────────────────────────────────────────────────────────────
 // 2. Pipeline audio (`_processAudio` indirect)
 // ─────────────────────────────────────────────────────────────────────
