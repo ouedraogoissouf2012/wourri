@@ -72,6 +72,20 @@ En production, `WOURI_API_KEY` est **obligatoire** (warning au démarrage sinon)
 | GET | `/qr-page` | Page HTML avec QR code visuel (auto-refresh 5s) |
 | POST | `/logout` | Déconnexion + suppression `auth_baileys/` |
 
+> 🔒 **Authentification entrante (L1 #408).** Toutes ces routes exigent le header
+> `X-WA-Admin-Key: <WA_ADMIN_KEY>` **sauf `/health` et `/ready`** (publiques, pour les
+> healthchecks Docker). Sans clé valide → `401` (comparaison à temps constant). En
+> production, `WA_ADMIN_KEY` (ou `WA_ADMIN_KEY_FILE`) est **obligatoire** : vide → refus
+> de démarrage. Implémentation : `lib/admin_auth.js`.
+>
+> **(Re)scanner le QR d'appairage** — `/qr` et `/qr-page` sont désormais protégées :
+> 1. **Recommandé, depuis les logs** : le QR scannable est imprimé à l'appairage
+>    (`qrcode.generate`, cf. `app-baileys.js`) → `docker logs -f wourri_whatsapp_prod`
+>    (ou `dokploy logs`), puis scanner directement dans le terminal.
+> 2. **Via HTTP authentifié** (tunnel SSH) :
+>    `curl -H "X-WA-Admin-Key: $WA_ADMIN_KEY" http://localhost:3001/qr`.
+>    Un navigateur seul ne peut pas ajouter l'en-tête → passer par les logs ou `curl`.
+
 ---
 
 ## Comment ça fonctionne
@@ -126,6 +140,8 @@ L'utilisateur peut envoyer ces messages pour ajuster ses préférences :
 | `WOURI_API_URL` | `http://localhost:8000` | non | URL de l'API backend Wourri |
 | `WOURI_API_KEY` | (vide) | **oui en prod**¹ | Clé partagée backend (`X-API-Key`) — fallback si `WOURI_API_KEY_FILE` absent/illisible |
 | `WOURI_API_KEY_FILE` | (vide) | non | #257 : chemin d'un fichier secret contenant la clé (**prioritaire** sur `WOURI_API_KEY` ; en prod compose : `/run/secrets/wouri_api_key`) |
+| `WA_ADMIN_KEY` | (vide) | **oui en prod** | L1 #408 : clé d'auth **entrante** (admin) protégeant les routes statut/admin sauf `/health`+`/ready` (header `X-WA-Admin-Key`). Distincte de `WOURI_API_KEY`. Vide en prod → refus de démarrage |
+| `WA_ADMIN_KEY_FILE` | (vide) | non | L1 #408 : fichier secret pour `WA_ADMIN_KEY` (**prioritaire** ; en prod compose : `/run/secrets/wa_admin_key`) |
 | `NODE_ENV` | `development` | non | `production` active warnings sécurité + force JSON logs |
 | `LOG_LEVEL` | `info` | non | Niveau pino : `trace`/`debug`/`info`/`warn`/`error`/`fatal`/`silent` |
 
@@ -177,7 +193,10 @@ Vérifier les logs pour le code de déconnexion :
 
 ### Session expirée (~2 semaines inactivité)
 
-Re-scanner via `http://localhost:3001/qr-page`.
+Re-scanner le QR (routes `/qr` / `/qr-page` protégées par `X-WA-Admin-Key` depuis #408) :
+- **le plus simple** — le QR est ré-imprimé dans les logs à l'appairage :
+  `docker logs -f wourri_whatsapp_prod` (ou `dokploy logs`), puis scanner directement ;
+- ou via HTTP authentifié : `curl -H "X-WA-Admin-Key: $WA_ADMIN_KEY" http://localhost:3001/qr`.
 
 ### `WOURI_API_KEY non definie en production` / clé vide
 
