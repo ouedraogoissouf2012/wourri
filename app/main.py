@@ -311,13 +311,22 @@ app.add_middleware(ApiKeyExemptRateLimitMiddleware)
 from app.middleware.request_id import RequestIdMiddleware
 app.add_middleware(RequestIdMiddleware)
 
-# CORS — permissif uniquement en dev (test interface locale showcase.html)
-# En production, restreindre via une allow-list explicite (ADR-0011 futur).
+# CORS — dev : permissif ("*") pour l'interface locale showcase.html.
+# Prod (L4 #411, ADR-0030) : allow-list explicite depuis ALLOWED_ORIGINS, jamais "*".
+# Prod sans ALLOWED_ORIGINS => aucun middleware CORS (refus cross-origin par défaut, sûr).
 if not settings.is_production:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+elif settings.cors_allowed_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_allowed_origins,
+        allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
