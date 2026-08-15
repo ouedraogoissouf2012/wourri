@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     tts_french_voice: str = "fr-FR-VivienneMultilingualNeural"
     audio_output_dir: str = "static/audio"
 
+    # Origines CORS autorisées en production (CSV) — lu depuis ALLOWED_ORIGINS.
+    # Vide => aucune origine cross-origin acceptée (refus par défaut, sûr). L4 #411.
+    allowed_origins: str = ""
+
     # Hugging Face (local, pas de clé requise)
     hf_tts_model: str = "facebook/mms-tts-bam"
     hf_translator_model: str = "facebook/nllb-200-distilled-600M"
@@ -250,6 +254,11 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.env.lower() == "production"
+
+    @property
+    def cors_allowed_origins(self) -> list[str]:
+        """Origines CORS autorisées (parse ALLOWED_ORIGINS en liste, CSV)."""
+        return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
 
     class Config:
         env_file = ".env"
