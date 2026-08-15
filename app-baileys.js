@@ -48,6 +48,7 @@ const { logger } = require('./lib/logger');
 const { readSecret } = require('./lib/secrets');
 // L1 (#408) — auth entrante admin (middleware + garde-fou demarrage)
 const { createAdminAuthMiddleware, adminKeyStartupError } = require('./lib/admin_auth');
+const { createAlertsDispatcher } = require('./lib/alerts_dispatcher');
 
 // Configuration
 const PORT = process.env.PORT || 3001;
@@ -56,6 +57,12 @@ const WOURI_API_URL = process.env.WOURI_API_URL || 'http://localhost:8000';
 const WOURI_API_KEY = readSecret('WOURI_API_KEY', { logger });
 // Cle d'auth entrante admin (L1 #408) — meme pattern *_FILE que WOURI_API_KEY.
 const WA_ADMIN_KEY = readSecret('WA_ADMIN_KEY', { logger });
+// L2 #409 — Convex pull alertes (secrets *_FILE prioritaires)
+const CONVEX_URL = (process.env.CONVEX_URL || '').replace(/\/$/, '');
+const CONVEX_DISPATCH_KEY = readSecret('CONVEX_DISPATCH_KEY', { logger });
+const CONVEX_CALLBACK_KEY = readSecret('CONVEX_CALLBACK_KEY', { logger });
+const WOURI_CONTACTREF_HMAC_SECRET = readSecret('WOURI_CONTACTREF_HMAC_SECRET', { logger });
+const ALERTS_POLL_MS = Number.parseInt(process.env.ALERTS_POLL_MS || '90000', 10);
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
 const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
 const AUDIO_CACHE_FOLDER = path.join(__dirname, 'audio_cache');
@@ -228,6 +235,20 @@ const { createMessageHandler } = require('./lib/message_handler');
 function randomDelay(min, max) {
     return new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1)) + min));
 }
+
+// L2 #409 — dispatcher pull alertes Convex (tick no-op si non configuré)
+const alertsDispatcher = createAlertsDispatcher({
+    getSock: () => sock,
+    userPrefs,
+    axios,
+    convexUrl: CONVEX_URL,
+    dispatchKey: CONVEX_DISPATCH_KEY,
+    callbackKey: CONVEX_CALLBACK_KEY,
+    hmacSecret: WOURI_CONTACTREF_HMAC_SECRET,
+    randomDelay,
+    logger,
+});
+alertsDispatcher.logStartup(ALERTS_POLL_MS);
 
 // Modularisation — sous-système audio d'excuse (textes EXCUSE_MSG + génération
 // TTS best-effort + cache disque). Extrait vers lib/excuse_audio.js.
@@ -412,6 +433,11 @@ async function connectWhatsApp() {
 
             // Rejouer les messages en attente (queue Phase 2, fix #299)
             await replayPendingMessages();
+
+            // L2 #409 — tirer les alertes en attente dès la reconnexion
+            alertsDispatcher.tick().catch((err) => {
+                logger.warn({ err: err.message }, '[ALERTS] tick reconnect échoué');
+            });
         }
     });
 
@@ -446,6 +472,12 @@ async function connectWhatsApp() {
         CircuitOpenError,
     });
     sock.ev.on('messages.upsert', messageHandler);
+    // L2 #409 — statuts d'envoi (sent fiable ; delivered/read best-effort)
+    sock.ev.on('messages.update', (updates) => {
+        alertsDispatcher.onMessageUpdate(updates).catch((err) => {
+            logger.warn({ err: err.message }, '[ALERTS] messages.update ignoré');
+        });
+    });
 }
 
 // ========================================
@@ -526,6 +558,14 @@ app.listen(PORT, () => {
     logger.info('========================================\n');
 
     connectWhatsApp();
+
+    if (Number.isFinite(ALERTS_POLL_MS) && ALERTS_POLL_MS > 0) {
+        setInterval(() => {
+            alertsDispatcher.tick().catch((err) => {
+                logger.warn({ err: err.message }, '[ALERTS] tick périodique échoué');
+            });
+        }, ALERTS_POLL_MS);
+    }
 
     // Log periodique des messages anciens ignores (downtime serveur).
     // Voir lib/skip_old_messages.js. Intervalle 5min pour eviter le spam.

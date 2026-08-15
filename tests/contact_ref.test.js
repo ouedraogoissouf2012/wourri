@@ -17,7 +17,7 @@
 
 const { test, describe } = require("node:test");
 const assert = require("node:assert");
-const { computeContactRef, normalizeNumber } = require("../lib/contact_ref");
+const { computeContactRef, normalizeNumber, resolveJid } = require("../lib/contact_ref");
 
 const SECRET = "s3cr3t-test-vector";
 const JID = "2250701020304@s.whatsapp.net";
@@ -57,5 +57,23 @@ describe("contact_ref — computeContactRef", () => {
     });
     test("JID vide → exception", () => {
         assert.throws(() => computeContactRef("", SECRET), /vide|invalide/i);
+    });
+});
+
+describe("contact_ref — resolveJid", () => {
+    const other = "2250102030405@s.whatsapp.net";
+    const jids = [other, JID, "2250999888777@s.whatsapp.net"];
+
+    test("retrouve le JID dont le HMAC correspond", () => {
+        assert.strictEqual(resolveJid(EXPECTED, jids, SECRET), JID);
+    });
+    test("contactRef inconnu → null", () => {
+        assert.strictEqual(resolveJid("ab".repeat(32), jids, SECRET), null);
+    });
+    test("secret manquant → null (fail-closed, pas de throw)", () => {
+        assert.strictEqual(resolveJid(EXPECTED, jids, ""), null);
+    });
+    test("liste vide → null", () => {
+        assert.strictEqual(resolveJid(EXPECTED, [], SECRET), null);
     });
 });
