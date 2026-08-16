@@ -321,9 +321,12 @@ class TestASRChainLMFilter:
     def identity_normalizer(self, monkeypatch):
         """Neutralise la normalisation post-ASR pour isoler la logique LM : le
         texte scoré par le filtre est exactement celui produit par le provider."""
+        import app.services.asr.normalizer as nrm
         from app.services import asr_normalizer
 
-        monkeypatch.setattr(asr_normalizer, "normalize_asr_output", lambda t: t)
+        identity = lambda t: t
+        monkeypatch.setattr(nrm, "normalize_asr_output", identity)
+        monkeypatch.setattr(asr_normalizer, "normalize_asr_output", identity)
 
     @staticmethod
     def _patch_lm(monkeypatch, reject_texts=(), medium_texts=()):
@@ -423,11 +426,12 @@ class TestASRChainLMFilter:
         normalisation"), pas le texte brut du provider. On N'utilise PAS
         identity_normalizer : un vrai normaliseur mute le texte, et on inspecte
         ce que le LM a réellement scoré."""
+        import app.services.asr.normalizer as nrm
         from app.services import asr_normalizer
 
-        monkeypatch.setattr(
-            asr_normalizer, "normalize_asr_output", lambda t: t.replace("kabaa", "kaba"),
-        )
+        mute = lambda t: t.replace("kabaa", "kaba")
+        monkeypatch.setattr(nrm, "normalize_asr_output", mute)
+        monkeypatch.setattr(asr_normalizer, "normalize_asr_output", mute)
         p1 = MockASRProvider("P1", result="kabaa foo barbaz")  # brut (faute)
         fake = self._patch_lm(monkeypatch, reject_texts=set())  # tout HIGH
 
