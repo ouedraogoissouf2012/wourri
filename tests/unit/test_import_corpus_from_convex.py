@@ -14,6 +14,8 @@ from scripts.import_corpus_from_convex import (  # noqa: E402
     should_import,
     plan_fusion,
     fetch_corpus_export,
+    is_publishable,
+    filter_publishable,
 )
 
 
@@ -94,3 +96,48 @@ def test_fetch_export_none_on_non_200_autonomy():
 def test_fetch_export_none_on_exception_autonomy():
     client = _FakeClient(raise_exc=RuntimeError("network down"))
     assert fetch_corpus_export("https://convex.site", "ck", client=client) is None
+
+
+# --- ADR-0031 / #430 : Or+ seulement, bam non revalidé exclu ---------------
+
+def test_publishable_missing_status_keeps_current_export():
+    """Export actuel (197 fiches) n'a pas de status → Production implicite."""
+    assert is_publishable({"id": "a", "reponse_bambara": "x"}) is True
+
+
+def test_publishable_rejects_bronze_and_silver():
+    assert is_publishable({"id": "a", "status": "bronze"}) is False
+    assert is_publishable({"id": "a", "status": "Bronze"}) is False
+    assert is_publishable({"id": "a", "status": "argent"}) is False
+    assert is_publishable({"id": "a", "status": "silver"}) is False
+
+
+def test_publishable_accepts_gold_and_production():
+    assert is_publishable({"id": "a", "status": "or"}) is True
+    assert is_publishable({"id": "a", "status": "gold"}) is True
+    assert is_publishable({"id": "a", "status": "production"}) is True
+
+
+def test_publishable_rejects_bam_without_dyu_revalidation():
+    assert is_publishable({"id": "a", "status": "production", "source_lang": "bam"}) is False
+    assert is_publishable({"id": "a", "source_lang": "bambara"}) is False
+
+
+def test_publishable_accepts_bam_revalidated_as_dyu():
+    assert is_publishable({
+        "id": "a",
+        "status": "or",
+        "source_lang": "bam",
+        "validated_as": "dyu",
+    }) is True
+
+
+def test_filter_publishable_drops_bronze_keeps_gold():
+    entries = [
+        {"id": "bronze", "status": "bronze"},
+        {"id": "or", "status": "or"},
+        {"id": "legacy"},
+    ]
+    kept, skipped = filter_publishable(entries)
+    assert [e["id"] for e in kept] == ["or", "legacy"]
+    assert [e["id"] for e in skipped] == ["bronze"]
