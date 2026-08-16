@@ -105,6 +105,7 @@ export const listFeedback = query({
         v.literal("rejected"),
       ),
     ),
+    language: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -112,7 +113,8 @@ export const listFeedback = query({
       permission: CAPABILITIES.linguisticValidate,
     });
     const limit = Math.min(args.limit ?? 50, 200);
-    return ctx.db
+    const language = args.language ?? "dyu";
+    const rows = await ctx.db
       .query("linguisticFeedback")
       .withIndex("by_organizationId_and_status", (q) =>
         args.status
@@ -120,6 +122,7 @@ export const listFeedback = query({
           : q.eq("organizationId", auth.organizationId),
       )
       .order("desc")
-      .take(limit);
+      .take(limit * 3);
+    return rows.filter((row) => row.language === language).slice(0, limit);
   },
 });
