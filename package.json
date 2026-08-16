@@ -1,0 +1,36 @@
+{
+  "name": "@wouri/convex-backend",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "type": "module",
+  "scripts": {
+    "convex:check": "convex dev --once",
+    "convex:codegen": "convex codegen",
+    "convex:dev": "convex dev",
+    "convex:deploy:staging": "convex deploy",
+    "test:convex": "vitest run --config vitest.config.ts",
+    "convex:test:permissions": "vitest run --config vitest.config.ts convex/tenancy convex/authz",
+    "convex:test:alerts": "vitest run --config vitest.config.ts convex/alerts",
+    "convex:test:knowledge": "vitest run --config vitest.config.ts convex/knowledge convex/rag convex/weather",
+    "typecheck": "tsc --noEmit -p convex/tsconfig.json"
+  },
+  "dependencies": {
+    "@ai-sdk/provider": "3.0.3",
+    "@ai-sdk/provider-utils": "4.0.6",
+    "@convex-dev/agent": "0.6.4",
+    "@convex-dev/better-auth": "^0.12.5",
+    "@convex-dev/rag": "0.7.5",
+    "ai": "6.0.35",
+    "better-auth": "^1.6.26",
+    "convex": "^1.43.0",
+    "convex-helpers": "0.1.122"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
+    "@types/node": "^26.2.0",
+    "convex-test": "^0.0.55",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

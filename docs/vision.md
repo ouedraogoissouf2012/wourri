@@ -1,6 +1,6 @@
 # Vision produit — Wourri
 
-**Dernière révision** : 2026-04-21 (rédaction initiale, validée par Ruben)
+**Dernière révision** : 2026-08-11 (ADR-0024, transition Convex multi-tenant)
 
 Ce document fige la vision long-terme du projet. Il est la **source de vérité
 stratégique** pour toute décision d'architecture, ADR, ou plan d'implémentation.
@@ -54,8 +54,10 @@ rurales, connectivité instable.
 - SMS pour notifications climatologiques push
 
 **Règle d'architecture** : toute décision technique doit permettre d'ajouter
-l'IVR téléphonique et le Web sans réécriture du cœur. L'API FastAPI doit rester
-le point d'entrée unique, les canaux sont des façades.
+l'IVR téléphonique et le Web sans réécriture du cœur. Convex est le plan de
+données et d'autorisation des nouveaux domaines métier multi-tenant. FastAPI
+reste le plan de calcul pour l'ASR, le TTS, le NLU, les appels LLM et l'audio.
+Les canaux sont des façades et ne contournent jamais les permissions métier.
 
 ---
 
@@ -154,7 +156,10 @@ production-ready (qualité non sacrifiée, métriques WER/BLEU validées).
 
 ### Services cloud envisagés
 
-- **Base de données** : Neon, Supabase, Railway (EU) ou PostgreSQL self-hosted
+- **Données métier** : Convex, sous réserve de validation de la résidence, de
+  la rétention et de l'effacement avant toute donnée personnelle de production
+- **Corpus IVR existant** : PostgreSQL + pgvector pendant la transition, avec
+  une migration décidée et vérifiée séparément
 - **Stockage fichiers** (audios, modèles) : S3-compatible (MinIO self-hosted,
   Cloudflare R2, Scaleway Object Storage Paris)
 - **Compute** : VPS Hetzner (FSN/HEL), Scaleway (Paris), ou OVH (Gravelines)
