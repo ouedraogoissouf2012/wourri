@@ -13,6 +13,9 @@ Prévu au boot du conteneur + cron horaire. Trois garanties (brief Marcel) :
   recalcule `document_text` via `import_corpus_ivr._build_document_text` (fonction
   canonique) avec les tags/phrases LOCAUX — cohérence exacte avec l'index. Les
   entrées locales absentes de l'export sont conservées (jamais supprimées), loggées.
+- **ADR-0031** : n'écrit dans pgvector que les fiches **Or / Production**.
+  Bronze / Argent et `source_lang=bam` non revalidé `dyu` sont ignorés
+  (`corpus_service` inchangé : ce qui n'est pas importé n'est pas servi).
 
 Usage : voir `import_corpus_ivr.py`, plus CONVEX_BASE_URL + X_CORPUS_KEY (env).
 """
@@ -64,6 +67,41 @@ def plan_fusion(convex_entries, local_ids):
     to_update = [e for e in convex_entries if e.get("id") in local_ids]
     to_insert = [e for e in convex_entries if e.get("id") not in local_ids]
     return to_update, to_insert
+
+
+_PUBLISHABLE_STATUSES = frozenset({"or", "gold", "production"})
+_BLOCKED_STATUSES = frozenset({"bronze", "argent", "silver"})
+_BAM_SOURCES = frozenset({"bam", "bambara"})
+_DYU_TARGETS = frozenset({"dyu", "dioula"})
+
+
+def is_publishable(entry) -> bool:
+    """True si la fiche peut entrer dans pgvector (ADR-0031).
+
+    - status absent : Production implicite (export Convex actuel, 197 fiches).
+    - bronze / argent / silver : jamais.
+    - source_lang bam/bambara : jamais, sauf revalidation explicite `validated_as=dyu`.
+    """
+    if not isinstance(entry, dict):
+        return False
+    status = str(entry.get("status") or "").strip().lower()
+    if status in _BLOCKED_STATUSES:
+        return False
+    if status and status not in _PUBLISHABLE_STATUSES:
+        return False
+    source = str(entry.get("source_lang") or "").strip().lower()
+    if source in _BAM_SOURCES:
+        validated = str(entry.get("validated_as") or "").strip().lower()
+        return validated in _DYU_TARGETS
+    return True
+
+
+def filter_publishable(entries):
+    """Sépare (servables, ignorées) sans muter l'entrée."""
+    kept, skipped = [], []
+    for entry in entries or []:
+        (kept if is_publishable(entry) else skipped).append(entry)
+    return kept, skipped
 
 
 # --- Accès Convex (autonome : ne lève jamais) ------------------------------
@@ -304,7 +342,13 @@ def main() -> int:
         return 0  # autonomie : corpus local conservé
 
     fetched_revision = str(export.get("revision") or "")
-    entries = export.get("entries") or []
+    raw_entries = export.get("entries") or []
+    entries, skipped = filter_publishable(raw_entries)
+    if skipped:
+        logger.info(
+            "ADR-0031 : %d fiche(s) non Or+ / bam non revalidé — non importées",
+            len(skipped),
+        )
     if not fetched_revision or not entries:
         logger.warning(
             "Export Convex sans révision/entrées — corpus local conservé (exit 0)."
