@@ -38,6 +38,7 @@ import type * as knowledge_ingest from "../knowledge/ingest.js";
 import type * as knowledge_model from "../knowledge/model.js";
 import type * as knowledge_mutations from "../knowledge/mutations.js";
 import type * as knowledge_queries from "../knowledge/queries.js";
+import type * as language_engineIngest from "../language/engineIngest.js";
 import type * as language_feedback from "../language/feedback.js";
 import type * as language_promote from "../language/promote.js";
 import type * as lib_actor from "../lib/actor.js";
@@ -112,6 +113,7 @@ declare const fullApi: ApiFromModules<{
   "knowledge/model": typeof knowledge_model;
   "knowledge/mutations": typeof knowledge_mutations;
   "knowledge/queries": typeof knowledge_queries;
+  "language/engineIngest": typeof language_engineIngest;
   "language/feedback": typeof language_feedback;
   "language/promote": typeof language_promote;
   "lib/actor": typeof lib_actor;
