@@ -329,6 +329,8 @@ from app.routers import health_memory
 app.include_router(health_memory.router)
 app.include_router(weather.router)
 app.include_router(chat.router)
+from app.routers import demo
+app.include_router(demo.router)
 app.include_router(tts.router)
 app.include_router(stt.router)
 app.include_router(rag.router)
