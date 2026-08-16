@@ -3,7 +3,11 @@ from __future__ import annotations
 
 import json
 
-from app.services.improvement_queue import enqueue_improvement_task
+from app.services.improvement_queue import (
+    decide_task,
+    enqueue_improvement_task,
+    list_tasks,
+)
 
 
 def test_enqueue_writes_bronze_without_phone(tmp_path):
@@ -22,6 +26,23 @@ def test_enqueue_writes_bronze_without_phone(tmp_path):
     assert line["intent"] == "CONSEIL_PRODUCTION"
     assert "225" not in json.dumps(line)
     assert "@s.whatsapp" not in json.dumps(line)
+
+
+def test_list_and_decide_keeps_out_of_corpus(tmp_path):
+    path = tmp_path / "tasks.jsonl"
+    first = enqueue_improvement_task(
+        intent="A", source="s", cultures=[], excerpt="malo", user_anon="usr_1", path=path,
+    )
+    enqueue_improvement_task(
+        intent="B", source="s", cultures=[], excerpt="tiga", user_anon="usr_2", path=path,
+    )
+    bronze = list_tasks(path=path)
+    assert len(bronze) == 2
+    assert all(t["language"] == "dyu" for t in bronze)
+    tid = first["task"]["id"]
+    assert decide_task(tid, "admin_accepted", path=path)["ok"] is True
+    assert len(list_tasks(path=path)) == 1
+    assert decide_task(tid, "nope", path=path)["ok"] is False
 
 
 def test_enqueue_io_failure_does_not_raise(tmp_path):

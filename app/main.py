@@ -329,6 +329,8 @@ app.include_router(asr.router)
 app.include_router(feedback.router)
 # Router admin opérateur (Phase D : /admin/corpus-divergence-report)
 app.include_router(admin.router)
+from app.routers import lqe
+app.include_router(lqe.router)
 
 
 @app.get("/", response_class=HTMLResponse)

@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -30,8 +31,10 @@ def enqueue_improvement_task(
 ) -> dict:
     """Ajoute une tâche Bronze. Ne lève jamais (WhatsApp / feedback restent OK)."""
     task = {
+        "id": uuid.uuid4().hex,
         "ts": datetime.now(timezone.utc).isoformat(),
         "status": "bronze",
+        "language": "dyu",
         "intent": intent or "",
         "source": source or "unknown",
         "cultures": cultures or [],
@@ -52,3 +55,68 @@ def enqueue_improvement_task(
     except OSError as exc:
         logger.warning("[LQE] file indisponible (%s) — signal conservé ailleurs", exc)
         return {"ok": False, "reason": "io"}
+
+
+def list_tasks(*, status: str | None = "bronze", language: str = "dyu", path=None) -> list[dict]:
+    """Lit la file. Défaut : Bronze dyu (pilote ADR-0031)."""
+    target = Path(path) if path else DEFAULT_TASKS_PATH
+    if not target.is_file():
+        return []
+    out = []
+    try:
+        for line in target.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if status and row.get("status") != status:
+                continue
+            lang = row.get("language") or "dyu"
+            if language and lang != language:
+                continue
+            if not row.get("id"):
+                row["id"] = row.get("ts") or ""
+            out.append(row)
+    except OSError as exc:
+        logger.warning("[LQE] lecture file échouée (%s)", exc)
+    return out
+
+
+def decide_task(task_id: str, decision: str, *, path=None) -> dict:
+    """admin_accepted | admin_rejected. N'écrit pas dans pgvector."""
+    if decision not in {"admin_accepted", "admin_rejected"}:
+        return {"ok": False, "reason": "bad_decision"}
+    target = Path(path) if path else DEFAULT_TASKS_PATH
+    if not target.is_file():
+        return {"ok": False, "reason": "missing"}
+    try:
+        lines = target.read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        logger.warning("[LQE] lecture file échouée (%s)", exc)
+        return {"ok": False, "reason": "io"}
+    found = False
+    rewritten = []
+    for line in lines:
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            rewritten.append(line)
+            continue
+        rid = row.get("id") or row.get("ts") or ""
+        if rid == task_id:
+            row["status"] = decision
+            found = True
+        rewritten.append(json.dumps(row, ensure_ascii=False))
+    if not found:
+        return {"ok": False, "reason": "not_found"}
+    try:
+        target.write_text("\n".join(rewritten) + "\n", encoding="utf-8")
+    except OSError as exc:
+        logger.warning("[LQE] écriture file échouée (%s)", exc)
+        return {"ok": False, "reason": "io"}
+    return {"ok": True, "id": task_id, "status": decision}
