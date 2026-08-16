@@ -66,9 +66,9 @@ def count_conversions(monkeypatch, tmp_path):
 @pytest.mark.asyncio
 async def test_single_provider_converts_once(count_conversions, monkeypatch):
     """Un provider seul → 1 conversion."""
-    monkeypatch.setattr(
-        "app.services.asr_normalizer.normalize_asr_output", lambda x: x
-    )
+    import app.services.asr.normalizer as nrm
+
+    monkeypatch.setattr(nrm, "normalize_asr_output", lambda x: x)
     p = CountingWavProvider("P1", result="malo sɛnɛ wagati")  # agricole
     chain = ASRChain(providers=[p])
 
@@ -83,9 +83,9 @@ async def test_single_provider_converts_once(count_conversions, monkeypatch):
 async def test_cascade_three_providers_converts_once(count_conversions, monkeypatch):
     """3 providers, les 2 premiers renvoient None → toujours 1 seule conversion
     (avant #301 : 3 conversions)."""
-    monkeypatch.setattr(
-        "app.services.asr_normalizer.normalize_asr_output", lambda x: x
-    )
+    import app.services.asr.normalizer as nrm
+
+    monkeypatch.setattr(nrm, "normalize_asr_output", lambda x: x)
     p1 = CountingWavProvider("P1", result=None)
     p2 = CountingWavProvider("P2", result=None)
     p3 = CountingWavProvider("P3", result="kaba sɛnɛ")  # agricole
@@ -105,9 +105,9 @@ async def test_cascade_three_providers_converts_once(count_conversions, monkeypa
 async def test_agri_fallback_reuses_same_wav(count_conversions, monkeypatch):
     """Provider non-agricole + agri_fallback (différent) → 1 seule conversion,
     le fallback réutilise le WAV déjà converti (avant #301 : 2 conversions)."""
-    monkeypatch.setattr(
-        "app.services.asr_normalizer.normalize_asr_output", lambda x: x
-    )
+    import app.services.asr.normalizer as nrm
+
+    monkeypatch.setattr(nrm, "normalize_asr_output", lambda x: x)
     primary = CountingWavProvider("Primary", result="an ni wula min ye taa")  # pas agri, ≥3 mots
     fallback = CountingWavProvider("Fallback", result="an ni wula min ye taa")
     chain = ASRChain(providers=[primary], agri_fallback=fallback)
