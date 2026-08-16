@@ -45,14 +45,17 @@ _PAGE = """<!DOCTYPE html>
     async function api(path, opt) {
       const headers = Object.assign({"X-API-Key": keyInput.value}, (opt && opt.headers) || {});
       const r = await fetch(path, Object.assign({}, opt, {headers}));
-      if (r.status === 401) throw new Error("Clé refusée");
-      return r.json();
+      const data = await r.json().catch(() => ({}));
+      if (r.status === 401 || r.status === 403) throw new Error("Clé refusée — utilise API_SECRET_KEY de wouri-api");
+      if (!r.ok) throw new Error(data.detail || ("Erreur " + r.status));
+      return data;
     }
     async function refresh() {
       list.textContent = "Chargement…";
       const data = await api("/admin/lqe/tasks");
-      if (!data.tasks.length) { list.textContent = "Aucune tâche Bronze dyu."; return; }
-      list.innerHTML = data.tasks.map(t => `
+      const tasks = data.tasks || [];
+      if (!tasks.length) { list.textContent = "Aucune tâche Bronze dyu."; return; }
+      list.innerHTML = tasks.map(t => `
         <article class="card" data-id="${t.id}">
           <div><strong>${t.intent || "—"}</strong> · ${t.source || ""}</div>
           <p class="excerpt">${(t.excerpt || "").replace(/</g, "")}</p>
