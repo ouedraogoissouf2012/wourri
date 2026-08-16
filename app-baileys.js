@@ -49,6 +49,7 @@ const { readSecret } = require('./lib/secrets');
 // L1 (#408) — auth entrante admin (middleware + garde-fou demarrage)
 const { createAdminAuthMiddleware, adminKeyStartupError } = require('./lib/admin_auth');
 const { createAlertsDispatcher } = require('./lib/alerts_dispatcher');
+const { createFarmerRegister } = require('./lib/farmer_register');
 
 // Configuration
 const PORT = process.env.PORT || 3001;
@@ -58,10 +59,11 @@ const WOURI_API_KEY = readSecret('WOURI_API_KEY', { logger });
 // Cle d'auth entrante admin (L1 #408) — meme pattern *_FILE que WOURI_API_KEY.
 const WA_ADMIN_KEY = readSecret('WA_ADMIN_KEY', { logger });
 // L2 #409 — Convex pull alertes (secrets *_FILE prioritaires)
-const CONVEX_URL = (process.env.CONVEX_URL || '').replace(/\/$/, '');
-const CONVEX_DISPATCH_KEY = readSecret('CONVEX_DISPATCH_KEY', { logger });
-const CONVEX_CALLBACK_KEY = readSecret('CONVEX_CALLBACK_KEY', { logger });
+const CONVEX_URL = (process.env.CONVEX_URL || process.env.CONVEX_BASE_URL || '').replace(/\/$/, '');
+const CONVEX_DISPATCH_KEY = readSecret('CONVEX_DISPATCH_KEY', { logger }) || readSecret('X_DISPATCH_KEY', { logger });
+const CONVEX_CALLBACK_KEY = readSecret('CONVEX_CALLBACK_KEY', { logger }) || readSecret('X_CALLBACK_KEY', { logger });
 const WOURI_CONTACTREF_HMAC_SECRET = readSecret('WOURI_CONTACTREF_HMAC_SECRET', { logger });
+const WOURI_ORGANIZATION_ID = process.env.WOURI_ORGANIZATION_ID || '';
 const ALERTS_POLL_MS = Number.parseInt(process.env.ALERTS_POLL_MS || '90000', 10);
 const AUTH_FOLDER = path.join(__dirname, 'auth_baileys');
 const TEMP_AUDIO_FOLDER = path.join(__dirname, 'temp_audio');
@@ -249,6 +251,16 @@ const alertsDispatcher = createAlertsDispatcher({
     logger,
 });
 alertsDispatcher.logStartup(ALERTS_POLL_MS);
+
+const farmerRegister = createFarmerRegister({
+    axios,
+    convexUrl: CONVEX_URL,
+    callbackKey: CONVEX_CALLBACK_KEY,
+    organizationId: WOURI_ORGANIZATION_ID,
+    hmacSecret: WOURI_CONTACTREF_HMAC_SECRET,
+    logger,
+    storePath: process.env.FARMER_REGISTERED_FILE || path.join(__dirname, 'farmer_registered.json'),
+});
 
 // Modularisation — sous-système audio d'excuse (textes EXCUSE_MSG + génération
 // TTS best-effort + cache disque). Extrait vers lib/excuse_audio.js.
@@ -472,8 +484,9 @@ async function connectWhatsApp() {
         CircuitOpenError,
         convexUrl: CONVEX_URL,
         callbackKey: CONVEX_CALLBACK_KEY,
-        organizationId: process.env.WOURI_ORGANIZATION_ID || '',
+        organizationId: WOURI_ORGANIZATION_ID,
         hmacSecret: WOURI_CONTACTREF_HMAC_SECRET,
+        farmerRegister,
     });
     sock.ev.on('messages.upsert', messageHandler);
     // L2 #409 — statuts d'envoi (sent fiable ; delivered/read best-effort)
