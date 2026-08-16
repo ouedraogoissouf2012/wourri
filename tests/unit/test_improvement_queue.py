@@ -40,8 +40,9 @@ def test_list_and_decide_keeps_out_of_corpus(tmp_path):
     assert len(bronze) == 2
     assert all(t["language"] == "dyu" for t in bronze)
     tid = first["task"]["id"]
-    assert decide_task(tid, "admin_accepted", path=path)["ok"] is True
-    assert len(list_tasks(path=path)) == 1
+    assert decide_task(tid, "speaker_accepted", path=path)["ok"] is True
+    assert len(list_tasks(status="bronze", path=path)) == 1
+    assert len(list_tasks(status="speaker_accepted", path=path)) == 1
     assert decide_task(tid, "nope", path=path)["ok"] is False
 
 

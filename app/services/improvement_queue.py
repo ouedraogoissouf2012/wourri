@@ -86,8 +86,14 @@ def list_tasks(*, status: str | None = "bronze", language: str = "dyu", path=Non
 
 
 def decide_task(task_id: str, decision: str, *, path=None) -> dict:
-    """admin_accepted | admin_rejected. N'écrit pas dans pgvector."""
-    if decision not in {"admin_accepted", "admin_rejected"}:
+    """speaker_* ou admin_*. N'écrit jamais dans pgvector."""
+    allowed = {
+        "admin_accepted",
+        "admin_rejected",
+        "speaker_accepted",
+        "speaker_rejected",
+    }
+    if decision not in allowed:
         return {"ok": False, "reason": "bad_decision"}
     target = Path(path) if path else DEFAULT_TASKS_PATH
     if not target.is_file():

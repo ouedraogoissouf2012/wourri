@@ -49,7 +49,11 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
     trustedOrigins: [configuredOrigin()],
     database: authComponent.adapter(ctx),
     emailAndPassword: {
-      enabled: configuredOrigin() === localOrigin,
+      // Local toujours ON. Hors local : AUTH_EMAIL_PASSWORD_ENABLED=true
+      // (dette #372 / console locuteur #433). Jamais d'autre provider inventé ici.
+      enabled:
+        configuredOrigin() === localOrigin ||
+        runtimeEnvironment.process?.env?.AUTH_EMAIL_PASSWORD_ENABLED === "true",
       minPasswordLength: 12,
       requireEmailVerification: false,
     },
