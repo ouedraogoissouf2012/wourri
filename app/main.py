@@ -242,6 +242,9 @@ async def lifespan(app: FastAPI):
 # Créer l'application FastAPI
 from app.security import limiter
 
+# ADR-0032 : pas de /docs ni /openapi si prod OU si le moteur est destiné
+# à un hostname public (ALLOWED_ORIGINS posé pour la Console Vercel).
+_public_surface = settings.is_production or bool(settings.cors_allowed_origins)
 app = FastAPI(
     title="WOURI API",
     description="""
@@ -264,7 +267,10 @@ app = FastAPI(
     * Hugging Face (TTS + Traduction Bambara)
     """,
     version=settings.app_version,
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url=None if _public_surface else "/docs",
+    redoc_url=None if _public_surface else "/redoc",
+    openapi_url=None if _public_surface else "/openapi.json",
 )
 
 # Rate limiting (issue #307, ADR-0018) : limite GLOBALE unique pilotée par
@@ -292,8 +298,9 @@ from app.middleware.request_id import RequestIdMiddleware
 app.add_middleware(RequestIdMiddleware)
 
 # CORS — dev : permissif ("*") pour l'interface locale showcase.html.
-# Prod (L4 #411, ADR-0030) : allow-list explicite depuis ALLOWED_ORIGINS, jamais "*".
+# Prod / démo publique (ADR-0032) : allow-list explicite ALLOWED_ORIGINS, jamais "*".
 # Prod sans ALLOWED_ORIGINS => aucun middleware CORS (refus cross-origin par défaut, sûr).
+# Dokploy : ALLOWED_ORIGINS=https://<console>.vercel.app (CSV si plusieurs).
 if not settings.is_production:
     app.add_middleware(
         CORSMiddleware,
