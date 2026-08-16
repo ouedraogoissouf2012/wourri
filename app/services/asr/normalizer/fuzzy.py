@@ -68,6 +68,49 @@ def _phonological_variant_in_vocab(word_lower: str) -> Optional[str]:
     return None
 
 
+def _is_nasalization_only(word_lower: str, candidate: str) -> bool:
+    """Vrai si `word_lower` et `candidate` ne diffèrent que par un 'n' final.
+
+    Le 'n' final signale la nasalisation en bambara (ajout/suppression toléré) —
+    sources : An Ka Taa, Vydrin 2020. Sert à ne PAS rejeter un match fuzzy dont
+    la seule "consonne changée" est cette nasalisation.
+    """
+    return (
+        abs(len(word_lower) - len(candidate)) == 1
+        and (word_lower.endswith("n") or candidate.endswith("n"))
+        and (word_lower.rstrip("n") == candidate or candidate.rstrip("n") == word_lower
+             or word_lower[:-1] == candidate or candidate[:-1] == word_lower)
+    )
+
+
+def _best_fuzzy_match(word_lower: str, max_dist: int) -> tuple[Optional[str], int, int]:
+    """Meilleur candidat du vocabulaire NLU à distance de Levenshtein <= max_dist.
+
+    Départage : distance croissante, puis nombre de consonnes changées croissant
+    (les confusions voyelles sont plus probables en bambara : e/ɛ, o/ɔ, i/o).
+    Retourne (match|None, distance, consonnes_changées).
+    """
+    from rapidfuzz.distance import Levenshtein
+
+    best_match: Optional[str] = None
+    best_distance = max_dist + 1
+    best_consonant_changes = 999
+
+    for candidate in _NLU_VOCAB_LIST:
+        if abs(len(candidate) - len(word_lower)) > max_dist:
+            continue
+
+        dist = Levenshtein.distance(word_lower, candidate, score_cutoff=max_dist)
+        if dist <= max_dist:
+            cons = _consonant_changes(word_lower, candidate)
+            if (dist < best_distance) or (dist == best_distance and cons < best_consonant_changes):
+                best_distance = dist
+                best_consonant_changes = cons
+                best_match = candidate
+
+    return best_match, best_distance, best_consonant_changes
+
+
 def _fuzzy_correct_word(word: str) -> str:
     """Corrige un mot par fuzzy matching contre le vocabulaire NLU.
 
@@ -93,33 +136,10 @@ def _fuzzy_correct_word(word: str) -> str:
         return phon_match
 
     try:
-        from rapidfuzz.distance import Levenshtein
-
-        best_match: Optional[str] = None
-        best_distance = max_dist + 1
-        best_consonant_changes = 999
-
-        for candidate in _NLU_VOCAB_LIST:
-            if abs(len(candidate) - len(word_lower)) > max_dist:
-                continue
-
-            dist = Levenshtein.distance(word_lower, candidate, score_cutoff=max_dist)
-            if dist <= max_dist:
-                cons = _consonant_changes(word_lower, candidate)
-                if (dist < best_distance) or (dist == best_distance and cons < best_consonant_changes):
-                    best_distance = dist
-                    best_consonant_changes = cons
-                    best_match = candidate
+        best_match, best_distance, best_consonant_changes = _best_fuzzy_match(word_lower, max_dist)
 
         if best_match:
-            is_nasal_only = (
-                abs(len(word_lower) - len(best_match)) == 1
-                and (word_lower.endswith("n") or best_match.endswith("n"))
-                and (word_lower.rstrip("n") == best_match or best_match.rstrip("n") == word_lower
-                     or word_lower[:-1] == best_match or best_match[:-1] == word_lower)
-            )
-
-            if best_consonant_changes > 0 and not is_nasal_only:
+            if best_consonant_changes > 0 and not _is_nasalization_only(word_lower, best_match):
                 logger.debug(
                     "[ASR-NORM] Fuzzy rejeté: '%s' → '%s' (consonnes changées=%d)",
                     word, best_match, best_consonant_changes,

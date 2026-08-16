@@ -93,38 +93,18 @@ def _has_culture_word(text: str) -> bool:
     return False
 
 
-def _try_culture_reconstruction(text: str) -> str:
-    """Étape 4 : détection contextuelle de cultures par fusion de fragments.
+def _find_best_culture_fragment(words: list[str]) -> tuple[Optional[str], int, int, int]:
+    """Cherche la meilleure fusion de fenêtre (1, 2 ou 3 mots adjacents) qui
+    matche un nom de culture par Levenshtein (tolérance min(3, len//2)).
 
-    NeMo Soloni fragmente les mots qu'il ne connaît pas en petits mots
-    bambara valides. Exemples réels :
-        kakawo → ka ka aw / ka ka o / ka o / ka aw
-        kafe   → ka fɛ / ka fe
-        mangoro → mangogo
-
-    Cette étape :
-    1. Vérifie qu'un verbe agricole est présent (sɛnɛ, tigɛ, etc.)
-    2. Vérifie qu'aucune culture n'est déjà reconnue
-    3. Fusionne des fenêtres de 1, 2, 3 mots adjacents
-    4. Compare chaque fusion aux noms de cultures par Levenshtein
-    5. Remplace si match trouvé (tolérance : distance ≤ min(3, len//2))
+    Ignore les fenêtres contenant un verbe agricole ou un mot _NEVER_FUSE, et
+    les fusions < 4 caractères. Retourne (culture|None, start, end, distance).
+    Retourne (None, -1, -1, 999) si rapidfuzz est indisponible.
     """
-    if not _CULTURE_VOCAB:
-        return text
-
-    words = text.lower().split()
-
-    has_agri_verb = any(w in _AGRI_VERBS for w in words)
-    if not has_agri_verb:
-        return text
-
-    if _has_culture_word(text):
-        return text
-
     try:
         from rapidfuzz.distance import Levenshtein
     except ImportError:
-        return text
+        return None, -1, -1, 999
 
     best_match: Optional[str] = None
     best_distance = 999
@@ -159,6 +139,39 @@ def _try_culture_reconstruction(text: str) -> str:
                     best_match = culture_correct
                     best_start = i
                     best_end = i + window_size
+
+    return best_match, best_start, best_end, best_distance
+
+
+def _try_culture_reconstruction(text: str) -> str:
+    """Étape 4 : détection contextuelle de cultures par fusion de fragments.
+
+    NeMo Soloni fragmente les mots qu'il ne connaît pas en petits mots
+    bambara valides. Exemples réels :
+        kakawo → ka ka aw / ka ka o / ka o / ka aw
+        kafe   → ka fɛ / ka fe
+        mangoro → mangogo
+
+    Cette étape :
+    1. Vérifie qu'un verbe agricole est présent (sɛnɛ, tigɛ, etc.)
+    2. Vérifie qu'aucune culture n'est déjà reconnue
+    3. Fusionne des fenêtres de 1, 2, 3 mots adjacents
+    4. Compare chaque fusion aux noms de cultures par Levenshtein
+    5. Remplace si match trouvé (tolérance : distance ≤ min(3, len//2))
+    """
+    if not _CULTURE_VOCAB:
+        return text
+
+    words = text.lower().split()
+
+    has_agri_verb = any(w in _AGRI_VERBS for w in words)
+    if not has_agri_verb:
+        return text
+
+    if _has_culture_word(text):
+        return text
+
+    best_match, best_start, best_end, best_distance = _find_best_culture_fragment(words)
 
     if best_match and best_start >= 0:
         original_words = text.split()
