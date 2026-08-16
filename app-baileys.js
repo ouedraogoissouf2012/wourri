@@ -62,6 +62,7 @@ const WA_ADMIN_KEY = readSecret('WA_ADMIN_KEY', { logger });
 const CONVEX_URL = (process.env.CONVEX_URL || process.env.CONVEX_BASE_URL || '').replace(/\/$/, '');
 const CONVEX_DISPATCH_KEY = readSecret('CONVEX_DISPATCH_KEY', { logger }) || readSecret('X_DISPATCH_KEY', { logger });
 const CONVEX_CALLBACK_KEY = readSecret('CONVEX_CALLBACK_KEY', { logger }) || readSecret('X_CALLBACK_KEY', { logger });
+const CONVEX_INGEST_KEY = readSecret('CONVEX_INGEST_KEY', { logger }) || readSecret('X_INGEST_KEY', { logger });
 const WOURI_CONTACTREF_HMAC_SECRET = readSecret('WOURI_CONTACTREF_HMAC_SECRET', { logger });
 const WOURI_ORGANIZATION_ID = process.env.WOURI_ORGANIZATION_ID || '';
 const ALERTS_POLL_MS = Number.parseInt(process.env.ALERTS_POLL_MS || '90000', 10);
@@ -487,6 +488,7 @@ async function connectWhatsApp() {
         organizationId: WOURI_ORGANIZATION_ID,
         hmacSecret: WOURI_CONTACTREF_HMAC_SECRET,
         farmerRegister,
+        ingestKey: CONVEX_INGEST_KEY,
     });
     sock.ev.on('messages.upsert', messageHandler);
     // L2 #409 — statuts d'envoi (sent fiable ; delivered/read best-effort)
