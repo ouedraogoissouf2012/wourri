@@ -208,4 +208,16 @@ async def feedback_negatif(req: FeedbackRequest):
         f"[C5] Réponse rejetée: id={corpus_entry_id} intent={req.intent} "
         f"cultures={req.cultures} source={req.source}"
     )
+
+    # ADR-0031 / #431 : 👎 → tâche Bronze (file équivalente). Jamais de corpus.
+    from app.services.improvement_queue import enqueue_improvement_task
+
+    enqueue_improvement_task(
+        intent=req.intent,
+        source=req.source,
+        cultures=req.cultures,
+        excerpt=req.reponse_bambara,
+        user_anon=anonymize_user_id(req.user_id),
+    )
+
     return {"status": "ok", "action": "logged", "message": "Feedback enregistré pour amélioration"}

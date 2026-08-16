@@ -40,7 +40,11 @@ def redirect_files(tmp_path, monkeypatch):
     # ADR-0025 : le log général est mensuel (feedback-YYYY-MM.jsonl) dans LOG_DIR
     monkeypatch.setattr(fb, "LOG_DIR", str(tmp_path))
     monkeypatch.setattr(fb, "FEEDBACK_NEGATIF_LOG", str(neg))
-    return SimpleNamespace(candidates=cand, log_dir=tmp_path, negatif=neg)
+    tasks = tmp_path / "improvement_tasks.jsonl"
+    monkeypatch.setattr(
+        "app.services.improvement_queue.DEFAULT_TASKS_PATH", tasks
+    )
+    return SimpleNamespace(candidates=cand, log_dir=tmp_path, negatif=neg, tasks=tasks)
 
 
 def _req(**kw):
@@ -149,3 +153,17 @@ def test_negatif_never_creates_candidate(redirect_files):
     resp = _run_negatif(_req(source="deepseek_open"))
     assert resp["action"] == "logged"
     assert not redirect_files.candidates.exists()
+
+
+def test_negatif_creates_bronze_task_not_corpus(redirect_files, monkeypatch):
+    monkeypatch.setattr(
+        "app.services.corpus_service.ajouter_reponse_validee",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("corpus")),
+        raising=False,
+    )
+    _run_negatif(_req(source="ivr_exact"))
+    assert redirect_files.tasks.exists()
+    task = json.loads(redirect_files.tasks.read_text(encoding="utf-8").strip())
+    assert task["status"] == "bronze"
+    assert task["intent"] == "CONSEIL_PRODUCTION"
+    assert not task["user"].startswith("221")
