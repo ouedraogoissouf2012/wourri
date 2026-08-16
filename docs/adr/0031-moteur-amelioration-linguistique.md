@@ -1,9 +1,9 @@
 # ADR-0031 — Moteur d'amélioration linguistique (statuts, rôles, publication)
 
-**Statut** : proposé
+**Statut** : accepté
 **Date** : 2026-08-16
 **Auteur(s)** : Claude (sous direction Issouf)
-**Valideur** : Issouf (ouedraogoissouf2012) — en attente d'acceptation (#429)
+**Valideur** : Issouf (ouedraogoissouf2012) — accepté 2026-08-16 (« fait » après merge #434)
 
 ---
 
@@ -87,7 +87,7 @@ Réponses (session 2026-08-16) :
 
 ## Décision
 
-**Option retenue (sous réserve d'acceptation Issouf)** : **A**.
+**Option retenue** : **A**.
 
 ### Statuts
 
@@ -153,3 +153,4 @@ FastAPI pour les locuteurs.
 ## Historique
 
 - 2026-08-16 — rédaction initiale, statut **proposé**, Option A recommandée.
+- 2026-08-16 — **accepté** (Issouf, session après merge PR #434).
