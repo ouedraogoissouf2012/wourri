@@ -338,6 +338,8 @@ app.include_router(feedback.router)
 app.include_router(admin.router)
 from app.routers import lqe
 app.include_router(lqe.router)
+from app.routers import speaker
+app.include_router(speaker.router)
 
 
 @app.get("/", response_class=HTMLResponse)

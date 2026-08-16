@@ -89,7 +89,10 @@ def lqe_page():
 
 @router.get("/tasks", dependencies=[Depends(require_api_key)])
 def lqe_tasks():
-    return {"language": "dyu", "tasks": list_tasks(status="bronze", language="dyu")}
+    # Sas admin : Bronze (pas encore vu) + validés locuteur
+    bronze = list_tasks(status="bronze", language="dyu")
+    spoken = list_tasks(status="speaker_accepted", language="dyu")
+    return {"language": "dyu", "tasks": bronze + spoken}
 
 
 @router.post("/decision", dependencies=[Depends(require_api_key)])

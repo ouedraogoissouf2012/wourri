@@ -219,5 +219,17 @@ async def feedback_negatif(req: FeedbackRequest):
         excerpt=req.reponse_bambara,
         user_anon=anonymize_user_id(req.user_id),
     )
+    # Miroir Convex pour la console locuteur (échoue silencieusement).
+    try:
+        from app.services.lqe_convex_push import push_bronze_task
+
+        push_bronze_task(
+            intent=req.intent,
+            source=req.source,
+            cultures=req.cultures,
+            excerpt=req.reponse_bambara,
+        )
+    except Exception:
+        pass
 
     return {"status": "ok", "action": "logged", "message": "Feedback enregistré pour amélioration"}
