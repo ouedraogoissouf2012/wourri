@@ -28,19 +28,25 @@ def enqueue_improvement_task(
     excerpt: str | None,
     user_anon: str | None,
     path: str | os.PathLike | None = None,
+    language: str = "dyu",
+    extra: dict | None = None,
 ) -> dict:
     """Ajoute une tâche Bronze. Ne lève jamais (WhatsApp / feedback restent OK)."""
     task = {
         "id": uuid.uuid4().hex,
         "ts": datetime.now(timezone.utc).isoformat(),
         "status": "bronze",
-        "language": "dyu",
+        "language": (language or "dyu").strip().lower(),
         "intent": intent or "",
         "source": source or "unknown",
         "cultures": cultures or [],
         "excerpt": (excerpt or "")[:200],
         "user": user_anon or "",
     }
+    if extra:
+        for k, v in extra.items():
+            if v is not None and k not in task:
+                task[k] = v
     dumped = json.dumps(task, ensure_ascii=False)
     if "user_id" in dumped or "@s.whatsapp" in dumped:
         logger.error("[LQE] tâche refusée : PII détectée")
