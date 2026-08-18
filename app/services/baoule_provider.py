@@ -127,39 +127,68 @@ _HEADER_ALIASES = {
         "text_local",
         "local",
         "baoule",
-        "baoulé",
+        "baoule",
         "bci",
         "phrase_baoule",
         "phrase_locale",
+        "texte_baoule",
+        "texte_local",
+        "source",
+        "original",
+        "texte",
+        "phrase",
+        "a_traduire",
+        "atraduire",
     },
     "text_fr": {
         "text_fr",
         "fr",
         "francais",
-        "français",
         "french",
         "phrase_fr",
         "traduction",
+        "texte_fr",
+        "texte_francais",
+        "target",
+        "cible",
+        "translation",
     },
-    "id": {"id", "identifiant", "ref"},
+    "id": {"id", "identifiant", "ref", "n", "no", "numero"},
     "intent": {"intent", "intention"},
     "cultures": {"cultures", "culture"},
-    "region": {"region", "région"},
+    "region": {"region"},
     "notes": {"notes", "note", "commentaire"},
     "language": {"language", "langue", "lang"},
 }
 
 
+def _fold(s: str) -> str:
+    """Minuscule + sans accents + espaces → _ pour matcher les en-têtes Excel."""
+    import unicodedata
+
+    t = unicodedata.normalize("NFD", str(s or ""))
+    t = "".join(c for c in t if unicodedata.category(c) != "Mn")
+    t = t.strip().lower().replace(" ", "_").replace("-", "_")
+    while "__" in t:
+        t = t.replace("__", "_")
+    return t
+
+
 def _norm_header(h: str) -> str | None:
-    key = str(h or "").strip().lower()
+    key = _fold(h)
     for canon, aliases in _HEADER_ALIASES.items():
-        if key in aliases:
+        folded_aliases = {_fold(a) for a in aliases}
+        if key in folded_aliases or key == canon:
             return canon
     return None
 
 
 def _rows_from_table(headers: list[str], rows: list[list[Any]]) -> list[dict]:
     mapped = [_norm_header(h) for h in headers]
+    if "text_local" not in mapped and "text_fr" not in mapped:
+        # 2 colonnes sans en-tête reconnu → col0=local, col1=fr
+        if len(headers) >= 2 and not any(mapped):
+            mapped = ["text_local", "text_fr"] + [None] * max(0, len(headers) - 2)
     out: list[dict] = []
     for row in rows:
         item: dict[str, Any] = {}
@@ -176,27 +205,49 @@ def _rows_from_table(headers: list[str], rows: list[list[Any]]) -> list[dict]:
                 item[canon] = [c.strip() for c in s.replace(";", ",").split(",") if c.strip()]
             else:
                 item[canon] = s
-        if item:
+        if item.get("text_local") or item.get("text_fr"):
             out.append(item)
     return out
+
+
+def _decode_text(data: bytes) -> str:
+    """UTF-8 puis Windows Excel (cp1252) puis latin-1."""
+    for enc in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
+        try:
+            return data.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return data.decode("utf-8", errors="replace")
 
 
 def parse_csv_bytes(data: bytes) -> list[dict]:
     import csv
     import io
 
-    text = data.decode("utf-8-sig")
-    sample = text[:2048]
+    text = _decode_text(data)
+    sample = text[:4096]
     try:
         dialect = csv.Sniffer().sniff(sample, delimiters=",;\t")
     except csv.Error:
-        dialect = csv.excel
+        dialect = csv.get_dialect("excel")
+        # Excel FR exporte souvent en ;
+        if sample.count(";") >= sample.count(","):
+            class _Semi(csv.excel):
+                delimiter = ";"
+            dialect = _Semi
     reader = csv.reader(io.StringIO(text), dialect)
     rows = list(reader)
     if not rows:
-        return []
+        raise ValueError("CSV vide")
     headers, body = rows[0], rows[1:]
-    return _rows_from_table(headers, body)
+    result = _rows_from_table(headers, body)
+    if not result:
+        raise ValueError(
+            "Aucune ligne lue. En-têtes trouvés: "
+            + ", ".join(repr(h) for h in headers[:12])
+            + " — utilise text_local (ou baoule) et text_fr (ou francais)."
+        )
+    return result
 
 
 def parse_xlsx_bytes(data: bytes) -> list[dict]:
@@ -206,30 +257,46 @@ def parse_xlsx_bytes(data: bytes) -> list[dict]:
         from openpyxl import load_workbook
     except ImportError as exc:
         raise RuntimeError(
-            "openpyxl non installé — ajoute openpyxl au requirements"
+            "openpyxl non installé sur le serveur — Redeploy l'image API"
         ) from exc
     wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
-    ws = wb.active
-    rows_iter = ws.iter_rows(values_only=True)
-    try:
-        headers = [str(c) if c is not None else "" for c in next(rows_iter)]
-    except StopIteration:
-        return []
-    body = [list(r) for r in rows_iter]
-    return _rows_from_table(headers, body)
+    last_headers: list[str] = []
+    for ws in wb.worksheets:
+        rows_iter = ws.iter_rows(values_only=True)
+        try:
+            headers = [str(c) if c is not None else "" for c in next(rows_iter)]
+        except StopIteration:
+            continue
+        last_headers = headers
+        body = [list(r) for r in rows_iter]
+        result = _rows_from_table(headers, body)
+        if result:
+            return result
+    raise ValueError(
+        "Excel: aucune ligne valide. En-têtes: "
+        + ", ".join(repr(h) for h in last_headers[:12])
+        + " — colonnes requises: text_local (baoule) + text_fr (francais)."
+    )
 
 
 def parse_upload(filename: str, data: bytes) -> Any:
     """JSON / CSV / XLSX → liste d'objets pour validate_baoule_entries."""
-    name = (filename or "").lower()
+    name = (filename or "").lower().strip()
     if name.endswith(".json"):
         return parse_json_bytes(data)
-    if name.endswith(".csv"):
+    if name.endswith(".csv") or name.endswith(".txt"):
         return parse_csv_bytes(data)
     if name.endswith(".xlsx") or name.endswith(".xlsm"):
         return parse_xlsx_bytes(data)
-    # tentative contenu
-    head = data[:1]
-    if head == b"[" or head == b"{":
+    # signature xlsx = ZIP PK
+    if len(data) >= 2 and data[0:2] == b"PK":
+        return parse_xlsx_bytes(data)
+    head = data.lstrip()[:1]
+    if head in (b"[", b"{"):
         return parse_json_bytes(data)
+    # défaut: tenter CSV (Excel FR)
+    try:
+        return parse_csv_bytes(data)
+    except Exception:
+        pass
     raise ValueError("Format non supporté — utilise .json, .csv ou .xlsx")
