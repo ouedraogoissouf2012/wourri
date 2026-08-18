@@ -120,3 +120,116 @@ def ingest_baoule_json(
 def parse_json_bytes(data: bytes) -> Any:
     text = data.decode("utf-8-sig")
     return json.loads(text)
+
+
+_HEADER_ALIASES = {
+    "text_local": {
+        "text_local",
+        "local",
+        "baoule",
+        "baoulé",
+        "bci",
+        "phrase_baoule",
+        "phrase_locale",
+    },
+    "text_fr": {
+        "text_fr",
+        "fr",
+        "francais",
+        "français",
+        "french",
+        "phrase_fr",
+        "traduction",
+    },
+    "id": {"id", "identifiant", "ref"},
+    "intent": {"intent", "intention"},
+    "cultures": {"cultures", "culture"},
+    "region": {"region", "région"},
+    "notes": {"notes", "note", "commentaire"},
+    "language": {"language", "langue", "lang"},
+}
+
+
+def _norm_header(h: str) -> str | None:
+    key = str(h or "").strip().lower()
+    for canon, aliases in _HEADER_ALIASES.items():
+        if key in aliases:
+            return canon
+    return None
+
+
+def _rows_from_table(headers: list[str], rows: list[list[Any]]) -> list[dict]:
+    mapped = [_norm_header(h) for h in headers]
+    out: list[dict] = []
+    for row in rows:
+        item: dict[str, Any] = {}
+        for i, canon in enumerate(mapped):
+            if not canon or i >= len(row):
+                continue
+            val = row[i]
+            if val is None:
+                continue
+            s = str(val).strip()
+            if not s:
+                continue
+            if canon == "cultures":
+                item[canon] = [c.strip() for c in s.replace(";", ",").split(",") if c.strip()]
+            else:
+                item[canon] = s
+        if item:
+            out.append(item)
+    return out
+
+
+def parse_csv_bytes(data: bytes) -> list[dict]:
+    import csv
+    import io
+
+    text = data.decode("utf-8-sig")
+    sample = text[:2048]
+    try:
+        dialect = csv.Sniffer().sniff(sample, delimiters=",;\t")
+    except csv.Error:
+        dialect = csv.excel
+    reader = csv.reader(io.StringIO(text), dialect)
+    rows = list(reader)
+    if not rows:
+        return []
+    headers, body = rows[0], rows[1:]
+    return _rows_from_table(headers, body)
+
+
+def parse_xlsx_bytes(data: bytes) -> list[dict]:
+    import io
+
+    try:
+        from openpyxl import load_workbook
+    except ImportError as exc:
+        raise RuntimeError(
+            "openpyxl non installé — ajoute openpyxl au requirements"
+        ) from exc
+    wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
+    ws = wb.active
+    rows_iter = ws.iter_rows(values_only=True)
+    try:
+        headers = [str(c) if c is not None else "" for c in next(rows_iter)]
+    except StopIteration:
+        return []
+    body = [list(r) for r in rows_iter]
+    return _rows_from_table(headers, body)
+
+
+def parse_upload(filename: str, data: bytes) -> Any:
+    """JSON / CSV / XLSX → liste d'objets pour validate_baoule_entries."""
+    name = (filename or "").lower()
+    if name.endswith(".json"):
+        return parse_json_bytes(data)
+    if name.endswith(".csv"):
+        return parse_csv_bytes(data)
+    if name.endswith(".xlsx") or name.endswith(".xlsm"):
+        return parse_xlsx_bytes(data)
+    # tentative contenu
+    head = data[:1]
+    if head == b"[" or head == b"{":
+        return parse_json_bytes(data)
+    raise ValueError("Format non supporté — utilise .json, .csv ou .xlsx")
