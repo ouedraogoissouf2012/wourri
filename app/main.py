@@ -344,6 +344,8 @@ from app.routers import speaker
 app.include_router(speaker.router)
 from app.routers import provider_baoule
 app.include_router(provider_baoule.router)
+from app.routers import admin_baoule
+app.include_router(admin_baoule.router)
 
 
 @app.get("/", response_class=HTMLResponse)
