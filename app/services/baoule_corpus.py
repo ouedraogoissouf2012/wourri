@@ -14,17 +14,21 @@ from pathlib import Path
 from typing import Any
 
 from app.data.lqe_languages import BAOULE_CODE
-from app.services.improvement_queue import DEFAULT_TASKS_PATH, decide_task, list_tasks
+from app.services.improvement_queue import _tasks_path, decide_task, list_tasks
+from app.services.lqe_paths import baoule_corpus_path
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_CORPUS_PATH = (
-    Path(__file__).resolve().parent.parent.parent / "data" / "baoule_corpus.jsonl"
-)
+# Compat tests (monkeypatch)
+DEFAULT_CORPUS_PATH = None
 
 
 def _corpus_path(path=None) -> Path:
-    return Path(path) if path else DEFAULT_CORPUS_PATH
+    if path is not None:
+        return Path(path)
+    if DEFAULT_CORPUS_PATH is not None:
+        return Path(DEFAULT_CORPUS_PATH)
+    return baoule_corpus_path()
 
 
 def list_corpus(*, path=None) -> list[dict]:
@@ -54,7 +58,7 @@ def promote_task(
 
     Ne touche PAS corpus_entries pgvector (dioula WhatsApp).
     """
-    tpath = Path(tasks_path) if tasks_path else DEFAULT_TASKS_PATH
+    tpath = _tasks_path(tasks_path)
     candidates = list_tasks(status="admin_accepted", language=BAOULE_CODE, path=tpath)
     # aussi permettre promote depuis bronze si déjà accepté côté UI en une étape
     task = next((t for t in candidates if (t.get("id") or "") == task_id), None)
@@ -98,7 +102,6 @@ def promote_task(
     # dédup simple par id
     existing = list_corpus(path=corpus_path)
     if any(e.get("id") == entry["id"] for e in existing):
-        decide_task(task_id, "admin_accepted", path=tpath)  # no-op status
         return {"ok": True, "duplicate": True, "entry": entry}
 
     cpath = _corpus_path(corpus_path)
@@ -110,30 +113,9 @@ def promote_task(
         logger.warning("[BAOULE] corpus write failed: %s", exc)
         return {"ok": False, "reason": "io"}
 
-    # marquer la tâche comme promue
-    _mark_promoted(task_id, path=tpath)
-    logger.info("[BAOULE] promoted id=%s by=%s", entry["id"], promoted_by)
+    decide_task(task_id, "production", path=tpath)
+    logger.info("[BAOULE] promoted id=%s by=%s path=%s", entry["id"], promoted_by, cpath)
     return {"ok": True, "entry": entry}
-
-
-def _mark_promoted(task_id: str, *, path: Path) -> None:
-    if not path.is_file():
-        return
-    lines = path.read_text(encoding="utf-8").splitlines()
-    out = []
-    for line in lines:
-        if not line.strip():
-            continue
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError:
-            out.append(line)
-            continue
-        if (row.get("id") or row.get("ts") or "") == task_id:
-            row["status"] = "production"
-            row["promoted"] = True
-        out.append(json.dumps(row, ensure_ascii=False))
-    path.write_text("\n".join(out) + ("\n" if out else ""), encoding="utf-8")
 
 
 def corpus_stats(*, path=None) -> dict:

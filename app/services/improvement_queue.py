@@ -17,7 +17,23 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_TASKS_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "improvement_tasks.jsonl"
+from app.services.lqe_paths import improvement_tasks_path
+
+# Compat tests : chemin par défaut = volume logs en prod, ./data en local
+def _default_tasks() -> Path:
+    return improvement_tasks_path()
+
+
+# Alias mutable pour monkeypatch tests
+DEFAULT_TASKS_PATH = None  # résolu à l'appel
+
+
+def _tasks_path(path=None) -> Path:
+    if path is not None:
+        return Path(path)
+    if DEFAULT_TASKS_PATH is not None:
+        return Path(DEFAULT_TASKS_PATH)
+    return _default_tasks()
 
 
 def enqueue_improvement_task(
@@ -51,12 +67,17 @@ def enqueue_improvement_task(
     if "user_id" in dumped or "@s.whatsapp" in dumped:
         logger.error("[LQE] tâche refusée : PII détectée")
         return {"ok": False, "reason": "pii"}
-    target = Path(path) if path else DEFAULT_TASKS_PATH
+    target = _tasks_path(path)
     try:
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open("a", encoding="utf-8") as fh:
             fh.write(dumped + "\n")
-        logger.info("[LQE] tâche Bronze intent=%s source=%s", task["intent"], task["source"])
+        logger.info(
+            "[LQE] Bronze lang=%s intent=%s path=%s",
+            task["language"],
+            task["intent"],
+            target,
+        )
         return {"ok": True, "task": task}
     except OSError as exc:
         logger.warning("[LQE] file indisponible (%s) — signal conservé ailleurs", exc)
@@ -65,7 +86,7 @@ def enqueue_improvement_task(
 
 def list_tasks(*, status: str | None = "bronze", language: str = "dyu", path=None) -> list[dict]:
     """Lit la file. Défaut : Bronze dyu (pilote ADR-0031)."""
-    target = Path(path) if path else DEFAULT_TASKS_PATH
+    target = _tasks_path(path)
     if not target.is_file():
         return []
     out = []
@@ -102,9 +123,10 @@ def decide_task(task_id: str, decision: str, *, path=None) -> dict:
     }
     if decision not in allowed:
         return {"ok": False, "reason": "bad_decision"}
-    target = Path(path) if path else DEFAULT_TASKS_PATH
+    target = _tasks_path(path)
     if not target.is_file():
-        return {"ok": False, "reason": "missing"}
+        logger.warning("[LQE] decide missing file id=%s path=%s", task_id, target)
+        return {"ok": False, "reason": "missing", "path": str(target)}
     try:
         lines = target.read_text(encoding="utf-8").splitlines()
     except OSError as exc:

@@ -153,7 +153,13 @@ _PAGE = """<!DOCTYPE html>
       const r = await fetch(path, Object.assign({credentials: "same-origin"}, opt || {}));
       if (r.status === 401) { location.href = "/admin/baoule/"; throw new Error("Session expirée"); }
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.detail || (data.errors && data.errors.join("; ")) || ("Erreur " + r.status));
+      if (!r.ok) {
+        const d = data.detail;
+        const msg = (typeof d === "string" ? d : (d && d.reason) || data.reason)
+          || (data.errors && data.errors.join("; "))
+          || ("Erreur " + r.status);
+        throw new Error(msg);
+      }
       return data;
     }
 
@@ -266,7 +272,11 @@ _PAGE = """<!DOCTYPE html>
           });
         }
         await refresh();
-      } catch (e) { list.textContent = e.message; }
+      } catch (e) {
+        // Ne pas effacer toute la liste
+        alert("Erreur: " + e.message);
+        refresh().catch(() => {});
+      }
     };
     refresh().catch(() => {});
   </script>
@@ -392,5 +402,9 @@ def baoule_api_decision(
 ):
     result = decide_task(body.id, body.decision)
     if not result.get("ok"):
-        raise HTTPException(status_code=400, detail=result.get("reason", "error"))
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("reason", "error")
+            + (f" (path={result.get('path')})" if result.get("path") else ""),
+        )
     return result
