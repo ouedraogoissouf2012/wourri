@@ -20,6 +20,22 @@ def test_parse_csv_headers_fr():
     assert rows[0]["text_fr"] == "Bonjour FR"
 
 
+def test_parse_csv_cp1252_excel_fr():
+    # Excel Windows FR : point-virgule + accents en cp1252
+    raw = "baoulé;français\nPhrase été;Phrase FR\n".encode("cp1252")
+    rows = bp.parse_csv_bytes(raw)
+    assert len(rows) == 1
+    assert "été" in rows[0]["text_local"] or "ete" in rows[0]["text_local"].lower()
+    assert rows[0]["text_fr"] == "Phrase FR"
+
+
+def test_parse_csv_two_columns_no_header_names():
+    raw = "colA,colB\nlocal x,fr x\n".encode("utf-8")
+    rows = bp.parse_csv_bytes(raw)
+    assert rows[0]["text_local"] == "local x"
+    assert rows[0]["text_fr"] == "fr x"
+
+
 def test_parse_xlsx_roundtrip():
     from openpyxl import Workbook
 
