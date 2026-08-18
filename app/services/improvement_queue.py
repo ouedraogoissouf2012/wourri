@@ -98,6 +98,7 @@ def decide_task(task_id: str, decision: str, *, path=None) -> dict:
         "admin_rejected",
         "speaker_accepted",
         "speaker_rejected",
+        "production",
     }
     if decision not in allowed:
         return {"ok": False, "reason": "bad_decision"}

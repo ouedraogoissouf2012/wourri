@@ -19,6 +19,7 @@ from app.services.baoule_auth import (
     sign_session,
     verify_password,
 )
+from app.services.baoule_corpus import corpus_stats, list_corpus, promote_task
 from app.services.baoule_provider import ingest_baoule_json, parse_upload
 from app.services.improvement_queue import decide_task, list_tasks
 
@@ -122,14 +123,31 @@ _PAGE = """<!DOCTYPE html>
     <p id="uploadMsg" class="meta"></p>
   </div>
 
-  <h2>2. File Bronze baoulé</h2>
-  <p><button type="button" id="load">Rafraîchir la file</button></p>
+  <div class="card" style="background:#fff8e6;border-color:#e6c200">
+    <strong>Agriculteurs qui ne lisent pas / ne parlent pas français</strong>
+    <p class="hint" style="margin:0.4rem 0 0">
+      L’écran provider est pour <em>toi</em> (texte). Le produit final devra être
+      <strong>voix d’abord</strong> (comme WhatsApp dioula) : enregistrements baoulé
+      ou TTS baoulé plus tard. Colonne optionnelle <code>audio_url</code> dans le CSV/JSON.
+      Sans audio, la phrase est dans le corpus atelier mais pas prête pour un canal vocal.
+    </p>
+  </div>
+
+  <h2>2. File Bronze / acceptées</h2>
+  <p><button type="button" id="load">Rafraîchir</button>
+     <span id="stats" class="meta"></span></p>
   <div id="list" class="hint">Clique sur Rafraîchir.</div>
+
+  <h2>3. Corpus baoulé (Production atelier)</h2>
+  <p class="hint">Phrases promues par ADC. <strong>Pas</strong> le pgvector dioula WhatsApp.</p>
+  <div id="corpus" class="hint">—</div>
 
   <script>
     const list = document.getElementById("list");
+    const corpusEl = document.getElementById("corpus");
     const uploadMsg = document.getElementById("uploadMsg");
     const jsonArea = document.getElementById("json");
+    const stats = document.getElementById("stats");
 
     async function api(path, opt) {
       const r = await fetch(path, Object.assign({credentials: "same-origin"}, opt || {}));
@@ -143,23 +161,54 @@ _PAGE = """<!DOCTYPE html>
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
 
+    function card(t, mode) {
+      const audio = t.audio_url ? `<p class="meta">Audio : ${esc(t.audio_url)}</p>` : `<p class="meta">⚠ Pas d'audio (voix à ajouter pour non-lecteurs)</p>`;
+      let actions = "";
+      if (mode === "bronze") {
+        actions = `<button data-d="admin_accepted">Accepter</button>
+          <button data-d="admin_rejected">Rejeter</button>`;
+      } else if (mode === "accepted") {
+        actions = `<button data-p="1">Promouvoir au corpus baoulé</button>`;
+      }
+      return `<article class="card" data-id="${esc(t.id)}">
+          <div class="meta"><strong>${esc(t.intent || "—")}</strong> · ${esc(t.source || "")} · ${esc(t.status || "")}</div>
+          <p class="local"><strong>Baoulé :</strong> ${esc(t.text_local || t.excerpt || "")}</p>
+          <p><strong>FR :</strong> ${esc(t.text_fr || "")}</p>
+          ${audio}
+          ${actions}
+        </article>`;
+    }
+
     async function refresh() {
       list.textContent = "Chargement…";
       const data = await api("/admin/baoule/api/tasks");
       document.getElementById("who").textContent = data.user || "—";
-      const tasks = data.tasks || [];
-      if (!tasks.length) {
-        list.innerHTML = "<p class='hint'>Aucune tâche Bronze baoulé.</p>";
-        return;
+      const bronze = data.bronze || [];
+      const accepted = data.accepted || [];
+      stats.textContent = `Bronze: ${bronze.length} · Acceptées: ${accepted.length} · Corpus: ${(data.corpus && data.corpus.count) || 0} (audio: ${(data.corpus && data.corpus.with_audio) || 0})`;
+      let html = "";
+      if (bronze.length) {
+        html += "<h3>Bronze</h3>" + bronze.map(t => card(t, "bronze")).join("");
       }
-      list.innerHTML = tasks.map(t => `
-        <article class="card" data-id="${esc(t.id)}">
-          <div class="meta"><strong>${esc(t.intent || "—")}</strong> · ${esc(t.source || "")} · ${esc(t.status || "")}</div>
-          <p class="local"><strong>Baoulé :</strong> ${esc(t.text_local || t.excerpt || "")}</p>
-          <p><strong>FR :</strong> ${esc(t.text_fr || "")}</p>
-          <button data-d="admin_accepted">Accepter (sas)</button>
-          <button data-d="admin_rejected">Rejeter</button>
-        </article>`).join("");
+      if (accepted.length) {
+        html += "<h3>Acceptées — à promouvoir</h3>" + accepted.map(t => card(t, "accepted")).join("");
+      }
+      if (!html) html = "<p class='hint'>File vide.</p>";
+      list.innerHTML = html;
+
+      const corp = await api("/admin/baoule/api/corpus");
+      const rows = corp.entries || [];
+      if (!rows.length) {
+        corpusEl.innerHTML = "<p class='hint'>Corpus baoulé vide.</p>";
+      } else {
+        corpusEl.innerHTML = rows.slice().reverse().slice(0, 50).map(t => `
+          <article class="card">
+            <div class="meta">production · ${esc(t.promoted_at || "")}</div>
+            <p class="local"><strong>Baoulé :</strong> ${esc(t.text_local || "")}</p>
+            <p><strong>FR :</strong> ${esc(t.text_fr || "")}</p>
+            <p class="meta">${t.audio_url ? "Audio: " + esc(t.audio_url) : "Sans audio"}</p>
+          </article>`).join("");
+      }
     }
 
     document.getElementById("load").onclick = () => refresh().catch(e => { list.textContent = e.message; });
@@ -198,15 +247,24 @@ _PAGE = """<!DOCTYPE html>
       }
     };
     list.onclick = async (ev) => {
-      const btn = ev.target.closest("button[data-d]");
-      if (!btn) return;
-      const id = btn.closest("[data-id]").dataset.id;
+      const btnD = ev.target.closest("button[data-d]");
+      const btnP = ev.target.closest("button[data-p]");
+      if (!btnD && !btnP) return;
+      const id = ev.target.closest("[data-id]").dataset.id;
       try {
-        await api("/admin/baoule/api/decision", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({id, decision: btn.dataset.d}),
-        });
+        if (btnD) {
+          await api("/admin/baoule/api/decision", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({id, decision: btnD.dataset.d}),
+          });
+        } else {
+          await api("/admin/baoule/api/promote", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({id}),
+          });
+        }
         await refresh();
       } catch (e) { list.textContent = e.message; }
     };
@@ -220,6 +278,10 @@ _PAGE = """<!DOCTYPE html>
 class DecisionBody(BaseModel):
     id: str = Field(min_length=1)
     decision: str
+
+
+class PromoteBody(BaseModel):
+    id: str = Field(min_length=1)
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -269,8 +331,32 @@ def baoule_logout():
 @router.get("/api/tasks")
 def baoule_api_tasks(user: str = Depends(require_baoule_session)):
     bronze = list_tasks(status="bronze", language=BAOULE_CODE)
+    accepted = list_tasks(status="admin_accepted", language=BAOULE_CODE)
     spoken = list_tasks(status="speaker_accepted", language=BAOULE_CODE)
-    return {"language": BAOULE_CODE, "user": user, "tasks": bronze + spoken}
+    return {
+        "language": BAOULE_CODE,
+        "user": user,
+        "bronze": bronze,
+        "accepted": accepted + spoken,
+        "tasks": bronze + accepted + spoken,
+        "corpus": corpus_stats(),
+    }
+
+
+@router.get("/api/corpus")
+def baoule_api_corpus(user: str = Depends(require_baoule_session)):
+    return {"language": BAOULE_CODE, "entries": list_corpus(), "stats": corpus_stats()}
+
+
+@router.post("/api/promote")
+def baoule_api_promote(
+    body: PromoteBody,
+    user: str = Depends(require_baoule_session),
+):
+    result = promote_task(body.id, promoted_by=user)
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result.get("reason", "error"))
+    return result
 
 
 @router.post("/api/upload-json")
