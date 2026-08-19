@@ -100,6 +100,7 @@ COPY --chown=wourri:wourri db-init/ ./db-init/
 COPY --chown=wourri:wourri dictionnaires/ ./dictionnaires/
 COPY --chown=wourri:wourri scripts/ ./scripts/
 COPY --chown=wourri:wourri templates/ ./templates/
+COPY --chown=wourri:wourri static/ ./static/
 COPY --chown=wourri:wourri app/ ./app/
 
 # Prépare les dossiers runtime (cache HF, audio output, logs).
