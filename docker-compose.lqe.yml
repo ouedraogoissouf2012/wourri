@@ -1,0 +1,14 @@
+services:
+  lqe:
+    build: ./wouri-lqe
+    ports: ["8080:8080"]
+    environment:
+      LQE_DATA_DIR: /data
+      LQE_SECRET: ${LQE_SECRET:-dev-only-change-me-16}
+      LQE_LANGUAGE_CODES: dyu,bci
+      LQE_CORS_ORIGINS: http://localhost:5173
+      LQE_ACCOUNTS: ${LQE_ACCOUNTS}
+    volumes:
+      - lqe_data:/data
+volumes:
+  lqe_data:
