@@ -32,6 +32,7 @@ du projet. Chaque décision passe par cet index et par le workflow du skill
 | [ADR-0030](0030-plateforme-api-produit-convex.md) | Plateforme API (produit + SaaS multi-tenant) sur socle Convex | **accepté** | 2026-08-15 | Exposer l'API Wourri en produit (`/v1`, clés produit scoppées + quotas) ET le SaaS métier, en réutilisant l'auth/RBAC/scopes/quotas du socle Convex #372 (pas de 2ᵉ couche d'auth). **Option A retenue** ; mise en œuvre en phases (Phase 1 = Convex prod-ready) ; l'exposition démo = 1ʳᵉ tranche minimale. Renuméroté depuis 0026 (collision). |
 | [ADR-0031](0031-moteur-amelioration-linguistique.md) | Moteur d'amélioration linguistique (statuts, rôles, publication) | **accepté** | 2026-08-16 | #429 / epic #428. **Option A** : Convex = atelier (Bronze→Production, 1 locuteur = 1 langue) ; pgvector = runtime Or+ seulement. Auth = #372. Admin = sas avant corpus. Pas de 2ᵉ auth FastAPI. |
 | [ADR-0032](0032-exposition-etroite-moteur-demo.md) | Exposition étroite du moteur pour la démo Console | **accepté** | 2026-08-16 | Amende ADR-0024 : un hostname public limité à `/api/chat`, `/api/tts`, `/health`, `/static`. Pas de `/docs` ni `/admin`. CORS = `ALLOWED_ORIGINS` (Vercel). Domaine = Dokploy. |
+| [ADR-0033](0033-lqe-service-separe.md) | Atelier LQE hors du moteur (FastAPI + Vue) | **accepté** | 2026-08-19 | #451. Option A : wouri-lqe FastAPI + wouri-lqe-web Vue 3/Vite/Tailwind. Comptes par langue. |
 
 ## ADRs à rédiger (roadmap, issus de [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md))
 
@@ -62,3 +63,4 @@ du projet. Chaque décision passe par cet index et par le workflow du skill
 - Par ordre chronologique : lire dans l'ordre numérique
 - Par thème : voir les mentions dans [PLAN_ACTION_2026-04.md](../PLAN_ACTION_2026-04.md)
 - Par mot-clé : `grep -r "mot" docs/adr/`
+
