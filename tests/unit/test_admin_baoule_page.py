@@ -1,4 +1,4 @@
-"""Page admin Baoulé — login + HTML FR."""
+"""Page admin Baoulé — login Jinja + config."""
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -27,3 +27,16 @@ def test_page_login_form_when_configured(monkeypatch):
     assert r.status_code == 200
     assert "Provider Baoulé" in r.text
     assert "Mot de passe" in r.text
+    assert 'href="/static/admin/baoule.css"' in r.text
+
+
+def test_lqe_uses_template():
+    from app.routers import lqe
+
+    app = FastAPI()
+    app.include_router(lqe.router)
+    client = TestClient(app)
+    r = client.get("/admin/lqe/")
+    assert r.status_code == 200
+    assert "dioula" in r.text.lower()
+    assert 'href="/static/admin/lqe.css"' in r.text

@@ -1,0 +1,72 @@
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 52rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: #1a1a1a;
+}
+.login-body { max-width: 28rem; margin: 3rem auto; }
+.login-card label { display: block; margin-top: 0.75rem; }
+.login-card input {
+  width: 100%;
+  padding: 0.5rem;
+  margin: 0.35rem 0 0.8rem;
+  box-sizing: border-box;
+}
+h1 { font-size: 1.25rem; }
+h2 { font-size: 1.05rem; margin-top: 1rem; }
+.hint { color: #444; font-size: 0.9rem; }
+.card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0.75rem 0;
+  background: #fafafa;
+}
+.card.note { background: #fff8e6; border-color: #e6c200; }
+.local { font-size: 1.05rem; margin: 0.4rem 0; }
+button { margin-right: 0.5rem; padding: 0.4rem 0.75rem; cursor: pointer; }
+#uploadbox {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px dashed #aaa;
+  border-radius: 8px;
+}
+textarea {
+  width: 100%;
+  min-height: 7rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+}
+.ok { color: #1b6b2a; }
+.err { color: #9b2c2c; }
+.meta { font-size: 0.85rem; color: #555; }
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.tabs { display: flex; gap: 0.35rem; margin: 1rem 0; flex-wrap: wrap; }
+.tabs button {
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 6px 6px 0 0;
+}
+.tabs button.active {
+  background: #0f3d24;
+  color: #fff;
+  border-color: #0f3d24;
+}
+.panel { display: none; }
+.panel.active { display: block; }
+#toast {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid #e6c200;
+  background: #fff3cd;
+}
