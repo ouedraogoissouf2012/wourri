@@ -1,30 +1,28 @@
-"""Corpus Baoulé atelier (Production LQE) — séparé du pgvector dioula.
-
-Promotion manuelle ADC uniquement. Pas de WhatsApp tant que le canal bci
-n'existe pas. Audio : référence optionnelle (fichier / URL) — pas de TTS baoulé inventé.
-"""
+"""Corpus Baoulé atelier (Production LQE) — séparé du pgvector dioula."""
 from __future__ import annotations
 
 import json
 import logging
-import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from app.data.lqe_languages import BAOULE_CODE
-from app.services.improvement_queue import DEFAULT_TASKS_PATH, decide_task, list_tasks
+from app.services.improvement_queue import _tasks_path, decide_task, list_tasks
+from app.services.lqe_paths import baoule_corpus_path
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_CORPUS_PATH = (
-    Path(__file__).resolve().parent.parent.parent / "data" / "baoule_corpus.jsonl"
-)
+DEFAULT_CORPUS_PATH = None  # monkeypatch tests
 
 
 def _corpus_path(path=None) -> Path:
-    return Path(path) if path else DEFAULT_CORPUS_PATH
+    if path is not None:
+        return Path(path)
+    if DEFAULT_CORPUS_PATH is not None:
+        return Path(DEFAULT_CORPUS_PATH)
+    return baoule_corpus_path()
 
 
 def list_corpus(*, path=None) -> list[dict]:
@@ -50,28 +48,20 @@ def promote_task(
     tasks_path=None,
     corpus_path=None,
 ) -> dict[str, Any]:
-    """admin_accepted (ou bronze déjà validé) → corpus baoulé Production.
-
-    Ne touche PAS corpus_entries pgvector (dioula WhatsApp).
-    """
-    tpath = Path(tasks_path) if tasks_path else DEFAULT_TASKS_PATH
+    tpath = _tasks_path(tasks_path)
     candidates = list_tasks(status="admin_accepted", language=BAOULE_CODE, path=tpath)
-    # aussi permettre promote depuis bronze si déjà accepté côté UI en une étape
     task = next((t for t in candidates if (t.get("id") or "") == task_id), None)
     if not task:
-        # chercher dans toute la file bci
-        all_bci = []
-        if tpath.is_file():
-            for line in tpath.read_text(encoding="utf-8").splitlines():
-                try:
-                    row = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if (row.get("language") or "") == BAOULE_CODE and (
-                    row.get("id") or ""
-                ) == task_id:
-                    all_bci.append(row)
-        task = all_bci[0] if all_bci else None
+        from app.services.improvement_queue import list_all_tasks
+
+        task = next(
+            (
+                t
+                for t in list_all_tasks(language=BAOULE_CODE, path=tpath)
+                if (t.get("id") or "") == task_id
+            ),
+            None,
+        )
     if not task:
         return {"ok": False, "reason": "not_found"}
     if task.get("status") not in {"admin_accepted", "speaker_accepted"}:
@@ -95,10 +85,8 @@ def promote_task(
     if not entry["text_local"]:
         return {"ok": False, "reason": "empty_text_local"}
 
-    # dédup simple par id
     existing = list_corpus(path=corpus_path)
     if any(e.get("id") == entry["id"] for e in existing):
-        decide_task(task_id, "admin_accepted", path=tpath)  # no-op status
         return {"ok": True, "duplicate": True, "entry": entry}
 
     cpath = _corpus_path(corpus_path)
@@ -110,30 +98,9 @@ def promote_task(
         logger.warning("[BAOULE] corpus write failed: %s", exc)
         return {"ok": False, "reason": "io"}
 
-    # marquer la tâche comme promue
-    _mark_promoted(task_id, path=tpath)
-    logger.info("[BAOULE] promoted id=%s by=%s", entry["id"], promoted_by)
+    decide_task(task_id, "production", path=tpath)
+    logger.info("[BAOULE] promoted id=%s by=%s path=%s", entry["id"], promoted_by, cpath)
     return {"ok": True, "entry": entry}
-
-
-def _mark_promoted(task_id: str, *, path: Path) -> None:
-    if not path.is_file():
-        return
-    lines = path.read_text(encoding="utf-8").splitlines()
-    out = []
-    for line in lines:
-        if not line.strip():
-            continue
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError:
-            out.append(line)
-            continue
-        if (row.get("id") or row.get("ts") or "") == task_id:
-            row["status"] = "production"
-            row["promoted"] = True
-        out.append(json.dumps(row, ensure_ascii=False))
-    path.write_text("\n".join(out) + ("\n" if out else ""), encoding="utf-8")
 
 
 def corpus_stats(*, path=None) -> dict:

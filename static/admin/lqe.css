@@ -1,0 +1,19 @@
+body {
+  font-family: sans-serif;
+  max-width: 52rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: #1a1a1a;
+}
+h1 { font-size: 1.25rem; }
+.hint { color: #444; font-size: 0.9rem; }
+.card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0.75rem 0;
+}
+.excerpt { font-size: 1.05rem; margin: 0.5rem 0; }
+button { margin-right: 0.5rem; padding: 0.35rem 0.7rem; }
+#keybox { margin: 1rem 0; }
+input[type="password"] { width: 16rem; max-width: 100%; }

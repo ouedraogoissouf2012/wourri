@@ -83,9 +83,9 @@ def ingest_baoule_json(
         return {"ok": False, "accepted": 0, "rejected": 0, "errors": errors, "tasks": []}
 
     tasks = []
+    skipped_dup = 0
     for ent in entries:
         excerpt = ent["text_local"]
-        # enqueue dyu-oriented helper : on passe language via champs étendus
         result = enqueue_improvement_task(
             intent=ent.get("intent"),
             source="provider_upload",
@@ -94,6 +94,7 @@ def ingest_baoule_json(
             user_anon=provider_id,
             path=path,
             language=BAOULE_CODE,
+            skip_if_duplicate=True,
             extra={
                 "text_fr": ent["text_fr"],
                 "text_local": ent["text_local"],
@@ -102,14 +103,18 @@ def ingest_baoule_json(
                 "notes": ent.get("notes"),
             },
         )
+        if result.get("duplicate"):
+            skipped_dup += 1
+            continue
         if result.get("ok"):
             tasks.append(result.get("task"))
         else:
             errors.append(f"écriture refusée: {result.get('reason')}")
 
     return {
-        "ok": len(tasks) > 0,
+        "ok": len(tasks) > 0 or skipped_dup > 0,
         "accepted": len(tasks),
+        "duplicates_skipped": skipped_dup,
         "rejected": len(errors),
         "errors": errors,
         "language": BAOULE_CODE,

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>WOURI — Provider Baoulé</title>
+  <link rel="stylesheet" href="/static/admin/baoule.css"/>
+  <script src="/static/admin/baoule.js" defer></script>
+</head>
+<body>
+  <div class="top">
+    <h1>Provider Baoulé (<code>bci</code>)</h1>
+    <p class="meta">Connecté : <strong id="who"></strong> · <a href="/admin/baoule/logout">Déconnexion</a></p>
+  </div>
+  <p class="hint">
+    Upload <strong>JSON, CSV ou Excel (.xlsx)</strong> → <strong>Bronze</strong>.
+    Doublons (même texte ou id) <strong>ignorés</strong>.
+    Données persistées. Ne publie pas le dioula WhatsApp.
+  </p>
+  <div id="toast" hidden></div>
+
+  <nav class="tabs" aria-label="Sections Baoulé">
+    <button type="button" class="tab active" data-tab="upload">1. Ajouter</button>
+    <button type="button" class="tab" data-tab="bronze">2. À accepter <span id="nBronze"></span></button>
+    <button type="button" class="tab" data-tab="accepted">3. À promouvoir <span id="nAccepted"></span></button>
+    <button type="button" class="tab" data-tab="corpus">4. Corpus baoulé <span id="nCorpus"></span></button>
+  </nav>
+
+  <section id="panel-upload" class="panel active">
+    <h2>Ajouter des phrases</h2>
+    <div id="uploadbox">
+      <p class="hint">
+        Colonnes : <code>text_local</code> (ou baoule) + <code>text_fr</code> (ou francais).
+        Optionnel : id, intent, cultures, region, notes, audio_url.
+      </p>
+      <p>
+        <label>Fichier
+          <input id="file" type="file" accept=".json,.csv,.xlsx,application/json,text/csv"/>
+        </label>
+        <button type="button" id="sendFile">Envoyer le fichier</button>
+      </p>
+      <p class="hint">Ou coller du JSON :</p>
+      <textarea id="json" spellcheck="false">[
+  {
+    "id": "bci_001",
+    "language": "bci",
+    "text_local": "(phrase baoulé)",
+    "text_fr": "(français)",
+    "intent": "CONSEIL_PRODUCTION"
+  }
+]</textarea>
+      <p><button type="button" id="sendJson">Envoyer le JSON</button></p>
+      <p id="uploadMsg" class="meta"></p>
+    </div>
+    <div class="card note">
+      <strong>Non-lecteurs</strong>
+      <p class="hint">Produit final = voix d'abord. Colonne optionnelle <code>audio_url</code>.</p>
+    </div>
+  </section>
+
+  <section id="panel-bronze" class="panel">
+    <h2>À accepter (Bronze)</h2>
+    <p class="hint">Accepter → onglet « À promouvoir ». Rejeter → sort de la file active.</p>
+    <p><button type="button" data-refresh>Rafraîchir</button></p>
+    <div id="listBronze" class="hint">—</div>
+  </section>
+
+  <section id="panel-accepted" class="panel">
+    <h2>À promouvoir (Acceptées)</h2>
+    <p class="hint">Promouvoir → corpus baoulé atelier (pas WhatsApp dioula).</p>
+    <p><button type="button" data-refresh>Rafraîchir</button></p>
+    <div id="listAccepted" class="hint">—</div>
+  </section>
+
+  <section id="panel-corpus" class="panel">
+    <h2>Corpus baoulé (Production atelier)</h2>
+    <p class="hint">Phrases déjà promues. Persistées sur le serveur.</p>
+    <p><button type="button" data-refresh>Rafraîchir</button></p>
+    <div id="listCorpus" class="hint">—</div>
+  </section>
+</body>
+</html>
