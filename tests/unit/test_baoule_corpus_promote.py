@@ -42,3 +42,14 @@ def test_promote_rejects_bronze(tmp_path):
     )
     assert out["ok"] is False
     assert out["reason"] == "not_accepted"
+
+
+def test_ingest_skips_duplicates(tmp_path):
+    tasks = tmp_path / "tasks.jsonl"
+    row = {"text_local": "Meme phrase", "text_fr": "Same FR", "id": "bci_dup"}
+    a = bp.ingest_baoule_json([row], path=tasks)
+    b = bp.ingest_baoule_json([row], path=tasks)
+    assert a["accepted"] == 1
+    assert b["duplicates_skipped"] == 1
+    assert b["accepted"] == 0
+    assert len(iq.list_tasks(language="bci", path=tasks)) == 1

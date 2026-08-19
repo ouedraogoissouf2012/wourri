@@ -85,6 +85,12 @@ _PAGE = """<!DOCTYPE html>
     .err { color: #9b2c2c; }
     .meta { font-size: .85rem; color: #555; }
     .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .tabs { display: flex; gap: .35rem; margin: 1rem 0; flex-wrap: wrap; }
+    .tabs button { background: #eee; border: 1px solid #ccc; border-radius: 6px 6px 0 0; }
+    .tabs button.active { background: #0f3d24; color: #fff; border-color: #0f3d24; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    #toast { position: sticky; top: 0; background: #fff3cd; border: 1px solid #e6c200; padding: .5rem .75rem; margin: .5rem 0; display: none; }
   </style>
 </head>
 <body>
@@ -93,11 +99,21 @@ _PAGE = """<!DOCTYPE html>
     <p class="meta">Connecté : <strong id="who"></strong> · <a href="/admin/baoule/logout">Déconnexion</a></p>
   </div>
   <p class="hint">
-    Upload <strong>JSON, CSV ou Excel (.xlsx)</strong> → file <strong>Bronze</strong> uniquement.
-    Ne publie <strong>pas</strong> le corpus. Séparé du dioula.
+    Upload <strong>JSON, CSV ou Excel (.xlsx)</strong> → <strong>Bronze</strong>.
+    Les doublons (même texte ou même id) sont <strong>ignorés</strong>.
+    Données persistées (survit au Redeploy). Ne publie pas le dioula WhatsApp.
   </p>
+  <div id="toast"></div>
 
-  <h2>1. Ajouter des phrases</h2>
+  <div class="tabs">
+    <button type="button" class="tab active" data-tab="upload">1. Ajouter</button>
+    <button type="button" class="tab" data-tab="bronze">2. À accepter <span id="nBronze"></span></button>
+    <button type="button" class="tab" data-tab="accepted">3. À promouvoir <span id="nAccepted"></span></button>
+    <button type="button" class="tab" data-tab="corpus">4. Corpus baoulé <span id="nCorpus"></span></button>
+  </div>
+
+  <div id="panel-upload" class="panel active">
+  <h2>Ajouter des phrases</h2>
   <div id="uploadbox">
     <p class="hint">
       Colonnes CSV/Excel : <code>text_local</code> (ou baoule) + <code>text_fr</code> (ou francais).
@@ -122,38 +138,55 @@ _PAGE = """<!DOCTYPE html>
     <p><button type="button" id="sendJson">Envoyer le JSON</button></p>
     <p id="uploadMsg" class="meta"></p>
   </div>
-
   <div class="card" style="background:#fff8e6;border-color:#e6c200">
-    <strong>Agriculteurs qui ne lisent pas / ne parlent pas français</strong>
-    <p class="hint" style="margin:0.4rem 0 0">
-      L’écran provider est pour <em>toi</em> (texte). Le produit final devra être
-      <strong>voix d’abord</strong> (comme WhatsApp dioula) : enregistrements baoulé
-      ou TTS baoulé plus tard. Colonne optionnelle <code>audio_url</code> dans le CSV/JSON.
-      Sans audio, la phrase est dans le corpus atelier mais pas prête pour un canal vocal.
-    </p>
+    <strong>Non-lecteurs</strong>
+    <p class="hint" style="margin:.4rem 0 0">Produit final = voix d'abord. Colonne optionnelle <code>audio_url</code>. Sans audio = pas prêt pour canal vocal.</p>
+  </div>
   </div>
 
-  <h2>2. File Bronze / acceptées</h2>
-  <p><button type="button" id="load">Rafraîchir</button>
-     <span id="stats" class="meta"></span></p>
-  <div id="list" class="hint">Clique sur Rafraîchir.</div>
+  <div id="panel-bronze" class="panel">
+    <h2>À accepter (Bronze)</h2>
+    <p class="hint">Accepter → passe dans l'onglet « À promouvoir ». Rejeter → sort de la file active.</p>
+    <p><button type="button" id="loadB">Rafraîchir</button></p>
+    <div id="listBronze" class="hint">—</div>
+  </div>
 
-  <h2>3. Corpus baoulé (Production atelier)</h2>
-  <p class="hint">Phrases promues par ADC. <strong>Pas</strong> le pgvector dioula WhatsApp.</p>
-  <div id="corpus" class="hint">—</div>
+  <div id="panel-accepted" class="panel">
+    <h2>À promouvoir (Acceptées)</h2>
+    <p class="hint">Promouvoir → corpus baoulé atelier (pas WhatsApp dioula).</p>
+    <p><button type="button" id="loadA">Rafraîchir</button></p>
+    <div id="listAccepted" class="hint">—</div>
+  </div>
+
+  <div id="panel-corpus" class="panel">
+    <h2>Corpus baoulé (Production atelier)</h2>
+    <p class="hint">Phrases déjà promues. Persistées sur le serveur.</p>
+    <p><button type="button" id="loadC">Rafraîchir</button></p>
+    <div id="listCorpus" class="hint">—</div>
+  </div>
 
   <script>
-    const list = document.getElementById("list");
-    const corpusEl = document.getElementById("corpus");
     const uploadMsg = document.getElementById("uploadMsg");
     const jsonArea = document.getElementById("json");
-    const stats = document.getElementById("stats");
+    const toast = document.getElementById("toast");
+    let cache = { bronze: [], accepted: [], corpus: [] };
+
+    function showToast(msg, isErr) {
+      toast.style.display = "block";
+      toast.style.background = isErr ? "#fdecea" : "#e8f5e9";
+      toast.style.borderColor = isErr ? "#c62828" : "#2e7d32";
+      toast.textContent = msg;
+      setTimeout(() => { toast.style.display = "none"; }, 5000);
+    }
 
     async function api(path, opt) {
       const r = await fetch(path, Object.assign({credentials: "same-origin"}, opt || {}));
       if (r.status === 401) { location.href = "/admin/baoule/"; throw new Error("Session expirée"); }
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.detail || (data.errors && data.errors.join("; ")) || ("Erreur " + r.status));
+      if (!r.ok) {
+        const d = data.detail;
+        throw new Error((typeof d === "string" ? d : data.reason) || (data.errors && data.errors.join("; ")) || ("Erreur " + r.status));
+      }
       return data;
     }
 
@@ -162,10 +195,12 @@ _PAGE = """<!DOCTYPE html>
     }
 
     function card(t, mode) {
-      const audio = t.audio_url ? `<p class="meta">Audio : ${esc(t.audio_url)}</p>` : `<p class="meta">⚠ Pas d'audio (voix à ajouter pour non-lecteurs)</p>`;
+      const audio = t.audio_url
+        ? `<p class="meta">Audio : ${esc(t.audio_url)}</p>`
+        : `<p class="meta">⚠ Pas d'audio</p>`;
       let actions = "";
       if (mode === "bronze") {
-        actions = `<button data-d="admin_accepted">Accepter</button>
+        actions = `<button data-d="admin_accepted">Accepter → à promouvoir</button>
           <button data-d="admin_rejected">Rejeter</button>`;
       } else if (mode === "accepted") {
         actions = `<button data-p="1">Promouvoir au corpus baoulé</button>`;
@@ -174,44 +209,67 @@ _PAGE = """<!DOCTYPE html>
           <div class="meta"><strong>${esc(t.intent || "—")}</strong> · ${esc(t.source || "")} · ${esc(t.status || "")}</div>
           <p class="local"><strong>Baoulé :</strong> ${esc(t.text_local || t.excerpt || "")}</p>
           <p><strong>FR :</strong> ${esc(t.text_fr || "")}</p>
-          ${audio}
-          ${actions}
+          ${audio}${actions}
         </article>`;
     }
 
-    async function refresh() {
-      list.textContent = "Chargement…";
-      const data = await api("/admin/baoule/api/tasks");
-      document.getElementById("who").textContent = data.user || "—";
-      const bronze = data.bronze || [];
-      const accepted = data.accepted || [];
-      stats.textContent = `Bronze: ${bronze.length} · Acceptées: ${accepted.length} · Corpus: ${(data.corpus && data.corpus.count) || 0} (audio: ${(data.corpus && data.corpus.with_audio) || 0})`;
-      let html = "";
-      if (bronze.length) {
-        html += "<h3>Bronze</h3>" + bronze.map(t => card(t, "bronze")).join("");
-      }
-      if (accepted.length) {
-        html += "<h3>Acceptées — à promouvoir</h3>" + accepted.map(t => card(t, "accepted")).join("");
-      }
-      if (!html) html = "<p class='hint'>File vide.</p>";
-      list.innerHTML = html;
-
-      const corp = await api("/admin/baoule/api/corpus");
-      const rows = corp.entries || [];
-      if (!rows.length) {
-        corpusEl.innerHTML = "<p class='hint'>Corpus baoulé vide.</p>";
-      } else {
-        corpusEl.innerHTML = rows.slice().reverse().slice(0, 50).map(t => `
+    function renderLists() {
+      const b = cache.bronze || [];
+      const a = cache.accepted || [];
+      const c = cache.corpus || [];
+      document.getElementById("nBronze").textContent = b.length ? "(" + b.length + ")" : "";
+      document.getElementById("nAccepted").textContent = a.length ? "(" + a.length + ")" : "";
+      document.getElementById("nCorpus").textContent = c.length ? "(" + c.length + ")" : "";
+      document.getElementById("listBronze").innerHTML = b.length
+        ? b.map(t => card(t, "bronze")).join("")
+        : "<p class='hint'>Aucune phrase Bronze.</p>";
+      document.getElementById("listAccepted").innerHTML = a.length
+        ? a.map(t => card(t, "accepted")).join("")
+        : "<p class='hint'>Rien à promouvoir. Accepte d'abord dans l'onglet Bronze.</p>";
+      document.getElementById("listCorpus").innerHTML = c.length
+        ? c.slice().reverse().map(t => `
           <article class="card">
             <div class="meta">production · ${esc(t.promoted_at || "")}</div>
             <p class="local"><strong>Baoulé :</strong> ${esc(t.text_local || "")}</p>
             <p><strong>FR :</strong> ${esc(t.text_fr || "")}</p>
             <p class="meta">${t.audio_url ? "Audio: " + esc(t.audio_url) : "Sans audio"}</p>
-          </article>`).join("");
-      }
+          </article>`).join("")
+        : "<p class='hint'>Corpus baoulé vide.</p>";
     }
 
-    document.getElementById("load").onclick = () => refresh().catch(e => { list.textContent = e.message; });
+    async function refresh() {
+      const data = await api("/admin/baoule/api/tasks");
+      document.getElementById("who").textContent = data.user || "—";
+      cache.bronze = data.bronze || [];
+      cache.accepted = data.accepted || [];
+      const corp = await api("/admin/baoule/api/corpus");
+      cache.corpus = corp.entries || [];
+      renderLists();
+    }
+
+    document.querySelectorAll(".tab").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+      };
+    });
+
+    async function afterUpload(data, label) {
+      const dup = data.duplicates_skipped || 0;
+      uploadMsg.className = "ok";
+      uploadMsg.textContent = "OK — nouvelles: " + (data.accepted || 0)
+        + (dup ? " · doublons ignorés: " + dup : "")
+        + (label ? " (" + label + ")" : "");
+      await refresh();
+      document.querySelector('.tab[data-tab="bronze"]').click();
+    }
+
+    document.getElementById("loadB").onclick = () => refresh().catch(e => showToast(e.message, true));
+    document.getElementById("loadA").onclick = () => refresh().catch(e => showToast(e.message, true));
+    document.getElementById("loadC").onclick = () => refresh().catch(e => showToast(e.message, true));
+
     document.getElementById("sendJson").onclick = () => {
       try {
         const payload = JSON.parse(jsonArea.value);
@@ -220,11 +278,7 @@ _PAGE = """<!DOCTYPE html>
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify(payload),
-        }).then(data => {
-          uploadMsg.className = "ok";
-          uploadMsg.textContent = "OK — acceptées: " + data.accepted;
-          return refresh();
-        }).catch(e => { uploadMsg.className = "err"; uploadMsg.textContent = e.message; });
+        }).then(d => afterUpload(d)).catch(e => { uploadMsg.className = "err"; uploadMsg.textContent = e.message; });
       } catch (e) {
         uploadMsg.className = "err";
         uploadMsg.textContent = "JSON invalide: " + e.message;
@@ -238,19 +292,20 @@ _PAGE = """<!DOCTYPE html>
       uploadMsg.textContent = "Envoi…";
       try {
         const data = await api("/admin/baoule/api/upload", { method: "POST", body: fd });
-        uploadMsg.className = "ok";
-        uploadMsg.textContent = "OK — acceptées: " + data.accepted + " (" + f.name + ")";
-        await refresh();
+        await afterUpload(data, f.name);
       } catch (e) {
         uploadMsg.className = "err";
         uploadMsg.textContent = e.message;
       }
     };
-    list.onclick = async (ev) => {
+
+    document.body.addEventListener("click", async (ev) => {
       const btnD = ev.target.closest("button[data-d]");
       const btnP = ev.target.closest("button[data-p]");
       if (!btnD && !btnP) return;
-      const id = ev.target.closest("[data-id]").dataset.id;
+      const art = ev.target.closest("[data-id]");
+      if (!art) return;
+      const id = art.dataset.id;
       try {
         if (btnD) {
           await api("/admin/baoule/api/decision", {
@@ -258,17 +313,27 @@ _PAGE = """<!DOCTYPE html>
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({id, decision: btnD.dataset.d}),
           });
+          showToast(btnD.dataset.d === "admin_accepted" ? "Acceptée → onglet À promouvoir" : "Rejetée");
+          if (btnD.dataset.d === "admin_accepted") {
+            document.querySelector('.tab[data-tab="accepted"]').click();
+          }
         } else {
           await api("/admin/baoule/api/promote", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({id}),
           });
+          showToast("Promue au corpus baoulé");
+          document.querySelector('.tab[data-tab="corpus"]').click();
         }
         await refresh();
-      } catch (e) { list.textContent = e.message; }
-    };
-    refresh().catch(() => {});
+      } catch (e) {
+        showToast("Erreur: " + e.message, true);
+        refresh().catch(() => {});
+      }
+    });
+
+    refresh().catch(e => showToast(e.message, true));
   </script>
 </body>
 </html>
@@ -392,5 +457,8 @@ def baoule_api_decision(
 ):
     result = decide_task(body.id, body.decision)
     if not result.get("ok"):
-        raise HTTPException(status_code=400, detail=result.get("reason", "error"))
+        detail = result.get("reason", "error")
+        if result.get("path"):
+            detail = f"{detail} (path={result['path']})"
+        raise HTTPException(status_code=400, detail=detail)
     return result
