@@ -11,6 +11,8 @@ class LoginBody(BaseModel):
     user: str = Field(min_length=1)
     password: str = Field(min_length=8)
 
+    model_config = {"json_schema_extra": {"examples": [{"user": "provider.bci", "password": "change-me-8chars"}]}}
+
 
 def current_user(request: Request) -> dict:
     sess = read_session(request.cookies.get(get_settings().lqe_cookie_name))
@@ -44,3 +46,4 @@ def logout(response: Response):
 @router.get("/me")
 def me(user: dict = Depends(current_user)):
     return {"user": user["u"], "language": user["lang"]}
+
