@@ -1,5 +1,7 @@
+const BASE = import.meta.env.VITE_API_BASE || "";
+
 export async function api(path, opt = {}) {
-  const r = await fetch(path, { credentials: "include", ...opt });
+  const r = await fetch(BASE + path, { credentials: "include", ...opt });
   const data = await r.json().catch(() => ({}));
   if (r.status === 401) {
     if (!path.startsWith("/auth/login")) window.location.href = "/login";
