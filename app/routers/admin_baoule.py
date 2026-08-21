@@ -47,26 +47,11 @@ class PromoteBody(BaseModel):
     id: str = Field(min_length=1)
 
 
-@router.get("/", response_class=HTMLResponse)
-def baoule_home(request: Request):
-    if not is_configured():
-        return templates.TemplateResponse(
-            "admin/baoule_login.html",
-            {
-                "request": request,
-                "err": "Compte non configuré. Dokploy : BAOULE_PROVIDER_USER et BAOULE_PROVIDER_PASSWORD (min 8 car.).",
-            },
-            status_code=503,
-        )
-    if not _session_user(request):
-        return templates.TemplateResponse(
-            "admin/baoule_login.html",
-            {"request": request, "err": ""},
-        )
-    return templates.TemplateResponse(
-        "admin/baoule.html",
-        {"request": request},
-    )
+@router.get("/")
+def baoule_home():
+    import os
+    dest = os.getenv("WOURI_LQE_URL", "https://lqe.africandigitconsulting.com")
+    return RedirectResponse(dest, status_code=302)
 
 
 @router.post("/login")
@@ -169,3 +154,4 @@ def baoule_api_decision(
             detail = f"{detail} (path={result['path']})"
         raise HTTPException(status_code=400, detail=detail)
     return result
+

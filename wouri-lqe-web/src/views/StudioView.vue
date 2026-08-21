@@ -1,10 +1,10 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "../api.js";
 
 const router = useRouter();
-const me = ref({ user: "", language: "" });
+const me = ref({ user: "", language: "", roles: [] });
 const tab = ref("upload");
 const bronze = ref([]);
 const accepted = ref([]);
@@ -12,6 +12,20 @@ const corpus = ref([]);
 const jsonText = ref('[{"text_local":"","text_fr":""}]');
 const msg = ref("");
 const err = ref("");
+
+const can = (r) => {
+  const rs = me.value.roles || [];
+  return rs.includes("admin") || rs.includes(r);
+};
+
+const tabs = computed(() => {
+  const out = [];
+  if (can("ingest")) out.push(["upload", "Ajouter"]);
+  if (can("review")) out.push(["bronze", "À accepter (" + bronze.value.length + ")"]);
+  if (can("promote")) out.push(["accepted", "À promouvoir (" + accepted.value.length + ")"]);
+  out.push(["corpus", "Corpus (" + corpus.value.length + ")"]);
+  return out;
+});
 
 async function refresh() {
   const t = await api("/tasks");
@@ -24,6 +38,9 @@ async function refresh() {
 onMounted(async () => {
   try {
     me.value = await api("/auth/me");
+    if (tabs.value.length && !tabs.value.some((x) => x[0] === tab.value)) {
+      tab.value = tabs.value[0][0];
+    }
     await refresh();
   } catch {
     router.push("/login");
@@ -45,7 +62,6 @@ async function sendJson() {
       body: JSON.stringify(payload),
     });
     msg.value = `Nouvelles: ${r.accepted} · doublons: ${r.duplicates_skipped || 0}`;
-    tab.value = "bronze";
     await refresh();
   } catch (e) {
     err.value = String(e.message || e);
@@ -61,7 +77,6 @@ async function sendFile(ev) {
   try {
     const r = await api("/ingest/file", { method: "POST", body: fd });
     msg.value = `Nouvelles: ${r.accepted} · doublons: ${r.duplicates_skipped || 0} (${f.name})`;
-    tab.value = "bronze";
     await refresh();
   } catch (e) {
     err.value = String(e.message || e);
@@ -74,7 +89,6 @@ async function decide(id, decision) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, decision }),
   });
-  if (decision === "admin_accepted") tab.value = "accepted";
   await refresh();
 }
 
@@ -84,7 +98,6 @@ async function promote(id) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id }),
   });
-  tab.value = "corpus";
   await refresh();
 }
 </script>
@@ -97,16 +110,14 @@ async function promote(id) {
           {{ me.user }} · langue <code>{{ me.language }}</code>
         </p>
       </div>
-      <button class="text-sm underline" type="button" @click="logout">Déconnexion</button>
+      <div class="text-sm space-x-3">
+        <a v-if="can('admin')" href="/admin" class="underline">Comptes</a>
+        <button class="underline" type="button" @click="logout">Déconnexion</button>
+      </div>
     </header>
 
     <nav class="flex flex-wrap gap-2 mt-6">
-      <button v-for="t in [
-        ['upload','Ajouter'],
-        ['bronze','À accepter ('+bronze.length+')'],
-        ['accepted','À promouvoir ('+accepted.length+')'],
-        ['corpus','Corpus ('+corpus.length+')'],
-      ]" :key="t[0]" type="button"
+      <button v-for="t in tabs" :key="t[0]" type="button"
         class="px-3 py-1 rounded border"
         :class="tab===t[0] ? 'bg-wouri-700 text-white border-wouri-700' : 'bg-white'"
         @click="tab=t[0]">{{ t[1] }}</button>
@@ -115,14 +126,14 @@ async function promote(id) {
     <p v-if="msg" class="mt-3 text-green-800 text-sm">{{ msg }}</p>
     <p v-if="err" class="mt-3 text-red-700 text-sm">{{ err }}</p>
 
-    <section v-show="tab==='upload'" class="mt-4 space-y-3">
-      <p class="text-sm text-stone-600">JSON / CSV / XLSX. Colonnes text_local + text_fr. Bronze seulement. Doublons ignorés.</p>
+    <section v-show="tab==='upload' && can('ingest')" class="mt-4 space-y-3">
+      <p class="text-sm text-stone-600">JSON / CSV / XLSX. text_local + text_fr. Bronze. Doublons ignorés.</p>
       <input type="file" accept=".json,.csv,.xlsx" @change="sendFile" />
       <textarea v-model="jsonText" class="w-full h-32 border rounded p-2 font-mono text-sm" />
       <button class="bg-wouri-700 text-white px-3 py-1 rounded" type="button" @click="sendJson">Envoyer JSON</button>
     </section>
 
-    <section v-show="tab==='bronze'" class="mt-4 space-y-3">
+    <section v-show="tab==='bronze' && can('review')" class="mt-4 space-y-3">
       <article v-for="r in bronze" :key="r.id" class="border rounded p-3 bg-white">
         <p><strong>{{ r.text_local }}</strong></p>
         <p class="text-stone-600">{{ r.text_fr }}</p>
@@ -132,7 +143,7 @@ async function promote(id) {
       <p v-if="!bronze.length" class="text-stone-500 text-sm">Aucune phrase Bronze.</p>
     </section>
 
-    <section v-show="tab==='accepted'" class="mt-4 space-y-3">
+    <section v-show="tab==='accepted' && can('promote')" class="mt-4 space-y-3">
       <article v-for="r in accepted" :key="r.id" class="border rounded p-3 bg-white">
         <p><strong>{{ r.text_local }}</strong></p>
         <p class="text-stone-600">{{ r.text_fr }}</p>
