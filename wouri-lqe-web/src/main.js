@@ -11,6 +11,7 @@ const router = createRouter({
   routes: [
     { path: "/login", component: LoginView },
     { path: "/", component: StudioView },
+    { path: "/admin", component: AdminView },
   ],
 });
 
