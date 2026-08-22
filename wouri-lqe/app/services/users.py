@@ -49,13 +49,12 @@ def find_user(username: str) -> dict | None:
 def create_user(*, user: str, password: str, language: str, roles: list[str]) -> dict:
     user = user.strip()
     language = language.strip().lower()
-    roles = normalize_roles(roles)
+    roles = normalize_roles(roles) or ["review"]
+    is_admin = "admin" in roles
     if not user or len(password) < 8:
         return {"ok": False, "reason": "bad_credentials"}
-    if "admin" not in roles and not is_known(language):
+    if not is_admin and not is_known(language):
         return {"ok": False, "reason": "unknown_language"}
-    if "admin" in roles and language != "*":
-        language = language if is_known(language) else "*"
     with _lock:
         rows = load_users()
         if any(str(r.get("user") or "").lower() == user.lower() for r in rows):
@@ -63,13 +62,11 @@ def create_user(*, user: str, password: str, language: str, roles: list[str]) ->
         rec = {
             "user": user,
             "password_hash": hash_password(password),
-            "language": language if "admin" in roles else language,
-            "roles": roles or ["review"],
+            "language": "*" if is_admin else language,  # admin = acces toutes langues
+            "roles": roles,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-        if "admin" in rec["roles"]:
-            rec["language"] = "*"
         rows.append(rec)
         save_users(rows)
     return {"ok": True, "user": public_user(rec)}
