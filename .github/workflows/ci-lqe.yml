@@ -1,0 +1,46 @@
+# Wourri — CI tests du service LQE (wouri-lqe, ADR-0033).
+# ───────────────────────────────────────────────────────
+#
+# Le moteur (ci-api.yml) impose `testpaths = tests` → `wouri-lqe/tests`
+# n'y est jamais exécuté. Service séparé (ADR-0033) → CI séparée et légère
+# (pas de torch, pas de Postgres, pas de migrations).
+
+name: ci-lqe
+
+on:
+  push:
+    branches: [APIPy]
+    paths:
+      - 'wouri-lqe/**'
+      - '.github/workflows/ci-lqe.yml'
+  pull_request:
+    branches: [APIPy]
+    paths:
+      - 'wouri-lqe/**'
+      - '.github/workflows/ci-lqe.yml'
+
+jobs:
+  test-lqe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: wouri-lqe/requirements.txt
+
+      - name: Install deps (pytest + httpx inclus dans requirements.txt)
+        working-directory: wouri-lqe
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run pytest
+        working-directory: wouri-lqe
+        run: pytest tests -q --tb=short
