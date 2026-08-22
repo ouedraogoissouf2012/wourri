@@ -1,33 +1,28 @@
-"""Page admin Baoulé — login Jinja + config."""
+"""Écran Baoulé retiré du moteur (ADR-0033) : /admin/baoule/ redirige vers le service LQE."""
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.routers import admin_baoule
 
 
-def test_page_requires_config(monkeypatch):
-    monkeypatch.delenv("BAOULE_PROVIDER_USER", raising=False)
-    monkeypatch.delenv("BAOULE_PROVIDER_PASSWORD", raising=False)
+def test_baoule_home_redirects_to_lqe(monkeypatch):
+    monkeypatch.setenv("WOURI_LQE_URL", "https://lqe.example.test")
     app = FastAPI()
     app.include_router(admin_baoule.router)
-    client = TestClient(app)
+    client = TestClient(app, follow_redirects=False)
     r = client.get("/admin/baoule/")
-    assert r.status_code == 503
-    assert "BAOULE_PROVIDER_USER" in r.text
+    assert r.status_code == 302
+    assert r.headers["location"] == "https://lqe.example.test"
 
 
-def test_page_login_form_when_configured(monkeypatch):
-    monkeypatch.setenv("BAOULE_PROVIDER_USER", "u1")
-    monkeypatch.setenv("BAOULE_PROVIDER_PASSWORD", "password12")
-    monkeypatch.setenv("API_SECRET_KEY", "k")
+def test_baoule_home_redirect_default(monkeypatch):
+    monkeypatch.delenv("WOURI_LQE_URL", raising=False)
     app = FastAPI()
     app.include_router(admin_baoule.router)
-    client = TestClient(app)
+    client = TestClient(app, follow_redirects=False)
     r = client.get("/admin/baoule/")
-    assert r.status_code == 200
-    assert "Provider Baoulé" in r.text
-    assert "Mot de passe" in r.text
-    assert 'href="/static/admin/baoule.css"' in r.text
+    assert r.status_code == 302
+    assert r.headers["location"] == "https://lqe.africandigitconsulting.com"
 
 
 def test_lqe_uses_template():

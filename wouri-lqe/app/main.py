@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import corpus, health, ingest, languages, session, tasks
+from app.routers import accounts, corpus, health, ingest, languages, session, tasks
 
 settings = get_settings()
 app = FastAPI(
@@ -40,3 +40,5 @@ app.include_router(languages.router, tags=["Langues"])
 app.include_router(ingest.router, tags=["Ingest"])
 app.include_router(tasks.router, tags=["Tâches"])
 app.include_router(corpus.router, tags=["Corpus"])
+app.include_router(accounts.router, tags=["Comptes"])
+

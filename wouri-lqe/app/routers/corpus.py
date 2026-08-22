@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.routers.session import current_user
+from app.routers.session import current_user, require_role
 from app.services import workflow
 
 router = APIRouter(prefix="/corpus")
@@ -24,8 +24,9 @@ def get_corpus(user: dict = Depends(current_user)):
 
 
 @router.post("/promote")
-def post_promote(body: PromoteBody, user: dict = Depends(current_user)):
+def post_promote(body: PromoteBody, user: dict = Depends(require_role("promote"))):
     result = workflow.promote(body.id, language=user["lang"], actor=user["u"])
     if not result.get("ok"):
         raise HTTPException(status_code=400, detail=result.get("reason"))
     return result
+

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from app.config import get_settings
-from app.services.auth import read_session, sign_session, verify
+from app.services.auth import read_session, session_has, sign_session, verify
 
 router = APIRouter(prefix="/auth")
 
@@ -10,8 +10,6 @@ router = APIRouter(prefix="/auth")
 class LoginBody(BaseModel):
     user: str = Field(min_length=1)
     password: str = Field(min_length=8)
-
-    model_config = {"json_schema_extra": {"examples": [{"user": "provider.bci", "password": "change-me-8chars"}]}}
 
 
 def current_user(request: Request) -> dict:
@@ -21,12 +19,20 @@ def current_user(request: Request) -> dict:
     return sess
 
 
+def require_role(role: str):
+    def _inner(user: dict = Depends(current_user)) -> dict:
+        if not session_has(user, role):
+            raise HTTPException(status_code=403, detail="forbidden")
+        return user
+    return _inner
+
+
 @router.post("/login")
 def login(body: LoginBody, response: Response):
     acc = verify(body.user, body.password)
     if not acc:
         raise HTTPException(status_code=401, detail="invalid")
-    token = sign_session(acc["user"], acc["language"])
+    token = sign_session(acc["user"], acc["language"], acc["roles"])
     response.set_cookie(
         get_settings().lqe_cookie_name,
         token,
@@ -34,7 +40,7 @@ def login(body: LoginBody, response: Response):
         samesite="lax",
         max_age=12 * 3600,
     )
-    return {"user": acc["user"], "language": acc["language"]}
+    return {"user": acc["user"], "language": acc["language"], "roles": acc["roles"]}
 
 
 @router.post("/logout")
@@ -45,5 +51,4 @@ def logout(response: Response):
 
 @router.get("/me")
 def me(user: dict = Depends(current_user)):
-    return {"user": user["u"], "language": user["lang"]}
-
+    return {"user": user["u"], "language": user["lang"], "roles": user.get("roles") or []}

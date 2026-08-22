@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     lqe_language_codes: str = "dyu,bci"
     lqe_cors_origins: str = "http://localhost:5173"
     lqe_cookie_name: str = "wouri_lqe"
+    lqe_admin_user: str = ""
+    lqe_admin_password: str = ""
 
     def language_codes(self) -> list[str]:
         return [c.strip().lower() for c in self.lqe_language_codes.split(",") if c.strip()]
@@ -42,3 +44,4 @@ class Settings(BaseSettings):
 
 def get_settings() -> Settings:
     return Settings()
+

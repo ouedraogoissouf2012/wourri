@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.routers.session import current_user
+from app.routers.session import current_user, require_role
 from app.services import workflow
 
 router = APIRouter(prefix="/tasks")
@@ -23,8 +23,9 @@ def get_tasks(user: dict = Depends(current_user)):
 
 
 @router.post("/decision")
-def post_decision(body: DecisionBody, user: dict = Depends(current_user)):
+def post_decision(body: DecisionBody, user: dict = Depends(require_role("review"))):
     result = workflow.decide(body.id, body.decision, language=user["lang"])
     if not result.get("ok"):
         raise HTTPException(status_code=400, detail=result.get("reason"))
     return result
+
