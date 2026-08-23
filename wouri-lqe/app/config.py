@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from urllib.parse import quote
 
-from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,6 +19,16 @@ class Settings(BaseSettings):
     lqe_cookie_name: str = "wouri_lqe"
     lqe_admin_user: str = ""
     lqe_admin_password: str = ""
+
+    # ===== PostgreSQL + pgvector (ADR-0034) =====
+    lqe_db_schema: str = "lqe"
+    lqe_database_url: str = ""
+    postgres_host: str = ""
+    postgres_port: int = 5432
+    postgres_user: str = ""
+    postgres_db: str = ""
+    postgres_password: str = ""
+    postgres_password_file: str = ""
 
     def language_codes(self) -> list[str]:
         return [c.strip().lower() for c in self.lqe_language_codes.split(",") if c.strip()]
@@ -41,7 +51,18 @@ class Settings(BaseSettings):
     def cors_origins(self) -> list[str]:
         return [o.strip() for o in self.lqe_cors_origins.split(",") if o.strip()]
 
+    def database_url(self) -> str:
+        """DSN psycopg. `LQE_DATABASE_URL` prioritaire, sinon composé depuis POSTGRES_*."""
+        if self.lqe_database_url:
+            return self.lqe_database_url
+        pwd = self.postgres_password
+        if not pwd and self.postgres_password_file:
+            pwd = Path(self.postgres_password_file).read_text(encoding="utf-8").strip()
+        return (
+            f"postgresql://{quote(self.postgres_user)}:{quote(pwd)}"
+            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+        )
+
 
 def get_settings() -> Settings:
     return Settings()
-
