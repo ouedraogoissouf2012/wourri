@@ -64,3 +64,17 @@ def test_decide_admin_rejected(seeded):
     tid = _seed_bronze()
     assert workflow.decide(tid, "admin_rejected", language="bci")["ok"] is True
     assert workflow.list_tasks(language="bci", status="admin_rejected")[0]["id"] == tid
+
+
+def test_decide_cannot_downgrade_production(seeded):
+    # le role review (decide) ne doit JAMAIS pouvoir defaire une promotion (role promote)
+    tid = _seed_bronze()
+    workflow.decide(tid, "admin_accepted", language="bci")
+    workflow.promote(tid, language="bci", actor="admin")
+
+    r = workflow.decide(tid, "admin_rejected", language="bci")
+    assert r["ok"] is False
+    assert r["reason"] == "locked"
+    assert r["status"] == "production"
+    # la production reste publiee dans le corpus
+    assert [e["id"] for e in workflow.list_corpus(language="bci")] == [tid]

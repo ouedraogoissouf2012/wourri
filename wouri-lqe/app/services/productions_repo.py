@@ -96,17 +96,23 @@ def get(*, item_id, language: str) -> dict | None:
     return _row(row) if row else None
 
 
-def set_status(*, item_id, language: str, status: str) -> bool:
-    """UPDATE cible, TOUJOURS filtre par langue (isolation inter-locuteurs)."""
+def set_status(*, item_id, language: str, status: str, allowed_from=None) -> bool:
+    """UPDATE cible, TOUJOURS filtre par langue (isolation inter-locuteurs). Si
+    `allowed_from` est fourni, la transition n'a lieu QUE depuis ces statuts source
+    (garde atomique : empeche p.ex. de retrograder une 'production' publiee)."""
     pid = _as_int(item_id)
     if pid is None:
         return False
+    sql = (
+        "UPDATE productions SET status = %s, updated_at = now()"
+        " WHERE id = %s AND language = %s"
+    )
+    params: list = [status, pid, language]
+    if allowed_from is not None:
+        sql += " AND status = ANY(%s)"
+        params.append(list(allowed_from))
     with get_conn() as conn:
-        cur = conn.execute(
-            "UPDATE productions SET status = %s, updated_at = now()"
-            " WHERE id = %s AND language = %s",
-            (status, pid, language),
-        )
+        cur = conn.execute(sql, params)
         conn.commit()
         return cur.rowcount > 0
 

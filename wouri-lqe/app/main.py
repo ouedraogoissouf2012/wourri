@@ -23,10 +23,14 @@ async def lifespan(app: FastAPI):
     """Au demarrage : garde-fou secret en prod, puis applique le schema `lqe`
     (migrations + seed langues, idempotent, serialise par verrou advisory)."""
     s = get_settings()
+    if s.secret_is_default():
+        raise RuntimeError(
+            "LQE_SECRET est un placeholder public du depot — definir un vrai secret"
+            " (>= 16 caracteres), meme en dev."
+        )
     if s.is_prod() and s.secret_is_weak():
         raise RuntimeError(
-            "LQE_SECRET faible ou par defaut interdit en production"
-            " (definir un secret >= 16 caracteres)."
+            "LQE_SECRET faible interdit en production (secret >= 16 caracteres, non trivial)."
         )
     run_migrations()
     yield

@@ -125,18 +125,23 @@ def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
             "external_id": ext,
             "actor": actor,
         }
-        res = repo.insert_bronze(
-            language=language,
-            text_local=local[:2000],
-            text_fr=fr[:2000],
-            intent=str(raw.get("intent") or ""),
-            cultures=raw.get("cultures") if isinstance(raw.get("cultures"), list) else [],
-            audio_url=raw.get("audio_url") or raw.get("audio_ref"),
-            fingerprint=fp,
-            concept_id=concept_id,
-            created_by=actor,
-            meta=meta,
-        )
+        try:
+            res = repo.insert_bronze(
+                language=language,
+                text_local=local[:2000],
+                text_fr=fr[:2000],
+                intent=str(raw.get("intent") or ""),
+                cultures=raw.get("cultures") if isinstance(raw.get("cultures"), list) else [],
+                audio_url=raw.get("audio_url") or raw.get("audio_ref"),
+                fingerprint=fp,
+                concept_id=concept_id,
+                created_by=actor,
+                meta=meta,
+            )
+        except Exception as exc:  # une ligne fautive n'annule pas le lot (tolerance par ligne)
+            logger.warning("ingest ligne %s: %s", i, exc)
+            errors.append(f"[{i}] insert")
+            continue
         if res["inserted"]:
             accepted += 1
         else:

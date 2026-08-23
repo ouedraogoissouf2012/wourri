@@ -37,3 +37,16 @@ def test_import_is_idempotent(seeded, tmp_path):
 
 def test_import_empty_is_safe(seeded, tmp_path):
     assert migrate_dir(tmp_path) == {"imported": 0, "skipped": 0, "errors": []}
+
+
+def test_import_unknown_language_goes_backlog(seeded, tmp_path):
+    # une langue absente du référentiel est créée en 'backlog', jamais activée d'office
+    from app.data import language_registry as reg
+    _write(tmp_path, [
+        {"id": "z", "language": "zzz", "text_local": "l", "text_fr": "f",
+         "status": "bronze", "fingerprint": "h:z"},
+    ])
+    res = migrate_dir(tmp_path)
+    assert res["imported"] == 1
+    lg = reg.get_language("zzz")
+    assert lg is not None and lg.status == "backlog"

@@ -55,7 +55,9 @@ def migrate_dir(directory: Path) -> dict:
             skipped += 1
             continue
         if not reg.is_known(language):
-            reg.upsert_language(language, language, status="active")
+            # langue inconnue dans le JSONL : creee en 'backlog' (jamais activee
+            # automatiquement) — l'admin l'activera explicitement si besoin.
+            reg.upsert_language(language, language, status="backlog")
         ext = t.get("external_id") or t.get("id")
         fp = t.get("fingerprint") or fingerprint(
             language=language, text_local=local, text_fr=fr,

@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     def is_prod(self) -> bool:
         return self.lqe_env.strip().lower() in ("prod", "production")
 
+    def secret_is_default(self) -> bool:
+        """Secret == placeholder PUBLIC du depot : jamais acceptable, meme en dev."""
+        return (self.lqe_secret or "").strip() in _WEAK_SECRETS
+
     def secret_is_weak(self) -> bool:
         s = (self.lqe_secret or "").strip()
         return s in _WEAK_SECRETS or len(s) < 16

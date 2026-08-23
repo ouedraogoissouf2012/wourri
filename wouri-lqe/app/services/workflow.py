@@ -12,6 +12,9 @@ from app.services import productions_repo as repo
 DECISIONS = {"admin_accepted", "admin_rejected"}
 # seul un item accepte par l'admin est promouvable.
 ALLOWED_FROM = {"admin_accepted"}
+# une decision (review) ne s'applique JAMAIS a une production deja publiee (terminale
+# cote review) : sinon le role review pourrait defaire une promotion (role promote).
+DECIDABLE_FROM = {"bronze", "admin_accepted", "admin_rejected"}
 
 
 def list_tasks(*, language: str, status: str | None = None) -> list[dict]:
@@ -21,10 +24,13 @@ def list_tasks(*, language: str, status: str | None = None) -> list[dict]:
 def decide(item_id: str, status: str, *, language: str) -> dict:
     if status not in DECISIONS:
         return {"ok": False, "reason": "bad_decision"}
-    if repo.get(item_id=item_id, language=language) is None:
+    row = repo.get(item_id=item_id, language=language)
+    if row is None:
         return {"ok": False, "reason": "not_found"}
-    if not repo.set_status(item_id=item_id, language=language, status=status):
-        return {"ok": False, "reason": "not_found"}
+    if not repo.set_status(
+        item_id=item_id, language=language, status=status, allowed_from=DECIDABLE_FROM
+    ):
+        return {"ok": False, "reason": "locked", "status": row["status"]}
     return {"ok": True, "id": str(item_id), "status": status}
 
 
