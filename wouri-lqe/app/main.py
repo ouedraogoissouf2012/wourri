@@ -3,14 +3,23 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import accounts, corpus, health, ingest, languages, session, tasks
+from app.routers import (
+    accounts,
+    corpus,
+    coverage,
+    health,
+    ingest,
+    languages,
+    session,
+    tasks,
+)
 
 settings = get_settings()
 app = FastAPI(
     title="WOURI LQE",
     version="0.1.0",
     description=(
-        "Atelier linguistique (ADR-0033). "
+        "Atelier linguistique (ADR-0033/0034). "
         "Login via POST /auth/login puis Authorize n'est pas requis : "
         "Swagger envoie le cookie de session. "
         "Une session = une langue (dyu, bci, …)."
@@ -21,10 +30,12 @@ app = FastAPI(
     openapi_tags=[
         {"name": "Santé", "description": "Liveness"},
         {"name": "Auth", "description": "Session cookie, langue portée par le compte"},
-        {"name": "Langues", "description": "Codes autorisés (env LQE_LANGUAGE_CODES)"},
+        {"name": "Langues", "description": "Codes autorisés"},
         {"name": "Ingest", "description": "Upload JSON/CSV/XLSX → Bronze"},
         {"name": "Tâches", "description": "File Bronze / acceptées"},
         {"name": "Corpus", "description": "Promotion atelier (pas pgvector moteur)"},
+        {"name": "Comptes", "description": "Gestion des locuteurs (admin)"},
+        {"name": "Couverture", "description": "Matrice concepts × langues (ADR-0034)"},
     ],
 )
 app.add_middleware(
@@ -41,4 +52,4 @@ app.include_router(ingest.router, tags=["Ingest"])
 app.include_router(tasks.router, tags=["Tâches"])
 app.include_router(corpus.router, tags=["Corpus"])
 app.include_router(accounts.router, tags=["Comptes"])
-
+app.include_router(coverage.router, tags=["Couverture"])

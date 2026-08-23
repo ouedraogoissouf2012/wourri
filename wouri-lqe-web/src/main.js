@@ -4,6 +4,7 @@ import App from "./App.vue";
 import LoginView from "./views/LoginView.vue";
 import StudioView from "./views/StudioView.vue";
 import AdminView from "./views/AdminView.vue";
+import CoverageView from "./views/CoverageView.vue";
 import "./style.css";
 
 const router = createRouter({
@@ -12,8 +13,8 @@ const router = createRouter({
     { path: "/login", component: LoginView },
     { path: "/", component: StudioView },
     { path: "/admin", component: AdminView },
+    { path: "/coverage", component: CoverageView },
   ],
 });
 
 createApp(App).use(router).mount("#app");
-
