@@ -18,6 +18,7 @@ HEADER_ALIASES = {
     "text_local": {"text_local", "local", "source", "original", "texte", "phrase"},
     "text_fr": {"text_fr", "fr", "francais", "french", "traduction", "cible"},
     "id": {"id", "identifiant", "ref"},
+    "concept_id": {"concept_id", "concept", "id_concept"},
     "intent": {"intent", "intention"},
     "cultures": {"cultures", "culture"},
     "region": {"region"},

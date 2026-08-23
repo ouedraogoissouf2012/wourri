@@ -29,6 +29,7 @@ function pct(r) {
   <div class="max-w-3xl mx-auto p-6">
     <p class="text-sm mb-4">
       <a href="/" class="underline">← Atelier</a> ·
+      <a href="/assign" class="underline">Assigner</a> ·
       <a href="/admin" class="underline">Comptes</a>
     </p>
     <h1 class="text-xl font-semibold text-wouri-700">Couverture par langue</h1>

@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.routers import (
     accounts,
+    assignments,
     corpus,
     coverage,
     health,
@@ -59,6 +60,7 @@ app = FastAPI(
         {"name": "Corpus", "description": "Promotion atelier (pas pgvector moteur)"},
         {"name": "Comptes", "description": "Gestion des locuteurs (admin)"},
         {"name": "Couverture", "description": "Matrice concepts × langues (ADR-0034)"},
+        {"name": "Assignations", "description": "Assignations admin par lot (ADR-0034 P2)"},
     ],
 )
 app.add_middleware(
@@ -76,3 +78,4 @@ app.include_router(tasks.router, tags=["Tâches"])
 app.include_router(corpus.router, tags=["Corpus"])
 app.include_router(accounts.router, tags=["Comptes"])
 app.include_router(coverage.router, tags=["Couverture"])
+app.include_router(assignments.router, tags=["Assignations"])
