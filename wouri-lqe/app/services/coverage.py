@@ -1,17 +1,18 @@
-"""Service Couverture — matrice concepts x langues (ADR-0034 P1).
+"""Service Couverture — matrice concepts x langues (ADR-0034 P1/P4).
 
-Pour chaque langue `active`, quels concepts du catalogue sont deja couverts par
-une production PROMUE (`status='production'`) dans cette langue, et lesquels
-manquent. La 'parite' d'une langue = 100 % des concepts couverts.
+Pour chaque langue `active`, quels concepts du catalogue sont deja couverts par une
+production PROMUE (`status='production'`) dans cette langue, et lesquels manquent. La
+'parite' d'une langue = 100 % des concepts couverts.
 
-Depend du contrat `ConceptCatalog` (DIP), jamais d'une implementation concrete.
+Depend du contrat `ConceptCatalog` (DIP) et du repository `productions` (source unique,
+la meme table que le flux ingest/decide/promote ecrit — plus de divergence JSONL/PG).
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 
 from app.data import language_registry
-from app.db import get_conn
+from app.services import productions_repo as repo
 from app.services.catalog import ConceptCatalog
 
 
@@ -26,13 +27,7 @@ class LanguageCoverage:
 
 
 def _covered_ids(language: str) -> set[str]:
-    with get_conn() as conn:
-        rows = conn.execute(
-            "SELECT DISTINCT concept_id FROM productions"
-            " WHERE language = %s AND status = 'production'",
-            (language,),
-        ).fetchall()
-    return {r[0] for r in rows}
+    return repo.covered_concept_ids(language=language)
 
 
 def coverage_matrix(catalog: ConceptCatalog) -> list[LanguageCoverage]:

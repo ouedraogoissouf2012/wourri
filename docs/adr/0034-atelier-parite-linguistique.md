@@ -86,3 +86,18 @@
 
 - 2026-08-22 — proposé (Option A).
 - 2026-08-23 — **accepté** par Issouf.
+- 2026-08-23 — **mise en œuvre P4** (#470, branche `fix/470-reconcile-lqe-postgres`) :
+  bascule **effective** du flux atelier (`ingest` / `decide` / `promote`) **et** de la
+  couverture sur une **table unique `lqe.productions`** (`bronze → admin_accepted →
+  production`) ; fin du stockage JSONL (`tasks.jsonl` / `corpus.jsonl` retirés du runtime,
+  `store.py` supprimé). **Corrige l'incohérence introduite en P0/P1** : le socle Postgres
+  (couverture lisant `productions`) avait été livré *avant* la bascule du flux (encore en
+  JSONL), si bien que la matrice ne reflétait jamais les promotions. Autres correctifs du
+  même lot : `is_known` **unifié** sur la table `languages` (CSV `LQE_LANGUAGE_CODES`
+  supprimé ; seed `dyu`/`bci` = migration `003`) ; `run_migrations` **câblé au lifespan**
+  (verrou `pg_advisory_lock`) ; garde-fou **`LQE_SECRET`** refusé en prod + cookie
+  **`Secure`** en prod ; déduplication d'ingest = **index unique `(language, fingerprint)`**
+  (fin de la dédup en mémoire, race corrigée). **Décision de modélisation** : `concept_id`
+  **nullable** — la couverture ne compte que les productions **rattachées à un concept**
+  (un upload libre n'invente aucune couverture) ; le rattachement de masse viendra des
+  **assignations P2 (#464)**. Preuve : suite `pytest wouri-lqe` verte contre Postgres réel.

@@ -33,11 +33,13 @@ def login(body: LoginBody, response: Response):
     if not acc:
         raise HTTPException(status_code=401, detail="invalid")
     token = sign_session(acc["user"], acc["language"], acc["roles"])
+    settings = get_settings()
     response.set_cookie(
-        get_settings().lqe_cookie_name,
+        settings.lqe_cookie_name,
         token,
         httponly=True,
         samesite="lax",
+        secure=settings.is_prod(),
         max_age=12 * 3600,
     )
     return {"user": acc["user"], "language": acc["language"], "roles": acc["roles"]}
@@ -45,7 +47,10 @@ def login(body: LoginBody, response: Response):
 
 @router.post("/logout")
 def logout(response: Response):
-    response.delete_cookie(get_settings().lqe_cookie_name)
+    settings = get_settings()
+    response.delete_cookie(
+        settings.lqe_cookie_name, samesite="lax", secure=settings.is_prod()
+    )
     return {"ok": True}
 
 

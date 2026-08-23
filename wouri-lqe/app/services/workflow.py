@@ -1,57 +1,38 @@
-"""Promotion atelier — jamais pgvector moteur."""
+"""Machine a etats de l'atelier sur Postgres (ADR-0034 P4) — une table `productions`.
+
+bronze -> admin_accepted -> production. La promotion ne cree jamais de ligne : elle
+flippe le statut. `production` n'est atteignable QUE par promote (/corpus/promote,
+role `promote`), jamais par decide (/tasks/decision, role `review`).
+"""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from app.services import productions_repo as repo
 
-from app.paths import corpus_path, tasks_path
-from app.services.store import append_row, read_all, update_status
-
-ALLOWED_FROM = {"admin_accepted", "speaker_accepted"}
+# decide (role review) ne peut PAS promouvoir : 'production' n'est pas une decision.
+DECISIONS = {"admin_accepted", "admin_rejected"}
+# seul un item accepte par l'admin est promouvable.
+ALLOWED_FROM = {"admin_accepted"}
 
 
 def list_tasks(*, language: str, status: str | None = None) -> list[dict]:
-    rows = [r for r in read_all(tasks_path()) if (r.get("language") or "") == language]
-    if status:
-        rows = [r for r in rows if r.get("status") == status]
-    return rows
+    return repo.list_by(language=language, status=status)
 
 
 def decide(item_id: str, status: str, *, language: str) -> dict:
-    allowed = {"admin_accepted", "admin_rejected", "production"}
-    if status not in allowed:
+    if status not in DECISIONS:
         return {"ok": False, "reason": "bad_decision"}
-    row = next((r for r in list_tasks(language=language) if r.get("id") == item_id), None)
-    if not row:
+    if repo.get(item_id=item_id, language=language) is None:
         return {"ok": False, "reason": "not_found"}
-    return update_status(tasks_path(), item_id, status)
+    if not repo.set_status(item_id=item_id, language=language, status=status):
+        return {"ok": False, "reason": "not_found"}
+    return {"ok": True, "id": str(item_id), "status": status}
 
 
 def promote(item_id: str, *, language: str, actor: str) -> dict:
-    row = next((r for r in list_tasks(language=language) if r.get("id") == item_id), None)
-    if not row:
-        return {"ok": False, "reason": "not_found"}
-    if row.get("status") not in ALLOWED_FROM:
-        return {"ok": False, "reason": "not_accepted", "status": row.get("status")}
-    existing = read_all(corpus_path())
-    if any(e.get("id") == item_id and e.get("language") == language for e in existing):
-        return {"ok": True, "duplicate": True}
-    entry = {
-        "id": item_id,
-        "language": language,
-        "status": "production",
-        "text_local": row.get("text_local") or "",
-        "text_fr": row.get("text_fr") or "",
-        "intent": row.get("intent") or "",
-        "cultures": row.get("cultures") or [],
-        "audio_url": row.get("audio_url"),
-        "promoted_by": actor,
-        "promoted_at": datetime.now(timezone.utc).isoformat(),
-    }
-    if not append_row(corpus_path(), entry):
-        return {"ok": False, "reason": "io"}
-    update_status(tasks_path(), item_id, "production")
-    return {"ok": True, "entry": entry}
+    return repo.promote(
+        item_id=item_id, language=language, actor=actor, allowed_from=ALLOWED_FROM
+    )
 
 
 def list_corpus(*, language: str) -> list[dict]:
-    return [r for r in read_all(corpus_path()) if (r.get("language") or "") == language]
+    return repo.list_by(language=language, status="production")

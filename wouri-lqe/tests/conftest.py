@@ -34,6 +34,18 @@ def db():
 
 
 @pytest.fixture
+def seeded(db):
+    """Langues pilotes actives (dyu, bci) — requises par le flux (FK productions.language
+    + is_known). Re-seed apres le TRUNCATE de `db` (qui laisse `languages` vide, ce que
+    `test_language_registry` exige)."""
+    from app.data import language_registry as reg
+
+    reg.upsert_language("dyu", "Dioula", status="active")
+    reg.upsert_language("bci", "Baoule", status="active")
+    yield
+
+
+@pytest.fixture
 def corpus(db):
     """Corpus IVR de reference simule (`public.corpus_entries`) : 2 concepts."""
     with get_conn(autocommit=True) as conn:

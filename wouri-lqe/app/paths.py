@@ -10,11 +10,3 @@ def data_dir() -> Path:
     p = Path(get_settings().lqe_data_dir)
     p.mkdir(parents=True, exist_ok=True)
     return p
-
-
-def tasks_path() -> Path:
-    return data_dir() / "tasks.jsonl"
-
-
-def corpus_path() -> Path:
-    return data_dir() / "corpus.jsonl"

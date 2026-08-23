@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.data.languages import known_languages
+from app.data.language_registry import known_languages
 from app.routers.session import current_user
 
 router = APIRouter(prefix="/languages")

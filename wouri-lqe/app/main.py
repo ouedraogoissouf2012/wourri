@@ -1,4 +1,6 @@
 """Point d'entrée LQE — routers minces, pas de métier ici."""
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,11 +15,28 @@ from app.routers import (
     session,
     tasks,
 )
+from app.services.migrate import run_migrations
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Au demarrage : garde-fou secret en prod, puis applique le schema `lqe`
+    (migrations + seed langues, idempotent, serialise par verrou advisory)."""
+    s = get_settings()
+    if s.is_prod() and s.secret_is_weak():
+        raise RuntimeError(
+            "LQE_SECRET faible ou par defaut interdit en production"
+            " (definir un secret >= 16 caracteres)."
+        )
+    run_migrations()
+    yield
+
 
 settings = get_settings()
 app = FastAPI(
     title="WOURI LQE",
     version="0.1.0",
+    lifespan=lifespan,
     description=(
         "Atelier linguistique (ADR-0033/0034). "
         "Login via POST /auth/login puis Authorize n'est pas requis : "

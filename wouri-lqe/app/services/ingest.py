@@ -1,4 +1,4 @@
-"""Ingest générique — status toujours bronze, langue du compte."""
+"""Ingest générique — status toujours bronze, langue du compte, backend Postgres."""
 from __future__ import annotations
 
 import csv
@@ -6,14 +6,11 @@ import io
 import json
 import logging
 import unicodedata
-import uuid
-from datetime import datetime, timezone
 from typing import Any
 
-from app.data.languages import is_known
-from app.paths import tasks_path
+from app.data.language_registry import is_known
+from app.services import productions_repo as repo
 from app.services.fingerprint import fingerprint
-from app.services.store import append_row, read_all
 
 logger = logging.getLogger(__name__)
 
@@ -109,17 +106,6 @@ def parse_upload(filename: str, data: bytes) -> list[dict]:
 def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
     if not is_known(language):
         return {"ok": False, "accepted": 0, "duplicates_skipped": 0, "errors": ["langue inconnue"]}
-    existing = {
-        r.get("fingerprint")
-        or fingerprint(
-            language=language,
-            text_local=str(r.get("text_local") or r.get("excerpt") or ""),
-            text_fr=str(r.get("text_fr") or ""),
-            external_id=r.get("external_id"),
-        )
-        for r in read_all(tasks_path())
-        if (r.get("language") or "") == language
-    }
     accepted = 0
     skipped = 0
     errors = []
@@ -131,31 +117,30 @@ def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
             continue
         ext = str(raw.get("id") or raw.get("external_id") or "").strip() or None
         fp = fingerprint(language=language, text_local=local, text_fr=fr, external_id=ext)
-        if fp in existing:
-            skipped += 1
-            continue
-        row = {
-            "id": uuid.uuid4().hex,
-            "ts": datetime.now(timezone.utc).isoformat(),
-            "status": "bronze",
-            "language": language,
-            "text_local": local[:2000],
-            "text_fr": fr[:2000],
-            "intent": str(raw.get("intent") or ""),
-            "cultures": raw.get("cultures") if isinstance(raw.get("cultures"), list) else [],
+        concept_id = str(raw.get("concept_id") or "").strip() or None
+        meta = {
             "region": str(raw.get("region") or "CI"),
             "notes": str(raw.get("notes") or ""),
-            "audio_url": raw.get("audio_url") or raw.get("audio_ref"),
             "source": "provider_upload",
-            "actor": actor,
-            "fingerprint": fp,
             "external_id": ext,
+            "actor": actor,
         }
-        if not append_row(tasks_path(), row):
-            errors.append(f"[{i}] io")
-            continue
-        existing.add(fp)
-        accepted += 1
+        res = repo.insert_bronze(
+            language=language,
+            text_local=local[:2000],
+            text_fr=fr[:2000],
+            intent=str(raw.get("intent") or ""),
+            cultures=raw.get("cultures") if isinstance(raw.get("cultures"), list) else [],
+            audio_url=raw.get("audio_url") or raw.get("audio_ref"),
+            fingerprint=fp,
+            concept_id=concept_id,
+            created_by=actor,
+            meta=meta,
+        )
+        if res["inserted"]:
+            accepted += 1
+        else:
+            skipped += 1
     return {
         "ok": accepted > 0 or skipped > 0,
         "accepted": accepted,

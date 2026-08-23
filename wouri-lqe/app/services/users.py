@@ -6,7 +6,7 @@ import logging
 import threading
 from datetime import datetime, timezone
 
-from app.data.languages import is_known
+from app.data.language_registry import is_known
 from app.data.roles import ALL_ROLES, normalize_roles
 from app.paths import data_dir
 from app.services.passwords import hash_password
