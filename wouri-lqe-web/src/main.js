@@ -5,6 +5,8 @@ import LoginView from "./views/LoginView.vue";
 import StudioView from "./views/StudioView.vue";
 import AdminView from "./views/AdminView.vue";
 import CoverageView from "./views/CoverageView.vue";
+import AssignView from "./views/AssignView.vue";
+import RequestsView from "./views/RequestsView.vue";
 import "./style.css";
 
 const router = createRouter({
@@ -14,6 +16,8 @@ const router = createRouter({
     { path: "/", component: StudioView },
     { path: "/admin", component: AdminView },
     { path: "/coverage", component: CoverageView },
+    { path: "/assign", component: AssignView },
+    { path: "/demandes", component: RequestsView },
   ],
 });
 
