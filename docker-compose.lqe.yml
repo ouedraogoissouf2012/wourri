@@ -1,14 +1,45 @@
+# Atelier LQE — dev/test local (service + Postgres pgvector dédié).
+# Le schéma `lqe` isole les tables de l'atelier. En PROD, le service `lqe` réutilise le
+# Postgres du moteur (schéma `lqe`) : voir docs/deployment (étape de déploiement séparée).
 services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wourri}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wourri_dev_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-wourri_dev}
+    volumes:
+      - lqe_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wourri} -d ${POSTGRES_DB:-wourri_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   lqe:
     build: ./wouri-lqe
     ports: ["8090:8090"]
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
+      LQE_ENV: ${LQE_ENV:-dev}
       LQE_DATA_DIR: /data
-      LQE_SECRET: ${LQE_SECRET:-dev-only-change-me-16}
-      LQE_LANGUAGE_CODES: dyu,bci
-      LQE_CORS_ORIGINS: http://localhost:5173
+      # Secret OBLIGATOIRE (>= 16 caractères). En prod, un secret faible/par défaut
+      # fait échouer le démarrage (garde-fou lifespan).
+      LQE_SECRET: ${LQE_SECRET:?LQE_SECRET requis (>= 16 caracteres)}
+      LQE_CORS_ORIGINS: ${LQE_CORS_ORIGINS:-http://localhost:5173}
       LQE_ACCOUNTS: ${LQE_ACCOUNTS}
+      LQE_DB_SCHEMA: lqe
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-wourri}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wourri_dev_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-wourri_dev}
     volumes:
       - lqe_data:/data
+
 volumes:
   lqe_data:
+  lqe_pgdata:

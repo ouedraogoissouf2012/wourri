@@ -7,14 +7,19 @@ from urllib.parse import quote
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Secret de session par defaut = valeur de DEV. Refuse en production (main.lifespan).
+DEFAULT_LQE_SECRET = "dev-only-not-for-prod"
+# Placeholders connus faibles a refuser en prod (defauts historiques compose/.env.example).
+_WEAK_SECRETS = {DEFAULT_LQE_SECRET, "dev-only-change-me-16", "change-me-min-16-chars"}
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    lqe_env: str = "dev"  # dev | prod — pilote les garde-fous secret + cookie Secure
     lqe_data_dir: Path = Path("./data")
-    lqe_secret: str = "dev-only-not-for-prod"
+    lqe_secret: str = DEFAULT_LQE_SECRET
     lqe_accounts: str = "[]"
-    lqe_language_codes: str = "dyu,bci"
     lqe_cors_origins: str = "http://localhost:5173"
     lqe_cookie_name: str = "wouri_lqe"
     lqe_admin_user: str = ""
@@ -30,8 +35,16 @@ class Settings(BaseSettings):
     postgres_password: str = ""
     postgres_password_file: str = ""
 
-    def language_codes(self) -> list[str]:
-        return [c.strip().lower() for c in self.lqe_language_codes.split(",") if c.strip()]
+    def is_prod(self) -> bool:
+        return self.lqe_env.strip().lower() in ("prod", "production")
+
+    def secret_is_default(self) -> bool:
+        """Secret == placeholder PUBLIC du depot : jamais acceptable, meme en dev."""
+        return (self.lqe_secret or "").strip() in _WEAK_SECRETS
+
+    def secret_is_weak(self) -> bool:
+        s = (self.lqe_secret or "").strip()
+        return s in _WEAK_SECRETS or len(s) < 16
 
     def accounts(self) -> list[dict]:
         raw = json.loads(self.lqe_accounts or "[]")

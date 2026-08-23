@@ -17,6 +17,9 @@ from app.db import get_conn, valid_schema
 
 MIGRATIONS_DIR = Path(__file__).resolve().parent.parent.parent / "db" / "migrations"
 
+# Cle advisory fixe ("LQE") : serialise les runners de migration concurrents.
+_LOCK_KEY = 0x4C5145
+
 
 def _statements(sql: str) -> list[str]:
     lines = [ln for ln in sql.splitlines() if not ln.lstrip().startswith("--")]
@@ -42,6 +45,9 @@ def run_migrations(*, migrations_dir: Path | None = None) -> list[str]:
     directory = migrations_dir or MIGRATIONS_DIR
     applied_now: list[str] = []
     with get_conn(autocommit=False) as conn:
+        # Verrou de session : serialise les runners concurrents (workers uvicorn au boot).
+        # Libere automatiquement a la fermeture de la connexion (fin du contexte get_conn).
+        conn.execute("SELECT pg_advisory_lock(%s)", (_LOCK_KEY,))
         _bootstrap(conn, schema)
         conn.commit()
         done = _applied(conn)

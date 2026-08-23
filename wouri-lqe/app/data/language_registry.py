@@ -1,9 +1,8 @@
-"""Referentiel des langues (table `languages`) — source de verite unique.
+"""Referentiel des langues (table `languages`) — SOURCE DE VERITE UNIQUE (ADR-0034 P4).
 
-Remplace le CSV `LQE_LANGUAGE_CODES` : **activer une langue = un INSERT**, zero
-code, zero `if`-langue. La bascule des appelants metier (ingest/users) vers ce
-referentiel se fera dans une phase ulterieure ; P0 ne fait que poser la table
-et son acces.
+Activer une langue = un INSERT (`upsert_language`), zero code, zero `if`-langue. Tous
+les appelants metier (ingest, users, comptes, route /languages) valident via `is_known`
+et listent via `known_languages` ICI ; le CSV `LQE_LANGUAGE_CODES` a ete supprime.
 """
 from __future__ import annotations
 
@@ -51,6 +50,11 @@ def get_language(code: str) -> Language | None:
 def is_known(code: str) -> bool:
     """Une langue est 'connue' si presente au referentiel (quel que soit son statut)."""
     return get_language(code) is not None
+
+
+def known_languages(*, status: str | None = "active") -> list[str]:
+    """Codes des langues connues — par defaut actives seulement (pick-lists UI/comptes)."""
+    return [lg.code for lg in list_languages(status=status)]
 
 
 def upsert_language(

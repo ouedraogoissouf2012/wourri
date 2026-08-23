@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.data.languages import known_languages
+from app.data.language_registry import known_languages
 from app.data.roles import ALL_ROLES
 from app.routers.session import require_role
 from app.services import users as users_svc
