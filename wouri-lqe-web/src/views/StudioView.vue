@@ -18,6 +18,8 @@ const can = (r) => {
   return rs.includes("admin") || rs.includes(r);
 };
 
+const mediaSrc = (r) => (r.audio_url ? "/media/" + r.audio_url.split("/").pop() : null);
+
 const tabs = computed(() => {
   const out = [];
   if (can("ingest")) out.push(["upload", "Ajouter"]);
@@ -38,6 +40,10 @@ async function refresh() {
 onMounted(async () => {
   try {
     me.value = await api("/auth/me");
+    if ((me.value.roles || []).includes("admin")) {
+      router.push("/dashboard"); // l'admin orchestre, il n'opère pas l'atelier de production
+      return;
+    }
     if (tabs.value.length && !tabs.value.some((x) => x[0] === tab.value)) {
       tab.value = tabs.value[0][0];
     }
@@ -138,6 +144,7 @@ async function promote(id) {
       <article v-for="r in bronze" :key="r.id" class="border rounded p-3 bg-white">
         <p><strong>{{ r.text_local }}</strong></p>
         <p class="text-stone-600">{{ r.text_fr }}</p>
+        <audio v-if="r.audio_url" :src="mediaSrc(r)" controls class="mt-2 h-8"></audio>
         <button class="mr-2 mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_accepted')">Accepter</button>
         <button class="mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_rejected')">Rejeter</button>
       </article>
@@ -148,6 +155,7 @@ async function promote(id) {
       <article v-for="r in accepted" :key="r.id" class="border rounded p-3 bg-white">
         <p><strong>{{ r.text_local }}</strong></p>
         <p class="text-stone-600">{{ r.text_fr }}</p>
+        <audio v-if="r.audio_url" :src="mediaSrc(r)" controls class="mt-2 h-8"></audio>
         <button class="mt-2 bg-wouri-700 text-white px-2 py-1 rounded" type="button" @click="promote(r.id)">Promouvoir</button>
       </article>
       <p v-if="!accepted.length" class="text-stone-500 text-sm">Rien à promouvoir.</p>
@@ -157,7 +165,8 @@ async function promote(id) {
       <article v-for="r in corpus" :key="r.id" class="border rounded p-3 bg-white">
         <p><strong>{{ r.text_local }}</strong></p>
         <p class="text-stone-600">{{ r.text_fr }}</p>
-        <p class="text-xs text-stone-500">{{ r.audio_url ? r.audio_url : "Sans audio" }}</p>
+        <audio v-if="r.audio_url" :src="mediaSrc(r)" controls class="mt-2 h-8"></audio>
+        <p v-else class="text-xs text-stone-500">Sans audio</p>
       </article>
       <p v-if="!corpus.length" class="text-stone-500 text-sm">Corpus atelier vide.</p>
     </section>

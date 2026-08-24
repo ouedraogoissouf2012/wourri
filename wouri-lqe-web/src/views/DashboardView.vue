@@ -4,13 +4,14 @@ import { useRouter } from "vue-router";
 import { api } from "../api.js";
 
 const router = useRouter();
+const me = ref({ user: "", roles: [] });
 const rows = ref([]);
 const err = ref("");
 
 onMounted(async () => {
   try {
-    const me = await api("/auth/me");
-    if (!(me.roles || []).includes("admin")) {
+    me.value = await api("/auth/me");
+    if (!(me.value.roles || []).includes("admin")) {
       router.push("/");
       return;
     }
@@ -24,18 +25,29 @@ onMounted(async () => {
 function pct(r) {
   return r.total ? Math.round((r.covered / r.total) * 100) : 0;
 }
+
+async function logout() {
+  await api("/auth/logout", { method: "POST" });
+  router.push("/login");
+}
 </script>
 <template>
   <div class="max-w-3xl mx-auto p-6">
-    <p class="text-sm mb-4">
-      <a href="/dashboard" class="underline">← Tableau de bord</a> ·
-      <a href="/assign" class="underline">Assigner</a> ·
-      <a href="/admin" class="underline">Comptes</a>
-    </p>
-    <h1 class="text-xl font-semibold text-wouri-700">Couverture par langue</h1>
-    <p class="text-sm text-stone-600">
-      Concepts couverts (promus) par langue, sur le corpus de référence.
-    </p>
+    <header class="flex justify-between items-start gap-4">
+      <div>
+        <h1 class="text-xl font-semibold text-wouri-700">Tableau de bord</h1>
+        <p class="text-sm text-stone-600">{{ me.user }} · administration</p>
+      </div>
+      <button class="underline text-sm" type="button" @click="logout">Déconnexion</button>
+    </header>
+
+    <div class="mt-6 flex flex-wrap gap-3">
+      <a href="/assign" class="bg-wouri-700 text-white px-4 py-2 rounded">Assigner des concepts</a>
+      <a href="/admin" class="border border-wouri-700 text-wouri-700 px-4 py-2 rounded">Gérer les comptes</a>
+    </div>
+
+    <h2 class="mt-8 text-lg font-semibold text-wouri-700">Couverture par langue</h2>
+    <p class="text-sm text-stone-600">Avancement de la parité (concepts promus / total du corpus).</p>
     <p v-if="err" class="text-red-700 text-sm mt-2">{{ err }}</p>
 
     <table class="mt-4 w-full text-sm border bg-white">

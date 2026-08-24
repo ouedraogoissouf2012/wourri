@@ -11,12 +11,12 @@ const err = ref("");
 async function submit() {
   err.value = "";
   try {
-    await api("/auth/login", {
+    const me = await api("/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user: user.value, password: password.value }),
     });
-    router.push("/");
+    router.push((me.roles || []).includes("admin") ? "/dashboard" : "/");
   } catch (e) {
     err.value = "Identifiants incorrects";
   }

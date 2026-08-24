@@ -85,7 +85,7 @@ async function assign() {
 <template>
   <div class="max-w-3xl mx-auto p-6">
     <p class="text-sm mb-4">
-      <a href="/" class="underline">← Atelier</a> ·
+      <a href="/dashboard" class="underline">← Tableau de bord</a> ·
       <a href="/coverage" class="underline">Couverture</a> ·
       <a href="/admin" class="underline">Comptes</a>
     </p>
