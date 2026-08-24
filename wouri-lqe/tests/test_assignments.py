@@ -89,3 +89,17 @@ def test_parity_ok_true_when_fully_covered(seeded):
     cat = _Cat([Concept(id="c1", text_fr="X")])
     _promote_concept("c1", "bci")
     assert assignments.parity_ok(cat, language="bci") is True
+
+
+def test_missing_to_assign_source_excludes_native(db):
+    """Dioula (source) : un concept avec reponse dioula native n'est PAS 'a produire'."""
+    cat = _Cat([Concept(id="a", text_fr="A", ref_dyu="Aw ye a ke"),
+                Concept(id="b", text_fr="B")])
+    missing = assignments.missing_to_assign(cat, language="dyu")
+    assert {c["concept_id"] for c in missing} == {"b"}  # 'a' natif -> exclu
+
+
+def test_parity_ok_true_for_source_via_native(db):
+    """Le dioula est a jour des que le corpus porte sa reponse native (sans atelier)."""
+    cat = _Cat([Concept(id="a", text_fr="A", ref_dyu="Aw ye a ke")])
+    assert assignments.parity_ok(cat, language="dyu") is True

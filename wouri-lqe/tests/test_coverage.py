@@ -56,3 +56,25 @@ def test_only_production_status_counts(db):
             " VALUES ('a', 'bci', 'bronze')"
         )
     assert coverage.coverage_matrix(cat)[0].covered == 0  # bronze != production
+
+
+def test_source_language_covered_by_native_corpus(db):
+    """Le dioula (langue source) est couvert par le corpus moteur (ref_dyu non-vide),
+    sans production dans l'atelier — corrige l'affichage trompeur 'dyu 0/197'."""
+    reg.upsert_language("dyu", "Dioula", status="active")
+    cat = FakeCatalog([
+        Concept(id="a", text_fr="A", ref_dyu="Aw ye a ke"),  # reponse dioula native
+        Concept(id="b", text_fr="B"),                        # pas de reponse dioula (ref_dyu="")
+    ])
+    row = next(x for x in coverage.coverage_matrix(cat) if x.code == "dyu")
+    assert row.covered == 1 and row.missing == 1  # 'a' natif-couvert, 'b' non
+    assert coverage.missing_concept_ids(cat, "dyu") == ["b"]
+
+
+def test_non_source_language_has_no_native_coverage(db):
+    """Une langue non-source (baoule) n'a AUCUN natif : ref_dyu ne la couvre pas."""
+    reg.upsert_language("bci", "Baoule", status="active")
+    cat = FakeCatalog([Concept(id="a", text_fr="A", ref_dyu="Aw ye a ke")])
+    assert coverage.native_covered_ids(cat.list_concepts(), "bci") == set()
+    row = next(x for x in coverage.coverage_matrix(cat) if x.code == "bci")
+    assert row.covered == 0 and row.up_to_date is False

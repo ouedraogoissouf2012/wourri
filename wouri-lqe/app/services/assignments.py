@@ -42,14 +42,16 @@ def list_open(*, language: str) -> list[dict]:
 
 
 def missing_to_assign(catalog: ConceptCatalog, *, language: str) -> list[dict]:
-    """Concepts manquants NON encore assignes (open), enrichis (consigne fr + ref dioula)."""
+    """Concepts manquants NON encore assignes (open), enrichis (consigne fr + ref dioula).
+    Une seule lecture du catalogue (`list_concepts`) + deux sets d'ids : pas de requete
+    SQL par concept (sinon ~1 connexion par concept -> timeout sur le corpus complet)."""
     open_assigned = repo.assigned_concept_ids(target_language=language, status="open")
+    concepts = catalog.list_concepts()
+    covered = (productions_repo.covered_concept_ids(language=language)
+               | coverage.native_covered_ids(concepts, language))
     out: list[dict] = []
-    for cid in coverage.missing_concept_ids(catalog, language):
-        if cid in open_assigned:
-            continue
-        c = catalog.get_concept(cid)
-        if c is None:
+    for c in concepts:
+        if c.id in covered or c.id in open_assigned:
             continue
         out.append({"concept_id": c.id, "source_fr": c.text_fr,
                     "intent": c.intent, "ref_dyu": c.ref_dyu})
@@ -61,11 +63,13 @@ def mark_done(*, concept_id: str, language: str) -> bool:
 
 
 def parity_ok(catalog: ConceptCatalog, *, language: str) -> bool:
-    """True si `language` couvre 100 % des concepts du catalogue — base de la garde
-    parite-avant-extension. Catalogue vide => non a jour (bloque). Mono-langue : une seule
-    requete de couverture (pas de recalcul de toute la matrice)."""
-    concept_ids = {c.id for c in catalog.list_concepts()}
+    """True si `language` couvre 100 % des concepts du catalogue (productions promues OU
+    reponse native du corpus) — base de la garde parite-avant-extension. Le dioula (source)
+    est couvert par le corpus moteur. Catalogue vide => non a jour (bloque)."""
+    concepts = catalog.list_concepts()
+    concept_ids = {c.id for c in concepts}
     if not concept_ids:
         return False
-    covered = productions_repo.covered_concept_ids(language=language)
+    covered = (productions_repo.covered_concept_ids(language=language)
+               | coverage.native_covered_ids(concepts, language))
     return concept_ids <= covered
