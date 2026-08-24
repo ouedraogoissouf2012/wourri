@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 
 from app.routers.session import require_role
 from app.services.assignments import parity_ok
-from app.services.ingest import ingest, parse_upload
+from app.services.audio_store import LocalAudioStore
+from app.services.ingest import ingest, ingest_response, parse_upload
 from app.services.pg_catalog import PgCorpusCatalog
 
 router = APIRouter(prefix="/ingest")
@@ -52,6 +53,37 @@ async def ingest_file(file: UploadFile = File(...), user: dict = Depends(require
     _guard_parity(entries, user["lang"])
     result = ingest(entries, language=user["lang"], actor=user["u"])
     if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result)
+    return result
+
+
+_ALLOWED_AUDIO = {"audio/webm", "audio/ogg", "audio/wav", "audio/mpeg", "audio/mp4"}
+
+
+@router.post("/audio")
+async def ingest_audio(
+    concept_id: str = Form(...),
+    text_fr: str = Form(...),
+    text_local: str = Form(""),
+    audio: UploadFile = File(...),
+    user: dict = Depends(require_role("ingest")),
+):
+    """Réponse d'un locuteur à une assignation : audio natif requis + texte optionnel.
+    Stocke l'audio (audio_store) puis crée la production bronze rattachée au concept."""
+    mime = (audio.content_type or "audio/webm").split(";")[0].strip()
+    if mime not in _ALLOWED_AUDIO:
+        raise HTTPException(status_code=400, detail="format_audio_non_supporte")
+    raw = await audio.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="audio_vide")
+    if len(raw) > 15_000_000:
+        raise HTTPException(status_code=400, detail="audio_trop_grand")
+    ref = LocalAudioStore().save(raw, mime=mime)
+    result = ingest_response(
+        concept_id=concept_id, text_local=text_local, text_fr=text_fr,
+        audio_url=ref, language=user["lang"], actor=user["u"],
+    )
+    if not result.get("ok") and not result.get("duplicate"):
         raise HTTPException(status_code=400, detail=result)
     return result
 

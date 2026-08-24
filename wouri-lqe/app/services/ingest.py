@@ -154,3 +154,33 @@ def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
         "errors": errors,
         "language": language,
     }
+
+
+def ingest_response(*, concept_id, text_local, text_fr, audio_url, language, actor) -> dict:
+    """Ingest d'UNE réponse à une assignation : audio requis (audio_url déjà stocké),
+    texte local OPTIONNEL (le baoulé s'écrit peu). Le pivot `text_fr` vient de
+    l'assignation. Dédup par concept (external_id = concept_id)."""
+    if not is_known(language):
+        return {"ok": False, "reason": "unknown_language"}
+    fr = str(text_fr or "").strip()
+    cid = str(concept_id or "").strip() or None
+    if not fr or not cid:
+        return {"ok": False, "reason": "concept_et_pivot_requis"}
+    local = str(text_local or "").strip()
+    fp = fingerprint(language=language, text_local=local, text_fr=fr, external_id=cid)
+    res = repo.insert_bronze(
+        language=language,
+        text_local=local[:2000],
+        text_fr=fr[:2000],
+        fingerprint=fp,
+        concept_id=cid,
+        audio_url=audio_url,
+        created_by=actor,
+        meta={"source": "speaker_audio", "actor": actor},
+    )
+    return {
+        "ok": res["inserted"],
+        "id": res["id"],
+        "duplicate": not res["inserted"],
+        "language": language,
+    }
