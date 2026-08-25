@@ -17,7 +17,7 @@ import pytest
 from app.db import get_conn
 from app.services.migrate import run_migrations
 
-_TABLES = "languages, assignments, productions, media"
+_TABLES = "languages, assignments, productions, media, dictation"
 
 
 @pytest.fixture
