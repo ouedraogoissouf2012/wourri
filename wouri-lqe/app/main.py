@@ -10,6 +10,7 @@ from app.routers import (
     assignments,
     corpus,
     coverage,
+    dictation,
     health,
     ingest,
     languages,
@@ -63,6 +64,7 @@ app = FastAPI(
         {"name": "Couverture", "description": "Matrice concepts × langues (ADR-0034)"},
         {"name": "Assignations", "description": "Assignations admin par lot (ADR-0034 P2)"},
         {"name": "Médias", "description": "Lecture audio des productions (ADR-0034 P3)"},
+        {"name": "Dictée", "description": "Collecte du dataset ASR par dictée guidée (ADR-0035)"},
     ],
 )
 app.add_middleware(
@@ -82,3 +84,4 @@ app.include_router(accounts.router, tags=["Comptes"])
 app.include_router(coverage.router, tags=["Couverture"])
 app.include_router(assignments.router, tags=["Assignations"])
 app.include_router(media.router, tags=["Médias"])
+app.include_router(dictation.router, tags=["Dictée"])
