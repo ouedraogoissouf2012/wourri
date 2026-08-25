@@ -121,6 +121,7 @@ async function promote(id) {
       </div>
       <div class="text-sm space-x-3">
         <a v-if="can('ingest')" href="/demandes" class="underline">Mes demandes</a>
+        <a v-if="can('ingest')" href="/dictee" class="underline">Dictée ASR</a>
         <a v-if="can('admin')" href="/admin" class="underline">Comptes</a>
         <button class="underline" type="button" @click="logout">Déconnexion</button>
       </div>

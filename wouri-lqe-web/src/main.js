@@ -8,6 +8,7 @@ import CoverageView from "./views/CoverageView.vue";
 import AssignView from "./views/AssignView.vue";
 import RequestsView from "./views/RequestsView.vue";
 import DashboardView from "./views/DashboardView.vue";
+import DictationView from "./views/DictationView.vue";
 import "./style.css";
 
 const router = createRouter({
@@ -20,6 +21,7 @@ const router = createRouter({
     { path: "/assign", component: AssignView },
     { path: "/demandes", component: RequestsView },
     { path: "/dashboard", component: DashboardView },
+    { path: "/dictee", component: DictationView },
   ],
 });
 

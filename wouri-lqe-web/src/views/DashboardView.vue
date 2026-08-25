@@ -44,6 +44,7 @@ async function logout() {
     <div class="mt-6 flex flex-wrap gap-3">
       <a href="/assign" class="bg-wouri-700 text-white px-4 py-2 rounded">Assigner des concepts</a>
       <a href="/admin" class="border border-wouri-700 text-wouri-700 px-4 py-2 rounded">Gérer les comptes</a>
+      <a href="/dictee" class="border border-wouri-700 text-wouri-700 px-4 py-2 rounded">Dictée ASR (dataset)</a>
     </div>
 
     <h2 class="mt-8 text-lg font-semibold text-wouri-700">Couverture par langue</h2>
