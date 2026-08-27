@@ -3,7 +3,7 @@ Tests pour `app/services/chat/handlers/french_handler.py` (ADR-0015 PR 1/4).
 
 Couvre le handler FRENCH du Strategy Pattern :
     - FrenchHandler.process() : 4 branches (sans audio, avec audio, TTS echec, weather)
-    - Backwards compatibility : try_deepseek_french wrapper + _try_deepseek_french
+    - Backwards compatibility : deepseek_router.try_deepseek_french delegue au handler
 
 Pattern de mock : on patche `app.services.deepseek.chat_with_deepseek` et
 `app.services.tts_french.synthesize_french` au niveau du module deepseek_router
@@ -183,6 +183,10 @@ async def test_french_handler_passe_weather_a_deepseek():
 
 # ─────────────────────────────────────────────
 # Backwards compatibility (PR 1/4 wrapper)
+#
+# #495 : les deux tests qui portaient sur `ChatService._try_deepseek_french`
+# ont ete retires avec le wrapper lui-meme. Celui ci-dessous couvre la vraie
+# delegation (deepseek_router -> HANDLERS[FRENCH]), qui reste un contrat.
 # ─────────────────────────────────────────────
 
 
@@ -212,37 +216,3 @@ async def test_back_compat_try_deepseek_french_delegue_au_handler():
     assert result.response == "FR via wrapper"
     assert result.audio_url == "/static/audio/x.ogg"
     assert result.audio_language == "Français"
-
-
-@pytest.mark.asyncio
-async def test_back_compat_chat_service_method_delegue():
-    """ChatService._try_deepseek_french doit toujours retourner un ChatResult."""
-    from app.services.chat_service import ChatService
-
-    service = ChatService()
-    nlu = _make_nlu()
-    with patch(
-        "app.services.deepseek.chat_with_deepseek",
-        new=AsyncMock(return_value="FR via ChatService"),
-    ), patch(
-        "app.services.tts_french.synthesize_french",
-        new=AsyncMock(return_value=None),
-    ):
-        result = await service._try_deepseek_french(
-            nlu=nlu,
-            weather_data=None,
-            city="Abidjan",
-            include_audio=False,
-            language=Language.FRENCH,
-            user_id=None,
-        )
-
-    assert isinstance(result, ChatResult)
-    assert result.response == "FR via ChatService"
-
-
-def test_back_compat_chat_service_method_exists():
-    """L'attribut _try_deepseek_french doit toujours exister (back-compat)."""
-    from app.services.chat_service import ChatService
-
-    assert hasattr(ChatService, "_try_deepseek_french")

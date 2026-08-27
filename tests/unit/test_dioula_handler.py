@@ -344,17 +344,3 @@ async def test_intent_non_meteo_ne_declenche_pas_le_niveau_meteo():
         )
 
     mock_meteo.assert_not_called()
-
-
-# ─────────────────────────────────────────────
-# Backwards compatibility
-# ─────────────────────────────────────────────
-
-
-def test_back_compat_chat_service_methods_exist():
-    """Les wrappers _try_ivr_* / _try_deepseek_dioula doivent toujours exister."""
-    from app.services.chat_service import ChatService
-
-    assert hasattr(ChatService, "_try_ivr_exact")
-    assert hasattr(ChatService, "_try_ivr_concept")
-    assert hasattr(ChatService, "_try_deepseek_dioula")

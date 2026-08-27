@@ -18,6 +18,12 @@ from app.services.chat_service import (
     NLUResult,
     ChatResult,
 )
+# Refactor #495 : les 9 wrappers `ChatService._*` (qui ne faisaient que
+# deleguer) ont ete retires. Ces tests appellent desormais directement les
+# modules extraits par le refactor P2-09 #204.
+from app.services.chat.city_detector import detect_city
+from app.services.chat.ivr_searcher import search_ivr_by_concept
+from app.services.chat.nlu_preprocessor import enrich_for_deepseek, preprocess_nlu
 # Refactor P2-09 PR 1 (Sprint L) : _build_meteo_bambara migre vers
 # app/services/chat/meteo_injector.py. Tests existants continuent de
 # l'importer depuis ce module externe pour preserver leur logique.
@@ -28,43 +34,37 @@ from app.models.schemas import Language
 class TestDetectCity:
     """Test de la détection de ville dans le message."""
 
-    def setup_method(self):
-        self.service = ChatService()
-
     def test_detect_abidjan(self):
-        assert self.service._detect_city("Je suis à Abidjan") == "Abidjan"
+        assert detect_city("Je suis à Abidjan") == "Abidjan"
 
     def test_detect_korhogo(self):
-        assert self.service._detect_city("La météo à Korhogo ?") == "Korhogo"
+        assert detect_city("La météo à Korhogo ?") == "Korhogo"
 
     def test_no_city(self):
-        assert self.service._detect_city("Bonjour, comment planter du riz ?") is None
+        assert detect_city("Bonjour, comment planter du riz ?") is None
 
     def test_word_boundary(self):
         """'Man' ne doit pas matcher dans 'manioc'."""
-        result = self.service._detect_city("Je veux planter du manioc")
+        result = detect_city("Je veux planter du manioc")
         assert result != "Man"
 
     def test_case_insensitive(self):
-        assert self.service._detect_city("je suis à bouake") == "Bouake"
+        assert detect_city("je suis à bouake") == "Bouake"
 
 
 class TestNLUPreprocessing:
     """Test du preprocessing NLU."""
 
-    def setup_method(self):
-        self.service = ChatService()
-
     def test_french_message_no_nlu(self):
         """Un message français ne passe pas par le NLU."""
-        result = self.service._preprocess_nlu("Bonjour", None, Language.FRENCH)
+        result = preprocess_nlu("Bonjour", None, Language.FRENCH)
         assert result.message_for_deepseek == "Bonjour"
         assert result.intent is None
         assert result.concepts == {}
 
     def test_no_bambara_text_no_chars(self):
         """Sans texte bambara ni caractères spéciaux, pas de NLU."""
-        result = self.service._preprocess_nlu("hello world", None, Language.DIOULA)
+        result = preprocess_nlu("hello world", None, Language.DIOULA)
         assert result.message_for_deepseek == "hello world"
         assert result.intent is None
 
@@ -80,7 +80,7 @@ class TestNLUPreprocessing:
         mock_nlu.process.return_value = mock_result
         mock_nlu_fn.return_value = mock_nlu
 
-        result = self.service._preprocess_nlu(
+        result = preprocess_nlu(
             "question", "malo bɛ sɛnɛ", Language.DIOULA
         )
 
@@ -97,7 +97,7 @@ class TestNLUPreprocessing:
         mock_nlu.process.return_value = mock_result
         mock_nlu_fn.return_value = mock_nlu
 
-        result = self.service._preprocess_nlu(
+        result = preprocess_nlu(
             "test", "blabla ɛɔ", Language.DIOULA
         )
 
@@ -125,7 +125,7 @@ class TestNLUPreprocessing:
         mock_nlu.process.return_value = mock_result
         mock_nlu_fn.return_value = mock_nlu
 
-        result = self.service._preprocess_nlu(
+        result = preprocess_nlu(
             "Bonjour je veux planter du riz", None, Language.BOTH
         )
 
@@ -136,7 +136,7 @@ class TestNLUPreprocessing:
 
     def test_fr_message_french_only_no_nlu(self):
         """Mode FRENCH pure : le NLU ne doit PAS être appelé (régression check)."""
-        result = self.service._preprocess_nlu(
+        result = preprocess_nlu(
             "Bonjour je veux planter du riz", None, Language.FRENCH
         )
         # Pas de NLU en mode FRENCH (court-circuit ligne 172)
@@ -156,7 +156,7 @@ class TestNLUPreprocessing:
             mock_nlu.process.return_value = mock_result
             mock_nlu_fn.return_value = mock_nlu
 
-            result = self.service._preprocess_nlu(
+            result = preprocess_nlu(
                 "Je veux planter du riz", "malo bɛ sɛnɛ", Language.BOTH
             )
 
@@ -167,7 +167,7 @@ class TestNLUPreprocessing:
     def test_fr_message_dioula_only_no_fallback(self):
         """Mode DIOULA pure + message FR sans chars bambara : pas de fallback FR
         (uniquement BOTH déclenche le fallback)."""
-        result = self.service._preprocess_nlu(
+        result = preprocess_nlu(
             "Bonjour je veux planter du riz", None, Language.DIOULA
         )
         # Pas de fallback en mode DIOULA strict
@@ -178,9 +178,6 @@ class TestNLUPreprocessing:
 class TestPreprocessNluFrIntegration:
     """Tests d'intégration : le NLU réel doit retourner les bons concepts
     pour des phrases FR variées (validation empirique du fix Sprint G.1)."""
-
-    def setup_method(self):
-        self.service = ChatService()
 
     # NB sorgho → CULTURE_MIL : choix INTENTIONNEL du projet. Le concept
     # CULTURE_MIL groupe mil + sorgho (keywords "keninge", "keninge foro",
@@ -206,7 +203,7 @@ class TestPreprocessNluFrIntegration:
         self, phrase, expected_intent, expected_culture
     ):
         """Le NLU réel détecte intent + culture sur phrases FR (cible Sprint G.1)."""
-        result = self.service._preprocess_nlu(phrase, None, Language.BOTH)
+        result = preprocess_nlu(phrase, None, Language.BOTH)
         assert result.intent == expected_intent, (
             f"Intent attendu '{expected_intent}', obtenu '{result.intent}' pour {phrase!r}"
         )
@@ -219,25 +216,22 @@ class TestPreprocessNluFrIntegration:
 class TestEnrichForDeepseek:
     """Test de l'enrichissement contextuel."""
 
-    def setup_method(self):
-        self.service = ChatService()
-
     def test_adds_culture_context(self):
-        result = self.service._enrich_for_deepseek(
+        result = enrich_for_deepseek(
             "Je cherche des conseils",
             {"CULTURE_RIZ": True}
         )
         assert "[Paysan cultive: riz]" in result
 
     def test_adds_animal_context(self):
-        result = self.service._enrich_for_deepseek(
+        result = enrich_for_deepseek(
             "Question sur mes animaux",
             {"ANIMAL_POULET": True}
         )
         assert "[Paysan cultive: poulets]" in result
 
     def test_no_context_without_culture(self):
-        result = self.service._enrich_for_deepseek(
+        result = enrich_for_deepseek(
             "Question générale",
             {"ACTION_PLANTER": True}
         )
@@ -281,26 +275,23 @@ class TestBuildMeteoBambara:
 class TestSearchIVRByConcept:
     """Test de la recherche IVR par concept."""
 
-    def setup_method(self):
-        self.service = ChatService()
-
     async def test_no_concepts_returns_none(self):
-        """Sprint G.2 : `_search_ivr_by_concept` est désormais async."""
-        assert await self.service._search_ivr_by_concept({}) is None
+        """Sprint G.2 : `search_ivr_by_concept` est désormais async."""
+        assert await search_ivr_by_concept({}) is None
 
     async def test_action_planter_without_culture_returns_none(self):
         """ACTION_PLANTER sans culture → None (déclenche clarification en amont, Fix #94).
 
         Fix #94 a supprimé le fallback silencieux ACTION_PLANTER → CULTURE_MAIS.
-        Désormais `_search_ivr_by_concept` retourne directement None quand aucune
-        culture n'est détectée, ce qui déclenche `_clarify_missing_culture` dans
-        le chemin appelant `_try_ivr_concept`.
+        Désormais `search_ivr_by_concept` retourne directement None quand aucune
+        culture n'est détectée, ce qui déclenche `clarify_missing_culture` dans
+        le chemin appelant `try_ivr_concept`.
 
         Invariant verrouillé : `chercher_reponse_ivr` ne doit PAS être appelé
         dans ce cas (sinon réintroduction silencieuse d'un fallback).
         """
         with patch("app.services.corpus_service.chercher_reponse_ivr") as mock_vdb:
-            result = await self.service._search_ivr_by_concept({"ACTION_PLANTER": True})
+            result = await search_ivr_by_concept({"ACTION_PLANTER": True})
             assert result is None
             mock_vdb.assert_not_called()
 
@@ -311,7 +302,7 @@ class TestSearchIVRByConcept:
                 "id": "riz_conseil_001",
                 "reponse_bambara": "Malo sɛnɛ..."
             }
-            result = await self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
+            result = await search_ivr_by_concept({"CULTURE_RIZ": True})
             assert result is not None
 
 
@@ -343,11 +334,8 @@ class TestIVRResponseContract:
     champs, ce qui faisait afficher du dioula avec un drapeau 🇫🇷 côté WhatsApp.
     """
 
-    def setup_method(self):
-        self.service = ChatService()
-
     async def test_search_ivr_by_concept_returns_dict_with_both_languages(self):
-        """`_search_ivr_by_concept` retourne un dict avec reponse_bambara + reponse_fr.
+        """`search_ivr_by_concept` retourne un dict avec reponse_bambara + reponse_fr.
 
         Sprint G.2 : méthode async (to_thread sur chercher_reponse_ivr).
         """
@@ -357,7 +345,7 @@ class TestIVRResponseContract:
                 "reponse_bambara": "Malo sɛnɛ kalo la sanji tuma na.",
                 "reponse_fr": "Plante ton riz en mai pendant la saison des pluies.",
             }
-            result = await self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
+            result = await search_ivr_by_concept({"CULTURE_RIZ": True})
             assert isinstance(result, dict), "doit retourner un dict (#166), pas une str"
             assert "reponse_bambara" in result
             assert "reponse_fr" in result
@@ -372,7 +360,7 @@ class TestIVRResponseContract:
                 "reponse_bambara": "Malo sɛnɛ.",
                 # reponse_fr volontairement absent
             }
-            result = await self.service._search_ivr_by_concept({"CULTURE_RIZ": True})
+            result = await search_ivr_by_concept({"CULTURE_RIZ": True})
             assert result is not None
             assert result["reponse_fr"] == ""
             assert result["reponse_bambara"] == "Malo sɛnɛ."
@@ -430,10 +418,10 @@ class TestProcessDispatcher:
             language=language.value,
         )
         with patch(
-            "app.services.chat_service.ChatService._detect_city",
+            "app.services.chat_service.detect_city",
             return_value=None,
         ), patch(
-            "app.services.chat_service.ChatService._preprocess_nlu",
+            "app.services.chat_service.preprocess_nlu",
             return_value=NLUResult(message_for_deepseek=message),
         ), patch(
             "app.services.weather.get_weather",
@@ -486,7 +474,7 @@ class TestProcessDispatcher:
         """Si le pipeline leve, retour ChatResult d'erreur graceful (pas de crash)."""
         service = ChatService()
         with patch(
-            "app.services.chat_service.ChatService._detect_city",
+            "app.services.chat_service.detect_city",
             side_effect=RuntimeError("boom"),
         ):
             result = await service.process(message="test", language=Language.FRENCH)

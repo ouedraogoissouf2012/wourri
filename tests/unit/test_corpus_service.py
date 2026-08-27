@@ -354,6 +354,9 @@ class TestInitialiserVdb:
         2. SELECT count(*) FROM corpus_entries est execute
         3. _get_model() est appele (precharge R3 mitigation double-charge memoire
            en mode dual avec Chroma simultane)
+        4. #487 : la fraicheur du corpus est verifiee sur la MEME connexion
+           (lecture de corpus_metadata) — cf. tests/unit/test_corpus_fingerprint.py
+           pour le detail du signal emis.
         """
         mock_result = MagicMock()
         mock_result.scalar.return_value = 162
@@ -376,11 +379,14 @@ class TestInitialiserVdb:
 
         # R3 mitigation : modele precharge
         mock_get_model.assert_called_once()
-        # SELECT count(*) execute
-        mock_conn.execute.assert_called_once()
-        sql_arg = mock_conn.execute.call_args[0][0]
-        assert "count" in str(sql_arg).lower()
-        assert "corpus_entries" in str(sql_arg).lower()
+        # SELECT count(*) execute en premier
+        assert mock_conn.execute.call_count == 2
+        sql_count = str(mock_conn.execute.call_args_list[0][0][0]).lower()
+        assert "count" in sql_count
+        assert "corpus_entries" in sql_count
+        # #487 : verification de fraicheur sur la meme connexion
+        sql_empreinte = str(mock_conn.execute.call_args_list[1][0][0]).lower()
+        assert "corpus_metadata" in sql_empreinte
 
 
 # ─────────────────────────────────────────────────────────────────────────
