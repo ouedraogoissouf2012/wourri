@@ -7,7 +7,13 @@ de chaque entrée et persiste le tout dans :
 
 - `corpus_entries`           : une ligne par entrée IVR
 - `corpus_phrases_attestees` : ~157 lignes (phrases bambara CI attestées)
-- `corpus_metadata`          : 4 clés (version, source, imported_at, entries_count)
+- `corpus_metadata`          : 5 clés (version, source, imported_at,
+                               entries_count, source_sha256)
+
+`source_sha256` (#487) est l'empreinte du JSON importé. Elle est relue au
+démarrage du moteur par `corpus_service.initialiser_vdb()`, qui loggue un
+WARNING si `corpus_ivr.json` a changé depuis — l'oubli de réimport cesse
+d'être silencieux.
 
 Le script est **idempotent** : il TRUNCATE les 3 tables avant insertion. Cela
 respecte la contrainte ADR-0008 §Phase B (« reproductible ») et garantit qu'un
@@ -59,6 +65,13 @@ except ImportError:
 # Import APRÈS l'insertion dans sys.path (sinon `app.db` introuvable).
 from app.db.url_resolver import resolve_postgres_url  # noqa: E402
 
+# Empreinte du corpus (#487) : définition **canonique** côté service, importée ici
+# plutôt que dupliquée — écriture et vérification ne peuvent pas diverger.
+from app.services.corpus_service import (  # noqa: E402
+    CORPUS_FINGERPRINT_KEY,
+    corpus_fingerprint_from_bytes,
+)
+
 _CORPUS_PATH = _HERE / "dictionnaires" / "corpus_ivr.json"
 _MODEL_PATH = _HERE / "modeles_manuels" / "paraphrase-multilingual-MiniLM-L12-v2"
 _EMBEDDING_DIM = 384
@@ -77,9 +90,18 @@ def _build_document_text(entry: dict) -> str:
     return f"{entry.get('reponse_fr', '')} {tags_text} {phrases_text}"
 
 
-def _load_corpus() -> dict:
-    with open(_CORPUS_PATH, encoding="utf-8") as f:
-        return json.load(f)
+def _load_corpus() -> tuple[dict, str]:
+    """Charge le corpus ET son empreinte depuis les MÊMES octets.
+
+    Re-lire le fichier pour le hasher en fin d'import ouvrirait une fenêtre
+    TOCTOU : le calcul des embeddings dure de quelques dizaines de secondes à
+    plusieurs minutes, et une édition du JSON pendant ce laps ferait stocker
+    l'empreinte d'un contenu jamais importé. Le contrôle au démarrage
+    certifierait alors « inchangé » une base pourtant obsolète — exactement le
+    mode d'échec silencieux que #487 supprime.
+    """
+    octets = _CORPUS_PATH.read_bytes()
+    return json.loads(octets.decode("utf-8")), corpus_fingerprint_from_bytes(octets)
 
 
 # Identifiant HuggingFace du modèle (cohérent avec vdb_service.py, ADR-0008 §Phase B).
@@ -200,7 +222,13 @@ def _import_entries(conn, entries: Iterable[dict], embeddings) -> tuple[int, int
     return n_entries, n_phrases
 
 
-def _upsert_metadata(conn, corpus: dict, n_entries: int) -> None:
+def _upsert_metadata(conn, corpus: dict, n_entries: int, empreinte: str) -> int:
+    """Écrit les métadonnées du corpus. Retourne le nombre de clés écrites.
+
+    `empreinte` provient des octets effectivement importés (cf. `_load_corpus`)
+    et jamais d'une relecture du fichier : c'est ce qui garantit que
+    `source_sha256` désigne bien le contenu présent dans pgvector.
+    """
     from sqlalchemy import text
 
     metadata = {
@@ -208,7 +236,9 @@ def _upsert_metadata(conn, corpus: dict, n_entries: int) -> None:
         "source": "dictionnaires/corpus_ivr.json",
         "imported_at": datetime.now(timezone.utc).isoformat(),
         "entries_count": str(n_entries),
+        CORPUS_FINGERPRINT_KEY: empreinte,
     }
+
     upsert_sql = text(
         """
         INSERT INTO corpus_metadata (key, value, updated_at)
@@ -219,6 +249,7 @@ def _upsert_metadata(conn, corpus: dict, n_entries: int) -> None:
     )
     for key, value in metadata.items():
         conn.execute(upsert_sql, {"key": key, "value": value})
+    return len(metadata)
 
 
 def main() -> int:
@@ -234,7 +265,7 @@ def main() -> int:
             safe_url = f"{scheme}://{user}:***@{host}"
     print(f"[IMPORT] Cible : {safe_url}")
 
-    corpus = _load_corpus()
+    corpus, empreinte = _load_corpus()
     entries = corpus.get("entries", [])
     if not entries:
         print("[IMPORT] ERREUR : corpus vide.", file=sys.stderr)
@@ -265,11 +296,11 @@ def main() -> int:
     with engine.begin() as conn:
         _truncate_all(conn)
         n_entries, n_phrases = _import_entries(conn, entries, embeddings)
-        _upsert_metadata(conn, corpus, n_entries)
+        n_metadata = _upsert_metadata(conn, corpus, n_entries, empreinte)
 
     print(
         f"[IMPORT] OK — {n_entries} entries + {n_phrases} phrases_attestees "
-        f"+ 4 metadata insérés."
+        f"+ {n_metadata} metadata insérés."
     )
     return 0
 

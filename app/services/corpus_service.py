@@ -9,6 +9,8 @@ contrat historique Chroma) :
 - `get_reponse_fallback() -> str`
 - `get_phrases_for_intent(intent, cultures) -> list[dict]`
 - `initialiser_vdb() -> None`
+- `compute_corpus_fingerprint(path=None) -> str | None`
+- `corpus_fingerprint_from_bytes(data) -> str`
 
 **Logique métier** : cascade 3 essais + scoring saison/conditions partagé
 (`app/services/corpus/season_scoring.py`). Format `document_text` hérité de
@@ -16,7 +18,10 @@ l'import historique (cohérence sémantique des embeddings — jamais recalculé
 
 **Peuplement** : UNIQUEMENT via `scripts/import_corpus_ivr.py` (manuel). Après
 toute modification de `dictionnaires/corpus_ivr.json`, relancer l'import —
-rien ne se synchronise automatiquement.
+rien ne se synchronise automatiquement. Depuis #487, `initialiser_vdb()` compare
+l'empreinte SHA-256 du JSON courant à celle stockée à l'import
+(`corpus_metadata.source_sha256`) et loggue un WARNING en cas d'écart : l'oubli
+de réimport devient un signal explicite au lieu d'un échec silencieux.
 
 **Logs** : préfixe `[VDB-PG]` (hérité de l'époque bi-backend).
 
@@ -28,6 +33,7 @@ Aucun I/O au module import (cf. discipline tests unit avec mock).
 """
 from __future__ import annotations
 
+import hashlib
 import logging
 import time
 from functools import lru_cache
@@ -44,6 +50,17 @@ _MODEL_PATH = (
     / "paraphrase-multilingual-MiniLM-L12-v2"
 )
 _EMBEDDING_DIM = 384
+
+# Empreinte du corpus source (#487) — clé de `corpus_metadata` écrite par
+# `scripts/import_corpus_ivr.py` à l'import, relue au démarrage pour détecter un
+# JSON modifié sans réimport.
+CORPUS_FINGERPRINT_KEY = "source_sha256"
+
+_CORPUS_JSON_PATH = (
+    Path(__file__).resolve().parent.parent.parent
+    / "dictionnaires"
+    / "corpus_ivr.json"
+)
 
 # Fallback bambara hardcodé (hérité de l'ancien backend Chroma, retiré #203)
 _FALLBACK_BAMBARA = "N bɛ i dɛmɛ i ka sɛnɛ ko la. I ka i ka ɲinini wele fɔ cogo wɛrɛ."
@@ -470,11 +487,125 @@ def get_phrases_for_intent(intent: str, cultures: list[str]) -> list[dict]:
         return []
 
 
+# ───────────────────────────────────────────────────────────────────────
+# Fraîcheur du corpus (#487)
+# ───────────────────────────────────────────────────────────────────────
+
+
+def corpus_fingerprint_from_bytes(data: bytes) -> str:
+    """Définition **canonique** de l'empreinte : SHA-256 des octets du corpus.
+
+    Une seule définition partagée : `scripts/import_corpus_ivr.py` l'applique
+    aux octets qu'il vient de parser (jamais à une relecture du fichier — cf. la
+    fenêtre TOCTOU documentée dans son `_load_corpus`), et ce module l'applique
+    au JSON courant via `compute_corpus_fingerprint`. Écriture et vérification
+    ne peuvent donc pas diverger.
+    """
+    return hashlib.sha256(data).hexdigest()
+
+
+def compute_corpus_fingerprint(path: Optional[Path] = None) -> Optional[str]:
+    """Empreinte du fichier corpus JSON — `None` s'il est illisible.
+
+    Empreinte des **octets bruts**, donc reproductible sans Python pour un
+    diagnostic ops (`sha256sum dictionnaires/corpus_ivr.json`). Cela suppose que
+    git ne réécrit pas le fichier à la volée : vérifié — le dépôt n'a pas de
+    `.gitattributes` et `core.autocrlf=false`, donc les octets du working tree
+    sont ceux du blob sur toutes les plateformes (dev Windows, CI et image
+    Docker Linux). Si un `.gitattributes` normalisait un jour les fins de ligne,
+    l'empreinte divergerait entre plateformes et produirait de faux WARNING.
+    """
+    cible = path or _CORPUS_JSON_PATH
+    try:
+        return corpus_fingerprint_from_bytes(cible.read_bytes())
+    except OSError as e:
+        logger.warning("[VDB-PG] Empreinte corpus non calculable (%s): %s", cible, e)
+        return None
+
+
+def _lire_empreinte_stockee(conn) -> Optional[str]:
+    """Lit `corpus_metadata.source_sha256` — `None` si la clé est absente."""
+    from sqlalchemy import text
+
+    row = conn.execute(
+        text("SELECT value FROM corpus_metadata WHERE key = :key"),
+        {"key": CORPUS_FINGERPRINT_KEY},
+    ).first()
+    return row[0] if row else None
+
+
+def _verifier_fraicheur_corpus(conn) -> bool:
+    """Compare le JSON courant à l'empreinte stockée à l'import (#487).
+
+    Retourne `True` si pgvector reflète bien `corpus_ivr.json`. Tout autre cas
+    (écart d'empreinte, empreinte absente, vérification impossible) retourne
+    `False` **et** loggue un WARNING actionnable : c'est le seul signal qui
+    transforme un oubli de réimport en échec observable plutôt que silencieux.
+
+    Ne lève jamais : un défaut de vérification ne doit pas empêcher le
+    démarrage d'un moteur par ailleurs sain.
+
+    **Portée** — ce contrôle couvre le chemin `corpus_ivr.json` →
+    `scripts/import_corpus_ivr.py` → pgvector. Il ne voit PAS les écritures de
+    `scripts/import_corpus_from_convex.py` (#410), qui met à jour
+    `corpus_entries` et ne trace que son propre jeton
+    `corpus_metadata.convex_revision`. Après une synchro Convex, une empreinte
+    identique signifie donc « le JSON n'a pas bougé depuis le dernier import
+    complet », et non « la base est identique au JSON » — d'où la formulation
+    prudente des messages ci-dessous. Couvrir ce second chemin suppose de
+    modifier le script Convex : hors périmètre #487, à traiter séparément.
+    """
+    try:
+        courante = compute_corpus_fingerprint()
+        if courante is None:
+            return False
+
+        stockee = _lire_empreinte_stockee(conn)
+        if stockee is None:
+            logger.warning(
+                "[VDB-PG] Aucune empreinte corpus en base (clé %s absente) — base "
+                "importée avant #487 ou jamais importée : impossible de vérifier "
+                "que pgvector reflète %s. Si le JSON est la source de vérité, "
+                "relancer scripts/import_corpus_ivr.py — attention, ce script "
+                "reconstruit le corpus depuis le JSON (TRUNCATE) et écraserait un "
+                "contenu synchronisé depuis Convex.",
+                CORPUS_FINGERPRINT_KEY,
+                _CORPUS_JSON_PATH.name,
+            )
+            return False
+
+        if stockee != courante:
+            logger.warning(
+                "[VDB-PG] corpus_ivr.json modifié mais pgvector non réimporté — "
+                "relancer scripts/import_corpus_ivr.py "
+                "(empreinte fichier %s…, empreinte base %s…).",
+                courante[:12],
+                stockee[:12],
+            )
+            return False
+
+        logger.info(
+            "[VDB-PG] corpus_ivr.json inchangé depuis le dernier import "
+            "(empreinte %s…)",
+            courante[:12],
+        )
+        return True
+    except Exception as e:
+        logger.warning(
+            "[VDB-PG] Vérification fraîcheur corpus impossible: %s", _safe_error(e)
+        )
+        return False
+
+
 def initialiser_vdb() -> None:
     """Pré-initialise l'engine + modèle au démarrage (équivalent vdb_service.initialiser_vdb).
 
     Précharge le modèle SentenceTransformer pour éviter une charge tardive en mode
     dual (risque R3 du plan : double-charge mémoire avec Chroma simultané).
+
+    Vérifie aussi la fraîcheur du corpus (#487) : si `corpus_ivr.json` a changé
+    sans réimport pgvector, un WARNING est loggué — le moteur démarre quand même
+    (il sert l'ancien corpus, ce qui reste préférable à un refus de démarrer).
     """
     logger.info("[VDB-PG] Initialisation BD vectorielle Postgres...")
     try:
@@ -485,6 +616,7 @@ def initialiser_vdb() -> None:
 
         with engine.connect() as conn:
             count = conn.execute(text("SELECT count(*) FROM corpus_entries")).scalar()
-        logger.info("[VDB-PG] Prête — %s entrées", count)
+            logger.info("[VDB-PG] Prête — %s entrées", count)
+            _verifier_fraicheur_corpus(conn)
     except Exception as e:
         logger.warning("[VDB-PG] BD Postgres non disponible: %s", _safe_error(e))
