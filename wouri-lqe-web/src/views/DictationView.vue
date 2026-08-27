@@ -165,33 +165,28 @@ async function importFile(ev) {
   ev.target.value = "";
 }
 
-async function downloadExport() {
+function downloadExport() {
   err.value = "";
   msg.value = "";
-  try {
-    const r = await fetch(API_BASE + "/dictation/export?language=" + adminLang.value, {
-      credentials: "include",
-    });
-    if (!r.ok) {
-      const d = await r.json().catch(() => ({}));
-      err.value = d.detail === "aucun_enregistrement"
-        ? "Aucun audio enregistré pour cette langue."
-        : d.detail || "Export impossible (" + r.status + ")";
-      return;
-    }
-    const blob = await r.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "dictee_" + adminLang.value + ".zip";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    msg.value = "Dataset téléchargé.";
-  } catch (e) {
-    err.value = String(e.message || e);
+  if (!adminLang.value) {
+    err.value = "Choisis une langue.";
+    return;
   }
+  if (adminStats.value && adminStats.value.recorded === 0) {
+    err.value = "Aucun audio enregistré pour cette langue.";
+    return;
+  }
+  // Téléchargement DIRECT (streaming) plutôt que fetch->blob : le backend renvoie
+  // Content-Disposition: attachment et le cookie de session (SameSite=lax) part
+  // sur cette navigation GET top-level. Évite (1) de charger tout le ZIP en
+  // mémoire (30+ Mo sur un gros dataset) et (2) le blocage du téléchargement
+  // déclenché APRÈS un await (geste utilisateur perdu) — la cause du bug à 217 clips.
+  const a = document.createElement("a");
+  a.href = API_BASE + "/dictation/export?language=" + adminLang.value;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  msg.value = "Téléchargement lancé…";
 }
 </script>
 
