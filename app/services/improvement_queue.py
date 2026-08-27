@@ -1,7 +1,7 @@
 """File d'amélioration native (ADR-0031 / #431).
 
 Aucun numéro : uniquement `user` déjà anonymisé par l'appelant.
-Persistance : voir lqe_paths (volume /app/logs/lqe en prod).
+Persistance : voir lqe_paths (volume dédié /app/data/lqe en prod, issue #488).
 """
 from __future__ import annotations
 
