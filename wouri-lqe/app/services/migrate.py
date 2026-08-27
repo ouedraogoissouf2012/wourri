@@ -3,8 +3,10 @@
 Applique dans l'ordre les fichiers db/migrations/NNN_*.sql non encore appliques.
 Suivi dans <schema>.schema_migrations. Idempotent, un commit par migration.
 
-Limite assumee (DDL controle) : le decoupage se fait sur ';' — donc pas de ';'
-dans un litteral de migration.
+Garde-fou (issue #493) : le decoupage se fait sur ';', mais un ';' cache dans un
+litteral SQL est REFUSE par une erreur qui nomme le fichier et la ligne. Tout le lot
+en attente est analyse AVANT la premiere execution : une migration indecoupable n'en
+laisse donc aucune a moitie appliquee. Voir app/services/sql_script.py.
 """
 from __future__ import annotations
 
@@ -14,16 +16,12 @@ import psycopg
 
 from app.config import get_settings
 from app.db import get_conn, valid_schema
+from app.services.sql_script import split_statements
 
 MIGRATIONS_DIR = Path(__file__).resolve().parent.parent.parent / "db" / "migrations"
 
 # Cle advisory fixe ("LQE") : serialise les runners de migration concurrents.
 _LOCK_KEY = 0x4C5145
-
-
-def _statements(sql: str) -> list[str]:
-    lines = [ln for ln in sql.splitlines() if not ln.lstrip().startswith("--")]
-    return [s.strip() for s in "\n".join(lines).split(";") if s.strip()]
 
 
 def _bootstrap(conn: psycopg.Connection, schema: str) -> None:
@@ -46,18 +44,43 @@ def run_migrations(*, migrations_dir: Path | None = None) -> list[str]:
     applied_now: list[str] = []
     with get_conn(autocommit=False) as conn:
         # Verrou de session : serialise les runners concurrents (workers uvicorn au boot).
-        # Libere automatiquement a la fermeture de la connexion (fin du contexte get_conn).
+        # Libere EXPLICITEMENT en sortie : depuis le pool (issue #494) la connexion est
+        # rendue et non fermee, un verrou de session y survivrait et bloquerait le
+        # demarrage du worker suivant.
         conn.execute("SELECT pg_advisory_lock(%s)", (_LOCK_KEY,))
-        _bootstrap(conn, schema)
-        conn.commit()
-        done = _applied(conn)
-        for path in sorted(directory.glob("*.sql")):
-            version = path.stem
-            if version in done:
-                continue
-            for stmt in _statements(path.read_text(encoding="utf-8")):
-                conn.execute(stmt)
-            conn.execute("INSERT INTO schema_migrations (version) VALUES (%s)", (version,))
+        try:
+            _bootstrap(conn, schema)
             conn.commit()
-            applied_now.append(version)
+            done = _applied(conn)
+            # Garde-fou #493 : tout le lot en attente est analyse d'abord. Une migration
+            # indecoupable (';' dans un litteral) leve SqlScriptError en nommant fichier
+            # et ligne, avant que la moindre migration du lot ne soit appliquee.
+            pending = [p for p in sorted(directory.glob("*.sql")) if p.stem not in done]
+            parsed = [
+                (path, split_statements(path.read_text(encoding="utf-8"), origin=path.name))
+                for path in pending
+            ]
+            for path, statements in parsed:
+                for statement in statements:
+                    conn.execute(statement)
+                conn.execute(
+                    "INSERT INTO schema_migrations (version) VALUES (%s)", (path.stem,)
+                )
+                conn.commit()
+                applied_now.append(path.stem)
+        finally:
+            _unlock(conn)
     return applied_now
+
+
+def _unlock(conn: psycopg.Connection) -> None:
+    """Rend le verrou advisory de session.
+
+    Un verrou de session ne depend pas de la transaction : le rollback prealable ne
+    fait qu'assainir une transaction laissee en erreur par une migration fautive.
+    """
+    try:
+        conn.rollback()
+        conn.execute("SELECT pg_advisory_unlock(%s)", (_LOCK_KEY,))
+    except psycopg.Error:
+        pass  # connexion morte : Postgres libere le verrou avec la session

@@ -19,14 +19,22 @@ from app.services.migrate import run_migrations
 
 _TABLES = "languages, assignments, productions, media, dictation"
 
+# Verdict mis en cache : sans base joignable, chaque tentative coute le timeout du
+# pool (LQE_DB_POOL_TIMEOUT, issue #494). On ne le paie qu'une fois par session.
+_indisponible: str | None = None
+
 
 @pytest.fixture
 def db():
+    global _indisponible
+    if _indisponible:
+        pytest.skip(_indisponible)
     try:
         with get_conn(autocommit=True) as conn:
             conn.execute("SELECT 1")
     except psycopg.OperationalError as exc:
-        pytest.skip(f"PostgreSQL indisponible: {exc}")
+        _indisponible = f"PostgreSQL indisponible: {exc}"
+        pytest.skip(_indisponible)
     run_migrations()  # idempotent ; un échec ici est un vrai bug, pas un skip
     with get_conn(autocommit=True) as conn:
         conn.execute(f"TRUNCATE {_TABLES} RESTART IDENTITY CASCADE")
