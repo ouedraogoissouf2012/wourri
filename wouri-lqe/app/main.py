@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.db import close_pool
 from app.routers import (
     accounts,
     assignments,
@@ -36,7 +37,12 @@ async def lifespan(app: FastAPI):
             "LQE_SECRET faible interdit en production (secret >= 16 caracteres, non trivial)."
         )
     run_migrations()
-    yield
+    try:
+        yield
+    finally:
+        # une connexion du pool n'est pas fermee par son appelant : c'est ici que
+        # le processus rend ses connexions a Postgres (issue #494).
+        close_pool()
 
 
 settings = get_settings()

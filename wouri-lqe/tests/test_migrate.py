@@ -74,3 +74,15 @@ def test_migration_avec_semicolon_dans_un_litteral_est_refusee(db, tmp_path):
         assert conn.execute("SELECT to_regclass('guard_probe_493')").fetchone()[0] is None
         versions = {r[0] for r in conn.execute("SELECT version FROM schema_migrations")}
     assert not versions & {"900_probe", "901_litteral"}
+
+
+def test_le_verrou_advisory_est_libere_apres_migration(db):
+    """#494 : la connexion revient au pool sans etre fermee — le verrou de session
+    doit donc etre rendu explicitement, sinon le worker suivant bloque au demarrage."""
+    migrate.run_migrations()
+    with get_conn(autocommit=True) as conn:
+        tenus = conn.execute(
+            "SELECT count(*) FROM pg_locks WHERE locktype = 'advisory' AND objid::bigint = %s",
+            (migrate._LOCK_KEY,),
+        ).fetchone()[0]
+    assert tenus == 0

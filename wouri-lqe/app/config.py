@@ -35,6 +35,15 @@ class Settings(BaseSettings):
     postgres_password: str = ""
     postgres_password_file: str = ""
 
+    # ===== Pool de connexions (issue #494) =====
+    # false = une connexion par unite de travail, comportement d'avant le pool.
+    lqe_db_pool_enabled: bool = True
+    lqe_db_pool_min_size: int = 1
+    lqe_db_pool_max_size: int = 8
+    # attente max d'une connexion libre : echouer vite vaut mieux que suspendre
+    # une requete de l'atelier pendant les 30 s par defaut de psycopg_pool.
+    lqe_db_pool_timeout: float = 10.0
+
     def is_prod(self) -> bool:
         return self.lqe_env.strip().lower() in ("prod", "production")
 
