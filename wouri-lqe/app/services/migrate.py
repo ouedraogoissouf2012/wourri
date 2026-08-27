@@ -3,8 +3,10 @@
 Applique dans l'ordre les fichiers db/migrations/NNN_*.sql non encore appliques.
 Suivi dans <schema>.schema_migrations. Idempotent, un commit par migration.
 
-Limite assumee (DDL controle) : le decoupage se fait sur ';' — donc pas de ';'
-dans un litteral de migration.
+Garde-fou (issue #493) : le decoupage se fait sur ';', mais un ';' cache dans un
+litteral SQL est REFUSE par une erreur qui nomme le fichier et la ligne. Tout le lot
+en attente est analyse AVANT la premiere execution : une migration indecoupable n'en
+laisse donc aucune a moitie appliquee. Voir app/services/sql_script.py.
 """
 from __future__ import annotations
 
@@ -14,16 +16,12 @@ import psycopg
 
 from app.config import get_settings
 from app.db import get_conn, valid_schema
+from app.services.sql_script import split_statements
 
 MIGRATIONS_DIR = Path(__file__).resolve().parent.parent.parent / "db" / "migrations"
 
 # Cle advisory fixe ("LQE") : serialise les runners de migration concurrents.
 _LOCK_KEY = 0x4C5145
-
-
-def _statements(sql: str) -> list[str]:
-    lines = [ln for ln in sql.splitlines() if not ln.lstrip().startswith("--")]
-    return [s.strip() for s in "\n".join(lines).split(";") if s.strip()]
 
 
 def _bootstrap(conn: psycopg.Connection, schema: str) -> None:
@@ -51,13 +49,21 @@ def run_migrations(*, migrations_dir: Path | None = None) -> list[str]:
         _bootstrap(conn, schema)
         conn.commit()
         done = _applied(conn)
-        for path in sorted(directory.glob("*.sql")):
-            version = path.stem
-            if version in done:
-                continue
-            for stmt in _statements(path.read_text(encoding="utf-8")):
-                conn.execute(stmt)
-            conn.execute("INSERT INTO schema_migrations (version) VALUES (%s)", (version,))
+        # Garde-fou #493 : tout le lot en attente est analyse d'abord. Une migration
+        # indecoupable (';' dans un litteral) leve SqlScriptError en nommant fichier
+        # et ligne, avant que la moindre migration du lot ne soit appliquee.
+        pending = [p for p in sorted(directory.glob("*.sql")) if p.stem not in done]
+        parsed = [
+            (path, split_statements(path.read_text(encoding="utf-8"), origin=path.name))
+            for path in pending
+        ]
+        for path, statements in parsed:
+            for statement in statements:
+                conn.execute(statement)
+            conn.execute(
+                "INSERT INTO schema_migrations (version) VALUES (%s)", (path.stem,)
+            )
             conn.commit()
-            applied_now.append(version)
+            applied_now.append(path.stem)
     return applied_now
+
