@@ -81,3 +81,4 @@ Réponses (discussion 2026-08-27, sur chiffres) :
 ## Historique
 - 2026-08-27 — **proposé** (Option A), sur la base du benchmark 0003 exécuté le jour même.
 - 2026-08-27 — **accepté** (Option A — Omnilingual 1B) par Issouf. Le 300M reste le fallback tracé si la latence de service CPU l'impose.
+- 2026-08-27 — **dé-risquage fine-tune** ([étude 0004](../benchmarks/0004-omnilingual-finetune-feasibility.md)) : le fine-tune COMPLET du 1B exige un gros GPU (32-96 GPU chez Meta ; ~14-16 Go rien qu'en poids+Adam → hors T4 gratuit). Voies gratuites : **300M complet** ou **1B encodeur gelé** (`freeze_encoder_for_n_steps`) ; 1B complet = A100 payant. N'annule pas le choix (1B = meilleure base mesurée) ; le maillon ③ tranchera A/B/C selon budget + qualité visée.
