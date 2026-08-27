@@ -79,7 +79,8 @@ Le **modèle au plus faible CER parmi ceux qui produisent réellement du baoulé
 
 - **Environnement** : Google Colab **T4** (gratuit), notebook `finetune/colab/asr_baoule_benchmark.ipynb`.
 - **Aucun token HF requis** (dataset Klayt public).
-- Setup Omnilingual : reprend le [benchmark 0002](0002-omnilingual-env-setup.md) (versions figées `torch==2.8.0`/`fairseq2` + **restart de session obligatoire**).
+- Setup Omnilingual : reprend le [benchmark 0002](0002-omnilingual-env-setup.md) (versions figées `torch==2.8.0` + **restart de session obligatoire**).
+- ⚠️ **fairseq2 épinglé (corrigé 2026-08-27)** : `omnilingual-asr` (0.1.0/0.2.0) exige `fairseq2[arrow]>=0.5.2,<=0.6`. Un `fairseq2` **nu** prend désormais la 0.8.x (sortie depuis mai 2026) → `ResolutionImpossible`. Le notebook épingle **`omnilingual-asr==0.1.0` + `fairseq2[arrow]==0.6`** (combo validée en 0002).
 - ⚠️ **Conflit de stacks possible** : Omnilingual force `torch==2.8.0`/`fairseq2` ; Simba utilise `transformers`. Le notebook exécute **Omnilingual d'abord** et **sauvegarde ses résultats sur disque**, **puis** Simba ; en cas de conflit, Simba se relance dans un **runtime neuf** (résultats Omnilingual déjà sauvés).
 - Durée estimée : ~30–45 min.
 
