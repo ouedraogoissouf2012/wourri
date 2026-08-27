@@ -182,6 +182,10 @@ services:
       # Audio output (TTS générés) : persistant pour servir aux clients
       - audio_output:/app/static/audio
       - api_logs:/app/logs
+      # Données métier de l'atelier embarqué (improvement_tasks / baoule_corpus,
+      # issue #488) : volume dédié, séparé du volume des logs (ADR-0025 :
+      # données métier ≠ journaux). À monter aussi côté Dokploy (/app/data).
+      - api_data:/app/data
     healthcheck:
       # Issue #217 : start_period 120s (2 min) — les modèles essentiels (TTS
       # bambara/dioula, NLLB, embedding multilingual) sont préchargés dans
@@ -293,6 +297,10 @@ volumes:
   # docs/compliance/artci-logs.md.
   api_logs:
     name: wourri_api_logs
+  # api_data : données métier durables de l'atelier embarqué (issue #488) —
+  # séparées du volume des logs (ADR-0025 : données métier ≠ journaux).
+  api_data:
+    name: wourri_api_data
   wa_auth:
     name: wourri_wa_auth
   wa_audio_cache:
