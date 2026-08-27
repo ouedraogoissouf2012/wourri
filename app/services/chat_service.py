@@ -9,16 +9,13 @@ Le routeur chat.py ne fait que valider l'input et retourner le résultat.
 La cascade elle-même n'est plus ici : elle vit dans `app/services/chat/`
 (modules purs extraits par le refactor P2-09 #204) et dans
 `app/services/chat/handlers/` (Strategy Pattern, ADR-0015). Ce module ne garde
-que le dispatcher `process()`, le helper `_synthesize_dioula` (conservé pour
-les appelants historiques — les modules de la cascade ont leur propre copie
-module-level, dupliquée pour rompre un cycle d'import) et le singleton.
+que le dispatcher `process()` et le singleton.
 
 Les 9 méthodes « wrapper compat » qui ne faisaient que déléguer à ces modules
 ont été retirées (#495) : elles donnaient l'illusion que la cascade était ici.
 Les appelants importent désormais les modules cibles directement — p. ex.
 `from app.services.chat.ivr_searcher import try_ivr_exact`.
 """
-import asyncio
 import logging
 from typing import Optional
 
@@ -123,15 +120,6 @@ class ChatService:
                 city=city,
                 language=language.value,
             )
-
-    # ------------------------------------------------------------------
-    # Helper privé
-    # ------------------------------------------------------------------
-
-    async def _synthesize_dioula(self, text: str) -> Optional[str]:
-        """Synthétise du texte dioula en audio (async wrapper)."""
-        from app.services.tts_dioula import synthesize_dioula_text
-        return await asyncio.to_thread(synthesize_dioula_text, text)
 
 
 # ---------------------------------------------------------------------------
