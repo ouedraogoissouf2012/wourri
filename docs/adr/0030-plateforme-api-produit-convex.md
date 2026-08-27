@@ -15,7 +15,7 @@
 L'API Wourri (`wouri-api`, FastAPI) est aujourd'hui **interne** : un seul client légitime
 (le `whatsapp-server`) l'appelle via une **unique clé partagée `X-API-Key`**, sans notion
 d'utilisateur, d'organisation, de rôle, de scope ni de quota. Elle n'est **pas exposée**
-publiquement (décision « interne seulement » du déploiement — cf. ADR-0024 déploiement Dokploy,
+publiquement (décision « interne seulement » du déploiement — cf. ADR-0026 déploiement Dokploy,
 `docs/RAPPORT_DEPLOIEMENT_PROD_2026-08-14.md`).
 
 L'utilisateur souhaite en faire une **plateforme en ligne** : APIs **exposées** et accessibles
@@ -37,14 +37,19 @@ explorations) : `app/security.py:49` (clé unique), rate limiting piloté par `R
 (ADR-0018 accepté 2026-08-14), CORS absent en prod, `/docs` ouvert partout, aucune table
 users/rôles/tenants/clés.
 
-> **Note de numérotation (corrigée à l'acceptation, vérifiée sur les refs `origin`)** :
-> - **0024** est en collision entre `0024-deploiement-wourri-dokploy` (**mergé sur `APIPy`**,
->   canonique) et `0024-transition-convex-multitenant` (branche `feat/372`, **non mergée**). C'est
->   ce **dernier** qui devra prendre un numéro libre à son merge — **le déploiement conserve 0024**.
+> **Note de numérotation (arbitrée le 2026-08-27 par l'issue #496)** :
+> - **0024** était en collision entre `0024-deploiement-wourri-dokploy` et
+>   `0024-transition-convex-multitenant`. **Arbitrage #496, sur l'antériorité d'acceptation** :
+>   `transition-convex-multitenant` (accepté le **2026-08-11**) **conserve 0024** ; le
+>   déploiement Dokploy (accepté le 2026-08-13) est renuméroté **0026**
+>   (`0026-deploiement-wourri-dokploy.md`). *(La note précédente — « le déploiement conserve
+>   0024 » — est annulée.)*
 > - **0025** est déjà `retention-logs-pii-artci` (mergé). *(L'ancienne note « renuméroter le
 >   déploiement en 0025 » était erronée et est annulée.)*
 > - **0026** était revendiqué par le présent ADR **et** par `0026-perimetre-langues-pilote` (non
 >   mergé) → le présent ADR est renuméroté **0030** (prochain numéro libre sur prod après 0029).
+>   Depuis #496, **0026 est attribué au déploiement Dokploy** : `perimetre-langues-pilote`, s'il
+>   est un jour mergé, devra prendre un numéro libre.
 
 ## Questions posées avant la décision
 
@@ -155,8 +160,8 @@ clés produit scoppées, quotas, portail) suit les phases ci-dessous.
      La **tranche démo** (expo TLS des chemins ci-dessus derrière `X-API-Key`) peut se faire ici en premier.
   4. Portail développeur (front Better Auth) : clés, usage/quotas, docs, surfaces SaaS.
   5. **Hygiène de numérotation ADR** : le présent ADR passe de 0026 à **0030** (collision 0026) ;
-     l'ADR `transition-convex-multitenant` (#372) prendra un numéro libre à son merge (collision 0024,
-     le déploiement conservant 0024).
+     la collision 0024 est tranchée par #496 — `transition-convex-multitenant` **conserve 0024**
+     (accepté le 2026-08-11, antérieur) et le déploiement Dokploy devient **0026**.
 
 - **Verrous futurs** :
   - L'API produit devient un **contrat public** (`/v1`) → versionnage et compat ascendante à tenir.
@@ -172,7 +177,7 @@ clés produit scoppées, quotas, portail) suit les phases ci-dessous.
   ADR **`transition-convex-multitenant`**.
 - `docs/adr/0018-strategie-rate-limiting-api.md` (rate limiting, accepté) ; issue #307.
 - `docs/adr/0012-securite-whatsapp-server.md` (contrat X-API-Key, CORS) ; ADR-0017 (dashboard) ;
-  ADR-0024 (déploiement Dokploy, « interne only » que le présent ADR lève pour le périmètre exposé) ;
+  ADR-0026 (déploiement Dokploy, « interne only » que le présent ADR lève pour le périmètre exposé) ;
   ADR-0025 (rétention logs PII / ARTCI).
 - `wourri/openapi.json` (spec de référence produit : `/v1`+`/v2`, `x-api-key`, portail).
 - État actuel : `app/security.py`, `app/config.py`, `app/main.py`, `app/routers/*`.
@@ -184,3 +189,7 @@ clés produit scoppées, quotas, portail) suit les phases ci-dessous.
   `0026-perimetre-langues-pilote`). Note de numérotation corrigée (le déploiement conserve 0024 ;
   `transition-convex-multitenant` à renuméroter à son merge ; l'ancienne mention « déploiement → 0025 »
   était erronée, 0025 = rétention logs PII). Précision de périmètre ajoutée (démo = tranche minimale).
+- 2026-08-27 — **références de numérotation mises à jour** (issue #496). La collision 0024 est
+  tranchée en faveur de `transition-convex-multitenant` (accepté le 2026-08-11, antérieur) ; le
+  déploiement Dokploy passe **0024 → 0026**. La note de numérotation ci-dessus et les renvois du
+  présent ADR sont corrigés en conséquence. **La décision de cet ADR est inchangée.**

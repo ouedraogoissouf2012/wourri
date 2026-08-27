@@ -6,7 +6,7 @@
 # sur la VM Scaleway.
 #
 # Le déploiement SSH est GATED par `DEPLOY_API_ENABLED=true`.
-# ADR-0013 Option D + ADR-0024 : la prod est Dokploy, PAS ce job SSH.
+# ADR-0013 Option D + ADR-0026 : la prod est Dokploy, PAS ce job SSH.
 # Ne pas activer le flag (réintroduirait une clé SSH CI vers une cible obsolète).
 # Tant que le flag est absent, le workflow se contente de build+push GHCR.
 #

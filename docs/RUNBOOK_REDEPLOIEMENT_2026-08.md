@@ -2,7 +2,7 @@
 
 **Date** : 2026-08-15
 **Objet** : redéployer les ~22 correctifs/features mergés depuis le 1er déploiement (14/08) et non encore en prod (auto-deploy désactivé, accès SSH à rétablir).
-**Cible réelle** : VPS Contabo, **Dokploy v0.29** (Swarm + Traefik), 3 services natifs (ADR-0024). ⚠️ **PAS** `docker compose` manuel, **PAS** Scaleway/ghcr.io — Dokploy **build depuis Git**. Le `docker-compose.prod.yml` du repo est une *référence* (env/volumes/secrets), pas le mécanisme réel.
+**Cible réelle** : VPS Contabo, **Dokploy v0.29** (Swarm + Traefik), 3 services natifs (ADR-0026). ⚠️ **PAS** `docker compose` manuel, **PAS** Scaleway/ghcr.io — Dokploy **build depuis Git**. Le `docker-compose.prod.yml` du repo est une *référence* (env/volumes/secrets), pas le mécanisme réel.
 
 ---
 
@@ -81,4 +81,4 @@ Sur le serveur (`K=<API_SECRET_KEY>`) :
 - **FORWARDED_ALLOW_IPS** : reste au défaut (interne only, whatsapp exempté). À revoir seulement si expo publique future (#202).
 
 ---
-*Sources vérifiées le 2026-08-15 : `docker-compose.prod.yml`, `app/config.py`, `Dockerfile.prod`, `scripts/run_migrations.sh`, `scripts/import_corpus_ivr.py`, `app/routers/*`, ADR-0024, mémoire déploiement.*
+*Sources vérifiées le 2026-08-15 : `docker-compose.prod.yml`, `app/config.py`, `Dockerfile.prod`, `scripts/run_migrations.sh`, `scripts/import_corpus_ivr.py`, `app/routers/*`, ADR-0026, mémoire déploiement.*

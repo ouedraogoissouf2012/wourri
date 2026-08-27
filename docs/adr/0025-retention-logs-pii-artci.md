@@ -42,7 +42,7 @@ l'issue #215 elle-même — politique documentée + purge automatique > seuil)
   protection des données à caractère personnel, régulateur **ARTCI**) exige une
   durée de conservation *justifiée par la finalité*. Aucune politique n'est
   définie ni appliquée aujourd'hui (issue #215, review SEC MAJOR M4, PR #212).
-- **Cible de déploiement** : Dokploy sur VPS Contabo (ADR-0024, accepté) — pas
+- **Cible de déploiement** : Dokploy sur VPS Contabo (ADR-0026, accepté) — pas
   la VM Scaleway du runbook initial. Toute solution dépendant d'un cron hôte ou
   d'un montage spécifique à la VM Scaleway est fragile sur cette cible.
 
@@ -63,7 +63,7 @@ Cadre imposé par l'issue #215 et le mandat du lot sécurité F2 :
   volumes Docker.
 - **Avantages** : zéro code applicatif ; pattern ops classique.
 - **Inconvénients** : dépend de l'hôte (chemins des volumes différents entre
-  compose Scaleway et Dokploy — cf. ADR-0024 §Backups) ; invisible au repo
+  compose Scaleway et Dokploy — cf. ADR-0026 §Backups) ; invisible au repo
   (non versionné, non testé) ; ne résout pas la rotation du fichier actif
   `wourri.log` (un `find -mtime` ne purge jamais un fichier écrit en continu).
 - **Coût** : faible en code, récurrent en ops.
@@ -143,7 +143,7 @@ côté `whatsappServeur`, puis retrait du montage).
 
 **Chiffrement at-rest** : non retenu dans ce lot. Le VPS Contabo n'offre pas de
 chiffrement disque par défaut et un chiffrement LUKS impose une réinstallation
-(ADR-0024 accepté sans). **Dette tracée** dans `docs/compliance/artci-logs.md`
+(ADR-0026 accepté sans). **Dette tracée** dans `docs/compliance/artci-logs.md`
 §Chiffrement, avec mitigations actuelles (accès SSH par clé, fichiers secrets
 0600, pseudonymisation des identifiants dans les logs) — à réévaluer avant tout
 passage en production grand public.
@@ -188,7 +188,7 @@ passage en production grand public.
 - PR #212 (rotation json-file M2-OPS), mémoire Sprint H.1b (PII asr_client)
 - Loi ivoirienne n° 2013-450 (protection des données à caractère personnel) —
   régulateur ARTCI (⚠ pas APDP, qui concerne Bénin/Mali)
-- ADR-0017 (dashboard sans PII), ADR-0016 (Alloy/Loki), ADR-0024 (Dokploy,
+- ADR-0017 (dashboard sans PII), ADR-0016 (Alloy/Loki), ADR-0026 (Dokploy,
   §Souveraineté : données hébergées en UE — à tracer pour l'ARTCI)
 - Code vérifié : `app/core/logging_config.py`, `app/main.py:35-38`,
   `app/routers/feedback.py`, `app/core/pii_utils.py`, `docker-compose.prod.yml`,

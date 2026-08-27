@@ -3,7 +3,7 @@
 
 Secours ops de la purge quotidienne in-app (app/core/log_retention.py) :
 utilisable en cron hôte, en `docker exec`, ou à la main, quel que soit
-l'orchestrateur (compose Scaleway ou Dokploy — ADR-0024).
+l'orchestrateur (compose Scaleway ou Dokploy — ADR-0026).
 
 N'importe QUE app/core/log_retention.py (module feuille) : pas de dépendance
 à app/config.py, dont l'import exécute get_settings() (sys.exit possible si
