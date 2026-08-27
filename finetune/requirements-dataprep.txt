@@ -1,0 +1,6 @@
+# Dépendances de dictee_to_parquet.py (maillon ③ fine-tune, #474).
+# À installer dans le notebook Colab/Kaggle avant de convertir l'export dictée.
+numpy
+soundfile      # décodage wav/flac/ogg + encodage FLAC 16 kHz
+pyarrow        # écriture du parquet Omnilingual
+librosa        # décodage webm/opus (via ffmpeg) + rééchantillonnage haute qualité
