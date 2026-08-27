@@ -1,6 +1,6 @@
 # ADR-0010 — Migration vers monorepo
 
-**Statut** : accepté
+**Statut** : **remplacé par [ADR-0037](0037-conserver-multibranches-orphelines.md)** (2026-08-27, dette #489)
 **Date** : 2026-04-23
 **Auteur** : Claude (assistant)
 **Valideur** : Ruben (validé le 2026-04-23)
@@ -342,3 +342,4 @@ Cette migration est **exécutée quand la première de ces conditions est attein
 
 - **2026-04-23 (rédaction)** — Rédaction initiale suite à discussion sur templates GitHub. Recommandation monorepo vs multi-repo argumentée. 3 options étudiées.
 - **2026-04-23 (accepté)** — Ruben valide Option C (monorepo). Statut `accepté`. Exécution planifiée après stabilisation Sprint 2 P1 corpus/ASR (horizon 3-6 semaines).
+- **2026-08-27 (remplacé)** — Non exécuté après 4 mois (dette #489). [ADR-0037](0037-conserver-multibranches-orphelines.md) acte la conservation du multi-branches orphelines. Cet ADR reste consultable pour ses options/arguments si la migration monorepo est rouverte.
