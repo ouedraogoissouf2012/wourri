@@ -1,0 +1,52 @@
+# Wourri — CI du front de l'atelier LQE (wouri-lqe-web).
+# ──────────────────────────────────────────────────────
+#
+# Aucun workflow ne couvrait `wouri-lqe-web/` : ci-lqe.yml ne lance que pytest sur
+# `wouri-lqe/`, ci-convex.yml est filtre sur `convex/**` et utilise pnpm a la racine.
+# Le front est un paquet npm autonome (package-lock.json, `npm ci` dans son Dockerfile)
+# → CI separee. Dette #492.
+#
+# Node 22 : meme version que l'etage de build du Dockerfile (node:22-alpine).
+
+name: ci-lqe-web
+
+on:
+  push:
+    branches: [APIPy]
+    paths:
+      - 'wouri-lqe-web/**'
+      - '.github/workflows/ci-lqe-web.yml'
+  pull_request:
+    branches: [APIPy]
+    paths:
+      - 'wouri-lqe-web/**'
+      - '.github/workflows/ci-lqe-web.yml'
+
+jobs:
+  test-lqe-web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: wouri-lqe-web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: wouri-lqe-web/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run Vitest
+        run: npm run test
+
+      - name: Build
+        run: npm run build
