@@ -9,7 +9,7 @@
 
 ## Contexte
 
-[ADR-0024](0024-deploiement-wourri-dokploy.md) impose **interne only**.
+[ADR-0026](0026-deploiement-wourri-dokploy.md) impose **interne only**.
 L'issue #411 a été fermée sur cette base.
 
 Le site Console est sur **Vercel (public)**. Le moteur n'a **aucun** label
@@ -53,7 +53,7 @@ Rejeté : `/docs` et `/admin/lqe` fuitent le contrat et le sas linguistique.
 
 ## Décision
 
-**Option A.** Amende ADR-0024 sur un point : l'API peut avoir **un** hostname
+**Option A.** Amende ADR-0026 sur un point : l'API peut avoir **un** hostname
 public **étroit**. WhatsApp, Postgres, `/admin` restent internes.
 
 ## Conséquences
@@ -65,7 +65,7 @@ public **étroit**. WhatsApp, Postgres, `/admin` restent internes.
 
 ## Références
 
-- ADR-0024, ADR-0030, #411 (fermée), brief collaborateur 16/08
+- ADR-0026, ADR-0030, #411 (fermée), brief collaborateur 16/08
 
 ## Historique
 

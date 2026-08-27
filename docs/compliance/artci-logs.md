@@ -47,7 +47,7 @@ purge automatique au-delà du seuil.
   purgés sur leur mtime avec la rétention de leur catégorie.
 - **Secours ops (manuel/cron)** : `python scripts/purge_logs.py [--dry-run]`
   — même logique, utilisable depuis l'hôte ou un exec conteneur, quel que soit
-  l'orchestrateur (compose ou Dokploy, cf. ADR-0024). Sans dépendance à la
+  l'orchestrateur (compose ou Dokploy, cf. ADR-0026). Sans dépendance à la
   config applicative (utilisable même si l'env de l'API est indisponible).
 - **Garde-fous** : rétentions validées ≥ 1 jour (config) et refus des valeurs
   négatives (purge) — le fichier du jour/mois courant n'est jamais candidat ;
@@ -70,7 +70,7 @@ purge automatique au-delà du seuil.
 
 ## 5. Chiffrement at-rest — état et dette tracée
 
-- **État actuel** : les volumes (VPS Contabo, ADR-0024) ne sont **pas chiffrés
+- **État actuel** : les volumes (VPS Contabo, ADR-0026) ne sont **pas chiffrés
   at-rest**. Contabo ne fournit pas de chiffrement disque par défaut ; LUKS
   exigerait une réinstallation de l'hôte partagé (Dokploy/Traefik en place).
 - **Mitigations en vigueur** : accès serveur par clé SSH uniquement ; secrets
@@ -82,7 +82,7 @@ purge automatique au-delà du seuil.
   dm-crypt, ou suppression du logging des transcriptions en clair). Décision à
   acter par un ADR dédié le moment venu.
 - **Transfert hors Côte d'Ivoire** : les données résident en UE (Contabo,
-  Allemagne — ADR-0024 §Souveraineté). Point à déclarer dans toute démarche
+  Allemagne — ADR-0026 §Souveraineté). Point à déclarer dans toute démarche
   ARTCI formelle.
 
 ## 6. Contrôles associés (hors périmètre de ce document)

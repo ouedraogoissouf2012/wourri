@@ -9,7 +9,7 @@
 
 ## Addendum 2026-08-15 — la cible Scaleway n'existe plus
 
-**[ADR-0024](0024-deploiement-wourri-dokploy.md) (accepté)** a changé la cible
+**[ADR-0026](0026-deploiement-wourri-dokploy.md) (accepté)** a changé la cible
 de production : VPS Contabo + **Dokploy** (build Git sur le serveur), pas une
 VM Scaleway + `appleboy/ssh-action`.
 
@@ -26,7 +26,7 @@ Conséquence pour #221 :
   Dokploy), pas le pipeline CI. Tailscale reste une option *admin*, pas un
   prérequis pour déployer.
 
-### Option D — Dokploy-native (héritée d'ADR-0024) — **retenue**
+### Option D — Dokploy-native (héritée d'ADR-0026) — **retenue**
 
 - **Description** : le déploiement prod = Dokploy. Pas de self-hosted runner
   pour déployer. Pas de Tailscale dans le chemin CI. Pas d'OIDC Scaleway.
@@ -474,7 +474,7 @@ session.
 
 - **2026-05-30 (rédaction)** : ADR brouillon. 3 options Scaleway, recommandation
   historique **Option B (Tailscale SSH)**. Statut **proposé**.
-- **2026-08-15 (addendum)** : ADR-0024 a rendu A/B/C inapplicables au chemin
+- **2026-08-15 (addendum)** : ADR-0026 a rendu A/B/C inapplicables au chemin
   prod. **Option D** (Dokploy-native) retenue. Statut **accepté**. #221
   closeable : pas d'implémentation Tailscale/runner. Accès admin Contabo =
   sujet séparé si besoin.

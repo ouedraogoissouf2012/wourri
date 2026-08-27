@@ -1,4 +1,4 @@
-# ADR-0024 — Déploiement Wourri sur l'hôte Dokploy existant (ADC)
+# ADR-0026 — Déploiement Wourri sur l'hôte Dokploy existant (ADC)
 
 **Statut** : accepté
 **Date** : 2026-08-13
@@ -240,3 +240,7 @@ elle pourra alors superséder cet ADR.
   (choix Option A vs B).
 - 2026-08-13 — **accepté** : Option A retenue par l'utilisateur (3 services natifs
   Dokploy, aucune restructuration repo).
+- 2026-08-27 — renuméroté **ADR-0024 → ADR-0026** (issue #496). Le numéro 0024 était
+  attribué deux fois ; il reste à [ADR-0024](0024-transition-convex-multitenant.md)
+  (transition Convex multi-tenant, accepté le 2026-08-11, antérieur). **Aucun changement
+  de décision** : renumérotation du fichier et mise à jour des références uniquement.
