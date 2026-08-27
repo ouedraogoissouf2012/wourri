@@ -345,12 +345,3 @@ def test_back_compat_chat_result_import_chat_service():
     """`from app.services.chat_service import ChatResult` doit toujours fonctionner."""
     from app.services.chat_service import ChatResult as ChatResult_compat
     assert ChatResult_compat is ChatResult
-
-
-def test_back_compat_wrappers_chat_service_methods_existent():
-    """Les wrappers _try_ivr_* / _clarify / _search restent sur ChatService."""
-    from app.services.chat_service import ChatService
-    assert hasattr(ChatService, "_try_ivr_exact")
-    assert hasattr(ChatService, "_try_ivr_concept")
-    assert hasattr(ChatService, "_clarify_missing_culture")
-    assert hasattr(ChatService, "_search_ivr_by_concept")

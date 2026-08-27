@@ -106,9 +106,3 @@ async def test_try_deepseek_french_avec_audio():
         )
     assert result.audio_url == "/static/audio/fr.wav"
     assert result.audio_language == "Français"
-
-
-def test_back_compat_chat_service_wrappers_deepseek():
-    from app.services.chat_service import ChatService
-    assert hasattr(ChatService, "_try_deepseek_dioula")
-    assert hasattr(ChatService, "_try_deepseek_french")

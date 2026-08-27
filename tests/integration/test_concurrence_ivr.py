@@ -4,9 +4,10 @@ Vérifie que les appels IVR concurrents ne bloquent pas le event loop FastAPI.
 
 Avant Sprint G.2 : `chercher_reponse_ivr()` (qui invoque
 `corpus_service._embed_query()` SentenceTransformer ~50-200ms) était appelé
-**sans `asyncio.to_thread`** depuis `chat_service._try_ivr_exact` et
-`_search_ivr_by_concept`. Conséquence : N appels concurrents traités
-séquentiellement (le event loop est bloqué pendant l'inférence ML).
+**sans `asyncio.to_thread`** depuis `try_ivr_exact` et
+`search_ivr_by_concept` (`app/services/chat/ivr_searcher.py`). Conséquence :
+N appels concurrents traités séquentiellement (le event loop est bloqué
+pendant l'inférence ML).
 
 Après Sprint G.2 : wrapping `to_thread` autour des appels → 3 appels parallèles
 finissent en ~1× le temps d'un seul (au lieu de 3×).
@@ -25,7 +26,11 @@ from unittest.mock import patch
 import pytest
 
 from app.models.schemas import Language
-from app.services.chat_service import ChatService, NLUResult
+# #495 : les wrappers `ChatService._try_ivr_*` ont ete retires — ce test
+# appelle directement le module extrait. `NLUResult` reste re-exporte par
+# chat_service (alias de type, pas de logique).
+from app.services.chat.ivr_searcher import search_ivr_by_concept, try_ivr_exact
+from app.services.chat_service import NLUResult
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -44,7 +49,6 @@ class TestConcurrenceIVR:
         sync de 100ms bloque le event loop → 3 appels = 300ms minimum.
         Avec `to_thread`, les 3 sleeps tournent en threads parallèles → ~100ms.
         """
-        service = ChatService()
         sleep_ms = 100
 
         def fake_chercher(intent, cultures, conditions):
@@ -71,9 +75,9 @@ class TestConcurrenceIVR:
 
             t0 = time.perf_counter()
             results = await asyncio.gather(
-                service._try_ivr_exact(nlu, "Abidjan", None, False, Language.BOTH),
-                service._try_ivr_exact(nlu, "Abidjan", None, False, Language.BOTH),
-                service._try_ivr_exact(nlu, "Abidjan", None, False, Language.BOTH),
+                try_ivr_exact(nlu, "Abidjan", None, False, Language.BOTH),
+                try_ivr_exact(nlu, "Abidjan", None, False, Language.BOTH),
+                try_ivr_exact(nlu, "Abidjan", None, False, Language.BOTH),
             )
             elapsed_ms = (time.perf_counter() - t0) * 1000
 
@@ -90,12 +94,11 @@ class TestConcurrenceIVR:
             )
 
     async def test_search_ivr_by_concept_is_async(self):
-        """`_search_ivr_by_concept` doit être awaitable (Sprint G.2)."""
-        service = ChatService()
+        """`search_ivr_by_concept` doit être awaitable (Sprint G.2)."""
         # Appel avec concepts vide → retourne None sans toucher la BDD
-        coro = service._search_ivr_by_concept({})
+        coro = search_ivr_by_concept({})
         assert asyncio.iscoroutine(coro), (
-            "_search_ivr_by_concept doit être async (Sprint G.2 pour ne pas bloquer "
+            "search_ivr_by_concept doit être async (Sprint G.2 pour ne pas bloquer "
             "le event loop sur l'embedding SentenceTransformer)"
         )
         result = await coro
