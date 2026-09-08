@@ -216,3 +216,74 @@ async def test_back_compat_try_deepseek_french_delegue_au_handler():
     assert result.response == "FR via wrapper"
     assert result.audio_url == "/static/audio/x.ogg"
     assert result.audio_language == "Français"
+
+
+# ─────────────────────────────────────────────
+# Niveau météo direct (fix : météo FR servie par le moteur, pas DeepSeek)
+# ─────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_french_handler_meteo_pure_passe_par_moteur_direct():
+    """Question météo PURE + weather_data → réponse moteur direct (meteo_actuel) ; DeepSeek PAS appelé."""
+    nlu = _make_nlu(intent="QUESTION_METEO_AGRICOLE", concepts={"TEMPS_METEO": True})
+    weather = {"city": "Abidjan", "weather_code": 0, "temperature": 28, "precipitation": 0}
+    handler = FrenchHandler()
+    with patch(
+        "app.services.deepseek.chat_with_deepseek",
+        new=AsyncMock(return_value="NE DOIT PAS ETRE APPELE"),
+    ) as mock_ds, patch(
+        "app.services.tts_french.synthesize_french",
+        new=AsyncMock(return_value="/static/audio/fr_x.ogg"),
+    ):
+        result = await handler.process(
+            nlu=nlu, weather_data=weather, city="Abidjan",
+            include_audio=True, language=Language.FRENCH, user_id="u1",
+        )
+
+    assert result.meta["source"] == "meteo_actuel"   # moteur direct, pas DeepSeek
+    assert result.language == "french"
+    assert result.audio_language == "Français"
+    mock_ds.assert_not_called()   # DeepSeek jamais sollicité quand la météo répond
+
+
+@pytest.mark.asyncio
+async def test_french_handler_meteo_indispo_fallback_deepseek():
+    """Météo pure mais donnée indisponible (None, sans TEMPS_DEMAIN) → fallback DeepSeek conservé."""
+    nlu = _make_nlu(intent="QUESTION_METEO_AGRICOLE", concepts={"TEMPS_METEO": True})
+    handler = FrenchHandler()
+    with patch(
+        "app.services.deepseek.chat_with_deepseek",
+        new=AsyncMock(return_value="Reponse DeepSeek fallback"),
+    ) as mock_ds, patch(
+        "app.services.tts_french.synthesize_french", new=AsyncMock(return_value=None),
+    ):
+        result = await handler.process(
+            nlu=nlu, weather_data=None, city="Man",
+            include_audio=False, language=Language.FRENCH, user_id="u1",
+        )
+
+    assert result.meta["source"] == "deepseek_french"   # fallback préservé
+    assert result.response == "Reponse DeepSeek fallback"
+    mock_ds.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_french_handler_non_meteo_va_a_deepseek():
+    """Question NON météo → DeepSeek directement (comportement inchangé)."""
+    nlu = _make_nlu(intent="CONSEIL_PRODUCTION")
+    handler = FrenchHandler()
+    with patch(
+        "app.services.deepseek.chat_with_deepseek",
+        new=AsyncMock(return_value="Conseil FR"),
+    ) as mock_ds, patch(
+        "app.services.tts_french.synthesize_french", new=AsyncMock(),
+    ):
+        result = await handler.process(
+            nlu=nlu,
+            weather_data={"weather_code": 0, "temperature": 30, "precipitation": 0},
+            city="Bouake", include_audio=False, language=Language.FRENCH, user_id="u1",
+        )
+
+    assert result.meta["source"] == "deepseek_french"
+    mock_ds.assert_called_once()

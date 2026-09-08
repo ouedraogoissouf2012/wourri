@@ -50,6 +50,27 @@ class FrenchHandler:
         Identique a `deepseek_router.try_deepseek_french` mais encapsule
         dans une classe respectant le Protocol `LanguageHandler`.
         """
+        # Niveau meteo direct (meme logique que DioulaHandler, ajout OCP) : une
+        # question meteo PURE est servie depuis Open-Meteo + weather_conditions
+        # (texte FR + audio FR), AVANT DeepSeek. Repond de facon chiffree et
+        # fiable meme si DeepSeek est indisponible/lent. Le fallback DeepSeek
+        # ci-dessous reste inchange si la donnee meteo manque (build renvoie None).
+        from app.services.chat.meteo_responder import (
+            build_meteo_response,
+            is_pure_weather_intent,
+        )
+
+        if is_pure_weather_intent(nlu):
+            meteo = await build_meteo_response(
+                nlu=nlu,
+                weather_data=weather_data,
+                city=city,
+                include_audio=include_audio,
+                language=language,
+            )
+            if meteo is not None:
+                return meteo
+
         from app.services.deepseek import chat_with_deepseek
         from app.services.tts_french import synthesize_french
 
