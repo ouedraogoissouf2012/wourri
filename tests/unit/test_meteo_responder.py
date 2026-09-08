@@ -164,3 +164,28 @@ async def test_include_audio_declenche_synthese_dioula():
     assert result.audio_url == "/audio/prevision.ogg"
     assert result.audio_language == "Dioula"
     mock_tts.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_include_audio_francais_utilise_piper_fr():
+    """language=FRENCH + include_audio → voix Piper FR (pas dioula), audio_language=Français."""
+    nlu = _nlu(concepts={"TEMPS_METEO": True})
+    weather = {"city": "Abidjan", "weather_code": 0, "temperature": 28, "precipitation": 0}
+    with patch(
+        "app.services.tts_french.synthesize_french",
+        new=AsyncMock(return_value="/static/audio/fr_meteo.ogg"),
+    ) as mock_fr, patch(
+        "app.services.tts_dioula.synthesize_dioula_text",
+        return_value="/audio/dioula.ogg",
+    ) as mock_dyu:
+        result = await build_meteo_response(
+            nlu=nlu, weather_data=weather, city="Abidjan",
+            include_audio=True, language=Language.FRENCH,
+        )
+
+    assert result.audio_url == "/static/audio/fr_meteo.ogg"
+    assert result.audio_language == "Français"
+    mock_fr.assert_awaited_once()   # audio synthétisé en français…
+    mock_dyu.assert_not_called()    # …et surtout PAS en dioula
+    assert result.language == "french"
+    assert result.response          # texte FR non vide

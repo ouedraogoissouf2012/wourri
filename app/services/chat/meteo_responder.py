@@ -88,11 +88,24 @@ async def build_meteo_response(
         bam, fr = build_meteo_bambara(weather_data, city)
         source = "meteo_actuel"
 
+    # Audio dans la langue demandée : Piper FR pour FRENCH (sinon on servirait du
+    # texte FR avec une voix dioula), mms-tts-dyu pour dioula/both (inchangé).
     audio_url = None
+    audio_lang = None
     if include_audio:
-        audio_url = await _synthesize_dioula(bam)
+        if language == Language.FRENCH:
+            from app.services.tts_french import synthesize_french
 
-    logger.info("[MÉTÉO] Réponse directe (source=%s, ville=%s)", source, city)
+            audio_url = await synthesize_french(fr or bam)
+            audio_lang = "Français" if audio_url else None
+        else:
+            audio_url = await _synthesize_dioula(bam)
+            audio_lang = "Dioula" if audio_url else None
+
+    logger.info(
+        "[MÉTÉO] Réponse directe (source=%s, ville=%s, langue=%s)",
+        source, city, language.value,
+    )
     return ChatResult(
         # response = FR par contrat (#167) ; fallback bam si FR vide (garde-fou).
         response=fr or bam,
@@ -100,6 +113,6 @@ async def build_meteo_response(
         audio_url=audio_url,
         city=city,
         language=language.value,
-        audio_language="Dioula" if audio_url else None,
+        audio_language=audio_lang,
         meta={"intent": nlu.intent, "source": source},
     )
