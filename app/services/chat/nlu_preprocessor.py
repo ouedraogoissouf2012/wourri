@@ -113,6 +113,13 @@ def preprocess_nlu(
     Returns:
         NLUResult avec message_for_deepseek + intent + concepts + flag hors-sujet.
     """
+    # FR pur : DeepSeek reste maître de la conversation FR. On lance le NLU
+    # UNIQUEMENT pour détecter l'intention (routage météo déterministe dans le
+    # FrenchHandler) ; le message pour DeepSeek reste l'original, et on ne renvoie
+    # jamais le refus « hors-sujet » (issue météo mode FR).
+    if language == Language.FRENCH:
+        return _detect_intent_fr(message)
+
     if language not in (Language.DIOULA, Language.BOTH):
         return NLUResult(message_for_deepseek=message)
 
@@ -163,6 +170,32 @@ def preprocess_nlu(
 
     except Exception as e:
         logger.error("[NLU] erreur: %s", e)
+        return NLUResult(message_for_deepseek=message)
+
+
+def _detect_intent_fr(message: str) -> NLUResult:
+    """FR : renvoie l'intention + les concepts NLU du message, SANS toucher au
+    message pour DeepSeek ni renvoyer le refus « hors-sujet ».
+
+    Sert au routage déterministe de la météo (FrenchHandler, hook
+    `is_pure_weather_intent`) tout en laissant DeepSeek gérer le reste de la
+    conversation FR (aucun enrichissement, message original conservé).
+    """
+    try:
+        from app.services.nlu import get_nlu_service
+        nlu = get_nlu_service()
+        if nlu is None:
+            return NLUResult(message_for_deepseek=message)
+        result = nlu.process(message)
+        intent = "HORS_SUJET" if result.is_out_of_scope else result.intent
+        return NLUResult(
+            message_for_deepseek=message,  # DeepSeek garde le message original
+            intent=intent,
+            concepts=result.concepts or {},
+            # is_out_of_scope reste False : pas de refus déterministe en FR.
+        )
+    except Exception as e:
+        logger.error("[NLU] erreur (FR intent-only): %s", e)
         return NLUResult(message_for_deepseek=message)
 
 

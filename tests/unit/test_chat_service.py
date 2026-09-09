@@ -55,12 +55,22 @@ class TestDetectCity:
 class TestNLUPreprocessing:
     """Test du preprocessing NLU."""
 
-    def test_french_message_no_nlu(self):
-        """Un message français ne passe pas par le NLU."""
+    @patch("app.services.nlu.get_nlu_service")
+    def test_french_detecte_intent_garde_message(self, mock_nlu_fn):
+        """Mode FRENCH : le NLU détecte l'intention (pour router la météo) MAIS le
+        message pour DeepSeek reste l'original (DeepSeek reste maître du FR)."""
+        mock_nlu = MagicMock()
+        mock_result = MagicMock()
+        mock_result.is_out_of_scope = False
+        mock_result.concepts = {"SALUTATION": 1.0}
+        mock_result.intent = "SALUTATION_SEULE"
+        mock_nlu.process.return_value = mock_result
+        mock_nlu_fn.return_value = mock_nlu
+
         result = preprocess_nlu("Bonjour", None, Language.FRENCH)
-        assert result.message_for_deepseek == "Bonjour"
-        assert result.intent is None
-        assert result.concepts == {}
+        assert result.message_for_deepseek == "Bonjour"  # INCHANGÉ
+        assert result.intent == "SALUTATION_SEULE"
+        assert result.is_out_of_scope is False
 
     def test_no_bambara_text_no_chars(self):
         """Sans texte bambara ni caractères spéciaux, pas de NLU."""
@@ -134,14 +144,24 @@ class TestNLUPreprocessing:
         assert result.intent == "QUESTION_SAISON_PLANTATION"
         assert "CULTURE_RIZ" in result.concepts
 
-    def test_fr_message_french_only_no_nlu(self):
-        """Mode FRENCH pure : le NLU ne doit PAS être appelé (régression check)."""
+    @patch("app.services.nlu.get_nlu_service")
+    def test_fr_message_french_detecte_intent_garde_message(self, mock_nlu_fn):
+        """Mode FRENCH : le NLU tourne pour détecter l'intention (routage météo),
+        mais le message ORIGINAL est conservé pour DeepSeek (pas d'enrichissement)."""
+        mock_nlu = MagicMock()
+        mock_result = MagicMock()
+        mock_result.is_out_of_scope = False
+        mock_result.concepts = {"CULTURE_RIZ": 1.0, "ACTION_PLANTER": 1.0}
+        mock_result.intent = "QUESTION_SAISON_PLANTATION"
+        mock_nlu.process.return_value = mock_result
+        mock_nlu_fn.return_value = mock_nlu
+
         result = preprocess_nlu(
             "Bonjour je veux planter du riz", None, Language.FRENCH
         )
-        # Pas de NLU en mode FRENCH (court-circuit ligne 172)
-        assert result.intent is None
-        assert result.concepts == {}
+        mock_nlu.process.assert_called_once_with("Bonjour je veux planter du riz")
+        assert result.intent == "QUESTION_SAISON_PLANTATION"
+        # message INCHANGÉ pour DeepSeek (pas de [Paysan cultive: …] en FR)
         assert result.message_for_deepseek == "Bonjour je veux planter du riz"
 
     def test_dioula_priority_over_fr_fallback(self):
