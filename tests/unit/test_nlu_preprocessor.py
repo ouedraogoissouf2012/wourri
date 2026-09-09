@@ -71,13 +71,62 @@ def test_enrich_concepts_vides_pas_de_prefixe():
 # ─────────────────────────────────────────────
 
 
-def test_preprocess_nlu_fr_pur_skip_nlu():
-    """language=FRENCH → skip NLU, retourne message inchange."""
+def test_preprocess_nlu_fr_detecte_intent_garde_message(monkeypatch):
+    """FR : le NLU détecte l'intention (pour router la météo) MAIS le message pour
+    DeepSeek reste le message ORIGINAL (DeepSeek reste maître de la conversation FR)."""
+    mock_nlu_service = MagicMock()
+    mock_result = MagicMock(
+        is_out_of_scope=False,
+        concepts={"CULTURE_RIZ": True, "ACTION_PLANTER": True},
+        french_sentence="Quand semer le riz",
+        intent="QUESTION_SAISON_PLANTATION",
+    )
+    mock_nlu_service.process = MagicMock(return_value=mock_result)
+    monkeypatch.setattr("app.services.nlu.get_nlu_service", lambda: mock_nlu_service)
+
     result = preprocess_nlu("Quand semer du riz ?", None, Language.FRENCH)
+    # message INCHANGÉ (pas d'enrichissement [Paysan cultive: …] en FR)
     assert result.message_for_deepseek == "Quand semer du riz ?"
-    assert result.intent is None
-    assert result.concepts == {}
+    assert result.intent == "QUESTION_SAISON_PLANTATION"
     assert result.is_out_of_scope is False
+
+
+def test_preprocess_nlu_fr_meteo_route_vers_intent_meteo(monkeypatch):
+    """FR météo : intent=QUESTION_METEO_AGRICOLE (→ meteo_responder dans FrenchHandler),
+    concepts conservés (TEMPS_DEMAIN → prévision), message original pour DeepSeek."""
+    mock_nlu_service = MagicMock()
+    mock_result = MagicMock(
+        is_out_of_scope=False,
+        concepts={"TEMPS_SAISON_PLUIE": True, "TEMPS_DEMAIN": True},
+        french_sentence=None,
+        intent="QUESTION_METEO_AGRICOLE",
+    )
+    mock_nlu_service.process = MagicMock(return_value=mock_result)
+    monkeypatch.setattr("app.services.nlu.get_nlu_service", lambda: mock_nlu_service)
+
+    result = preprocess_nlu("y a-t-il de la pluie demain", None, Language.FRENCH)
+    assert result.intent == "QUESTION_METEO_AGRICOLE"
+    assert "TEMPS_DEMAIN" in result.concepts
+    assert result.message_for_deepseek == "y a-t-il de la pluie demain"
+
+
+def test_preprocess_nlu_fr_hors_sujet_ne_refuse_pas(monkeypatch):
+    """FR hors-sujet : PAS de refus « hors-sujet » — DeepSeek garde la main sur le
+    message original (le refus déterministe est réservé au dioula/BOTH)."""
+    mock_nlu_service = MagicMock()
+    mock_result = MagicMock(
+        is_out_of_scope=True,
+        out_of_scope_message_fr="Question hors agricole",
+        concepts={},
+        french_sentence=None,
+        intent=None,
+    )
+    mock_nlu_service.process = MagicMock(return_value=mock_result)
+    monkeypatch.setattr("app.services.nlu.get_nlu_service", lambda: mock_nlu_service)
+
+    result = preprocess_nlu("Quelle heure est-il ?", None, Language.FRENCH)
+    assert result.is_out_of_scope is False
+    assert result.message_for_deepseek == "Quelle heure est-il ?"
 
 
 def test_preprocess_nlu_dioula_sans_texte_retourne_message():
