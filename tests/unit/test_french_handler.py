@@ -287,3 +287,25 @@ async def test_french_handler_non_meteo_va_a_deepseek():
 
     assert result.meta["source"] == "deepseek_french"
     mock_ds.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_french_handler_culture_zone_avant_deepseek():
+    """QUESTION_GENERALE FR → réponse culture-zone déterministe, PAS DeepSeek (#509 C2)."""
+    nlu = _make_nlu(intent="QUESTION_GENERALE", concepts={"ACTION_PLANTER": True})
+    handler = FrenchHandler()
+    with patch("app.data.zones_agricoles.get_cultures_zone",
+               return_value=["CULTURE_COTON", "CULTURE_MAIS"]), \
+         patch("app.data.zones_agricoles.get_zone_for_city", return_value="ZONE_NORD_SAVANE"), \
+         patch("app.data.calendrier_agricole.get_cultures_du_mois", return_value=[]), \
+         patch("app.services.tts_french.synthesize_french", new=AsyncMock(return_value=None)), \
+         patch("app.services.deepseek.chat_with_deepseek",
+               new=AsyncMock(return_value="NE DOIT PAS ETRE APPELE")) as mock_ds:
+        result = await handler.process(
+            nlu=nlu, weather_data=None, city="Korhogo",
+            include_audio=False, language=Language.FRENCH, user_id="u1",
+        )
+
+    assert result.meta["source"] == "culture_zone"
+    assert "coton" in result.response
+    mock_ds.assert_not_called()

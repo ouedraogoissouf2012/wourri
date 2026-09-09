@@ -71,6 +71,25 @@ class FrenchHandler:
             if meteo is not None:
                 return meteo
 
+        # Niveau « quelle culture pour ma zone » (#509 C2, ajout OCP) : réponse
+        # déterministe depuis la zone agro-écologique, AVANT DeepSeek → répond au
+        # « quelle culture pour ma région » que la démo SODEXAM laissait sans
+        # résultat. Fallback DeepSeek conservé (build renvoie None si donnée absente).
+        from app.services.chat.culture_zone_responder import (
+            build_culture_zone_response,
+            is_culture_zone_intent,
+        )
+
+        if is_culture_zone_intent(nlu):
+            cz = await build_culture_zone_response(
+                nlu=nlu,
+                city=city,
+                include_audio=include_audio,
+                language=language,
+            )
+            if cz is not None:
+                return cz
+
         from app.services.deepseek import chat_with_deepseek
         from app.services.tts_french import synthesize_french
 
