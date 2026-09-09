@@ -117,6 +117,23 @@ def set_status(*, item_id, language: str, status: str, allowed_from=None) -> boo
         return cur.rowcount > 0
 
 
+def update_text(*, item_id, language: str, text_local: str, text_fr: str, allowed_from) -> bool:
+    """UPDATE le texte (text_local/text_fr) d'une ligne, TOUJOURS filtre par langue
+    (isolation inter-locuteurs). N'agit QUE depuis `allowed_from` (garde atomique :
+    on n'edite jamais une 'production' deja publiee). Retourne True si une ligne a change."""
+    pid = _as_int(item_id)
+    if pid is None:
+        return False
+    with get_conn() as conn:
+        cur = conn.execute(
+            "UPDATE productions SET text_local = %s, text_fr = %s, updated_at = now()"
+            " WHERE id = %s AND language = %s AND status = ANY(%s)",
+            (text_local, text_fr, pid, language, list(allowed_from)),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+
+
 def promote(*, item_id, language: str, actor: str, allowed_from) -> dict:
     """Transition atomique -> 'production' (verrou FOR UPDATE). Ne cree JAMAIS de nouvelle
     ligne : flippe le statut de LA meme ligne. Refuse si statut hors `allowed_from`."""
