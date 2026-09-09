@@ -123,3 +123,49 @@ def test_concept_extractor_recognizes_temps_demain(extractor, phrase):
     concepts = extractor.extract(phrase)
 
     assert "TEMPS_DEMAIN" in concepts
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    ["vas t'il pleuvoir demain", "il va pleuvoir", "est-ce qu'il pleut"],
+)
+def test_concept_extractor_recognizes_pleuvoir_fr(extractor, phrase):
+    """Bug prod 2026-09 : le VERBE 'pleuvoir/pleut' (FR) doit être reconnu comme
+    concept pluie — seul le nom 'pluie' l'était, d'où un HORS_SUJET sur 'pleuvoir'."""
+    concepts = extractor.extract(phrase)
+
+    assert "TEMPS_SAISON_PLUIE" in concepts
+
+
+def test_intent_pleuvoir_demain_is_meteo_not_hors_sujet(nlu_config):
+    """'pleuvoir demain' → QUESTION_METEO_AGRICOLE (prévision J+1), plus HORS_SUJET."""
+    classifier = IntentClassifier(nlu_config["intents"])
+
+    intent, confidence, _ = classifier.classify(
+        {"TEMPS_SAISON_PLUIE": 1.0, "TEMPS_DEMAIN": 1.0}
+    )
+
+    assert intent == "QUESTION_METEO_AGRICOLE"
+    assert 0.0 <= confidence <= 1.0
+
+
+def test_intent_pure_meteo_is_not_hors_sujet(nlu_config):
+    """Cohérence : QUESTION_METEO_AGRICOLE accepte TEMPS_METEO → une question météo
+    pure (température/vent) ne doit plus tomber en HORS_SUJET (garde `_has_agricultural`)."""
+    classifier = IntentClassifier(nlu_config["intents"])
+
+    intent, _, _ = classifier.classify({"TEMPS_METEO": 1.0})
+
+    assert intent == "QUESTION_METEO_AGRICOLE"
+
+
+def test_pleuvoir_demain_bout_en_bout(extractor, nlu_config):
+    """Reproduction exacte du bug prod : 'vas t'il pleuvoir demain' ne doit plus
+    être classé HORS_SUJET, et TEMPS_DEMAIN doit rester présent (→ prévision J+1)."""
+    concepts = extractor.extract("vas t'il pleuvoir demain")
+    classifier = IntentClassifier(nlu_config["intents"])
+
+    intent, _, _ = classifier.classify(concepts)
+
+    assert intent == "QUESTION_METEO_AGRICOLE"
+    assert "TEMPS_DEMAIN" in concepts
