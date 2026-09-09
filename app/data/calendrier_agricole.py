@@ -185,6 +185,41 @@ NOMS_CULTURES_FR = {
 
 
 # ============================================================
+# HELPERS — prochaine fenêtre de semis (issue #509 C1)
+# ============================================================
+
+def _prochaine_fenetre(months: list[int], mois_courant: int) -> tuple[int, int]:
+    """Prochain mois de semis (à venir) et nombre de mois avant, année glissante.
+
+    months = mois de plantation (1-12). Ex. maïs [4,5,6] en septembre (9)
+    → (4, 7) : prochaine fenêtre en avril, dans ~7 mois.
+    """
+    deltas = sorted(((m - mois_courant) % 12, m) for m in months)
+    for d, m in deltas:
+        if d > 0:
+            return m, d
+    return deltas[0][1], deltas[0][0]  # on est pile dans la fenêtre (delta 0)
+
+
+def _intervalle_mois_fr(months: list[int]) -> str:
+    """Décrit des mois en intervalles lisibles : [4,5,6] -> 'avril-juin' ;
+    [5,6,9,10] -> 'mai-juin et septembre-octobre'."""
+    ms = sorted(set(months))
+    if not ms:
+        return ""
+    groups, start, prev = [], ms[0], ms[0]
+    for m in ms[1:]:
+        if m == prev + 1:
+            prev = m
+        else:
+            groups.append((start, prev))
+            start = prev = m
+    groups.append((start, prev))
+    parts = [MOIS_FR[a] if a == b else f"{MOIS_FR[a]}-{MOIS_FR[b]}" for a, b in groups]
+    return " et ".join(parts)
+
+
+# ============================================================
 # FONCTION PRINCIPALE
 # ============================================================
 
@@ -244,7 +279,20 @@ def get_conseil_saisonnier(cultures: list[str], intent: str = "") -> dict | None
             phase = "plantation_passe"
 
         conseil_bam = CONSEILS_BAMBARA[phase].format(culture=nom_bam)
-        conseil_fr = CONSEILS_FR[phase].format(culture=nom_fr)
+        if phase == "plantation_passe" and plantation:
+            # #509 C1 : hors saison de semis, dire QUAND est la prochaine fenêtre
+            # (calculée depuis le calendrier) au lieu du vague « prépare-toi pour
+            # la prochaine saison » — la question précise de SODEXAM.
+            # Dioula : on garde la phrase déjà validée (CONSEILS_BAMBARA) tant
+            # qu'une version datée n'a pas été validée nativement (ADR-0014).
+            debut, delta = _prochaine_fenetre(plantation, mois)
+            conseil_fr = (
+                f"La saison de semis du {nom_fr} ({_intervalle_mois_fr(plantation)}) "
+                f"est passée. La prochaine commence en {MOIS_FR[debut]}, "
+                f"dans environ {delta} mois."
+            )
+        else:
+            conseil_fr = CONSEILS_FR[phase].format(culture=nom_fr)
 
         logger.debug("[CALENDRIER] %s en %s → phase: %s", culture, mois_fr, phase)
         logger.debug("[CALENDRIER BAM] %s", conseil_bam)

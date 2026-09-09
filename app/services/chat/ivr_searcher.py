@@ -132,9 +132,17 @@ async def try_ivr_exact(
     # Conseil saisonnier (bilingue)
     conseil = get_conseil_saisonnier(cultures, intent=nlu.intent)
     if conseil:
-        ivr_bambara = ivr_bambara + " " + conseil["bambara"]
-        if ivr_fr:
-            ivr_fr = ivr_fr + " " + conseil["fr"]
+        if conseil.get("phase") == "plantation_passe":
+            # #509 C1 : hors saison de semis, le conseil daté fait AUTORITÉ. Le
+            # texte figé du corpus suppose la bonne saison (« prépare maintenant »)
+            # et contredirait « la saison est passée » → on le remplace au lieu de
+            # concaténer, pour ne pas produire un message incohérent.
+            ivr_fr = conseil["fr"] or ivr_fr
+            ivr_bambara = conseil["bambara"] or ivr_bambara
+        else:
+            ivr_bambara = ivr_bambara + " " + conseil["bambara"]
+            if ivr_fr:
+                ivr_fr = ivr_fr + " " + conseil["fr"]
 
     # TTS base sur le bambara
     audio_url = None
