@@ -69,3 +69,14 @@ async def test_culture_zone_sans_cultures_renvoie_none():
             _nlu(), "VilleInconnue", include_audio=False, language=Language.FRENCH,
         )
     assert r is None
+
+
+@pytest.mark.asyncio
+async def test_culture_zone_nord_inclut_anacarde_donnees_reelles():
+    """Données réelles enrichies (#509) : le Nord (Korhogo) inclut l'anacarde."""
+    r = await build_culture_zone_response(
+        _nlu(), "Korhogo", include_audio=False, language=Language.FRENCH,
+    )
+    assert r is not None
+    low = r.response.lower()
+    assert "anacarde" in low and "coton" in low

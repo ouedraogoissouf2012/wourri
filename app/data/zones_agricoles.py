@@ -10,26 +10,37 @@ logger = logging.getLogger(__name__)
 # ZONES AGRICOLES (4 grandes zones CI)
 # ============================================================
 
+# Cultures par zone — associations agro-écologiques documentées (Côte d'Ivoire) :
+# Sud forêt = pérennes (cacao/café/hévéa/palmier) ; Centre = anacarde + vivriers
+# + coton (frange) ; Nord savane = coton + anacarde + céréales ; Ouest = café-cacao
+# + riz. Réf. : profil pays FAO CI, zonage agro-climatique (limite forêt/savane
+# Man–Yamoussoukro–Bondoukou).
+# ⚠️ #509 : listes ENRICHIES depuis sources documentées — À FAIRE VALIDER
+# (CNRA / ANADER) avant merge. Ne pas inventer ; ordonnées par importance.
 ZONES = {
     "ZONE_SUD_FORET": {
         "label_fr": "Zone forestière (sud)",
         "label_bam": "Gɛlɛgɛlɛ yɔrɔ (woroba)",
         "cultures": [
             "CULTURE_CACAO",
+            "CULTURE_CAFE",
+            "CULTURE_HEVEA",
+            "CULTURE_PALMIER_HUILE",
+            "CULTURE_BANANE",
             "CULTURE_MANIOC",
-            "CULTURE_HARICOT",
-            "CULTURE_PATATE",
         ],
     },
     "ZONE_CENTRE": {
         "label_fr": "Zone de transition (centre)",
         "label_bam": "Tɛmɛnen yɔrɔ (diɲɛ)",
         "cultures": [
+            "CULTURE_ANACARDE",
             "CULTURE_IGNAME",
             "CULTURE_MAIS",
             "CULTURE_RIZ",
             "CULTURE_ARACHIDE",
             "CULTURE_MANIOC",
+            "CULTURE_COTON",
         ],
     },
     "ZONE_NORD_SAVANE": {
@@ -37,17 +48,21 @@ ZONES = {
         "label_bam": "Savane yɔrɔ (north)",
         "cultures": [
             "CULTURE_COTON",
-            "CULTURE_MIL",
+            "CULTURE_ANACARDE",
             "CULTURE_MAIS",
+            "CULTURE_MIL",
             "CULTURE_RIZ",
-            "CULTURE_IGNAME",
             "CULTURE_ARACHIDE",
+            "CULTURE_IGNAME",
+            "CULTURE_SESAME",
         ],
     },
     "ZONE_OUEST_MONTAGNES": {
         "label_fr": "Zone montagneuse (ouest)",
         "label_bam": "Kulu yɔrɔ (tilimanjin)",
         "cultures": [
+            "CULTURE_CAFE",
+            "CULTURE_CACAO",
             "CULTURE_RIZ",
             "CULTURE_MAIS",
             "CULTURE_IGNAME",
