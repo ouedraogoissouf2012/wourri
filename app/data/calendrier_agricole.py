@@ -181,6 +181,12 @@ NOMS_CULTURES_FR = {
     "CULTURE_HARICOT":   "haricot",
     "CULTURE_MIL":       "mil",
     "CULTURE_SORGHO":    "sorgho",
+    # #509 : cultures pérennes/de rente ajoutées pour les zones (affichage FR).
+    "CULTURE_ANACARDE":      "anacarde (cajou)",
+    "CULTURE_CAFE":          "café",
+    "CULTURE_HEVEA":         "hévéa",
+    "CULTURE_PALMIER_HUILE": "palmier à huile",
+    "CULTURE_BANANE":        "banane plantain",
 }
 
 
