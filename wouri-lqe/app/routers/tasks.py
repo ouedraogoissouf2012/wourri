@@ -12,6 +12,12 @@ class DecisionBody(BaseModel):
     decision: str
 
 
+class EditBody(BaseModel):
+    id: str = Field(min_length=1)
+    text_local: str = Field(min_length=1)
+    text_fr: str = ""
+
+
 @router.get("")
 def get_tasks(user: dict = Depends(current_user)):
     lang = user["lang"]
@@ -27,5 +33,17 @@ def post_decision(body: DecisionBody, user: dict = Depends(require_role("review"
     result = workflow.decide(body.id, body.decision, language=user["lang"])
     if not result.get("ok"):
         raise HTTPException(status_code=400, detail=result.get("reason"))
+    return result
+
+
+@router.post("/edit")
+def post_edit(body: EditBody, user: dict = Depends(require_role("review"))):
+    result = workflow.edit_text(
+        body.id, language=user["lang"],
+        text_local=body.text_local, text_fr=body.text_fr,
+    )
+    if not result.get("ok"):
+        code = 404 if result.get("reason") == "not_found" else 400
+        raise HTTPException(status_code=code, detail=result.get("reason"))
     return result
 

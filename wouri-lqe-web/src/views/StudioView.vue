@@ -12,6 +12,9 @@ const corpus = ref([]);
 const jsonText = ref('[{"text_local":"","text_fr":""}]');
 const msg = ref("");
 const err = ref("");
+const editing = ref(null); // id de la fiche en cours de correction
+const editLocal = ref("");
+const editFr = ref("");
 
 const can = (r) => {
   const rs = me.value.roles || [];
@@ -101,6 +104,32 @@ async function decide(id, decision) {
   await refresh();
 }
 
+function startEdit(r) {
+  editing.value = r.id;
+  editLocal.value = r.text_local;
+  editFr.value = r.text_fr;
+  err.value = "";
+}
+
+function cancelEdit() {
+  editing.value = null;
+}
+
+async function saveEdit(id) {
+  err.value = "";
+  try {
+    await api("/tasks/edit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, text_local: editLocal.value, text_fr: editFr.value }),
+    });
+    editing.value = null;
+    await refresh();
+  } catch (e) {
+    err.value = String(e.message || e);
+  }
+}
+
 async function promote(id) {
   await api("/corpus/promote", {
     method: "POST",
@@ -146,11 +175,25 @@ async function promote(id) {
 
     <section v-show="tab==='bronze' && can('review')" class="mt-4 space-y-3">
       <article v-for="r in bronze" :key="r.id" class="border rounded p-3 bg-white">
-        <p><strong>{{ r.text_local }}</strong></p>
-        <p class="text-stone-600">{{ r.text_fr }}</p>
-        <audio v-if="r.audio_url" :src="mediaSrc(r)" crossorigin="use-credentials" controls class="mt-2 h-8"></audio>
-        <button class="mr-2 mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_accepted')">Accepter</button>
-        <button class="mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_rejected')">Rejeter</button>
+        <template v-if="editing === r.id">
+          <label class="block text-xs text-stone-500">Texte (langue locale)</label>
+          <input v-model="editLocal" class="w-full border rounded p-1 mb-2 font-semibold" />
+          <label class="block text-xs text-stone-500">Traduction française</label>
+          <input v-model="editFr" class="w-full border rounded p-1 text-stone-600" />
+          <audio v-if="r.audio_url" :src="mediaSrc(r)" crossorigin="use-credentials" controls class="mt-2 h-8"></audio>
+          <div class="mt-2">
+            <button class="mr-2 bg-wouri-700 text-white px-2 py-1 rounded" type="button" @click="saveEdit(r.id)">Enregistrer</button>
+            <button class="border px-2 py-1" type="button" @click="cancelEdit">Annuler</button>
+          </div>
+        </template>
+        <template v-else>
+          <p><strong>{{ r.text_local }}</strong></p>
+          <p class="text-stone-600">{{ r.text_fr }}</p>
+          <audio v-if="r.audio_url" :src="mediaSrc(r)" crossorigin="use-credentials" controls class="mt-2 h-8"></audio>
+          <button class="mr-2 mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_accepted')">Accepter</button>
+          <button class="mr-2 mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_rejected')">Rejeter</button>
+          <button class="mt-2 border px-2 py-1" type="button" @click="startEdit(r)">Corriger</button>
+        </template>
       </article>
       <p v-if="!bronze.length" class="text-stone-500 text-sm">Aucune phrase Bronze.</p>
     </section>
