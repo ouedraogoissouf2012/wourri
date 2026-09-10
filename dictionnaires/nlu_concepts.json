@@ -865,6 +865,20 @@
         "humidite"
       ]
     },
+    "TEMPS_DATE": {
+      "label_fr": "date/jour courant",
+      "keywords": [
+        "quelle date",
+        "date du jour",
+        "date d'aujourd'hui",
+        "date aujourd'hui",
+        "on est quel jour",
+        "quel jour on est",
+        "quel jour sommes",
+        "quelle date sommes",
+        "jour d'aujourd'hui"
+      ]
+    },
     "TEMPS_DEMAIN": {
       "label_fr": "demain",
       "keywords": [
@@ -1239,6 +1253,15 @@
       ],
       "priority": 3,
       "description": "Culture + signal de vente explicite (faran/farali/marché/prix) — élevage hors scope"
+    },
+    {
+      "name": "QUESTION_DATE",
+      "label_fr": "Question sur la date du jour",
+      "required_any": [
+        "TEMPS_DATE"
+      ],
+      "priority": 1,
+      "description": "Demande de la date / du jour courant"
     },
     {
       "name": "QUESTION_METEO_AGRICOLE",

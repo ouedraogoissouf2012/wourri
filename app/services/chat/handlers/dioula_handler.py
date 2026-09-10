@@ -104,6 +104,25 @@ class DioulaHandler:
             if result is not None:
                 return result
 
+        # Niveau 2.6 : question de DATE (« quelle est la date »). Réponse déterministe
+        # avec la VRAIE date (datetime.now), AVANT DeepSeek → évite le refus HORS_SUJET
+        # et la date hallucinée. Rendue en français (dette dioula tracée, ADR-0014 :
+        # formulation dioula de la date = validation native).
+        from app.services.chat.date_responder import (
+            build_date_response,
+            is_date_intent,
+        )
+
+        if is_date_intent(nlu):
+            result = await build_date_response(
+                nlu=nlu,
+                city=city,
+                include_audio=include_audio,
+                language=language,
+            )
+            if result is not None:
+                return result
+
         # Niveau 3 : DeepSeek dioula + traduction NLLB + TTS
         return await try_deepseek_dioula(
             nlu=nlu,

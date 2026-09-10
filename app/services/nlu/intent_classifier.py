@@ -170,7 +170,9 @@ class IntentClassifier:
             # TEMPS_METEO inclus : QUESTION_METEO_AGRICOLE l'accepte en required_any
             # (nlu_concepts.json) ; sans lui, une question météo pure (pluie/température)
             # tombait en HORS_SUJET avant le scoring (bug prod « il va pleuvoir »).
-            "PROBLEME_", "TEMPS_SAISON", "TEMPS_METEO", "ENGRAIS_", "ROLE_"
+            # TEMPS_DATE inclus : QUESTION_DATE (« quelle est la date ») doit atteindre
+            # le scoring plutôt que HORS_SUJET (bug prod : refus ou date hallucinée).
+            "PROBLEME_", "TEMPS_SAISON", "TEMPS_METEO", "TEMPS_DATE", "ENGRAIS_", "ROLE_"
         )
         return any(
             any(k.startswith(p) for p in agri_prefixes)
