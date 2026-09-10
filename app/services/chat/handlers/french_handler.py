@@ -90,6 +90,24 @@ class FrenchHandler:
             if cz is not None:
                 return cz
 
+        # Niveau « quelle est la date du jour » (ajout OCP) : réponse déterministe
+        # avec la VRAIE date, AVANT DeepSeek → évite la date hallucinée par DeepSeek
+        # (bug prod « mardi 15 avril 2025 »).
+        from app.services.chat.date_responder import (
+            build_date_response,
+            is_date_intent,
+        )
+
+        if is_date_intent(nlu):
+            dated = await build_date_response(
+                nlu=nlu,
+                city=city,
+                include_audio=include_audio,
+                language=language,
+            )
+            if dated is not None:
+                return dated
+
         from app.services.deepseek import chat_with_deepseek
         from app.services.tts_french import synthesize_french
 

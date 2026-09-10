@@ -169,3 +169,18 @@ def test_pleuvoir_demain_bout_en_bout(extractor, nlu_config):
 
     assert intent == "QUESTION_METEO_AGRICOLE"
     assert "TEMPS_DEMAIN" in concepts
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    ["quelle est la date du jour", "on est quel jour", "quelle date sommes-nous"],
+)
+def test_intent_question_date(extractor, nlu_config, phrase):
+    """Une demande de date → QUESTION_DATE (plus HORS_SUJET) — bug prod :
+    en BOTH le bot refusait, en FR DeepSeek inventait une date fausse."""
+    concepts = extractor.extract(phrase)
+    classifier = IntentClassifier(nlu_config["intents"])
+
+    intent, _, _ = classifier.classify(concepts)
+
+    assert intent == "QUESTION_DATE"
