@@ -281,9 +281,9 @@ def test_bayelemabaga_wrapper_appelle_tfidf_source(tmp_path, monkeypatch):
         min_global=2,
         min_match_lignes=3,
     )
-    monkeypatch.setattr(_mod, "_BAYELEMABAGA_SRC", fake_src)
+    monkeypatch.setattr(_mod._bv_registry, "_BAYELEMABAGA_SRC", fake_src)
     # Court-circuit la concatenation des splits (les paths pointent ailleurs)
-    monkeypatch.setattr(_mod, "_bayelemabaga_load_all_splits", lambda: fake_src.load())
+    monkeypatch.setattr(_mod._bv_registry, "_bayelemabaga_load_all_splits", lambda: fake_src.load())
 
     result = _mod._bayelemabaga("riz")
     assert isinstance(result, Counter)
@@ -321,8 +321,8 @@ def _setup_bayelemabaga_splits(tmp_path: Path, monkeypatch) -> Path:
         (split_dir / f"{split}.fr").write_text("\n".join(fr_lines) + "\n", encoding="utf-8")
         (split_dir / f"{split}.bam").write_text("\n".join(bam_lines) + "\n", encoding="utf-8")
 
-    monkeypatch.setattr(_mod, "DATA_DIR", tmp_path)
-    monkeypatch.setattr(_mod, "_BAYELEMABAGA_SRC", None)
+    monkeypatch.setattr(_mod._bv_registry, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(_mod._bv_registry, "_BAYELEMABAGA_SRC", None)
     return tmp_path
 
 
@@ -375,8 +375,8 @@ def test_bayelemabaga_src_fallback_sans_splits(tmp_path, monkeypatch):
     avec paths inexistants → find() renvoie Counter() vide sans crasher.
     """
     # tmp_path est vide (pas de sous-dossier bayelemabaga/)
-    monkeypatch.setattr(_mod, "DATA_DIR", tmp_path)
-    monkeypatch.setattr(_mod, "_BAYELEMABAGA_SRC", None)
+    monkeypatch.setattr(_mod._bv_registry, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(_mod._bv_registry, "_BAYELEMABAGA_SRC", None)
 
     src = _mod._bayelemabaga_src()
     assert src is not None, "fallback doit creer une instance, pas retourner None"
@@ -396,8 +396,8 @@ def test_bayelemabaga_src_fallback_sans_splits(tmp_path, monkeypatch):
 def test_kouman_src_cree_instance_avec_bons_parametres(tmp_path, monkeypatch):
     """`_kouman_src()` doit creer une TfidfSource avec les bons parametres
     legacy (weight=3, min_global=2, min_match_lignes=2)."""
-    monkeypatch.setattr(_mod, "DATA_DIR", tmp_path)
-    monkeypatch.setattr(_mod, "_KOUMAN_SRC", None)
+    monkeypatch.setattr(_mod._bv_registry, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(_mod._bv_registry, "_KOUMAN_SRC", None)
 
     src = _mod._kouman_src()
     assert isinstance(src, _mod.TfidfSource)
@@ -420,8 +420,8 @@ def test_koumankan_wrapper_appelle_tfidf_source(tmp_path, monkeypatch):
     (kdir / "koumankan.dyu").write_text(
         "malo bena\nmalo dun\nmalo ka di\n", encoding="utf-8"
     )
-    monkeypatch.setattr(_mod, "DATA_DIR", tmp_path)
-    monkeypatch.setattr(_mod, "_KOUMAN_SRC", None)
+    monkeypatch.setattr(_mod._bv_registry, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(_mod._bv_registry, "_KOUMAN_SRC", None)
 
     result = _mod._koumankan("riz")
     assert isinstance(result, Counter)
@@ -433,8 +433,8 @@ def test_koumankan_wrapper_appelle_tfidf_source(tmp_path, monkeypatch):
 def test_findora_src_cree_instance_avec_bons_parametres(tmp_path, monkeypatch):
     """`_findora_src()` doit creer une TfidfSource avec les bons parametres
     legacy (weight=3, min_global=2, min_match_lignes=2)."""
-    monkeypatch.setattr(_mod, "DATA_DIR", tmp_path)
-    monkeypatch.setattr(_mod, "_FINDORA_SRC", None)
+    monkeypatch.setattr(_mod._bv_registry, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(_mod._bv_registry, "_FINDORA_SRC", None)
 
     src = _mod._findora_src()
     assert isinstance(src, _mod.TfidfSource)
@@ -455,8 +455,8 @@ def test_findora_wrapper_appelle_tfidf_source(tmp_path, monkeypatch):
     (fdir / "findora.dyu").write_text(
         "kaba san\nkaba bena\nkaba ka da\n", encoding="utf-8"
     )
-    monkeypatch.setattr(_mod, "DATA_DIR", tmp_path)
-    monkeypatch.setattr(_mod, "_FINDORA_SRC", None)
+    monkeypatch.setattr(_mod._bv_registry, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(_mod._bv_registry, "_FINDORA_SRC", None)
 
     result = _mod._findora("mais")
     assert isinstance(result, Counter)
@@ -491,15 +491,16 @@ def test_http_scraper_user_agent_par_defaut_mozilla(monkeypatch):
         capture["headers"] = headers
         return _FakeResponse(200, "riz malo")
 
-    monkeypatch.setattr(_mod.requests, "get", fake_get)
-    monkeypatch.setattr(_mod, "_ud_loaded", True)
-    monkeypatch.setattr(_mod, "_ud_mots", {"malo"})
+    monkeypatch.setattr(_mod._bv_sources.requests, "get", fake_get)
+    monkeypatch.setattr(_mod._bv_registry, "_ud_loaded", True)
+    monkeypatch.setattr(_mod._bv_registry, "_ud_mots", {"malo"})
 
     src = _mod.HttpScraperSource(
         name="test",
         url_builder=_builder_constant("http://example.com"),
         weight=1,
         fenetre=100,
+        extraire_fenetre=_mod._bv_registry.extraire_fenetre,
     )
     src.find("riz")
     assert capture["headers"]["User-Agent"] == _mod.HttpScraperSource.DEFAULT_USER_AGENT
@@ -513,13 +514,14 @@ def test_http_scraper_user_agent_personnalise(monkeypatch):
         capture["headers"] = headers
         return _FakeResponse(200, "")
 
-    monkeypatch.setattr(_mod.requests, "get", fake_get)
+    monkeypatch.setattr(_mod._bv_sources.requests, "get", fake_get)
 
     src = _mod.HttpScraperSource(
         name="test",
         url_builder=_builder_constant("http://example.com"),
         weight=1,
         fenetre=100,
+        extraire_fenetre=_mod._bv_registry.extraire_fenetre,
         user_agent="WouriValidator/1.0",
     )
     src.find("riz")
@@ -528,13 +530,14 @@ def test_http_scraper_user_agent_personnalise(monkeypatch):
 
 def test_http_scraper_status_non_200_retourne_counter_vide(monkeypatch):
     """Status != 200 → Counter() vide sans crash."""
-    monkeypatch.setattr(_mod.requests, "get", lambda *a, **k: _FakeResponse(404, "ignored"))
+    monkeypatch.setattr(_mod._bv_sources.requests, "get", lambda *a, **k: _FakeResponse(404, "ignored"))
 
     src = _mod.HttpScraperSource(
         name="test",
         url_builder=_builder_constant("http://example.com"),
         weight=1,
         fenetre=100,
+        extraire_fenetre=_mod._bv_registry.extraire_fenetre,
     )
     assert src.find("riz") == Counter()
 
@@ -544,13 +547,14 @@ def test_http_scraper_exception_reseau_retourne_counter_vide(monkeypatch):
     def fake_get(*a, **k):
         raise ConnectionError("simulated network failure")
 
-    monkeypatch.setattr(_mod.requests, "get", fake_get)
+    monkeypatch.setattr(_mod._bv_sources.requests, "get", fake_get)
 
     src = _mod.HttpScraperSource(
         name="test",
         url_builder=_builder_constant("http://example.com"),
         weight=1,
         fenetre=100,
+        extraire_fenetre=_mod._bv_registry.extraire_fenetre,
     )
     assert src.find("riz") == Counter()
 
@@ -561,13 +565,14 @@ def test_http_scraper_pre_extraction_check_actif(monkeypatch):
     # Page ne contient PAS "riz" → check echoue → Counter vide retourne sans
     # appeler _extraire_fenetre.
     page_sans_riz = "malo ɛɔɲ contenu html sans le concept recherche"
-    monkeypatch.setattr(_mod.requests, "get", lambda *a, **k: _FakeResponse(200, page_sans_riz))
+    monkeypatch.setattr(_mod._bv_sources.requests, "get", lambda *a, **k: _FakeResponse(200, page_sans_riz))
 
     src = _mod.HttpScraperSource(
         name="test",
         url_builder=_builder_constant("http://example.com"),
         weight=1,
         fenetre=100,
+        extraire_fenetre=_mod._bv_registry.extraire_fenetre,
         pre_extraction_check=True,
     )
     assert src.find("riz") == Counter()
@@ -580,17 +585,18 @@ def test_http_scraper_extrait_termes_dans_fenetre(monkeypatch):
         "intro <p>blah blah riz signifie malo ɛn dioula ɛn ce contexte agricole "
         "le malo ɲɔ est cultive partout</p> footer"
     )
-    monkeypatch.setattr(_mod.requests, "get", lambda *a, **k: _FakeResponse(200, page_html))
+    monkeypatch.setattr(_mod._bv_sources.requests, "get", lambda *a, **k: _FakeResponse(200, page_html))
     # Pre-charger _ud_mots vide pour que _est_bambara se base uniquement sur
     # les caracteres phonetiques (ɛ, ɲ, etc.)
-    monkeypatch.setattr(_mod, "_ud_loaded", True)
-    monkeypatch.setattr(_mod, "_ud_mots", set())
+    monkeypatch.setattr(_mod._bv_registry, "_ud_loaded", True)
+    monkeypatch.setattr(_mod._bv_registry, "_ud_mots", set())
 
     src = _mod.HttpScraperSource(
         name="test",
         url_builder=_builder_constant("http://example.com"),
         weight=1,
         fenetre=200,
+        extraire_fenetre=_mod._bv_registry.extraire_fenetre,
     )
     result = src.find("riz")
     assert isinstance(result, Counter)
@@ -612,7 +618,7 @@ def test_bamadaba_wrapper_retourne_counter_unifie(monkeypatch):
     d'une `list` comme avant. Ceci permet le dispatcher unifie par TYPE dans
     `trouver_meilleur_terme()` (fix MAJOR-3 archi).
     """
-    monkeypatch.setattr(_mod.requests, "get", lambda *a, **k: _FakeResponse(200, "ignored"))
+    monkeypatch.setattr(_mod._bv_sources.requests, "get", lambda *a, **k: _FakeResponse(200, "ignored"))
 
     result = _mod._bamadaba("riz")
     assert isinstance(result, Counter), (
@@ -639,9 +645,9 @@ def test_dispatcher_uniforme_apres_pr4(monkeypatch):
         ("tfidf_source", fake_tfidf, 2),
         ("lookup_source", fake_lookup, 5),  # poids 5 pour valider l'application uniform
     ]
-    monkeypatch.setattr(_mod, "SOURCES_PRINCIPALES", fake_sources)
-    monkeypatch.setattr(_mod, "SOURCES_CONFIRMATION", [])
-    monkeypatch.setattr(_mod.time, "sleep", lambda _: None)
+    monkeypatch.setattr(_mod._bv_discover, "SOURCES_PRINCIPALES", fake_sources)
+    monkeypatch.setattr(_mod._bv_discover, "SOURCES_CONFIRMATION", [])
+    monkeypatch.setattr(_mod._bv_discover.time, "sleep", lambda _: None)
 
     result = _mod.trouver_meilleur_terme("riz", verbose=False)
     # Pas de crash, dispatch uniforme OK
@@ -659,9 +665,9 @@ def test_dispatcher_traite_counter_en_top10(monkeypatch):
     # Counter avec 5 termes — tous doivent passer dans la branche top10.
     fake_counter = Counter({"a": 10, "b": 8, "c": 6, "d": 4, "e": 2})
     fake_sources = [("any_name", lambda c: fake_counter, 1)]
-    monkeypatch.setattr(_mod, "SOURCES_PRINCIPALES", fake_sources)
-    monkeypatch.setattr(_mod, "SOURCES_CONFIRMATION", [])
-    monkeypatch.setattr(_mod.time, "sleep", lambda _: None)
+    monkeypatch.setattr(_mod._bv_discover, "SOURCES_PRINCIPALES", fake_sources)
+    monkeypatch.setattr(_mod._bv_discover, "SOURCES_CONFIRMATION", [])
+    monkeypatch.setattr(_mod._bv_discover.time, "sleep", lambda _: None)
 
     result = _mod.trouver_meilleur_terme("riz", verbose=False)
     classement_termes = [c["terme"] for c in result["classement"]]
@@ -762,7 +768,7 @@ def test_agri_dict_lookup_wrapper_retourne_counter(tmp_path, monkeypatch):
         encoding="utf-8",
     )
     fake_src = _mod.LookupSource(name="agri_dict", json_path=json_path, weight=5)
-    monkeypatch.setattr(_mod, "_AGRI_DICT_SRC", fake_src)
+    monkeypatch.setattr(_mod._bv_registry, "_AGRI_DICT_SRC", fake_src)
 
     result = _mod._agri_dict_lookup("riz")
     assert isinstance(result, Counter), (
