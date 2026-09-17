@@ -80,13 +80,61 @@ def test_priorite_aux_noms_longs():
     assert detect_city("La ville de Bouake est belle") == "Bouake"
 
 
-def test_message_avec_accents_normalises():
-    """Casse mixte + caracteres FR : doit toujours fonctionner."""
-    # Note : la regex utilise re.escape donc les accents sont preserves.
-    # On teste juste qu'une ville avec accent dans son nom canonique soit
-    # detectee si le message contient la version lowercase.
+def test_casse_mixte_sur_ville_sans_accent():
+    """Casse mixte sur un nom sans diacritique : comportement historique.
+
+    Renomme depuis `test_message_avec_accents_normalises` (issue #516) : ce
+    test ne couvrait PAS la normalisation des accents — « Abidjan » n'en porte
+    aucun, et son propre commentaire admettait que « les accents sont
+    preserves ». Il passait donc sans rien prouver sur le sujet annonce.
+    La vraie couverture des diacritiques est plus bas.
+    """
     result = detect_city("Je suis à abidjan en ce moment")
     assert result == "Abidjan"
+
+
+# ─────────────────────────────────────────────
+# Repli des diacritiques (issue #516)
+#
+# Le referentiel melange cles accentuees (`Séguéla`, `Odienné`…) et non
+# accentuees (`Bouake`…). Avant #516, `detect_city` comparait sans replier :
+# un agriculteur ecrivant correctement « Bouaké » n'etait pas localise.
+# ─────────────────────────────────────────────
+
+
+def test_detecte_ville_ecrite_avec_accent_vers_cle_sans_accent():
+    """« Bouaké » — orthographe correcte — doit resoudre vers la cle « Bouake »."""
+    assert detect_city("je suis à Bouaké en ce moment") == "Bouake"
+
+
+def test_detecte_ville_ecrite_sans_accent_vers_cle_accentuee():
+    """Sens inverse : saisie sans accent, cle du referentiel accentuee."""
+    assert detect_city("je cultive du riz a Seguela") == "Séguéla"
+
+
+@pytest.mark.parametrize(
+    "message, attendu",
+    [
+        ("la météo à Odienne aujourd'hui", "Odienné"),
+        ("la météo à Odienné aujourd'hui", "Odienné"),
+        ("je pars à Soubre demain", "Soubré"),
+        ("je pars à SOUBRÉ demain", "Soubré"),
+        ("mon champ est à Ferkessedougou", "Ferkessédougou"),
+    ],
+)
+def test_repli_diacritiques_parametrique(message, attendu):
+    """Le repli fonctionne dans les deux sens et se combine avec la casse."""
+    assert detect_city(message) == attendu
+
+
+def test_repli_ne_casse_pas_le_word_boundary():
+    """Non-regression critique : le repli ne doit pas rouvrir les faux positifs.
+
+    « manioc » contient « man » ; le word boundary doit continuer de proteger
+    apres l'ajout du repli des diacritiques.
+    """
+    assert detect_city("je cultive du manioc") is None
+    assert detect_city("comment planter du riz ?") is None
 
 
 def test_plusieurs_villes_premiere_match_renvoyee():
