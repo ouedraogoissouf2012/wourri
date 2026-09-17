@@ -1,6 +1,7 @@
 """
 WOURI - Villes de Côte d'Ivoire (59 villes)
 """
+import unicodedata
 
 IVORIAN_CITIES = {
     # Grandes villes
@@ -80,8 +81,40 @@ IVORIAN_CITIES = {
 }
 
 
+def fold_name(nom: str) -> str:
+    """Repli de comparaison : minuscules + diacritiques supprimés.
+
+    Le référentiel ci-dessus mélange des clés accentuées (`Séguéla`, `Odienné`,
+    `Soubré`…) et non accentuées (`Bouake`, `Korhogo`…). Sans ce repli, un
+    utilisateur écrivant correctement « Bouaké » n'obtenait aucune donnée
+    (issue #516).
+
+    Décomposition NFD puis retrait des marques combinantes (catégorie `Mn`) :
+    `Séguéla` → `seguela`, `Bouaké` → `bouake`. Les caractères de base sont
+    conservés — seuls les diacritiques tombent.
+
+    NB : `app/services/nlu/concept_extractor.py::strip_tones` applique la même
+    transformation pour le bambara. Duplication INTENTIONNELLE : `app/data/` ne
+    doit pas dépendre de `app/services/` (sens des couches), et le projet fixe
+    le seuil d'extraction d'un helper partagé à 4 consommateurs
+    (cf. `app/db/url_resolver.py`) — on en compte 2.
+    """
+    nfd = unicodedata.normalize("NFD", nom.lower())
+    return "".join(c for c in nfd if unicodedata.category(c) != "Mn")
+
+
 def get_city(name: str) -> dict | None:
-    """Retourne les infos d'une ville"""
+    """Retourne les infos d'une ville.
+
+    Trois stratégies, dans l'ordre de spécificité décroissante :
+      1. correspondance exacte ;
+      2. insensible à la casse ;
+      3. insensible aux diacritiques (issue #516) — `Bouaké` → clé `Bouake`,
+         `Seguela` → clé `Séguéla`.
+
+    Les deux premières sont inchangées : le repli n'intervient qu'en dernier
+    recours, donc aucune résolution existante ne change de résultat.
+    """
     # Recherche exacte
     if name in IVORIAN_CITIES:
         return {"name": name, **IVORIAN_CITIES[name]}
@@ -92,15 +125,26 @@ def get_city(name: str) -> dict | None:
         if city.lower() == name_lower:
             return {"name": city, **data}
 
+    # Recherche insensible aux diacritiques (issue #516)
+    name_folded = fold_name(name)
+    for city, data in IVORIAN_CITIES.items():
+        if fold_name(city) == name_folded:
+            return {"name": city, **data}
+
     return None
 
 
 def search_cities(query: str) -> list[dict]:
-    """Recherche des villes par nom partiel"""
-    query_lower = query.lower()
+    """Recherche des villes par nom partiel.
+
+    Insensible à la casse ET aux diacritiques (issue #516) : `seguela` trouve
+    `Séguéla`, `bouaké` trouve `Bouake`. Une requête vide continue de retourner
+    toutes les villes (comportement historique préservé).
+    """
+    query_folded = fold_name(query)
     results = []
     for city, data in IVORIAN_CITIES.items():
-        if query_lower in city.lower():
+        if query_folded in fold_name(city):
             results.append({"name": city, **data})
     return results
 
