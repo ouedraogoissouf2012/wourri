@@ -88,6 +88,93 @@ WEATHER_CODES = {
 }
 
 
+def aggregate_forecast_window(
+    hourly: dict | None,
+    now_iso: str,
+    window_end_hour: int,
+) -> dict | None:
+    """Agrege la prevision horaire de l'heure courante a la fin de fenetre.
+
+    ADR-0038 (option A) : les templates dioula valides nativement sont
+    PROSPECTIFS — `sanji bɛ na` annonce que la pluie *vient*. Ils etaient
+    alimentes par le bloc `current`, une mesure sur 15 minutes
+    (`interval: 900`) : le moteur annoncait ce qui arrive a partir de ce qui
+    tombe. Cette fonction produit la grandeur que les phrases affirment.
+
+    Fonction PURE (aucun I/O) : l'horodatage courant et la borne de fenetre
+    sont injectes, ce qui la rend testable sans geler le temps.
+
+    Args:
+        hourly: bloc `hourly` d'Open-Meteo — `{time[], precipitation[],
+            weather_code[], temperature_2m[]}`. Tolere `None` et les series
+            absentes ou plus courtes que l'axe temporel.
+        now_iso: horodatage courant au format `YYYY-MM-DDTHH:MM`, dans le
+            MEME fuseau que `hourly.time` (l'API renvoie les deux en
+            `Africa/Abidjan`, cf. parametre `timezone`).
+        window_end_hour: derniere heure incluse (0-23).
+
+    Returns:
+        `{precipitation_attendue, weather_code_attendu, temperature_max_attendue}`
+        ou `None` s'il ne reste aucune heure a venir dans la journee.
+
+        `None` plutot qu'un cumul nul : a 23h30, un 0 mm ferait basculer la
+        classification vers `degage` et annoncerait un ciel clair sans l'avoir
+        mesure. L'appelant retombe sur son mode degrade.
+    """
+    if not hourly:
+        return None
+    times = hourly.get("time") or []
+    if not times:
+        return None
+
+    # Premiere heure encore a venir. Comparaison lexicographique sur
+    # `YYYY-MM-DDTHH` : les deux chaines sont ISO et dans le meme fuseau, donc
+    # l'ordre lexicographique est l'ordre chronologique.
+    start = next((i for i, t in enumerate(times) if t[:13] >= now_iso[:13]), None)
+    if start is None:
+        return None  # toutes les heures de l'axe sont passees
+
+    # Fenetre : meme jour que l'horodatage courant, jusqu'a `window_end_hour`.
+    jour = now_iso[:10]
+    selected: list[int] = []
+    for i in range(start, len(times)):
+        t = times[i]
+        if t[:10] != jour or int(t[11:13]) > window_end_hour:
+            break
+        selected.append(i)
+
+    if not selected:
+        return None
+
+    def _valeurs(cle: str) -> list:
+        """Valeurs presentes et non nulles pour les index retenus.
+
+        Tolere une serie plus courte que l'axe temporel et les `null` que
+        l'API peut renvoyer sur une variable isolee.
+        """
+        serie = hourly.get(cle) or []
+        return [serie[i] for i in selected if i < len(serie) and serie[i] is not None]
+
+    precipitations = _valeurs("precipitation")
+    codes = _valeurs("weather_code")
+    temperatures = _valeurs("temperature_2m")
+
+    return {
+        # Cumul attendu sur la fenetre — la grandeur que `classify_meteo` doit
+        # recevoir depuis #517.
+        "precipitation_attendue": round(sum(precipitations), 2),
+        # Condition la plus severe attendue. Les codes WMO exploites par la
+        # cascade sont ordonnes par severite croissante dans les plages
+        # utilisees (0-3 clair/couvert, 51-55 bruine, 61-65 pluie, 80-82
+        # averses, 95-99 orage) : le `max` reproduit la priorite de risque de
+        # `classify_meteo`.
+        "weather_code_attendu": max(codes) if codes else 0,
+        # Maximum attendu : le seuil de chaleur porte sur l'extreme, pas sur
+        # une moyenne.
+        "temperature_max_attendue": max(temperatures) if temperatures else 0.0,
+    }
+
+
 async def get_weather(city_name: str) -> dict | None:
     """
     Récupère la météo d'une ville via Open-Meteo (GRATUIT)
@@ -108,6 +195,13 @@ async def get_weather(city_name: str) -> dict | None:
         "latitude": city["lat"],
         "longitude": city["lon"],
         "current": "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m",
+        # Bloc horaire (issue #517, ADR-0038) : alimente la fenetre de
+        # prevision qui nourrit les templates PROSPECTIFS. Dans le MEME appel
+        # que `current` — pas d'aller-retour reseau supplementaire.
+        # `forecast_days=1` borne la charge utile a la journee : la fenetre ne
+        # depasse jamais la fin de journee locale.
+        "hourly": "precipitation,weather_code,temperature_2m",
+        "forecast_days": 1,
         "timezone": "Africa/Abidjan"
     }
 
@@ -138,6 +232,33 @@ async def get_weather(city_name: str) -> dict | None:
                         weather_code
                     )
                 }
+
+                # Fenetre de prevision (issue #517, ADR-0038). Les cles
+                # instantanees ci-dessus sont CONSERVEES : elles decrivent
+                # l'etat present et alimentent la reponse REST ainsi que le
+                # contexte transmis au LLM. Les cles `*_attendu*` decrivent
+                # ce qui VIENT — c'est ce que les templates dioula affirment.
+                #
+                # `current["time"]` et `hourly["time"]` sont exprimes dans le
+                # meme fuseau (parametre `timezone`), ce que la comparaison
+                # d'horodatages suppose.
+                #
+                # Absence de fenetre (fin de journee, bloc `hourly` manquant)
+                # -> aucune cle ajoutee, et l'appelant retombe sur les valeurs
+                # instantanees. Degrader l'enrichissement, jamais la reponse.
+                fenetre = aggregate_forecast_window(
+                    data.get("hourly"),
+                    current.get("time", ""),
+                    settings.meteo_window_end_hour,
+                )
+                if fenetre:
+                    result.update(fenetre)
+                else:
+                    logger.info(
+                        "[MÉTÉO] Fenetre de prevision indisponible pour %s "
+                        "— repli sur la mesure instantanee",
+                        city_name,
+                    )
 
                 # 3. Stocker dans le cache
                 set_cached_weather(city_name, result)

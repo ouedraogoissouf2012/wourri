@@ -251,6 +251,26 @@ class Settings(BaseSettings):
     lm_oov_caution: float = Field(default=0.15, ge=0, le=1)  # 15-40% OOV → MEDIUM (faible confiance)
     lm_repeat_max_reject: int = Field(default=3, ge=1)      # >3 répétitions d'un bigramme → REJECT
 
+    # ========== Classification météo (issue #517, ADR-0038) ==========
+    # Les templates dioula validés nativement sont PROSPECTIFS (`sanji bɛ na`
+    # = « la pluie vient »). Ils sont donc alimentés par la précipitation
+    # ATTENDUE sur la fenêtre à venir, et non plus par le bloc `current`
+    # d'Open-Meteo qui mesure 15 minutes (`interval: 900`).
+    #
+    # Dernière heure incluse dans la fenêtre, en heure locale. 23 = jusqu'à la
+    # fin de journée, l'horizon de décision d'une journée de travail.
+    meteo_window_end_hour: int = Field(default=23, ge=0, le=23)
+
+    # ⚠ SEUILS NON SOURCÉS — dette tracée par ADR-0038 §5.
+    # Ces valeurs sont HÉRITÉES : elles n'ont jamais fait l'objet d'une
+    # validation agronomique, ni pour la fenêtre de 15 min d'origine, ni pour
+    # la fenêtre de prévision actuelle. Les externaliser ici les rend
+    # ajustables sans redéploiement ; cela ne les légitime PAS.
+    # Sourçage à obtenir auprès du CNRA ou de l'ANADER — cf. issue de suivi.
+    meteo_seuil_grosse_pluie_mm: float = Field(default=5.0, ge=0)
+    meteo_seuil_pluie_legere_mm: float = Field(default=0.0, ge=0)
+    meteo_seuil_chaleur_c: float = Field(default=33.0)
+
     @property
     def is_production(self) -> bool:
         return self.env.lower() == "production"

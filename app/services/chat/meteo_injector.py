@@ -45,9 +45,19 @@ def build_meteo_bambara(
             "Surveillez votre champ et profitez du bon moment.",
         )
 
-    code = weather_data.get("weather_code", 0)
-    temp = weather_data.get("temperature", 28)
-    precip = weather_data.get("precipitation", 0)
+    # Issue #517 / ADR-0038 — les templates de `weather_conditions` sont
+    # PROSPECTIFS (`sanji bɛ na` = « la pluie vient »). On les alimente donc
+    # avec la grandeur ATTENDUE sur la fenetre a venir, calculee par
+    # `weather.aggregate_forecast_window`.
+    #
+    # Repli sur la mesure instantanee quand la fenetre est indisponible (appel
+    # en fin de journee, bloc horaire absent) : le message reste servi, avec
+    # la donnee dont on dispose.
+    code = weather_data.get("weather_code_attendu", weather_data.get("weather_code", 0))
+    temp = weather_data.get("temperature_max_attendue", weather_data.get("temperature", 28))
+    precip = weather_data.get(
+        "precipitation_attendue", weather_data.get("precipitation", 0)
+    )
     city_name = weather_data.get("city", city)
 
     condition = classify_meteo(temp, precip, code)

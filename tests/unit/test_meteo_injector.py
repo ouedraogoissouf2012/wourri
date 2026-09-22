@@ -310,3 +310,76 @@ def test_build_prevision_chaleur_via_temperature_max():
     )
     assert "tile ka jugu" in bam
     assert "5" in fr  # proba faible remontée
+
+
+# ─────────────────────────────────────────────
+# Provenance de la grandeur classee (issue #517, ADR-0038)
+#
+# Les 23 tests ci-dessus verrouillent les SEUILS de `classify_meteo` ; aucun
+# ne verifiait QUELLE grandeur lui est passee. Ils restaient donc verts que le
+# moteur classe la mesure instantanee ou la prevision — c'est precisement le
+# trou par lequel #517 est passe. Les tests suivants gardent la provenance.
+# ─────────────────────────────────────────────
+
+
+def test_classe_la_prevision_pas_la_mesure_instantanee():
+    """Le test decisif : les deux grandeurs se contredisent, la prevision gagne.
+
+    Reproduit la situation reelle du 2026-09-10 a Bouake — instant sec, orage
+    annonce sur la journee. Avant #517, le moteur servait « bon moment pour
+    commencer les semis » un jour d'orage.
+    """
+    weather = {
+        "city": "Bouake",
+        # Instantane : rien ne tombe, ciel clair.
+        "temperature": 28.0,
+        "precipitation": 0.0,
+        "weather_code": 0,
+        # Attendu sur la fenetre : orage.
+        "temperature_max_attendue": 29.0,
+        "precipitation_attendue": 12.6,
+        "weather_code_attendu": 95,
+    }
+    bam, fr = build_meteo_bambara(weather, "Bouake")
+
+    assert "sanfɛla" in bam, "l'orage attendu doit etre annonce, pas le ciel clair instantane"
+    assert "orage" in fr.lower()
+    assert "tile bɛ ɲɛ" not in bam, "le template « ciel degage » ne doit pas etre servi"
+
+
+def test_repli_sur_l_instantane_quand_la_fenetre_manque():
+    """Fenetre indisponible (fin de journee, bloc horaire absent) : on degrade.
+
+    Degrader l'enrichissement, jamais la reponse — le message reste servi avec
+    la donnee dont on dispose.
+    """
+    weather = {
+        "city": "Bouake",
+        "temperature": 28.0,
+        "precipitation": 12.6,
+        "weather_code": 95,
+        # aucune cle *_attendu*
+    }
+    bam, fr = build_meteo_bambara(weather, "Bouake")
+    assert "sanfɛla" in bam, "sans fenetre, l'instantane doit etre utilise"
+
+
+def test_la_fenetre_prime_meme_quand_elle_est_moins_severe():
+    """La prevision fait autorite dans les DEUX sens.
+
+    Averse en cours mais rien d'attendu ensuite : le conseil porte sur ce qui
+    vient, donc pas d'alerte. Sans ce test, une implementation qui prendrait
+    `max(instantane, attendu)` passerait le test precedent tout en restant fausse.
+    """
+    weather = {
+        "city": "Bouake",
+        "temperature": 28.0,
+        "precipitation": 12.6,
+        "weather_code": 95,
+        "temperature_max_attendue": 29.0,
+        "precipitation_attendue": 0.0,
+        "weather_code_attendu": 0,
+    }
+    bam, fr = build_meteo_bambara(weather, "Bouake")
+    assert "sanfɛla" not in bam, "rien n'est attendu : pas d'alerte orage"
+    assert "tile bɛ ɲɛ" in bam
