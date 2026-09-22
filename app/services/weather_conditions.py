@@ -28,6 +28,7 @@ tant qu'une 3e langue n'est pas réellement demandée).
 """
 from __future__ import annotations
 
+from app.config import get_settings
 from dataclasses import dataclass
 from typing import Callable
 
@@ -44,6 +45,21 @@ class MeteoCondition:
 # matche gagne. Ordre identique à l'ancien if/elif de build_meteo_bambara —
 # ne pas réordonner sans revalider le comportement.
 # Textes bambara copiés à l'identique (process ADR-0014, dioula validé).
+# Seuils de classification (issue #517, ADR-0038).
+#
+# Lus depuis la config plutot qu'ecrits dans les predicats : contrainte
+# docs/constraints.md §1.2 (aucune donnee metier en dur). Captures au niveau
+# module — les lambdas ci-dessous les referencent par nom, donc un test peut
+# les substituer via monkeypatch sur ce module.
+#
+# ⚠ NON SOURCES : valeurs heritees, jamais validees agronomiquement.
+# Dette tracee ADR-0038 §5.
+_s = get_settings()
+SEUIL_GROSSE_PLUIE_MM = _s.meteo_seuil_grosse_pluie_mm
+SEUIL_PLUIE_LEGERE_MM = _s.meteo_seuil_pluie_legere_mm
+SEUIL_CHALEUR_C = _s.meteo_seuil_chaleur_c
+
+
 METEO_CONDITIONS: list[MeteoCondition] = [
     MeteoCondition(
         "orage",
@@ -53,13 +69,13 @@ METEO_CONDITIONS: list[MeteoCondition] = [
     ),
     MeteoCondition(
         "grosse_pluie",
-        lambda temp, precip, code: code >= 61 or precip > 5,
+        lambda temp, precip, code: code >= 61 or precip > SEUIL_GROSSE_PLUIE_MM,
         "{city} kɔnɔ sanji bɛ na. Aw ka aw ka dòn ni aw ka fɛnw lakana, sanji bɛ se ka u bɔsi. Foro labɛnni waati ye sisan ye!",
         "La pluie arrive sur {city}. Protégez vos grains et affaires. C'est le moment de préparer le champ !",
     ),
     MeteoCondition(
         "pluie_legere",
-        lambda temp, precip, code: code >= 51 or precip > 0,
+        lambda temp, precip, code: code >= 51 or precip > SEUIL_PLUIE_LEGERE_MM,
         "{city} kɔnɔ sanji fɛrɛn bɛ na. Sɛnɛ daminɛ waati ɲuman ye sisan ye.",
         "Légère pluie sur {city}. C'est un bon moment pour commencer les semis.",
     ),
@@ -71,7 +87,7 @@ METEO_CONDITIONS: list[MeteoCondition] = [
     ),
     MeteoCondition(
         "chaleur",
-        lambda temp, precip, code: temp > 33,
+        lambda temp, precip, code: temp > SEUIL_CHALEUR_C,
         "{city} kɔnɔ tile ka jugu, sanji tɛ. Aw ka aw ka sɛnɛ kalan dɔn kosɛbɛ ani aw yɛrɛw lakana tile la.",
         "Chaleur intense sur {city}, pas de pluie. Irriguez bien vos cultures et protégez-vous du soleil.",
     ),
