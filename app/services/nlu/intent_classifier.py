@@ -172,7 +172,11 @@ class IntentClassifier:
             # tombait en HORS_SUJET avant le scoring (bug prod « il va pleuvoir »).
             # TEMPS_DATE inclus : QUESTION_DATE (« quelle est la date ») doit atteindre
             # le scoring plutôt que HORS_SUJET (bug prod : refus ou date hallucinée).
-            "PROBLEME_", "TEMPS_SAISON", "TEMPS_METEO", "TEMPS_DATE", "ENGRAIS_", "ROLE_"
+            # DEMANDE_CULTURE_ZONE inclus : QUESTION_CULTURE_ZONE (« quelle culture pour
+            # ma zone ») doit atteindre le scoring plutôt que HORS_SUJET (#543, démo
+            # SODEXAM : la question tombait en refus en mode both).
+            "PROBLEME_", "TEMPS_SAISON", "TEMPS_METEO", "TEMPS_DATE", "ENGRAIS_", "ROLE_",
+            "DEMANDE_CULTURE_ZONE"
         )
         return any(
             any(k.startswith(p) for p in agri_prefixes)

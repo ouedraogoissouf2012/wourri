@@ -6,9 +6,10 @@ Répond de façon DÉTERMINISTE à « quoi cultiver dans ma région » (intent
 de DeepSeek — qui échoue quand le LLM est lent/indisponible (cas démo SODEXAM :
 « quelle culture pour ma région » → aucun résultat).
 
-Le français est servi maintenant. La version DIOULA nécessite une validation
-native de la formulation (ADR-0014) → renvoie None pour dioula/both en attendant
-(le fallback DeepSeek reste alors inchangé).
+La réponse est rendue en FRANÇAIS pour toutes les langues (FR/DIOULA/BOTH), comme
+`date_responder` — un conseil factuel exact vaut mieux que le refus HORS_SUJET
+(#543, démo SODEXAM). La formulation DIOULA reste une dette tracée (ADR-0014,
+validation native).
 
 Pattern : fonctions module-level, orchestrées par les handlers comme un niveau
 de cascade, à l'identique de `meteo_responder`.
@@ -24,15 +25,21 @@ from app.services.chat.nlu_preprocessor import NLUResult
 
 logger = logging.getLogger(__name__)
 
-# Fallback agricole « quoi cultiver » sans culture précise (cf. intent_classifier :
-# QUESTION_GENERALE est l'intent par défaut ; ex. « mun ka kan ka sɛnɛ », « quoi
-# cultiver ici »).
-CULTURE_ZONE_INTENT = "QUESTION_GENERALE"
+# Intent DÉDIÉ « quelle culture pour ma zone » (concept DEMANDE_CULTURE_ZONE, #543).
+# Traité dans TOUS les handlers (FR + dioula/both).
+CULTURE_ZONE_INTENT = "QUESTION_CULTURE_ZONE"
+
+# Intents pris en charge par ce responder :
+#   - CULTURE_ZONE_INTENT : l'intent dédié ci-dessus ;
+#   - "QUESTION_GENERALE" : fallback historique #511 (culture citée sans intent
+#     précis) — pris en charge UNIQUEMENT dans la FrenchHandler, pour ne pas
+#     altérer le comportement dioula existant de QUESTION_GENERALE.
+CULTURE_ZONE_INTENTS = (CULTURE_ZONE_INTENT, "QUESTION_GENERALE")
 
 
 def is_culture_zone_intent(nlu: NLUResult) -> bool:
-    """True si l'intent est le fallback « quoi cultiver » (QUESTION_GENERALE)."""
-    return nlu.intent == CULTURE_ZONE_INTENT
+    """True si l'intent relève de « quelle culture pour ma zone » (dédié + fallback #511)."""
+    return nlu.intent in CULTURE_ZONE_INTENTS
 
 
 async def build_culture_zone_response(
@@ -41,15 +48,14 @@ async def build_culture_zone_response(
     include_audio: bool,
     language: Language,
 ) -> Optional[ChatResult]:
-    """Réponse déterministe « cultures adaptées à ta zone » (FR).
+    """Réponse déterministe « cultures adaptées à ta zone », rendue en français.
 
-    Renvoie None si la donnée manque (→ fallback DeepSeek) ou si la langue n'est
-    pas le français (formulation dioula à valider nativement, ADR-0014).
+    Rendue en FRANÇAIS pour TOUTES les langues (FR/DIOULA/BOTH), au même titre que
+    `date_responder` : un conseil factuel exact vaut mieux que le refus HORS_SUJET
+    (#543). La formulation DIOULA reste une dette tracée (ADR-0014, validation
+    native). Renvoie None seulement si la donnée de zone manque (→ fallback DeepSeek
+    inchangé).
     """
-    # Dioula/both : formulation dioula à valider nativement → fallback DeepSeek.
-    if language != Language.FRENCH:
-        return None
-
     from app.data.calendrier_agricole import NOMS_CULTURES_FR, get_cultures_du_mois
     from app.data.zones_agricoles import ZONES, get_cultures_zone, get_zone_for_city
 

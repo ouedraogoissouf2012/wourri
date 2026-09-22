@@ -184,3 +184,42 @@ def test_intent_question_date(extractor, nlu_config, phrase):
     intent, _, _ = classifier.classify(concepts)
 
     assert intent == "QUESTION_DATE"
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "quelle est la meilleure culture à faire maintenant",
+        "quelle culture pour ma zone",
+        "quoi cultiver ici",
+        "que cultiver dans ma région",
+    ],
+)
+def test_intent_question_culture_zone(extractor, nlu_config, phrase):
+    """« quelle culture / quoi cultiver dans ma zone » → QUESTION_CULTURE_ZONE
+    (plus HORS_SUJET) — bug prod #543 : en mode both la question tombait en refus
+    (démo SODEXAM)."""
+    concepts = extractor.extract(phrase)
+    classifier = IntentClassifier(nlu_config["intents"])
+
+    intent, _, _ = classifier.classify(concepts)
+
+    assert "DEMANDE_CULTURE_ZONE" in concepts
+    assert intent == "QUESTION_CULTURE_ZONE"
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    ["j'aime la culture générale et la musique", "la culture ivoirienne est riche"],
+)
+def test_culture_zone_pas_de_faux_positif(extractor, nlu_config, phrase):
+    """Garde anti-faux-positif (#543) : le mot générique « culture » (société) ne
+    doit PAS déclencher DEMANDE_CULTURE_ZONE — les clés sont multi-mots
+    (« quelle culture », « quoi cultiver », …)."""
+    concepts = extractor.extract(phrase)
+    classifier = IntentClassifier(nlu_config["intents"])
+
+    intent, _, _ = classifier.classify(concepts)
+
+    assert "DEMANDE_CULTURE_ZONE" not in concepts
+    assert intent != "QUESTION_CULTURE_ZONE"
