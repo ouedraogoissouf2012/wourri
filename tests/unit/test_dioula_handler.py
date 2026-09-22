@@ -344,3 +344,79 @@ async def test_intent_non_meteo_ne_declenche_pas_le_niveau_meteo():
         )
 
     mock_meteo.assert_not_called()
+
+
+# ─────────────────────────────────────────────
+# Niveau 2.7 — « quelle culture pour ma zone » (#543)
+# ─────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_culture_zone_route_vers_reponse_en_mode_both():
+    """intent DÉDIÉ QUESTION_CULTURE_ZONE + IVR None → build_culture_zone_response
+    répond (mode both), DeepSeek jamais appelé. Corrige le refus HORS_SUJET (#543)."""
+    nlu = _make_nlu(intent="QUESTION_CULTURE_ZONE", concepts={"DEMANDE_CULTURE_ZONE": True})
+    handler = DioulaHandler()
+    cz_result = _make_chat_result("culture_zone", "À Bouake, tu peux cultiver : ...")
+
+    with patch(
+        "app.services.chat.ivr_searcher.try_ivr_exact",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "app.services.chat.ivr_searcher.try_ivr_concept",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "app.services.chat.culture_zone_responder.build_culture_zone_response",
+        new=AsyncMock(return_value=cz_result),
+    ) as mock_cz, patch(
+        "app.services.chat.deepseek_router.try_deepseek_dioula",
+        new=AsyncMock(),
+    ) as mock_ds:
+        result = await handler.process(
+            nlu=nlu,
+            weather_data=None,
+            city="Bouake",
+            include_audio=False,
+            language=Language.BOTH,
+            user_id="u1",
+        )
+
+    assert result is cz_result
+    assert result.meta["source"] == "culture_zone"
+    mock_cz.assert_called_once()
+    mock_ds.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_question_generale_ne_declenche_pas_culture_zone_en_dioula():
+    """Garde de périmètre (#543) : QUESTION_GENERALE ne déclenche PAS culture_zone
+    dans la DioulaHandler — seul l'intent DÉDIÉ le fait. Le comportement dioula
+    existant de QUESTION_GENERALE (→ DeepSeek) est préservé."""
+    nlu = _make_nlu(intent="QUESTION_GENERALE", concepts={"CULTURE_RIZ": True})
+    handler = DioulaHandler()
+
+    with patch(
+        "app.services.chat.ivr_searcher.try_ivr_exact",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "app.services.chat.ivr_searcher.try_ivr_concept",
+        new=AsyncMock(return_value=None),
+    ), patch(
+        "app.services.chat.culture_zone_responder.build_culture_zone_response",
+        new=AsyncMock(),
+    ) as mock_cz, patch(
+        "app.services.chat.deepseek_router.try_deepseek_dioula",
+        new=AsyncMock(return_value=_make_chat_result("deepseek_open")),
+    ) as mock_ds:
+        result = await handler.process(
+            nlu=nlu,
+            weather_data=None,
+            city="Abidjan",
+            include_audio=False,
+            language=Language.BOTH,
+            user_id="u1",
+        )
+
+    mock_cz.assert_not_called()
+    assert result.meta["source"] == "deepseek_open"
+    mock_ds.assert_called_once()

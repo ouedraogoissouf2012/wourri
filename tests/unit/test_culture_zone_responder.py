@@ -18,7 +18,8 @@ def _nlu(intent="QUESTION_GENERALE") -> NLUResult:
 
 
 def test_is_culture_zone_intent():
-    assert is_culture_zone_intent(_nlu("QUESTION_GENERALE")) is True
+    assert is_culture_zone_intent(_nlu("QUESTION_CULTURE_ZONE")) is True  # intent dédié #543
+    assert is_culture_zone_intent(_nlu("QUESTION_GENERALE")) is True       # fallback FR #511
     assert is_culture_zone_intent(_nlu("QUESTION_METEO_AGRICOLE")) is False
     assert is_culture_zone_intent(_nlu(None)) is False
 
@@ -54,12 +55,22 @@ async def test_culture_zone_priorise_la_saison():
 
 
 @pytest.mark.asyncio
-async def test_culture_zone_dioula_renvoie_none():
-    """Dioula/both : formulation à valider nativement → None (fallback DeepSeek)."""
-    r = await build_culture_zone_response(
-        _nlu(), "Korhogo", include_audio=False, language=Language.DIOULA,
-    )
-    assert r is None
+async def test_culture_zone_both_renvoie_reponse_fr():
+    """#543 : en both/dioula, la réponse est désormais RENDUE EN FRANÇAIS (comme
+    date_responder) au lieu de None — c'est ce qui corrige le refus HORS_SUJET du
+    mode both (démo SODEXAM). La formulation dioula reste une dette (ADR-0014)."""
+    with patch("app.data.zones_agricoles.get_cultures_zone",
+               return_value=["CULTURE_COTON", "CULTURE_MAIS"]), \
+         patch("app.data.zones_agricoles.get_zone_for_city", return_value="ZONE_NORD_SAVANE"), \
+         patch("app.data.calendrier_agricole.get_cultures_du_mois", return_value=[]), \
+         patch("app.services.tts_french.synthesize_french", new=AsyncMock(return_value=None)):
+        r = await build_culture_zone_response(
+            _nlu("QUESTION_CULTURE_ZONE"), "Korhogo", include_audio=False, language=Language.BOTH,
+        )
+    assert r is not None
+    assert r.meta["source"] == "culture_zone"
+    assert "coton" in r.response and "maïs" in r.response
+    assert r.language == Language.BOTH.value
 
 
 @pytest.mark.asyncio

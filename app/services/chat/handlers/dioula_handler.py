@@ -123,6 +123,26 @@ class DioulaHandler:
             if result is not None:
                 return result
 
+        # Niveau 2.7 : « quelle culture pour ma zone » (#543). Intent DÉDIÉ
+        # (QUESTION_CULTURE_ZONE) UNIQUEMENT — on ne touche pas au comportement
+        # dioula existant de QUESTION_GENERALE. Réponse déterministe depuis la zone
+        # agro-écologique, rendue en français (dette dioula tracée ADR-0014, comme
+        # date_responder). Évite le refus HORS_SUJET en mode both (démo SODEXAM).
+        from app.services.chat.culture_zone_responder import (
+            CULTURE_ZONE_INTENT,
+            build_culture_zone_response,
+        )
+
+        if nlu.intent == CULTURE_ZONE_INTENT:
+            result = await build_culture_zone_response(
+                nlu=nlu,
+                city=city,
+                include_audio=include_audio,
+                language=language,
+            )
+            if result is not None:
+                return result
+
         # Niveau 3 : DeepSeek dioula + traduction NLLB + TTS
         return await try_deepseek_dioula(
             nlu=nlu,
