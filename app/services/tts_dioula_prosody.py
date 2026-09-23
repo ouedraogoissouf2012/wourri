@@ -138,16 +138,23 @@ def _split_sentences(text: str) -> list[tuple[str, float]]:
                 # Étape 4 : forcer la coupure si segment encore trop long
                 results.extend(_force_split_long(seg, seg_pause))
 
-    # Filtrer les fragments vides ou trop courts (< 3 mots → fusionner avec le suivant)
+# Fusionner les micro-fragments SANS pause propre (issus d'un découpage interne),
+    # mais GARDER chaque item de liste (mot court avec sa virgule, pause >= 0.15s) comme
+    # segment qui respire — sinon une liste de mots courts est lue d'un souffle
+    # (« effet rap », #548). Respiration minimale 0.28s pour un item très court.
     cleaned: list[tuple[str, float]] = []
     for s, p in results:
         s = s.strip()
         if not s:
             continue
-        if len(s.split()) < 3 and cleaned:
-            # Fusionner ce micro-fragment avec le segment précédent
+        n = len(s.split())
+        is_list_item = p >= 0.15
+        if n < 3 and not is_list_item and cleaned:
+            # Vrai micro-fragment interne (sans pause propre) → fusion.
             prev_s, _ = cleaned[-1]
             cleaned[-1] = (prev_s + ' ' + s, p)
-        elif len(s.split()) >= 2 or (len(s.split()) == 1 and len(s) > 3):
-            cleaned.append((s, p))
+        elif n >= 2 or is_list_item or (n == 1 and len(s) > 3):
+            pause = max(p, 0.28) if n <= 2 else p
+            cleaned.append((s, pause))
     return cleaned
+

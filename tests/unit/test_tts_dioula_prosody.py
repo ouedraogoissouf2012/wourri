@@ -90,3 +90,32 @@ class TestForceSplitLong:
 
     def test_pas_de_coupe_sous_le_seuil(self):
         assert _force_split_long("un deux trois", 0.45, max_words=20) == [("un deux trois", 0.45)]
+
+
+class TestItemsListeRespirent:
+    """#548 — une liste de mots courts ne doit plus être lue d'un seul souffle
+    (« effet rap » du TTS MMS-dyu). Chaque item de liste garde sa respiration."""
+
+    def test_cultures_courtes_en_segments_separes(self):
+        textes = [s for s, _ in _split_sentences(
+            "Bouake la, aw ye malo, kaba, tiga, bananku, ku sɛnɛ.")]
+        # Avant #548 : "aw ye malo kaba tiga bananku ku" fusionné en un souffle.
+        assert "kaba" in textes
+        assert "tiga" in textes
+        assert "bananku" in textes
+
+    def test_item_court_garde_une_pause_de_respiration(self):
+        segs = dict(_split_sentences("Aw ye malo, kaba, tiga sɛnɛ."))
+        assert segs.get("kaba") == pytest.approx(0.28)
+
+    def test_non_regression_phrase_sans_liste(self):
+        # Phrase normale (sans mots courts en liste) → inchangée.
+        assert _split_sentences("Aw ye nɔgɔ don dugukolo la.") == [
+            ("Aw ye nɔgɔ don dugukolo la.", 0.45)
+        ]
+
+    def test_non_regression_deux_phrases(self):
+        assert _split_sentences("Aw ni ce. Malo sɛnɛ ka ɲi kosɛbɛ.") == [
+            ("Aw ni ce.", 0.45),
+            ("Malo sɛnɛ ka ɲi kosɛbɛ.", 0.45),
+        ]
