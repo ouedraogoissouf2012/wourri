@@ -322,3 +322,4 @@ d'accusé **portant promesse d'une réponse d'expert**.
 
 - 2026-09-24 — rédaction initiale (statut **proposé**).
 - 2026-09-24 — **accepté** par Ouedraogo Issouf : option **B**, bascule **immédiate** (option D écartée), message d'accusé **avec promesse d'expert** (dette de la boucle de retour tracée en §Conséquences), même régime pour le mode français.
+- 2026-10-05 — **implémenté** par #550 / PR #551 (mergée, déployée) : `app/services/chat/llm_guard.py` + câblage `dioula_handler` / `french_handler`, réglages `LLM_GUARD_ENABLED` et `LLM_FACTUAL_INTENTS`, `intent` ajouté au `meta` du chemin `deepseek_french` (angle mort §Contexte 4). Périmètre initial des familles vérifiables : `QUESTION_METEO_AGRICOLE`, `QUESTION_VENTE`, `QUESTION_DATE`.
