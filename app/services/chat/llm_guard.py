@@ -41,11 +41,13 @@ from app.services.chat.nlu_preprocessor import NLUResult
 logger = logging.getLogger(__name__)
 
 # Message d'accusé — porte une PROMESSE de réponse d'expert (arbitrage Q1 de
-# l'ADR-0039). ⚠️ Cette promesse engage : la boucle de retour vers l'agriculteur
-# reste à construire (dette tracée, ADR-0039 §Conséquences).
+# l'ADR-0039). La promesse est désormais TENUE par la boucle de retour (ADR-0040) :
+# la réponse validée est remise à l'agriculteur **à son prochain échange**. D'où
+# « reviens me voir » : on annonce exactement ce que le système fait, ni plus
+# (aucune notification spontanée n'est envoyée) ni moins.
 ESCALATION_MESSAGE_FR = (
     "Bonne question. Je préfère ne pas te répondre au hasard : "
-    "je la transmets à un expert, tu auras une réponse."
+    "je la fais étudier par un expert. Reviens me voir, je te donnerai la réponse."
 )
 
 SOURCE_ESCALATED = "escalated_factual"

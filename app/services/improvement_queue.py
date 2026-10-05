@@ -208,3 +208,87 @@ def decide_task(task_id: str, decision: str, *, path=None) -> dict:
         logger.warning("[LQE] écriture file échouée (%s)", exc)
         return {"ok": False, "reason": "io"}
     return {"ok": True, "id": task_id, "status": decision}
+
+
+# ---------------------------------------------------------------------------
+# Boucle de retour (ADR-0040 / #558)
+# ---------------------------------------------------------------------------
+
+# Statut d'une tâche dont la réponse est validée et servie par le corpus.
+# ADR-0031 : seul « production » est testé terrain — on ne rappelle l'agriculteur
+# que sur ce niveau. Élargir ici si l'atelier décide de servir « Or » directement.
+STATUTS_LIVRABLES = ("production",)
+
+
+def list_deliverables(user_anon: str, *, path=None) -> list:
+    """Questions de CET utilisateur désormais validées et pas encore remises.
+
+    Recherche par EMPREINTE uniquement (`user`), jamais par numéro : l'appelant
+    calcule l'empreinte dans le sens direct depuis l'identifiant qu'il détient
+    (ADR-0040). Le sens inverse — empreinte → personne — reste impossible.
+
+    Ne lève jamais : un défaut de lecture ne doit pas priver l'agriculteur de la
+    réponse à sa question courante.
+    """
+    if not user_anon:
+        return []
+    target = _tasks_path(path)
+    if not target.is_file():
+        return []
+    try:
+        lines = target.read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        logger.warning("[LQE] lecture file échouée (boucle de retour) : %s", exc)
+        return []
+    out = []
+    for line in lines:
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if (
+            row.get("user") == user_anon
+            and row.get("status") in STATUTS_LIVRABLES
+            and not row.get("delivered_at")
+            and (row.get("excerpt") or "").strip()
+        ):
+            out.append(row)
+    return out
+
+
+def mark_delivered(task_id: str, *, path=None) -> dict:
+    """Pose `delivered_at` : la réponse a été remise, on ne la répétera pas.
+
+    Ne lève jamais.
+    """
+    target = _tasks_path(path)
+    if not target.is_file():
+        return {"ok": False, "reason": "missing"}
+    try:
+        lines = target.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return {"ok": False, "reason": "io"}
+    found = False
+    rewritten = []
+    for line in lines:
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            rewritten.append(line)
+            continue
+        if (row.get("id") or row.get("ts") or "") == task_id:
+            row["delivered_at"] = datetime.now(timezone.utc).isoformat()
+            found = True
+        rewritten.append(json.dumps(row, ensure_ascii=False))
+    if not found:
+        return {"ok": False, "reason": "not_found"}
+    try:
+        target.write_text("\n".join(rewritten) + "\n", encoding="utf-8")
+    except OSError as exc:
+        logger.warning("[LQE] écriture file échouée (remise) : %s", exc)
+        return {"ok": False, "reason": "io"}
+    return {"ok": True, "id": task_id}
