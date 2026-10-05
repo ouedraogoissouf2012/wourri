@@ -70,6 +70,7 @@ class ChatService:
         bambara_text: Optional[str] = None,
         include_audio: bool = True,
         user_id: Optional[str] = None,
+        _check_pending: bool = True,
     ) -> ChatResult:
         """Pipeline complet : message → NLU → handler[language] → résultat.
 
@@ -79,14 +80,50 @@ class ChatService:
 
         Ajouter une langue future = 1 nouveau handler + 1 entree dans HANDLERS.
         **Zero modification** de cette methode (OCP strict).
+
+        `_check_pending` (privé) : à False, la boucle de retour (ADR-0040) est
+        court-circuitée. Sert UNIQUEMENT au rejeu d'une question archivée — c'est
+        ce qui rend la récursion impossible.
         """
         try:
+            # Etape 0 : boucle de retour (ADR-0040). Si une question escaladée de CET
+            # agriculteur a été validée depuis, on tient la promesse (« tu auras une
+            # réponse ») en la lui remettant maintenant. Recherche par EMPREINTE, dans
+            # le sens direct : aucune ré-identification, aucune PII nouvelle.
+            # Ne peut jamais empêcher de répondre à la question courante.
+            if _check_pending:
+                from app.services.chat.pending_answers import build_pending_answer
+
+                async def _rejouer(question: str) -> ChatResult:
+                    return await self.process(
+                        question,
+                        city=city,
+                        language=language,
+                        include_audio=include_audio,
+                        user_id=user_id,
+                        _check_pending=False,  # <- coupe la récursion
+                    )
+
+                rappel = await build_pending_answer(
+                    user_id=user_id,
+                    city=city,
+                    include_audio=include_audio,
+                    resolve=_rejouer,
+                )
+                if rappel is not None:
+                    return rappel
+
             # Etape 1 : detection ville
             detected_city = detect_city(message)
             city = detected_city or city
 
             # Etape 2 : NLU preprocessing
             nlu = preprocess_nlu(message, bambara_text, language)
+            # Conserver la formulation ORIGINALE : c'est elle qu'on recitera a
+            # l'agriculteur si sa question est escaladee puis repondue plus tard
+            # (ADR-0040). `message_for_deepseek` est enrichi par le NLU et porte
+            # un prefixe technique — illisible pour lui.
+            nlu.message_original = message
 
             # Etape 3 : meteo
             from app.services.weather import get_weather

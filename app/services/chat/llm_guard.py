@@ -31,6 +31,7 @@ Pattern : fonctions module-level orchestrées par les handlers, à l'identique d
 """
 from __future__ import annotations
 
+import contextvars
 import logging
 from typing import Optional
 
@@ -41,15 +42,44 @@ from app.services.chat.nlu_preprocessor import NLUResult
 logger = logging.getLogger(__name__)
 
 # Message d'accusé — porte une PROMESSE de réponse d'expert (arbitrage Q1 de
-# l'ADR-0039). ⚠️ Cette promesse engage : la boucle de retour vers l'agriculteur
-# reste à construire (dette tracée, ADR-0039 §Conséquences).
+# l'ADR-0039). La promesse est désormais TENUE par la boucle de retour (ADR-0040) :
+# la réponse validée est remise à l'agriculteur **à son prochain échange**. D'où
+# « reviens me voir » : on annonce exactement ce que le système fait, ni plus
+# (aucune notification spontanée n'est envoyée) ni moins.
 ESCALATION_MESSAGE_FR = (
     "Bonne question. Je préfère ne pas te répondre au hasard : "
-    "je la transmets à un expert, tu auras une réponse."
+    "je la fais étudier par un expert. Reviens me voir, je te donnerai la réponse."
 )
 
 SOURCE_ESCALATED = "escalated_factual"
 SOURCE_LLM_ESCALATED = "llm_escalated"
+
+# Vrai pendant le REJEU d'une question déjà escaladée (boucle de retour, ADR-0040).
+# Sans ce drapeau, chaque retour de l'agriculteur dont la question n'est pas encore
+# servie par le corpus recréerait une tâche : on escaladerait en boucle la même
+# question. Un ContextVar (et non une variable globale) pour rester correct quand
+# plusieurs conversations sont traitées en parallèle.
+_REJEU_EN_COURS: contextvars.ContextVar[bool] = contextvars.ContextVar(
+    "wouri_rejeu_en_cours", default=False
+)
+
+
+def rejeu_en_cours() -> bool:
+    """True si l'on rejoue une question archivée (→ ne pas ré-escalader)."""
+    return _REJEU_EN_COURS.get()
+
+
+def marquer_rejeu(actif: bool):
+    """Pose le drapeau de rejeu ; renvoie le jeton de restauration."""
+    return _REJEU_EN_COURS.set(actif)
+
+
+def restaurer_rejeu(token) -> None:
+    """Restaure l'état précédent du drapeau."""
+    try:
+        _REJEU_EN_COURS.reset(token)
+    except ValueError:  # jeton d'un autre contexte : état déjà restauré
+        pass
 
 
 def guard_enabled() -> bool:
@@ -97,7 +127,13 @@ def escalate(
 
     L'escalade est un effet de bord : son échec ne doit en aucun cas priver
     l'agriculteur de sa réponse.
+
+    N'escalade PAS pendant un rejeu (ADR-0040) : la question est déjà dans la file,
+    la ré-enfiler créerait un doublon à chaque retour de l'agriculteur.
     """
+    if rejeu_en_cours():
+        logger.debug("[GARDE-LLM] Rejeu en cours — pas de nouvelle escalade")
+        return
     try:
         from app.core.pii_utils import anonymize_user_id
         from app.services.improvement_queue import enqueue_improvement_task
@@ -106,7 +142,10 @@ def escalate(
             intent=nlu.intent,
             source=source,
             cultures=sorted(nlu.concepts.keys()) if nlu.concepts else [],
-            excerpt=excerpt or nlu.message_for_deepseek,
+            # La question TELLE QUE posée : c'est elle qu'on recitera a
+            # l'agriculteur (ADR-0040). `message_for_deepseek` est la version
+            # enrichie par le NLU, avec prefixe technique — a ne pas lui relire.
+            excerpt=excerpt or nlu.message_original or nlu.message_for_deepseek,
             user_anon=anonymize_user_id(user_id),
             extra={"city": city, "reason": source},
             skip_if_duplicate=True,

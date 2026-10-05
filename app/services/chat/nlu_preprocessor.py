@@ -46,11 +46,17 @@ class NLUResult:
       intent: intent NLU detecte (ou None si non reconnu)
       concepts: dict des concepts trouves (CULTURE_RIZ, ACTION_PLANTER, etc.)
       is_out_of_scope: True si message hors-sujet agricole detecte
+      message_original: le message TEL QUE l'agriculteur l'a ecrit. Renseigne par
+                        `ChatService.process`. Sert a lui reciter sa question
+                        (boucle de retour, ADR-0040) : lui relire la version
+                        enrichie par le NLU — prefixe technique compris, du type
+                        « [Paysan cultive: riz] ... » — serait illisible.
     """
     message_for_deepseek: str
     intent: Optional[str] = None
     concepts: dict = field(default_factory=dict)
     is_out_of_scope: bool = False
+    message_original: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------

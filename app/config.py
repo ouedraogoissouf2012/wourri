@@ -233,6 +233,15 @@ class Settings(BaseSettings):
         "QUESTION_METEO_AGRICOLE,QUESTION_VENTE,QUESTION_DATE"
     )
 
+    # ========== Boucle de retour à l'agriculteur (ADR-0040) ==========
+    # Tient la promesse « reviens me voir, je te donnerai la réponse » : à chaque
+    # message, on regarde si une question escaladée de CET agriculteur a été validée
+    # depuis, et on la lui remet. Recherche par empreinte dans le SENS DIRECT —
+    # aucune table de ré-identification, aucune PII supplémentaire (ADR-0031/0025).
+    # À False : le rappel est désactivé sans redéploiement (l'escalade, elle,
+    # continue de fonctionner).
+    pending_answers_enabled: bool = True
+
     # ========== Filtre LM anti-hallucination ASR (ADR-0029, issue #94) ==========
     # Rescoring KenLM (4-gram dioula CI) sur la transcription normalisée pour
     # détecter les hallucinations ASR type "ka ka aw" (kakawo fragmenté).
