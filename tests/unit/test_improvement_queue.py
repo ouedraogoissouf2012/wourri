@@ -24,8 +24,15 @@ def test_enqueue_writes_bronze_without_phone(tmp_path):
     line = json.loads(path.read_text(encoding="utf-8").strip())
     assert line["status"] == "bronze"
     assert line["intent"] == "CONSEIL_PRODUCTION"
-    assert "225" not in json.dumps(line)
-    assert "@s.whatsapp" not in json.dumps(line)
+    # On scanne ce que l'APPELANT fournit, en excluant les champs GÉNÉRÉS :
+    # `id` (uuid4 hexadécimal) et `ts` (horodatage ISO, microsecondes incluses)
+    # peuvent contenir « 225 » par hasard — ce qui faisait échouer ce test au
+    # hasard (CI de APIPy rouge depuis le 2026-09-23, #555) sans qu'aucune PII
+    # ne fuite réellement. L'intention du test est intacte : aucune donnée
+    # personnelle ne doit être stockée.
+    contenu = json.dumps({k: v for k, v in line.items() if k not in ("id", "ts")})
+    assert "225" not in contenu
+    assert "@s.whatsapp" not in contenu
 
 
 def test_list_and_decide_keeps_out_of_corpus(tmp_path):
