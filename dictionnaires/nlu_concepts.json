@@ -6,6 +6,30 @@
   "correction_v1.2": "2026-03-04 — woso RETIRÉ de CULTURE_HARICOT (woso=patate douce, validé utilisateur). CULTURE_PATATE: jɛgɛ→woso (jɛgɛ=poisson!). Couverture NLU: 17/17 cultures.",
   "correction_v1.4": "2026-03-09 — ENGRAIS_FERTILISANT: saraka→nɔgɔ. Validation 3-étapes: An Ka Taa (saraka=aumône, nɔgɔ=engrais), Bayelemabaga (saraka 174 occ. contexte religieux uniquement). Corpus IVR v1.4 synchronisé.",
   "concepts": {
+    "TEMPS_HORIZON_LOINTAIN": {
+      "label_fr": "Horizon temporel lointain (mois, saison)",
+      "keywords": [
+        "jusqu",
+        "jusque",
+        "jusqu a",
+        "jusqu au",
+        "jusqu en",
+        "le mois prochain",
+        "mois prochain",
+        "les prochains mois",
+        "prochains mois",
+        "les prochaines semaines",
+        "prochaines semaines",
+        "cette saison",
+        "toute la saison",
+        "reste de la saison",
+        "dans un mois",
+        "dans deux mois",
+        "dans trois mois",
+        "cette annee",
+        "cette année"
+      ]
+    },
     "DEMANDE_CULTURE_ZONE": {
       "label_fr": "Demande quelle culture pour la zone",
       "keywords": [
@@ -872,6 +896,11 @@
         "tiɲɛ",
         "météo",
         "meteo",
+        "quel temps",
+        "quel temps fait",
+        "temps fait il",
+        "le temps qu il fait",
+        "fait il beau",
         "température",
         "temperature",
         "vent",
