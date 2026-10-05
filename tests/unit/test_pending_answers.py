@@ -141,3 +141,52 @@ class TestRemiseDeLaReponse:
         assert await build_pending_answer(user_id=None, city="Bouake",
                                           include_audio=False,
                                           resolve=_repond_corpus) is None
+
+
+class TestDefautsTrouvesParLaDemonstration:
+    """Deux défauts révélés en jouant le cycle complet (2026-10-05)."""
+
+    @pytest.mark.asyncio
+    async def test_la_question_recitee_est_celle_de_l_agriculteur(self, file_tmp):
+        """Défaut 1 — on recitait la version ENRICHIE par le NLU
+        (« [Paysan cultive: riz] Comment et où vendre… »), illisible pour lui."""
+        _poser(file_tmp, excerpt="a combien je peux vendre mon riz ?", statut="production")
+        r = await build_pending_answer(user_id=USER, city="Bouake",
+                                       include_audio=False, resolve=_repond_corpus)
+        assert "a combien je peux vendre mon riz ?" in r.response
+        assert "[Paysan cultive" not in r.response
+
+    @pytest.mark.asyncio
+    async def test_le_rejeu_ne_recree_pas_de_tache(self, file_tmp):
+        """Défaut 2 — chaque retour de l'agriculteur dont la question n'est pas
+        encore servie recréait une tâche : on escaladait la même question en boucle."""
+        from app.services.chat.llm_guard import escalate
+        from app.services.chat.nlu_preprocessor import NLUResult
+
+        _poser(file_tmp, statut="production")
+        avant = len(file_tmp.read_text(encoding="utf-8").splitlines())
+
+        async def _rejeu_qui_escalade(_q):
+            # Reproduit ce que fait la cascade pendant un rejeu : elle tente
+            # d'escalader. Le drapeau de rejeu doit l'en empêcher.
+            escalate(NLUResult(message_for_deepseek="x", intent="QUESTION_VENTE"),
+                     "Bouake", USER, SOURCE_ESCALATED)
+            return ChatResult(response="accusé", city="Bouake", language="both",
+                              meta={"source": SOURCE_ESCALATED})
+
+        await build_pending_answer(user_id=USER, city="Bouake",
+                                   include_audio=False, resolve=_rejeu_qui_escalade)
+        apres = len(file_tmp.read_text(encoding="utf-8").splitlines())
+        assert apres == avant, "le rejeu a créé une tâche en doublon"
+
+    def test_le_drapeau_de_rejeu_est_bien_restaure(self):
+        """Hors rejeu, l'escalade doit redevenir active (sinon on perdrait
+        définitivement la remontée préventive)."""
+        from app.services.chat.llm_guard import (
+            marquer_rejeu, rejeu_en_cours, restaurer_rejeu,
+        )
+        assert rejeu_en_cours() is False
+        jeton = marquer_rejeu(True)
+        assert rejeu_en_cours() is True
+        restaurer_rejeu(jeton)
+        assert rejeu_en_cours() is False

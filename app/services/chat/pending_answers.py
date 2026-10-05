@@ -79,7 +79,17 @@ async def build_pending_answer(
         if not question:
             return None
 
-        resultat = await resolve(question)
+        # Drapeau de rejeu : la question est DÉJÀ dans la file. Sans lui, chaque
+        # retour de l'agriculteur dont la question n'est pas encore servie par le
+        # corpus créerait un doublon (constaté en démonstration du cycle complet).
+        from app.services.chat.llm_guard import marquer_rejeu, restaurer_rejeu
+
+        jeton = marquer_rejeu(True)
+        try:
+            resultat = await resolve(question)
+        finally:
+            restaurer_rejeu(jeton)
+
         if resultat is None or not (resultat.response or "").strip():
             logger.info("[RAPPEL] Rejeu sans réponse exploitable — tâche conservée")
             return None

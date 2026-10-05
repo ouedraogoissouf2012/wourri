@@ -119,6 +119,11 @@ class ChatService:
 
             # Etape 2 : NLU preprocessing
             nlu = preprocess_nlu(message, bambara_text, language)
+            # Conserver la formulation ORIGINALE : c'est elle qu'on recitera a
+            # l'agriculteur si sa question est escaladee puis repondue plus tard
+            # (ADR-0040). `message_for_deepseek` est enrichi par le NLU et porte
+            # un prefixe technique — illisible pour lui.
+            nlu.message_original = message
 
             # Etape 3 : meteo
             from app.services.weather import get_weather
