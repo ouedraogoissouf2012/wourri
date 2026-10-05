@@ -248,14 +248,25 @@ async def test_french_handler_meteo_pure_passe_par_moteur_direct():
 
 
 @pytest.mark.asyncio
-async def test_french_handler_meteo_indispo_fallback_deepseek():
-    """Météo pure mais donnée indisponible (None, sans TEMPS_DEMAIN) → fallback DeepSeek conservé."""
+async def test_french_handler_meteo_indispo_ne_tombe_PLUS_sur_deepseek():
+    """ADR-0039 — CHANGEMENT DE COMPORTEMENT ASSUMÉ.
+
+    Avant : météo pure sans donnée → repli sur DeepSeek, qui inventait une
+    prévision (hallucination constatée en démo le 2026-09-23 sur des questions
+    météo localisées, servies par `deepseek_french`).
+    Après : le LLM est interdit sur les faits vérifiables → accusé + escalade.
+    """
     nlu = _make_nlu(intent="QUESTION_METEO_AGRICOLE", concepts={"TEMPS_METEO": True})
     handler = FrenchHandler()
+    esc = ChatResult(response="je la transmets à un expert", city="Man",
+                     language="french", meta={"source": "escalated_factual"})
     with patch(
         "app.services.deepseek.chat_with_deepseek",
         new=AsyncMock(return_value="Reponse DeepSeek fallback"),
     ) as mock_ds, patch(
+        "app.services.chat.llm_guard.build_escalation_response",
+        new=AsyncMock(return_value=esc),
+    ) as mock_esc, patch(
         "app.services.tts_french.synthesize_french", new=AsyncMock(return_value=None),
     ):
         result = await handler.process(
@@ -263,9 +274,9 @@ async def test_french_handler_meteo_indispo_fallback_deepseek():
             include_audio=False, language=Language.FRENCH, user_id="u1",
         )
 
-    assert result.meta["source"] == "deepseek_french"   # fallback préservé
-    assert result.response == "Reponse DeepSeek fallback"
-    mock_ds.assert_called_once()
+    assert result.meta["source"] == "escalated_factual"
+    mock_esc.assert_called_once()
+    mock_ds.assert_not_called()   # plus jamais d'invention sur un fait vérifiable
 
 
 @pytest.mark.asyncio
@@ -309,3 +320,55 @@ async def test_french_handler_culture_zone_avant_deepseek():
     assert result.meta["source"] == "culture_zone"
     assert "coton" in result.response
     mock_ds.assert_not_called()
+
+
+# ─────────────────────────────────────────────
+# Garde LLM (ADR-0039, #550) — mode français
+# ─────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_garde_bloque_le_llm_sur_un_fait_verifiable_en_francais():
+    """Le FrenchHandler n'a AUCUNE cascade IVR : le garde y est le seul rempart
+    contre une réponse inventée sur un fait vérifiable."""
+    nlu = _make_nlu(intent="QUESTION_VENTE", concepts={"ACTION_VENDRE": True})
+    handler = FrenchHandler()
+    esc = ChatResult(response="je la transmets à un expert", city="Bouake",
+                     language="french", meta={"source": "escalated_factual"})
+
+    with patch(
+        "app.services.chat.meteo_responder.build_meteo_response", new=AsyncMock(return_value=None)
+    ), patch(
+        "app.services.chat.llm_guard.build_escalation_response", new=AsyncMock(return_value=esc)
+    ) as mock_esc, patch(
+        "app.services.deepseek.chat_with_deepseek", new=AsyncMock()
+    ) as mock_ds:
+        result = await handler.process(
+            nlu=nlu, weather_data=None, city="Bouake",
+            include_audio=False, language=Language.FRENCH, user_id="u1",
+        )
+
+    assert result is esc
+    mock_esc.assert_called_once()
+    mock_ds.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_meta_francais_porte_l_intent():
+    """ADR-0039 : sans `intent`, toutes les lignes LLM françaises portaient
+    intent=NULL dans les métriques — l'effet du garde serait invérifiable."""
+    nlu = _make_nlu(intent="CONSEIL_PRODUCTION", concepts={"CULTURE_RIZ": True})
+    handler = FrenchHandler()
+
+    with patch("app.services.chat.llm_guard.escalate"), patch(
+        "app.services.deepseek.chat_with_deepseek", new=AsyncMock(return_value="conseil")
+    ), patch(
+        "app.services.tts_french.synthesize_french", new=AsyncMock(return_value=None)
+    ):
+        result = await handler.process(
+            nlu=nlu, weather_data=None, city="Bouake",
+            include_audio=False, language=Language.FRENCH, user_id="u1",
+        )
+
+    assert result.meta["intent"] == "CONSEIL_PRODUCTION"
+    assert result.meta["source"] == "deepseek_french"

@@ -279,14 +279,21 @@ async def test_meteo_pure_route_vers_reponse_construite_pas_deepseek():
 
 
 @pytest.mark.asyncio
-async def test_meteo_pure_none_retombe_sur_deepseek():
-    """intent météo pur mais build_meteo_response None (données indispo) → DeepSeek."""
+async def test_meteo_pure_none_ne_retombe_PLUS_sur_deepseek():
+    """ADR-0039 — CHANGEMENT DE COMPORTEMENT ASSUMÉ.
+
+    Avant : intent météo pur + `build_meteo_response` None (donnée indisponible)
+    → repli silencieux sur DeepSeek, qui inventait une prévision (cause de
+    l'hallucination constatée en démo le 2026-09-23).
+    Après : la météo est une famille à réponse VÉRIFIABLE → le LLM est interdit,
+    on renvoie un accusé explicite et on escalade.
+    """
     nlu = _make_nlu(
         intent="QUESTION_METEO_AGRICOLE",
         concepts={"TEMPS_SAISON_PLUIE": True},
     )
     handler = DioulaHandler()
-    ds_result = _make_chat_result("deepseek_open")
+    esc_result = _make_chat_result("escalated_factual")
 
     with patch(
         "app.services.chat.ivr_searcher.try_ivr_exact",
@@ -298,8 +305,11 @@ async def test_meteo_pure_none_retombe_sur_deepseek():
         "app.services.chat.meteo_responder.build_meteo_response",
         new=AsyncMock(return_value=None),
     ) as mock_meteo, patch(
+        "app.services.chat.llm_guard.build_escalation_response",
+        new=AsyncMock(return_value=esc_result),
+    ) as mock_esc, patch(
         "app.services.chat.deepseek_router.try_deepseek_dioula",
-        new=AsyncMock(return_value=ds_result),
+        new=AsyncMock(),
     ) as mock_ds:
         result = await handler.process(
             nlu=nlu,
@@ -310,9 +320,10 @@ async def test_meteo_pure_none_retombe_sur_deepseek():
             user_id="u1",
         )
 
-    assert result is ds_result
+    assert result is esc_result
     mock_meteo.assert_called_once()
-    mock_ds.assert_called_once()
+    mock_esc.assert_called_once()
+    mock_ds.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -419,4 +430,97 @@ async def test_question_generale_ne_declenche_pas_culture_zone_en_dioula():
 
     mock_cz.assert_not_called()
     assert result.meta["source"] == "deepseek_open"
+    mock_ds.assert_called_once()
+
+
+# ─────────────────────────────────────────────
+# Niveau 2.9 — garde LLM (ADR-0039, #550)
+# ─────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_garde_bloque_le_llm_sur_un_fait_verifiable():
+    """Question météo dont le répondeur déterministe n'a rien produit (donnée
+    indisponible) → accusé + escalade, et le LLM n'est JAMAIS appelé. C'est le
+    défaut de la démo du 23/09 : la cascade retombait sur le LLM, qui inventait."""
+    nlu = _make_nlu(intent="QUESTION_METEO_AGRICOLE", concepts={"TEMPS_SAISON_PLUIE": True})
+    handler = DioulaHandler()
+    esc = _make_chat_result("escalated_factual", "je la transmets à un expert")
+
+    with patch(
+        "app.services.chat.ivr_searcher.try_ivr_exact", new=AsyncMock(return_value=None)
+    ), patch(
+        "app.services.chat.ivr_searcher.try_ivr_concept", new=AsyncMock(return_value=None)
+    ), patch(
+        "app.services.chat.meteo_responder.build_meteo_response", new=AsyncMock(return_value=None)
+    ), patch(
+        "app.services.chat.llm_guard.build_escalation_response",
+        new=AsyncMock(return_value=esc),
+    ) as mock_esc, patch(
+        "app.services.chat.deepseek_router.try_deepseek_dioula", new=AsyncMock()
+    ) as mock_ds:
+        result = await handler.process(
+            nlu=nlu, weather_data=None, city="Bouake",
+            include_audio=False, language=Language.BOTH, user_id="u1",
+        )
+
+    assert result is esc
+    mock_esc.assert_called_once()
+    mock_ds.assert_not_called()  # LE point de l'ADR-0039
+
+
+@pytest.mark.asyncio
+async def test_conseil_general_passe_au_llm_mais_est_escalade():
+    """Hors famille factuelle : le LLM répond encore (sinon ~40 % des questions
+    resteraient sans réponse), mais la question est escaladée en préventif."""
+    nlu = _make_nlu(intent="CONSEIL_PRODUCTION", concepts={"CULTURE_RIZ": True})
+    handler = DioulaHandler()
+
+    with patch(
+        "app.services.chat.ivr_searcher.try_ivr_exact", new=AsyncMock(return_value=None)
+    ), patch(
+        "app.services.chat.ivr_searcher.try_ivr_concept", new=AsyncMock(return_value=None)
+    ), patch(
+        "app.services.chat.llm_guard.escalate"
+    ) as mock_esc, patch(
+        "app.services.chat.deepseek_router.try_deepseek_dioula",
+        new=AsyncMock(return_value=_make_chat_result("deepseek_open")),
+    ) as mock_ds:
+        result = await handler.process(
+            nlu=nlu, weather_data=None, city="Bouake",
+            include_audio=False, language=Language.BOTH, user_id="u1",
+        )
+
+    assert result.meta["source"] == "deepseek_open"
+    mock_ds.assert_called_once()
+    mock_esc.assert_called_once()  # remontée PRÉVENTIVE (plus seulement sur 👎)
+
+
+@pytest.mark.asyncio
+async def test_garde_desactive_restaure_le_comportement_anterieur():
+    """Rollback par configuration, sans redéploiement."""
+    nlu = _make_nlu(intent="QUESTION_METEO_AGRICOLE", concepts={})
+    handler = DioulaHandler()
+
+    with patch(
+        "app.services.chat.ivr_searcher.try_ivr_exact", new=AsyncMock(return_value=None)
+    ), patch(
+        "app.services.chat.ivr_searcher.try_ivr_concept", new=AsyncMock(return_value=None)
+    ), patch(
+        "app.services.chat.meteo_responder.build_meteo_response", new=AsyncMock(return_value=None)
+    ), patch(
+        "app.services.chat.llm_guard.guard_enabled", return_value=False
+    ), patch(
+        "app.services.chat.llm_guard.build_escalation_response", new=AsyncMock()
+    ) as mock_esc, patch(
+        "app.services.chat.deepseek_router.try_deepseek_dioula",
+        new=AsyncMock(return_value=_make_chat_result("deepseek_open")),
+    ) as mock_ds:
+        result = await handler.process(
+            nlu=nlu, weather_data=None, city="Bouake",
+            include_audio=False, language=Language.BOTH, user_id="u1",
+        )
+
+    assert result.meta["source"] == "deepseek_open"
+    mock_esc.assert_not_called()
     mock_ds.assert_called_once()
