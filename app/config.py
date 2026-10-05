@@ -215,6 +215,24 @@ class Settings(BaseSettings):
     # (logs "[VDB-PG] best=... distance=..."). Ne pas s'appuyer dessus pour l'instant.
     ivr_max_semantic_distance: float = Field(default=1.0, ge=0.0, le=2.0)
 
+    # ========== Garde LLM : faits vérifiables + escalade (ADR-0039) ==========
+    # Interdit au LLM de répondre sur les familles de questions dont il ne PEUT pas
+    # connaître la vérité (il n'a aucune donnée) : la question va au moteur
+    # déterministe, et si la donnée manque → accusé explicite + escalade vers le sas
+    # de validation, JAMAIS une réponse inventée. Cause de l'hallucination constatée
+    # en démo le 2026-09-23 (prévision météo d'une localité, servie par le LLM).
+    #
+    # Rollback sans redéploiement : passer LLM_GUARD_ENABLED=False restaure le
+    # comportement antérieur (le LLM répond à tout ce que la cascade n'a pas servi).
+    llm_guard_enabled: bool = True
+    # Familles interdites au LLM, séparées par des virgules (externalisé —
+    # `constraints.md` §1.2, aucune liste métier en dur). Périmètre arbitré le
+    # 2026-09-24 : météo, prix de vente, date. Élargissable sur mesure (p. ex.
+    # QUESTION_SAISON_PLANTATION) sans toucher au code.
+    llm_factual_intents: str = (
+        "QUESTION_METEO_AGRICOLE,QUESTION_VENTE,QUESTION_DATE"
+    )
+
     # ========== Filtre LM anti-hallucination ASR (ADR-0029, issue #94) ==========
     # Rescoring KenLM (4-gram dioula CI) sur la transcription normalisée pour
     # détecter les hallucinations ASR type "ka ka aw" (kakawo fragmenté).

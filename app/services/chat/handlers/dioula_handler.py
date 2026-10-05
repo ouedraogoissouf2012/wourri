@@ -143,6 +143,30 @@ class DioulaHandler:
             if result is not None:
                 return result
 
+        # Niveau 2.9 — GARDE LLM (ADR-0039). Dernier filtre avant le LLM :
+        #   - famille à réponse VÉRIFIABLE (météo/prix/date) → le LLM est interdit
+        #     (il n'a pas la donnée) : accusé explicite + escalade, jamais d'invention ;
+        #   - sinon → le LLM répond, mais la question est escaladée en préventif
+        #     pour produire une réponse validée qui la remplacera.
+        from app.services.chat.llm_guard import (
+            SOURCE_LLM_ESCALATED,
+            build_escalation_response,
+            escalate,
+            guard_enabled,
+            is_factual_intent,
+        )
+
+        if guard_enabled():
+            if is_factual_intent(nlu):
+                return await build_escalation_response(
+                    nlu=nlu,
+                    city=city,
+                    include_audio=include_audio,
+                    language=language,
+                    user_id=user_id,
+                )
+            escalate(nlu, city, user_id, SOURCE_LLM_ESCALATED)
+
         # Niveau 3 : DeepSeek dioula + traduction NLLB + TTS
         return await try_deepseek_dioula(
             nlu=nlu,

@@ -108,6 +108,30 @@ class FrenchHandler:
             if dated is not None:
                 return dated
 
+        # GARDE LLM (ADR-0039) — même régime qu'en dioula/both (arbitrage Q4) :
+        # le LLM est interdit sur les familles à réponse vérifiable (météo/prix/date),
+        # et toute question hors corpus est escaladée en préventif. Ce handler n'ayant
+        # AUCUNE cascade IVR, le LLM y est le chemin par défaut : le garde y est donc
+        # le seul rempart contre une réponse inventée.
+        from app.services.chat.llm_guard import (
+            SOURCE_LLM_ESCALATED,
+            build_escalation_response,
+            escalate,
+            guard_enabled,
+            is_factual_intent,
+        )
+
+        if guard_enabled():
+            if is_factual_intent(nlu):
+                return await build_escalation_response(
+                    nlu=nlu,
+                    city=city,
+                    include_audio=include_audio,
+                    language=language,
+                    user_id=user_id,
+                )
+            escalate(nlu, city, user_id, SOURCE_LLM_ESCALATED)
+
         from app.services.deepseek import chat_with_deepseek
         from app.services.tts_french import synthesize_french
 
@@ -130,5 +154,9 @@ class FrenchHandler:
             audio_language="Français" if audio_url else None,
             # #359 : sans meta, le feedback recevait source='unknown' et le
             # trafic FR était invisible dans top_sources (source IS NULL).
-            meta={"source": "deepseek_french"},
+            # ADR-0039 : `intent` ajouté — sans lui, TOUTES les lignes LLM
+            # françaises portaient intent=NULL dans admin_request_metrics (constaté
+            # sur les 21 réponses LLM du 23/09), rendant impossible de savoir quelles
+            # questions partent au LLM, donc de vérifier l'effet de ce garde.
+            meta={"intent": nlu.intent, "source": "deepseek_french"},
         )

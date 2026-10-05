@@ -22,3 +22,20 @@ os.environ.setdefault("LOG_RETENTION_ENABLED", "false")
 # tests d'intégration (échec local non reproductible en CI). Les tests dédiés
 # (test_rate_limiting.py) posent leur propre RATE_LIMIT explicitement.
 os.environ.setdefault("RATE_LIMIT", "100000/minute")
+
+
+# ADR-0039 / #550 : le garde LLM escalade désormais les questions non couvertes
+# (remontée préventive). Sans ce garde-fou, les tests de handlers qui traversent
+# le chemin LLM écriraient de VRAIES tâches dans data/improvement_tasks.jsonl du
+# repo. `improvement_queue` expose `DEFAULT_TASKS_PATH` précisément pour cela.
+import pytest  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _isoler_file_amelioration(tmp_path_factory, monkeypatch):
+    """Redirige la file d'amélioration vers un fichier jetable, pour toute la suite."""
+    from app.services import improvement_queue
+
+    cible = tmp_path_factory.mktemp("lqe") / "improvement_tasks.jsonl"
+    monkeypatch.setattr(improvement_queue, "DEFAULT_TASKS_PATH", str(cible), raising=False)
+    yield
