@@ -72,6 +72,21 @@ async def build_meteo_response(
         build_meteo_prevision,
     )
 
+    # Horizon LOINTAIN (mois, saison) : aucune donnée ne couvre cette fenêtre —
+    # le service ne connaît que l'instant et J+1. Avant, toute question météo qui
+    # n'était pas « demain » retombait sur la météo DU JOUR : l'agriculteur
+    # demandait « les pluies vont-elles continuer jusqu'en novembre ? » et recevait
+    # le temps qu'il fait, soit une réponse hors sujet (constaté en prod le
+    # 2026-10-05). On renvoie None : la cascade atteint le garde LLM, et comme la
+    # météo est une famille à réponse vérifiable (ADR-0039), la question est
+    # escaladée vers un expert au lieu d'être servie approximativement.
+    if "TEMPS_HORIZON_LOINTAIN" in nlu.concepts:
+        logger.info(
+            "[MÉTÉO] Horizon lointain demandé (ville=%s) — hors des données "
+            "disponibles (instant / J+1) → escalade", city,
+        )
+        return None
+
     if "TEMPS_DEMAIN" in nlu.concepts:
         from app.services.weather import get_weather_forecast_tomorrow
 

@@ -189,3 +189,46 @@ async def test_include_audio_francais_utilise_piper_fr():
     mock_dyu.assert_not_called()    # …et surtout PAS en dioula
     assert result.language == "french"
     assert result.response          # texte FR non vide
+
+
+@pytest.mark.asyncio
+async def test_horizon_lointain_renvoie_none_pour_escalader():
+    """#553 — horizon lointain : aucune donnée ne couvre cette fenêtre (le service
+    ne connaît que l'instant et J+1). On renvoie None pour que la cascade atteigne
+    le garde LLM (ADR-0039) et escalade, au lieu de servir la météo DU JOUR."""
+    nlu = NLUResult(
+        message_for_deepseek="les pluies jusqu'en novembre ?",
+        intent="QUESTION_METEO_AGRICOLE",
+        concepts={"TEMPS_SAISON_PLUIE": 1.0, "TEMPS_HORIZON_LOINTAIN": 1.0},
+    )
+    r = await build_meteo_response(
+        nlu=nlu,
+        weather_data={"city": "Bouake", "temperature": 28, "precipitation": 0.0,
+                      "weather_code": 1},
+        city="Bouake",
+        include_audio=False,
+        language=Language.FRENCH,
+    )
+    assert r is None  # malgré une météo DISPONIBLE : l'horizon ne correspond pas
+
+
+@pytest.mark.asyncio
+async def test_horizon_proche_repond_normalement():
+    """Non-régression : sans marqueur d'horizon lointain, la météo du jour répond."""
+    nlu = NLUResult(
+        message_for_deepseek="il fait quel temps ?",
+        intent="QUESTION_METEO_AGRICOLE",
+        concepts={"TEMPS_METEO": 1.0},
+    )
+    with patch("app.services.tts_french.synthesize_french",
+               new=AsyncMock(return_value=None)):
+        r = await build_meteo_response(
+            nlu=nlu,
+            weather_data={"city": "Bouake", "temperature": 28, "precipitation": 0.0,
+                          "weather_code": 1},
+            city="Bouake",
+            include_audio=False,
+            language=Language.FRENCH,
+        )
+    assert r is not None
+    assert r.meta["source"] == "meteo_actuel"

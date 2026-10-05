@@ -223,3 +223,45 @@ def test_culture_zone_pas_de_faux_positif(extractor, nlu_config, phrase):
 
     assert "DEMANDE_CULTURE_ZONE" not in concepts
     assert intent != "QUESTION_CULTURE_ZONE"
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "est ce que les pluies vont continuer jusqu'en novembre",
+        "est ce que les pluies continueront jusqu a fin octobre",
+        "il pleuvra jusque decembre",
+        "la pluie va durer le mois prochain",
+        "il va pleuvoir cette saison",
+    ],
+)
+def test_horizon_lointain_detecte(extractor, phrase):
+    """#553 — une question météo portant sur un mois/une saison doit être
+    reconnue comme HORIZON LOINTAIN : le service ne connaît que l'instant et J+1,
+    donc elle sera escaladée au lieu de recevoir la météo du jour (constaté en
+    prod le 2026-10-05 : « jusqu'en novembre » → météo d'aujourd'hui)."""
+    assert "TEMPS_HORIZON_LOINTAIN" in extractor.extract(phrase)
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "il va pleuvoir demain",
+        "quel temps fait il aujourd hui",
+        "quand semer l arachide",
+        "je veux semer le mais en novembre",
+    ],
+)
+def test_horizon_lointain_pas_de_faux_positif(extractor, phrase):
+    """Garde : ni « demain », ni le temps du jour, ni une question de CALENDRIER
+    (« semer en novembre ») ne doivent être pris pour un horizon lointain — d'où
+    l'absence volontaire de noms de mois dans les mots-clés."""
+    assert "TEMPS_HORIZON_LOINTAIN" not in extractor.extract(phrase)
+
+
+def test_quel_temps_fait_il_est_une_question_meteo(extractor, nlu_config):
+    """#553 — « quel temps fait-il » tombait en HORS_SUJET (le mot « temps »
+    n'était pas un mot-clé) et partait donc au LLM."""
+    concepts = extractor.extract("quel temps fait il aujourd hui")
+    intent, _, _ = IntentClassifier(nlu_config["intents"]).classify(concepts)
+    assert intent == "QUESTION_METEO_AGRICOLE"
