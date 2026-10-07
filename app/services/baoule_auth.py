@@ -14,6 +14,8 @@ import os
 import time
 from typing import Any
 
+from app.config import get_settings
+
 COOKIE_NAME = "wouri_baoule_provider"
 SESSION_TTL_S = 12 * 3600
 
@@ -39,13 +41,19 @@ def verify_password(username: str, password: str) -> bool:
 
 
 def _secret() -> bytes:
-    # Dérivé du mdp provider + user (pas besoin d'une 3e clé)
+    # Dérivé de la clé API + mdp provider + user (pas besoin d'une 3e clé).
+    # La clé API vient de Settings, qui lit aussi API_SECRET_KEY_FILE (secret
+    # Docker en prod) : os.getenv ne voyait pas ce fichier, et la clé de
+    # signature se réduisait alors aux seuls identifiants provider.
     u, p = _creds()
-    base = (os.getenv("API_SECRET_KEY") or "") + "|" + u + "|" + p
+    base = (get_settings().api_secret_key or "") + "|" + u + "|" + p
     return hashlib.sha256(base.encode("utf-8")).digest()
 
 
 def sign_session(username: str) -> str:
+    u, p = _creds()
+    if not u or not p:
+        raise RuntimeError("Identifiants provider baoulé non configurés")
     payload = {
         "u": username.strip(),
         "exp": int(time.time()) + SESSION_TTL_S,
@@ -57,6 +65,11 @@ def sign_session(username: str) -> str:
 
 
 def read_session(token: str | None) -> dict[str, Any] | None:
+    # Sans identifiants provider, aucune session n'est valide : la clé de
+    # signature ne reposerait plus sur aucun secret (« || » sans clé API).
+    u, p = _creds()
+    if not u or not p:
+        return None
     if not token or "." not in token:
         return None
     body, _, sig = token.rpartition(".")

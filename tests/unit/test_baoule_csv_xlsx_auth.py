@@ -1,8 +1,14 @@
 """Baoulé : CSV/XLSX parse + auth user/mdp."""
 from __future__ import annotations
 
+import hashlib
+import hmac
 import io
+import json
+import time
+from types import SimpleNamespace
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -93,3 +99,48 @@ def test_login_and_upload_csv(tmp_path, monkeypatch):
     tasks = client.get("/admin/baoule/api/tasks").json()
     assert tasks["language"] == "bci"
     assert len(tasks["tasks"]) == 1
+
+
+def _cookie_fabrique(base_du_secret: str) -> str:
+    """Cookie signé par quelqu'un qui connaît la base du secret, sans se connecter."""
+    body = json.dumps(
+        {"u": "intrus", "exp": int(time.time()) + 3600, "role": "baoule_provider"},
+        separators=(",", ":"),
+    )
+    cle = hashlib.sha256(base_du_secret.encode("utf-8")).digest()
+    sig = hmac.new(cle, body.encode("utf-8"), hashlib.sha256).hexdigest()
+    return f"{body}.{sig}"
+
+
+def test_sans_identifiants_provider_aucune_session_valide(monkeypatch):
+    """Sans BAOULE_PROVIDER_* ni clé API, la clé de signature valait sha256("||") :
+    un cookie fabriqué donnait accès aux routes /admin/baoule/api/*."""
+    monkeypatch.delenv("BAOULE_PROVIDER_USER", raising=False)
+    monkeypatch.delenv("BAOULE_PROVIDER_PASSWORD", raising=False)
+    monkeypatch.setattr(baoule_auth, "get_settings", lambda: SimpleNamespace(api_secret_key=""))
+
+    assert baoule_auth.read_session(_cookie_fabrique("||")) is None
+    with pytest.raises(RuntimeError):
+        baoule_auth.sign_session("intrus")
+
+    app = FastAPI()
+    app.include_router(admin_baoule.router)
+    client = TestClient(app, cookies={baoule_auth.COOKIE_NAME: _cookie_fabrique("||")})
+    assert client.get("/admin/baoule/api/tasks").status_code == 401
+
+
+def test_cle_api_fournie_par_fichier_entre_dans_la_signature(monkeypatch):
+    """En prod, la clé API arrive par API_SECRET_KEY_FILE : os.getenv la voyait
+    vide, et la signature ne reposait plus que sur les identifiants provider."""
+    monkeypatch.setenv("BAOULE_PROVIDER_USER", "provider1")
+    monkeypatch.setenv("BAOULE_PROVIDER_PASSWORD", "secretpass99")
+    monkeypatch.delenv("API_SECRET_KEY", raising=False)
+    monkeypatch.setattr(
+        baoule_auth, "get_settings", lambda: SimpleNamespace(api_secret_key="cle-du-fichier")
+    )
+
+    # Signature calculée sans la clé API (ancien comportement) : refusée
+    assert baoule_auth.read_session(_cookie_fabrique("|provider1|secretpass99")) is None
+    # Session émise après connexion : acceptée
+    tok = baoule_auth.sign_session("provider1")
+    assert baoule_auth.read_session(tok)["u"] == "provider1"
