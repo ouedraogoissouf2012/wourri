@@ -1,7 +1,7 @@
 """
 WOURI - Pydantic Schemas
 """
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Optional
 
@@ -34,9 +34,19 @@ class IvorianLanguage(str, Enum):
     WOBE = "wob"          # Wobé
 
 
+# #536 : longueur maximale du message de chat, alignée sur la Console de démo
+# (DemoAgriRequest) — les deux points d'entrée mènent au même ChatService. Pour
+# une note vocale, le serveur WhatsApp envoie d'ordinaire la phrase courte
+# reconstruite par le NLU ; au-delà de 2000 caractères, NLU, recherche corpus et
+# LLM traiteraient un texte anormal → 422. `bambara_text` (transcription brute)
+# n'est volontairement pas borné : sa longueur suit celle de l'audio, déjà
+# plafonné par la chaîne ASR (10 Mo, délai du serveur WhatsApp).
+CHAT_MESSAGE_MAX_CHARS = 2000
+
+
 class ChatRequest(BaseModel):
     """Requête de chat"""
-    message: str
+    message: str = Field(max_length=CHAT_MESSAGE_MAX_CHARS)
     city: str = "Abidjan"
     language: Language = Language.BOTH  # Par défaut: les deux langues
     include_audio: bool = True
