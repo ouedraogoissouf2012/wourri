@@ -299,3 +299,60 @@ def test_orange_money_n_est_pas_un_agrume(extractor):
     « oranger(s) » et « citron(nier)s » désignent les agrumes."""
     assert "CULTURE_AGRUMES" not in extractor.extract("j'ai envoyé l'argent par orange money")
 
+
+# ---- Réponses du locuteur natif utilisateur (2026-10-07) ----
+
+
+def _classer(extractor, nlu_config, phrase):
+    concepts = extractor.extract(phrase)
+    intent, _, _ = IntentClassifier(nlu_config["intents"]).classify(concepts)
+    return intent, concepts
+
+
+@pytest.mark.parametrize("phrase", ["sɔsɔ", "soso", "n bɛ sɔsɔ sɛnɛ"])
+def test_haricot_se_dit_soso(extractor, phrase):
+    """Haricot se dit « sɔsɔ ». Seule la variante sans ɔ « soso » était connue,
+    et strip_tones ne ramène pas ɔ à o."""
+    assert "CULTURE_HARICOT" in extractor.extract(phrase)
+
+
+@pytest.mark.parametrize("phrase", ["kɔrɔ", "koro", "n kɔrɔ i ni ce"])
+def test_koro_n_est_plus_le_haricot(extractor, phrase):
+    """kɔrɔ/koro retirés de CULTURE_HARICOT : « n kɔrɔ i ni ce » (mon aîné,
+    bonjour) recevait un conseil sur le haricot."""
+    assert "CULTURE_HARICOT" not in extractor.extract(phrase)
+
+
+def test_salutation_a_l_aine_reste_une_salutation(extractor, nlu_config):
+    intent, _ = _classer(extractor, nlu_config, "n kɔrɔ i ni ce")
+    assert intent == "SALUTATION_SEULE"
+
+
+def test_so_maison_n_est_plus_planter(extractor, nlu_config):
+    """« so » retiré d'ACTION_PLANTER : so = maison ; « i ni ce n bɛ so »
+    (bonjour, je suis à la maison) demandait de quelle culture on parlait."""
+    intent, concepts = _classer(extractor, nlu_config, "i ni ce n bɛ so")
+    assert "ACTION_PLANTER" not in concepts
+    assert intent == "SALUTATION_SEULE"
+
+
+def test_malo_dan_est_planter_le_riz(extractor, nlu_config):
+    intent, concepts = _classer(extractor, nlu_config, "malo dan")
+    assert {"ACTION_PLANTER", "CULTURE_RIZ"} <= set(concepts)
+    assert intent == "QUESTION_SAISON_PLANTATION"
+
+
+def test_dan_seul_n_est_pas_encore_un_mot_cle(extractor):
+    """« dan » seul (planter) attend la confirmation de ses autres emplois :
+    c'est aussi une faute de frappe courante pour « dans »."""
+    assert "ACTION_PLANTER" not in extractor.extract("il y a des chenilles dan mon champ")
+
+
+def test_waati_ko_est_la_meteo(extractor, nlu_config):
+    """« waati ko » = météo, conditions du temps ; « waati » seul (temps,
+    moment, période) reste une notion de période, pas la météo."""
+    intent, concepts = _classer(extractor, nlu_config, "waati ko")
+    assert "TEMPS_METEO" in concepts
+    assert intent == "QUESTION_METEO_AGRICOLE"
+    assert "TEMPS_METEO" not in extractor.extract("waati")
+
