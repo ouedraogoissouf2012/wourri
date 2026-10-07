@@ -32,6 +32,13 @@ on:
       - 'db-init/**'
       - 'dictionnaires/**'
       - 'scripts/**'
+      # #541 : tools/ est couvert par tests/unit (bambara_validator…) mais ne
+      # déclenchait pas la CI — une PR limitée à tools/ passait sans aucun test.
+      # finetune/ reste hors déclencheur, volontairement : son seul test dépend
+      # de pyarrow (absent de requirements-dev.txt) et n'est pas collecté
+      # (pytest.ini : testpaths = tests). À lancer à la main :
+      #   pip install -r finetune/requirements-dataprep.txt && pytest finetune
+      - 'tools/**'
       - 'tests/**'
       - 'requirements.txt'
       - 'requirements-dev.txt'
