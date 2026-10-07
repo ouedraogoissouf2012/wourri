@@ -33,6 +33,7 @@ Les nouveaux réglages mergés ont tous des **défauts sûrs** → rien à ajout
 - [ ] `DEEPSEEK_API_KEY`, `DEEPSEEK_BASE_URL=https://api.deepseek.com/v1` (sinon chat 500)
 - [ ] `PII_SALT` (sinon warning ; générer : `python -c "import secrets; print(secrets.token_hex(32))"`)
 - [ ] `TZ=UTC`
+- [ ] **Volume persistant sur `/app/data`** (#488, #518) : file d'escalade `lqe/improvement_tasks.jsonl` (garde LLM, boucle de retour ADR-0040), `feedback_candidates.jsonl`, `feedback_negatif.jsonl`. Sans volume, tout est perdu au redéploiement ; vérifier qu'il est inscriptible par l'uid 1000 : `docker exec <wouri-api> sh -c 'touch /app/data/.w && rm /app/data/.w'`
 
 **Service `whatsapp-server`** :
 - [ ] `NODE_ENV=production`, `PORT=3001`, `WOURI_API_URL=http://wouri-api:8000`
@@ -77,6 +78,7 @@ Sur le serveur (`K=<API_SECRET_KEY>`) :
 ## 7. Points de vigilance
 - **Session WhatsApp** (`wourri_wa_auth`) : NE PAS supprimer → sinon re-scan QR (tunnel SSH `-L 3001:127.0.0.1:3001` + `/qr-page`).
 - **Cache modèles** (`wourri_hf_cache`) : les modèles n'ont **pas changé** dans ce lot → NE PAS purger (éviterait un re-download inutile).
+- **Données métier** (`/app/data`, volume `wourri_api_data`) : NE PAS supprimer → questions escaladées en attente de validation et promesses « reviens me voir » (ADR-0040).
 - **Corpus** : pas de changement du JSON dans ce lot → l'import re-peuple à l'identique (sûr). Toujours ré-importer si le JSON change.
 - **FORWARDED_ALLOW_IPS** : reste au défaut (interne only, whatsapp exempté). À revoir seulement si expo publique future (#202).
 
