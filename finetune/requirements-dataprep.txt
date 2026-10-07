@@ -3,4 +3,4 @@
 numpy
 soundfile      # décodage wav/flac/ogg + encodage FLAC 16 kHz
 pyarrow        # écriture du parquet Omnilingual
-librosa        # décodage webm/opus (via ffmpeg) + rééchantillonnage haute qualité
+librosa<1.0    # décodage webm/opus (audioread + ffmpeg, retiré en 1.0) + rééchantillonnage

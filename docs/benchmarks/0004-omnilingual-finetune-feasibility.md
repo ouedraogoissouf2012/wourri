@@ -39,6 +39,7 @@
 ## 4. Données : format attendu
 
 - **Parquet** (pas HF dataset direct), colonnes : `text` (transcription normalisée), `audio_bytes` (flac/ogg compressé), `audio_size`, + `corpus`/`split`/`language`. **Audio 16 kHz mono**.
+  - *Précisé le 2026-10-07 ([test 0005 §2](0005-omnilingual-finetune-smoke-test.md))* : `corpus`/`split`/`language` sont des **partitions** (noms de dossiers `corpus=…/split=…/language=…`), pas des colonnes du fichier ; la recette ne lit pas un parquet « à plat ». Code langue `bci_Latn`, `audio_bytes` en `list<int8>`.
 - Carte dataset YAML (`src/omnilingual_asr/cards/datasets/*.yaml`, `dataset_family: mixture_parquet_asr_dataset`) référencée dans la config de recette.
 - **Notre export dictée** (ZIP `audio/` + `metadata.csv`, ADR-0035) est **convertible** (intégration HuggingFace documentée dans le dataprep) → un **script de conversion** ZIP→parquet sera le premier livrable du maillon ③.
 
@@ -58,3 +59,4 @@ ADR-0036 a choisi le **1B** comme *meilleure base* (CER 22,1 % vs 26,0 %) — **
 
 ## Historique
 - **2026-08-27** — recherche (repo officiel + config recette). Conclusion : fine-tune faisable sur GPU gratuit via 300M-complet **ou** 1B-tête-gelée ; 1B-complet = A100. Aucun cul-de-sac.
+- **2026-10-07** — étape 1 corrigée (le pont #506 produisait un parquet que la recette ne lit pas) et étape 2 outillée : [test mécanique 0005](0005-omnilingual-finetune-smoke-test.md), notebook `finetune/colab/omnilingual_finetune_smoke_test.ipynb`.
