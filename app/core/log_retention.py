@@ -15,9 +15,10 @@ utilisent la DATE LOCALE du process (`date.today()`). En prod, les conteneurs
 sont en TZ=UTC (docker-compose) → dates UTC ; en dev, date locale du poste.
 Une seule horloge partout : writer, handler et purge restent alignés.
 
-Le nommage par date évite tout rename de rotation : les 2 workers uvicorn
-écrivent le même fichier du jour en append, sans course. La purge est une
-suppression de fichiers entiers — idempotente, exécutable par chaque worker.
+Le nommage par date évite tout rename de rotation : plusieurs workers uvicorn
+(2 en prod jusqu'à #520, 1 depuis) écrivent le même fichier du jour en append,
+sans course. La purge est une suppression de fichiers entiers — idempotente,
+exécutable par chaque worker.
 
 Planification : scheduler 24 h démarré dans le lifespan FastAPI (même pattern
 que app/services/audio_cleanup.py) + script ops scripts/purge_logs.py.

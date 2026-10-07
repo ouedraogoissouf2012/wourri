@@ -1,6 +1,11 @@
 """
 WOURI - Service d'historique de conversation
 Garde le contexte des conversations par utilisateur
+
+Historique EN MÉMOIRE du processus : il suppose un seul worker uvicorn (#520,
+Dockerfile.prod) et il est perdu à chaque redémarrage. Avec plusieurs workers,
+un même agriculteur verrait deux historiques différents selon le worker qui
+reçoit son message : externaliser ce stockage avant d'en ajouter un.
 """
 from collections import defaultdict
 from datetime import datetime, timedelta

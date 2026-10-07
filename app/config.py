@@ -93,8 +93,8 @@ class Settings(BaseSettings):
     # (middleware ApiKeyExemptRateLimitMiddleware). Le trafic authentifié par
     # clé API interne (whatsapp-server) est exempté. Format lib `limits` :
     # "120/minute", "10/second", "1000/hour". Validé au démarrage (fail-fast
-    # dans app/security.py). Compteurs en mémoire PAR worker uvicorn (2 en
-    # prod) : la limite effective agrégée peut atteindre ~2× la valeur.
+    # dans app/security.py). Compteurs en mémoire PAR worker uvicorn (1 en
+    # prod depuis #520) : avec N workers, la limite effective serait ~N×.
     rate_limit: str = "120/minute"
 
     # ========== Sécurité PII (P0-05) ==========

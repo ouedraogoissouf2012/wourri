@@ -21,9 +21,9 @@ class DatedFileHandler(logging.FileHandler):
     """FileHandler écrivant dans le fichier du jour (`wourri-YYYY-MM-DD.log`).
 
     Au changement de date, réouvre simplement le fichier du nouveau jour —
-    AUCUN rename de rotation. C'est ce qui rend le handler sûr avec les
-    2 workers uvicorn de prod (Dockerfile.prod) : chaque process append dans
-    le même fichier du jour, comme un FileHandler classique (ADR-0025).
+    AUCUN rename de rotation. C'est ce qui rend le handler sûr avec plusieurs
+    workers uvicorn (2 en prod jusqu'à #520, 1 depuis) : chaque process append
+    dans le même fichier du jour, comme un FileHandler classique (ADR-0025).
     La purge des anciens fichiers est assurée par app/core/log_retention.py.
     """
 
