@@ -199,9 +199,15 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
 
 EXPOSE 8000
 
-# uvicorn en mode prod : 2 workers, sans reload, log JSON propre.
-# Les workers permettent de gérer N requêtes concurrentes (~30 utilisateurs
-# WhatsApp simultanés visés pour le staging).
+# uvicorn en mode prod : 1 worker, sans reload, log JSON propre.
+# #520 : UN SEUL worker. L'historique de conversation, les caches météo et les
+# compteurs de rate limiting vivent en mémoire PAR processus, et la file JSONL
+# d'escalade est réécrite sans verrou : avec 2 workers, un même agriculteur
+# tombait tour à tour sur deux historiques différents, et chaque worker
+# chargeait sa propre copie des modèles (ASR MMS 1B, NLLB, TTS). Le trafic
+# mesuré (88 requêtes de chat en 30 jours, ADR-0039) ne justifie pas un 2e
+# processus : l'API est asynchrone et les inférences tournent dans des threads
+# (asyncio.to_thread). Repasser à N > 1 exige d'abord d'externaliser cet état.
 #
 # --proxy-headers (ADR-0018 / #307) : uvicorn 0.27 ne fait confiance à
 # X-Forwarded-For QUE depuis FORWARDED_ALLOW_IPS (env var, défaut 127.0.0.1
@@ -212,7 +218,7 @@ EXPOSE 8000
 CMD ["uvicorn", "app.main:app", \
      "--host", "0.0.0.0", \
      "--port", "8000", \
-     "--workers", "2", \
+     "--workers", "1", \
      "--log-level", "info", \
      "--access-log", \
      "--proxy-headers"]
