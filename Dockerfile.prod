@@ -103,10 +103,14 @@ COPY --chown=wourri:wourri templates/ ./templates/
 COPY --chown=wourri:wourri static/ ./static/
 COPY --chown=wourri:wourri app/ ./app/
 
-# Prépare les dossiers runtime (cache HF, audio output, logs).
-# Sprint I.a review MAJOR-1 : ces 3 dossiers DOIVENT être couverts par des
+# Prépare les dossiers runtime (cache HF, audio output, logs, données métier).
+# Sprint I.a review MAJOR-1 : ces dossiers DOIVENT être couverts par des
 # volumes nommés en prod (cf. docker-compose.prod.yml Sprint I.c).
-RUN mkdir -p /app/.cache/huggingface /app/static/audio /app/logs \
+# #518 : /app/data (volume api_data, #488) doit exister ICI, propriété wourri.
+# Un volume nommé monté sur un chemin absent de l'image appartient à root :
+# l'uid 1000 n'y écrirait rien (file d'escalade, feedback) — échec silencieux.
+# Présent dans l'image, le volume vide hérite de son propriétaire au 1er montage.
+RUN mkdir -p /app/.cache/huggingface /app/static/audio /app/logs /app/data \
     && chown -R wourri:wourri /app
 
 USER wourri
@@ -185,7 +189,7 @@ print('[BUILD] modele embedding corpus sauvegarde dans modeles_manuels')"
 # Si l'opérateur lance `docker run` sans monter ces volumes, Docker affichera
 # un avertissement (volumes anonymes créés) → on évite la régression
 # silencieuse où les modèles ML disparaissent à chaque `--rm`.
-VOLUME ["/app/.cache/huggingface", "/app/static/audio", "/app/logs"]
+VOLUME ["/app/.cache/huggingface", "/app/static/audio", "/app/logs", "/app/data"]
 
 # Healthcheck applicatif — Issue #217 : start-period 120s (vs 900s avant)
 # car cold-start ne nécessite plus le download HF (modèles préchargés dans
