@@ -87,6 +87,11 @@ REGION_TO_ZONE = {
     "Sud-Comoé":         "ZONE_SUD_FORET",
     "Indénié-Djuablin":  "ZONE_SUD_FORET",
     "Comoé":             "ZONE_SUD_FORET",
+    # #509 : régions des villes de IVORIAN_CITIES absentes de ce mapping — elles
+    # tombaient sur le défaut ZONE_CENTRE. Zone reprise du district déjà mappé
+    # (Bas-Sassandra, où se trouve la ville de San-Pedro).
+    "San-Pédro":         "ZONE_SUD_FORET",   # Tabou
+    "Gbôklé":            "ZONE_SUD_FORET",   # Sassandra, Fresco
 
     # Zone Centre
     "Vallée du Bandama": "ZONE_CENTRE",
@@ -99,6 +104,9 @@ REGION_TO_ZONE = {
     "Gontougo":          "ZONE_CENTRE",
     "Iffou":             "ZONE_CENTRE",
     "Moronou":           "ZONE_CENTRE",
+    # #509 : idem, zone de la ville voisine déjà mappée (Yamoussoukro, Bouaké).
+    "Bélier":            "ZONE_CENTRE",      # Toumodi, Tiébissou
+    "Gbêkê":             "ZONE_CENTRE",      # Sakassou
 
     # Zone Nord-Savane
     "Savanes":           "ZONE_NORD_SAVANE",
@@ -120,11 +128,24 @@ REGION_TO_ZONE = {
 
 
 def get_zone_for_city(city: str) -> str:
-    """Retourne la zone agricole pour une ville CI (ZONE_CENTRE par défaut)."""
-    from app.data.cities import IVORIAN_CITIES
-    city_data = IVORIAN_CITIES.get(city, {})
-    region = city_data.get("region", "")
-    zone = REGION_TO_ZONE.get(region, "ZONE_CENTRE")
+    """Retourne la zone agricole pour une ville CI (ZONE_CENTRE par défaut).
+
+    La ville est résolue comme pour la météo (`get_city` : casse et diacritiques
+    ignorés, #516). Le serveur WhatsApp envoie des noms ASCII (« Seguela »,
+    « Ferkessedougou ») : une recherche par clé exacte les envoyait tous au
+    défaut ZONE_CENTRE (#509). Ce défaut reste en place pour une ville ou une
+    région inconnue, mais il est désormais signalé.
+    """
+    from app.data.cities import get_city
+    city_data = get_city(city) if city else None
+    region = (city_data or {}).get("region", "")
+    zone = REGION_TO_ZONE.get(region)
+    if zone is None:
+        logger.warning(
+            "[ZONE] %s (région '%s') sans zone agricole connue → ZONE_CENTRE par défaut",
+            city, region,
+        )
+        return "ZONE_CENTRE"
     logger.debug("[ZONE] %s → région '%s' → %s", city, region, zone)
     return zone
 
