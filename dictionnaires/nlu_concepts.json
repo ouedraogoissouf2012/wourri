@@ -169,7 +169,8 @@
         "riziere",
         "rizière",
         "ma lo",
-        "rice"
+        "rice",
+        "rizières"
       ],
       "partial": [
         "malo"
@@ -236,7 +237,9 @@
         "cacahuete",
         "cacahuète",
         "groundnut",
-        "peanut"
+        "peanut",
+        "arachides",
+        "cacahuètes"
       ],
       "partial": [
         "tiga"
@@ -276,7 +279,8 @@
         "banaŋgu",
         "banagu",
         "banaŋgu foro",
-        "banaŋgu bɔ"
+        "banaŋgu bɔ",
+        "maniocs"
       ],
       "partial": [
         "bananku"
@@ -299,7 +303,8 @@
         "mugu",
         "haricot",
         "haricots",
-        "cowpea"
+        "cowpea",
+        "niébés"
       ],
       "partial": [
         "soso"
@@ -316,7 +321,9 @@
         "kɔrɔni sɛnɛ",
         "coton",
         "cotton",
-        "fibre"
+        "fibre",
+        "cotonnier",
+        "cotonniers"
       ],
       "partial": [
         "kɔrɔni",
@@ -347,7 +354,10 @@
         "banane",
         "bananes",
         "plantain",
-        "banana"
+        "banana",
+        "plantains",
+        "bananier",
+        "bananiers"
       ],
       "partial": [
         "baranda",
@@ -404,7 +414,9 @@
         "masaku",
         "patate",
         "patate douce",
-        "sweet potato"
+        "sweet potato",
+        "patates",
+        "patates douces"
       ],
       "partial": [
         "woso"
@@ -422,7 +434,8 @@
         "ñimajiri",
         "nakono",
         "gombo",
-        "okra"
+        "okra",
+        "gombos"
       ],
       "partial": [
         "gan"
@@ -437,7 +450,9 @@
         "cacaoforo",
         "cacao",
         "cacaoyer",
-        "chocolat"
+        "chocolat",
+        "cacaos",
+        "cacaoyers"
       ]
     },
     "CULTURE_CAFE": {
@@ -447,7 +462,8 @@
         "kafeforo",
         "café",
         "cafe",
-        "caféier"
+        "caféier",
+        "caféiers"
       ]
     },
     "CULTURE_ANANAS": {
@@ -1044,7 +1060,10 @@
         "maŋoro foro",
         "maŋoro lajɛ",
         "maŋoro sɛnɛ",
-        "yiridɛn maŋoro"
+        "yiridɛn maŋoro",
+        "mangues",
+        "manguier",
+        "manguiers"
       ],
       "partial": [
         "maŋoro",
@@ -1061,7 +1080,12 @@
         "citron",
         "lime",
         "agrume",
-        "agrumes"
+        "agrumes",
+        "citrons",
+        "citronnier",
+        "citronniers",
+        "oranger",
+        "orangers"
       ],
       "partial": [
         "lemuru"
@@ -1125,7 +1149,9 @@
         "ntentulu sɛnɛ",
         "palmier à huile",
         "palmier a huile",
-        "huile de palme"
+        "huile de palme",
+        "palmier",
+        "palmiers"
       ],
       "partial": [
         "ntentulu"
