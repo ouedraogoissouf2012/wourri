@@ -76,8 +76,8 @@ Une baisse de la perte ou de l'UER est **un bon signe, pas un critère** : 100 �
 ## 5. Procédure
 
 - **Notebook** : `finetune/colab/omnilingual_finetune_smoke_test.ipynb`. Il est autonome : la cellule 3 recopie `finetune/dictee_to_parquet.py`.
-- **Environnement** : Kaggle, *GPU T4 x2* (un seul GPU utilisé) avec *Internet on*. Python 3.12 maximum (voir le benchmark 0003 : Colab est passé en 3.13).
-- **Installation** : mêmes versions que le benchmark 0003 (`omnilingual-asr==0.1.0`, `fairseq2[arrow]==0.6`, `torch==2.8.0`), puis redémarrage de la session.
+- **Environnement** : Kaggle, *GPU T4 x2* (un seul GPU utilisé) avec *Internet on*. Kaggle est passé en **Python 3.13** (constaté le 2026-10-07), comme Colab avant lui. Or `fairseq2n` 0.6 n'a de roues que pour Python 3.10 à 3.12 (PyPI). Le notebook crée donc son **propre Python 3.12** avec `uv` et y lance la préparation des données et l'entraînement. Le Python du noyau n'a plus d'importance.
+- **Installation** : mêmes versions que le benchmark 0003 (`omnilingual-asr==0.1.0`, `fairseq2[arrow]==0.6`, `torch==2.8.0`). Comme `fairseq2n` 0.6 exige exactement `torch==2.8.0`, une seule résolution suffit, sans réinstaller torch ni redémarrer la session.
 - **Validation de la config** : avant chaque essai, `--dump-config` fait vérifier la config par fairseq2.
 - **Option** : l'export de la dictée (ZIP de l'atelier, téléversé comme dataset Kaggle) s'ajoute en `corpus=wourri_dictee/split=train` (cellule 5).
 - **Durée** : non estimée. Elle fait partie de ce que le test mesure.
@@ -86,7 +86,7 @@ Une baisse de la perte ou de l'UER est **un bon signe, pas un critère** : 100 �
 
 ## 6. Résultats
 
-*À remplir après exécution, à partir de la cellule 11 et de `finetune_smoke_results.json`.*
+*À remplir après exécution, à partir de la cellule 10 et de `finetune_smoke_results.json`.*
 
 | Essai | Réussi ? | Durée | Pic mémoire GPU | UER départ → étape 100 | WER départ → étape 100 | Remarques |
 |---|---|---|---|---|---|---|
@@ -111,3 +111,4 @@ Une baisse de la perte ou de l'UER est **un bon signe, pas un critère** : 100 �
 
 ## Historique
 - **2026-10-07** : rédaction. Écarts du pont #506 trouvés en lisant le code amont (`omnilingual-asr` 0.1.0, `fairseq2` 0.6.0) et corrigés ; notebook Kaggle prêt à exécuter.
+- **2026-10-07** : export de la dictée vérifié (`dictee_bci_433.zip` : 433 paires, tous les audios retrouvés par leur nom exact, aucun texte vide après normalisation). Kaggle est passé en Python 3.13 : le notebook crée désormais son propre Python 3.12 avec `uv`.
