@@ -197,6 +197,20 @@ async def test_try_ivr_exact_inject_meteo_remplace_tags():
     assert "{{METEO_FR}}" not in result.response
 
 
+@pytest.mark.asyncio
+async def test_try_ivr_exact_transmet_la_question_au_corpus():
+    """#528 : le corpus embedde la question posée, pas l'étiquette d'intent."""
+    nlu = _make_nlu(intent="CONSEIL_PRODUCTION", concepts={"CULTURE_RIZ": True})
+    nlu.message_original = "Comment avoir une bonne récolte de riz ?"
+    with patch(
+        "app.services.corpus_service.chercher_reponse_ivr",
+        return_value=None,
+    ) as search:
+        await try_ivr_exact(nlu, "Abidjan", None, False, Language.DIOULA)
+
+    assert search.call_args.kwargs["query_text"] == "Comment avoir une bonne récolte de riz ?"
+
+
 # ─────────────────────────────────────────────
 # try_ivr_concept — 3 branches
 # ─────────────────────────────────────────────
@@ -244,6 +258,25 @@ async def test_try_ivr_concept_succes_retourne_chat_result():
     assert isinstance(result, ChatResult)
     assert result.response_dioula == "Bam"
     assert result.meta["source"] == "ivr_fallback"
+
+
+@pytest.mark.asyncio
+async def test_try_ivr_concept_transmet_la_question_au_corpus():
+    """#528 : les deux recherches du repli par concept reçoivent la question."""
+    nlu = _make_nlu(intent=None, concepts={"CULTURE_RIZ": True, "ACTION_RECOLTER": True})
+    nlu.message_original = "Quand récolter mon riz ?"
+    with patch(
+        "app.services.corpus_service.chercher_reponse_ivr",
+        return_value=None,
+    ) as search:
+        await try_ivr_concept(nlu, "Abidjan", False, Language.DIOULA)
+
+    # intent candidat (QUESTION_RECOLTE) puis repli CONSEIL_PRODUCTION
+    assert [c.args[0] for c in search.call_args_list] == [
+        "QUESTION_RECOLTE",
+        "CONSEIL_PRODUCTION",
+    ]
+    assert all(c.kwargs["query_text"] == "Quand récolter mon riz ?" for c in search.call_args_list)
 
 
 # ─────────────────────────────────────────────
