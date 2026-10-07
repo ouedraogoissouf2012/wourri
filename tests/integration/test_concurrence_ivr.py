@@ -51,7 +51,7 @@ class TestConcurrenceIVR:
         """
         sleep_ms = 100
 
-        def fake_chercher(intent, cultures, conditions):
+        def fake_chercher(intent, cultures, conditions, query_text=None):
             time.sleep(sleep_ms / 1000)  # bloque ce thread, pas le event loop
             return {
                 "id": f"fake_{intent}",

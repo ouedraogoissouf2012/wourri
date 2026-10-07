@@ -4,7 +4,7 @@ Depuis #203 (ADR-0008 Phase E terminée), ce module est le seul backend corpus :
 l'ancien `vdb_service.py` (ChromaDB, incompatible numpy 2.x) et la façade
 multi-backend `corpus_facade.py` ont été supprimés. L'API publique (héritée du
 contrat historique Chroma) :
-- `chercher_reponse_ivr(intent, cultures, conditions=None) -> dict | None`
+- `chercher_reponse_ivr(intent, cultures, conditions=None, query_text=None) -> dict | None`
 - `ajouter_reponse_validee(intent, cultures, reponse_bambara, reponse_fr, score_validation, conditions=None, tags=None) -> bool`
 - `get_reponse_fallback() -> str`
 - `get_phrases_for_intent(intent, cultures) -> list[dict]`
@@ -159,7 +159,10 @@ def _embed_query(text: str):
 
 
 def _best_result_pg(
-    rows: list[dict], conditions: list[str], season: str | None = None
+    rows: list[dict],
+    conditions: list[str],
+    season: str | None = None,
+    requete: str | None = None,
 ) -> dict | None:
     """Sélectionne la meilleure entrée parmi les candidats pgvector.
 
@@ -168,12 +171,19 @@ def _best_result_pg(
     l'utilisait aussi a été retiré, #203). Ce backend ne fait que son I/O :
     mapper les `rows` SQL (conditions déjà en array Postgres) vers la sortie.
 
+    À score métier égal, le premier candidat l'emporte (comparaison stricte) :
+    les `rows` arrivant triés par distance croissante, c'est le plus proche de
+    la requête — depuis #528, le plus proche de la question de l'agriculteur.
+
     Args:
         rows: candidats `{id, intent, cultures, conditions, reponse_bambara,
             reponse_fr, score_validation, distance}` retournés par la requête SQL
             (`distance` = distance cosine pgvector, instrumentation #297).
         season: saison courante, injectable pour les tests ; par défaut
             `season_scoring.get_current_season()`.
+        requete: texte embeddé, `"question"` ou `"etiquette"` (#528), recopié
+            dans le log pour que la calibration A2 n'exploite que les distances
+            calculées sur une vraie question.
 
     Returns: dict du meilleur candidat, incluant la clé `distance` (celle du row
     retenu, ou `None` si non fournie). Aucun filtrage sur la distance en A1.
@@ -220,30 +230,39 @@ def _best_result_pg(
         distance = best["distance"]
         if distance is not None:
             logger.info(
-                "[VDB-PG] best=%s distance=%.4f score=%.3f intent=%s",
+                "[VDB-PG] best=%s distance=%.4f score=%.3f intent=%s requete=%s",
                 best["id"], float(distance), best_score, best["intent"],
+                requete or "n/a",
             )
         else:
             logger.info(
-                "[VDB-PG] best=%s distance=n/a score=%.3f intent=%s",
-                best["id"], best_score, best["intent"],
+                "[VDB-PG] best=%s distance=n/a score=%.3f intent=%s requete=%s",
+                best["id"], best_score, best["intent"], requete or "n/a",
             )
 
     return best
 
 
-def _query_candidates(intent: str, query_text: str, culture_filter: Optional[str]) -> list[dict]:
+def _query_candidates(
+    intent: str,
+    query_text: str,
+    culture_filter: Optional[str],
+    query_emb: Optional[str] = None,
+) -> list[dict]:
     """Exécute une requête SQL pgvector avec filtres intent + culture optionnels.
 
     Retourne jusqu'à 5 candidats ordonnés par distance cosine croissante. Chaque
     row inclut la clé `distance` (distance cosine pgvector `<=>` du candidat à la
     requête) — instrumentation #297 (ADR-0028 A1), sans coût d'index puisque
     l'expression est déjà calculée par l'`ORDER BY`.
+
+    `query_emb` : littéral pgvector de `query_text` déjà calculé par l'appelant
+    (#528 : la question est embeddée une seule fois pour les trois essais) ;
+    calculé ici sinon.
     """
     from sqlalchemy import text
 
-    query_emb = _embed_query(query_text)
-    emb_literal = _format_vector(query_emb)
+    emb_literal = query_emb or _format_vector(_embed_query(query_text))
 
     if culture_filter is not None:
         sql = text(
@@ -285,7 +304,10 @@ def _query_candidates(intent: str, query_text: str, culture_filter: Optional[str
 
 
 def chercher_reponse_ivr(
-    intent: str, cultures: list[str], conditions: list[str] = None
+    intent: str,
+    cultures: list[str],
+    conditions: list[str] = None,
+    query_text: Optional[str] = None,
 ) -> dict | None:
     """Cherche la meilleure réponse dans corpus_entries.
 
@@ -294,16 +316,35 @@ def chercher_reponse_ivr(
     2. Filtre intent + culture wildcard `*`
     3. Filtre intent seul
 
+    Texte embeddé (#528) : la question de l'agriculteur (`query_text`) quand elle
+    est fournie. Le filtre SQL fixe déjà intent et culture ; la distance mesure
+    alors la proximité entre la question et chaque réponse candidate, et
+    départage les entrées d'une même cellule à score métier égal. Sans question,
+    repli sur l'étiquette `"{intent} {culture}"` (appelants qui n'ont pas la
+    question, ex. la traçabilité du feedback).
+
     Returns: dict `{id, reponse_bambara, reponse_fr, score_validation, intent, cultures}`
     ou None si aucun match.
     """
     conditions = conditions or []
+    question = (query_text or "").strip()
+    requete = "question" if question else "etiquette"
+    question_emb: Optional[str] = None
+
+    def _candidates(etiquette: str, culture_filter: Optional[str]) -> list[dict]:
+        # La question ne change pas d'un essai à l'autre : un seul embedding.
+        nonlocal question_emb
+        if not question:
+            return _query_candidates(intent, etiquette, culture_filter)
+        if question_emb is None:
+            question_emb = _format_vector(_embed_query(question))
+        return _query_candidates(intent, question, culture_filter, query_emb=question_emb)
 
     # Essai 1 : intent + chaque culture exacte
     for culture in cultures:
         try:
-            rows = _query_candidates(intent, f"{intent} {culture}", culture)
-            best = _best_result_pg(rows, conditions)
+            rows = _candidates(f"{intent} {culture}", culture)
+            best = _best_result_pg(rows, conditions, requete=requete)
             if best:
                 logger.info(
                     "[VDB-PG] Match exact: %s (intent=%s, culture=%s)",
@@ -315,8 +356,8 @@ def chercher_reponse_ivr(
 
     # Essai 2 : intent + wildcard
     try:
-        rows = _query_candidates(intent, intent, "*")
-        best = _best_result_pg(rows, conditions)
+        rows = _candidates(intent, "*")
+        best = _best_result_pg(rows, conditions, requete=requete)
         if best:
             logger.info(
                 "[VDB-PG] Match générique: %s (intent=%s, culture=*)",
@@ -328,9 +369,8 @@ def chercher_reponse_ivr(
 
     # Essai 3 : intent seul (toutes cultures)
     try:
-        query_text = f"{intent} {' '.join(cultures)}".strip()
-        rows = _query_candidates(intent, query_text, None)
-        best = _best_result_pg(rows, conditions)
+        rows = _candidates(f"{intent} {' '.join(cultures)}".strip(), None)
+        best = _best_result_pg(rows, conditions, requete=requete)
         if best:
             logger.info("[VDB-PG] Match intent seul: %s (intent=%s)", best["id"], intent)
             return best

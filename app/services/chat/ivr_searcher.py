@@ -101,6 +101,9 @@ async def try_ivr_exact(
             nlu.intent,
             cultures if cultures else ["*"],
             conditions,
+            # #528 : embedder la question posée, pas l'étiquette d'intent — c'est
+            # elle qui départage les réponses d'une même cellule intent × culture.
+            query_text=nlu.message_original,
         )
     except Exception as e:
         logger.error("[IVR] VDB erreur: %s", e)
@@ -203,7 +206,7 @@ async def try_ivr_concept(
         logger.info("[IVR] Action agricole sans culture → clarification")
         return await clarify_missing_culture(city, include_audio, language, nlu)
 
-    ivr_result = await search_ivr_by_concept(nlu.concepts)
+    ivr_result = await search_ivr_by_concept(nlu.concepts, query_text=nlu.message_original)
     if not ivr_result:
         return None
 
@@ -266,12 +269,17 @@ async def clarify_missing_culture(
 # ─────────────────────────────────────────────
 
 
-async def search_ivr_by_concept(concepts: dict) -> Optional[dict]:
+async def search_ivr_by_concept(
+    concepts: dict, query_text: Optional[str] = None
+) -> Optional[dict]:
     """Recherche IVR par concept (fallback niveau 2).
 
     Retourne un dict {reponse_bambara, reponse_fr} pour permettre au caller
     d'envoyer la version FR dans `response` et la version dioula dans
     `response_dioula` (cf. issue #166).
+
+    `query_text` : la question de l'agriculteur, transmise au corpus pour
+    départager les entrées d'une même cellule (#528).
     """
     if not concepts:
         return None
@@ -292,7 +300,7 @@ async def search_ivr_by_concept(concepts: dict) -> Optional[dict]:
     try:
         if intent_candidat:
             result = await asyncio.to_thread(
-                chercher_reponse_ivr, intent_candidat, cultures, []
+                chercher_reponse_ivr, intent_candidat, cultures, [], query_text=query_text
             )
             if result and _result_matches_requested_cultures(result, cultures):
                 logger.info("[IVR] concept: %s (intent=%s)", result["id"], intent_candidat)
@@ -302,7 +310,7 @@ async def search_ivr_by_concept(concepts: dict) -> Optional[dict]:
                 }
 
         result = await asyncio.to_thread(
-            chercher_reponse_ivr, "CONSEIL_PRODUCTION", cultures, []
+            chercher_reponse_ivr, "CONSEIL_PRODUCTION", cultures, [], query_text=query_text
         )
         if result and _result_matches_requested_cultures(result, cultures):
             logger.info("[IVR] concept: %s (CONSEIL_PRODUCTION)", result["id"])

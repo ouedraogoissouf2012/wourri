@@ -212,7 +212,9 @@ class Settings(BaseSettings):
     # accepter un match IVR. DÉCLARÉ mais NON UTILISÉ en A1 (aucun gating) —
     # réservé à la phase A2. Valeur PROVISOIRE (1.0) : sera CALIBRÉE en A2 à partir
     # de la distribution des distances observées via l'instrumentation A1
-    # (logs "[VDB-PG] best=... distance=..."). Ne pas s'appuyer dessus pour l'instant.
+    # (logs "[VDB-PG] best=... distance=... requete=question" : seules les
+    # distances question ↔ réponse comptent, cf. #528). Ne pas s'appuyer dessus
+    # pour l'instant.
     ivr_max_semantic_distance: float = Field(default=1.0, ge=0.0, le=2.0)
 
     # ========== Garde LLM : faits vérifiables + escalade (ADR-0039) ==========

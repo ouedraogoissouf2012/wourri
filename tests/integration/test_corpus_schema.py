@@ -456,6 +456,41 @@ class TestVectorSearch:
             f"L'index ivfflat n'apparait pas dans le plan:\n{plan_str}"
         )
 
+    @pytest.mark.parametrize(
+        ("intent", "culture", "question", "attendu"),
+        [
+            ("CONSEIL_PRODUCTION", "CULTURE_PALMIER_HUILE",
+             "Quelle distance laisser entre les palmiers à huile ?",
+             "palmier_huile_validation_006"),
+            ("CONSEIL_PRODUCTION", "CULTURE_PALMIER_HUILE",
+             "Combien de temps garder les plants de palmier à huile en pépinière ?",
+             "palmier_huile_validation_003"),
+            ("QUESTION_STOCKAGE", "CULTURE_ANACARDE",
+             "Comment sécher les noix d'anacarde avant de les stocker ?",
+             "anacarde_validation_016"),
+            ("QUESTION_STOCKAGE", "CULTURE_ANACARDE",
+             "Où conserver mes noix d'anacarde ?",
+             "anacarde_validation_017"),
+        ],
+    )
+    def test_la_question_departage_les_entrees_d_une_cellule(
+        self, imported_corpus, intent, culture, question, attendu
+    ):
+        """#528 : dans une cellule intent × culture à plusieurs réponses validées
+        (même score, sans condition de saison), c'est la question qui choisit.
+
+        Avec l'étiquette d'intent embeddée à la place de la question, la cellule
+        renvoyait toujours la même entrée, quelle que soit la question posée.
+        """
+        from app.services import corpus_service
+
+        corpus_service._get_engine.cache_clear()
+        result = corpus_service.chercher_reponse_ivr(
+            intent, [culture], [], query_text=question
+        )
+        assert result is not None
+        assert result["id"] == attendu
+
     def test_array_columns_are_text_array_type(self, engine):
         """Fix #179 §2 : verrouille que cultures/conditions/tags sont bien TEXT[].
 

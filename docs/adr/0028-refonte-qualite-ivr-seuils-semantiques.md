@@ -293,3 +293,12 @@ nécessité (sur-ingénierie). Le hardcode `0.2` est corrigé dans tous les cas.
 - 2026-08-14 — **accepté**. Ruben valide l'Option A (instrumentation A1 puis
   gating calibré A2 ; `NLU_MIN_CONFIDENCE` et `IVR_MAX_SEMANTIC_DISTANCE`
   externalisés en config ; Option C différée).
+- 2026-10-06 — **amendement #528** (texte de requête, hors périmètre initial).
+  Jusqu'ici le texte embeddé était l'étiquette `"{intent} {culture}"`, pas la
+  question : les distances loguées en A1 mesuraient une étiquette contre du texte
+  de réponse et ne peuvent pas servir à calibrer A2. Désormais la question de
+  l'agriculteur est embeddée (repli sur l'étiquette pour les appelants qui n'en
+  ont pas, ex. feedback), et la ligne `[VDB-PG] best=…` porte `requete=question`
+  ou `requete=etiquette`. **Conséquence** : la fenêtre d'observation A1 repart du
+  déploiement de #528, sur les seules lignes `requete=question`. La règle de
+  sélection est inchangée (score métier d'abord ; à score égal, le plus proche).

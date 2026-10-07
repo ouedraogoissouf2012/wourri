@@ -160,6 +160,20 @@ class TestBestResultPg:
         assert result is not None
         assert result["cultures"] == "*"
 
+    def test_a_score_egal_le_plus_proche_gagne(self):
+        """#528 : à score métier égal, le 1er row (le plus proche) est retenu.
+
+        Les rows arrivent triés par distance croissante : c'est ce départage qui
+        donne son effet à la question embeddée dans une cellule multi-entrées.
+        """
+        rows = [
+            {**_make_row("plus_proche", score=1.0), "distance": 0.20},
+            {**_make_row("plus_loin", score=1.0), "distance": 0.45},
+        ]
+        result = corpus_service._best_result_pg(rows, conditions=[], season="saison_seche")
+        assert result is not None
+        assert result["id"] == "plus_proche"
+
 
 # NOTE : la logique de saison est désormais centralisée dans
 # app/services/corpus/season_scoring.py et testée exhaustivement (les 12 mois)
@@ -249,6 +263,94 @@ class TestChercherReponseIvr:
             )
         assert result is not None
         assert result["id"] == "generic_001"
+
+
+@contextmanager
+def _capture_queries(*query_results):
+    """Engine qui enregistre les paramètres SQL, et modèle qui encode chaque
+    texte en un vecteur propre à sa longueur : on sait QUEL texte a été embeddé."""
+    params_seen: list[dict] = []
+    iterator = iter(query_results)
+
+    def execute(sql, params=None):
+        params_seen.append(params or {})
+        rows = next(iterator, [])
+        mock_result = MagicMock()
+        mock_result.__iter__ = lambda self: iter([MagicMock(_mapping=r) for r in rows])
+        return mock_result
+
+    mock_conn = MagicMock()
+    mock_conn.execute.side_effect = execute
+    mock_conn.__enter__.return_value = mock_conn
+    mock_conn.__exit__.return_value = False
+    mock_engine = MagicMock()
+    mock_engine.connect.return_value = mock_conn
+
+    mock_model = MagicMock()
+    mock_model.encode.side_effect = lambda texts, **kwargs: [[float(len(texts[0]))] * 384]
+
+    corpus_service._get_engine.cache_clear()
+    corpus_service._get_model.cache_clear()
+    with patch.object(corpus_service, "_get_engine", return_value=mock_engine), \
+         patch.object(corpus_service, "_get_model", return_value=mock_model):
+        yield mock_model, params_seen
+
+
+class TestChercherReponseIvrQuestion:
+    """#528 : la question de l'agriculteur est embeddée, pas l'étiquette d'intent."""
+
+    def test_question_embeddee_une_seule_fois_pour_les_trois_essais(self):
+        question = "Quelle distance laisser entre les anacardiers ?"
+        with _capture_queries([], [], []) as (model, params_seen):
+            result = corpus_service.chercher_reponse_ivr(
+                "CONSEIL_PRODUCTION", ["CULTURE_ANACARDE"], [], query_text=question
+            )
+
+        assert result is None
+        model.encode.assert_called_once()
+        assert model.encode.call_args.args[0] == [question]
+        # Les 3 essais SQL reçoivent le même vecteur : celui de la question
+        attendu = corpus_service._format_vector([float(len(question))] * 384)
+        assert len(params_seen) == 3
+        assert all(p["query_emb"] == attendu for p in params_seen)
+
+    def test_sans_question_repli_sur_l_etiquette(self):
+        """Appelants sans question (traçabilité du feedback) : comportement historique."""
+        with _capture_queries([], [], []) as (model, _):
+            corpus_service.chercher_reponse_ivr("CONSEIL_PRODUCTION", ["CULTURE_RIZ"], [])
+
+        textes = [c.args[0][0] for c in model.encode.call_args_list]
+        assert textes == [
+            "CONSEIL_PRODUCTION CULTURE_RIZ",  # essai 1
+            "CONSEIL_PRODUCTION",              # essai 2
+            "CONSEIL_PRODUCTION CULTURE_RIZ",  # essai 3
+        ]
+
+    def test_question_blanche_traitee_comme_absente(self):
+        with _capture_queries([]) as (model, _):
+            corpus_service.chercher_reponse_ivr(
+                "CONSEIL_PRODUCTION", ["CULTURE_RIZ"], [], query_text="   "
+            )
+
+        assert model.encode.call_args_list[0].args[0] == ["CONSEIL_PRODUCTION CULTURE_RIZ"]
+
+    def test_log_distingue_question_et_etiquette(self, caplog):
+        """La calibration A2 (ADR-0028) ne doit exploiter que les distances
+        calculées sur une vraie question : la ligne `best=` le précise."""
+        row = {**_make_row("riz_001", score=0.9), "distance": 0.31}
+        with caplog.at_level(logging.INFO, logger="app.services.corpus_service"):
+            with _capture_queries([row]):
+                corpus_service.chercher_reponse_ivr(
+                    "CONSEIL_PRODUCTION", ["CULTURE_RIZ"], [],
+                    query_text="Comment planter le riz ?",
+                )
+            with _capture_queries([row]):
+                corpus_service.chercher_reponse_ivr("CONSEIL_PRODUCTION", ["CULTURE_RIZ"], [])
+
+        best_lines = [m for m in caplog.messages if m.startswith("[VDB-PG] best=")]
+        assert len(best_lines) == 2
+        assert "requete=question" in best_lines[0]
+        assert "requete=etiquette" in best_lines[1]
 
 
 class TestGetReponseFallback:

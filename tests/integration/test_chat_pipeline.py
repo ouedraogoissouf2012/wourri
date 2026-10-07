@@ -67,6 +67,11 @@ async def test_chat_service_runs_nlu_ivr_deepseek_and_tts_pipeline():
         and call.args[1] == ["CULTURE_RIZ"]
         for call in search_ivr.call_args_list
     )
+    # #528 : le corpus reçoit la question telle que posée, pas l'étiquette.
+    assert all(
+        call.kwargs.get("query_text") == "Je veux cultiver du riz"
+        for call in search_ivr.call_args_list
+    )
     deepseek.assert_awaited_once()
     deepseek_call = deepseek.await_args.kwargs
     assert deepseek_call["language"] == Language.DIOULA
