@@ -232,3 +232,17 @@ class TestIssue85CultureCorrections:
         assert concepts[expected_culture] == 1.0
         for forbidden_culture in forbidden_cultures:
             assert forbidden_culture not in concepts
+
+
+def test_soso_du_locuteur_natif_n_est_plus_reecrit_en_anacarde(
+    concept_extractor: ConceptExtractor,
+):
+    """Haricot se dit « sɔsɔ » (locuteur natif, 2026-10-07). Absent du
+    vocabulaire, le mot était pris pour un fragment ASR et réécrit en « sɔmɔ »
+    (anacarde) par la reconstruction de cultures."""
+    normalized = normalize_asr_output("n bɛ sɔsɔ sɛnɛ")
+    concepts = concept_extractor.extract(normalized)
+
+    assert normalized == "n bɛ sɔsɔ sɛnɛ"
+    assert "CULTURE_HARICOT" in concepts
+    assert "CULTURE_ANACARDE" not in concepts

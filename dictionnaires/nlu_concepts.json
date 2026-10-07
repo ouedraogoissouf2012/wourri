@@ -1,5 +1,5 @@
 {
-  "version": "3.2",
+  "version": "3.3",
   "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
   "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
   "correction_v1.1": "2026-03-03 — termes bambara corrigés: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ, coton fini→kɔrɔni",
@@ -296,20 +296,20 @@
         "soso bɔ",
         "shɔ",
         "shɔ foro",
-        "kɔrɔ",
-        "koro",
         "niebe",
         "niébé",
         "mugu",
         "haricot",
         "haricots",
         "cowpea",
-        "niébés"
+        "niébés",
+        "sɔsɔ"
       ],
       "partial": [
-        "soso"
+        "soso",
+        "sɔsɔ"
       ],
-      "note": "soso=haricot dioula CI (validé utilisateur 2026-03-03), shɔ̀=bambara Mali. woso RETIRÉ — woso=patate douce (validé utilisateur 2026-03-04)."
+      "note": "soso=haricot dioula CI (validé utilisateur 2026-03-03), sɔsɔ=même mot écrit avec ɔ (validé locuteur natif utilisateur 2026-10-07), shɔ̀=bambara Mali. kɔrɔ/koro RETIRÉS 2026-10-07 — haricot se dit sɔsɔ (locuteur natif utilisateur) ; kɔrɔ a d'autres sens courants (« n kɔrɔ » = mon aîné ; dans le corpus « jiri kɔrɔ » = sous l'arbre, « ka kɔrɔ » = mûrir). woso RETIRÉ — woso=patate douce (validé utilisateur 2026-03-04)."
     },
     "CULTURE_COTON": {
       "label_fr": "coton",
@@ -567,7 +567,6 @@
         "jɔ",
         "jo",
         "sɔ",
-        "so",
         "suman",
         "sumaw",
         "suma kisɛ",
@@ -578,12 +577,14 @@
         "semences",
         "plantation",
         "plante",
-        "cultiver"
+        "cultiver",
+        "malo dan"
       ],
       "partial": [
         "sɛnɛ",
         "sene"
-      ]
+      ],
+      "note": "dan=planter, mettre en terre ; malo dan=planter le riz ; malo sɛnɛ=cultiver le riz, sens plus large (locuteur natif utilisateur 2026-10-07). so RETIRÉ 2026-10-07 — so=maison (« i ni ce n bɛ so » = bonjour, je suis à la maison) ; planter se dit dan. dan seul PAS ajouté : autres emplois à confirmer (corpus « jì dan caman » = trop d'eau ; « dan » tapé pour « dans » en français)."
     },
     "ACTION_RECOLTER": {
       "label_fr": "récolter",
@@ -924,8 +925,10 @@
         "froid",
         "nuage",
         "humidité",
-        "humidite"
-      ]
+        "humidite",
+        "waati ko"
+      ],
+      "note": "waati ko=météo, conditions du temps (locuteur natif utilisateur 2026-10-07) ; waati seul=temps, moment, période → reste dans TEMPS_SAISON_GENERAL. Reconnaissance seulement : la règle de rédaction des réponses (tuma plutôt que waati, validation native #51) ne change pas."
     },
     "TEMPS_DATE": {
       "label_fr": "date/jour courant",
@@ -1453,6 +1456,15 @@
   "correction_v1.7": "2026-03-13 — ENGRAIS_FERTILISANT nettoyé (dolo/furakɛ duguma/natiri/dɔgɔw RETIRÉS). Ajout: nɔgɔfin(engrais organique), nafanma fɛnw(nutriments), kɔmpɔsi(compost). Source: Access Agriculture 230 + validation Bayelemabaga.",
   "correction_v1.8": "2026-03-13 — PROBLEME_INSECTE: limɔgɔ/limogo (mouche, 8 Baye). Nouvelle culture CULTURE_MANGUE: maŋoro (15 Baye + 30 Jeli). dunmuni CONFIRMÉ = manger/nourriture (PAS insecte). Source: Access Agriculture 130.",
   "changelog": [
+    {
+      "version": "3.3",
+      "date": "2026-10-07",
+      "changes": [
+        "CULTURE_HARICOT — sɔsɔ ajouté (mot-clé et partiel) : graphie du locuteur natif utilisateur, que la variante sans ɔ « soso » ne couvrait pas. kɔrɔ/koro RETIRÉS : haricot se dit sɔsɔ ; « n kɔrɔ i ni ce » (mon aîné, bonjour) partait vers le haricot.",
+        "ACTION_PLANTER — malo dan ajouté (planter le riz, locuteur natif utilisateur). so RETIRÉ : so = maison, « i ni ce n bɛ so » demandait de quelle culture on parle ; planter se dit dan. dan seul non ajouté tant que ses autres emplois ne sont pas confirmés.",
+        "TEMPS_METEO — waati ko ajouté (météo, conditions du temps, locuteur natif utilisateur). waati seul (temps, moment, période) reste dans TEMPS_SAISON_GENERAL."
+      ]
+    },
     {
       "version": "3.2",
       "date": "2026-07-29",
