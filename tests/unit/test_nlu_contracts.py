@@ -265,3 +265,37 @@ def test_quel_temps_fait_il_est_une_question_meteo(extractor, nlu_config):
     concepts = extractor.extract("quel temps fait il aujourd hui")
     intent, _, _ = IntentClassifier(nlu_config["intents"]).classify(concepts)
     assert intent == "QUESTION_METEO_AGRICOLE"
+
+
+@pytest.mark.parametrize(
+    ("phrase", "culture"),
+    [
+        ("Quelle distance laisser entre les palmiers à huile ?", "CULTURE_PALMIER_HUILE"),
+        ("mes palmiers sont malades", "CULTURE_PALMIER_HUILE"),
+        ("Quel mois pour semer les arachides ?", "CULTURE_ARACHIDE"),
+        ("mes manguiers ne donnent pas de fruits", "CULTURE_MANGUE"),
+        ("comment entretenir mes bananiers", "CULTURE_BANANE"),
+        ("quand planter les plantains", "CULTURE_BANANE"),
+        ("mes orangers jaunissent", "CULTURE_AGRUMES"),
+        ("mes cotonniers sont attaqués", "CULTURE_COTON"),
+        ("quand semer les niébés", "CULTURE_HARICOT"),
+    ],
+)
+def test_pluriels_et_arbres_des_cultures(extractor, phrase, culture):
+    """Un pluriel ou un nom d'arbre masquait la culture (« palmiers à huile »,
+    « manguiers »…) : la question partait en HORS_SUJET alors que le corpus
+    avait la réponse."""
+    assert culture in extractor.extract(phrase)
+
+
+def test_palmiers_a_huile_n_est_plus_hors_sujet(extractor, nlu_config):
+    concepts = extractor.extract("Quelle distance laisser entre les palmiers à huile ?")
+    intent, _, _ = IntentClassifier(nlu_config["intents"]).classify(concepts)
+    assert intent != "HORS_SUJET"
+
+
+def test_orange_money_n_est_pas_un_agrume(extractor):
+    """« orange » n'est volontairement pas un mot-clé (Orange Money) ; seuls
+    « oranger(s) » et « citron(nier)s » désignent les agrumes."""
+    assert "CULTURE_AGRUMES" not in extractor.extract("j'ai envoyé l'argent par orange money")
+
