@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 _PROJECT_ROOT = Path(__file__).resolve().parents[4]
 _CORRECTIONS_PATH = _PROJECT_ROOT / "dictionnaires" / "asr_corrections.json"
 _NLU_CONCEPTS_PATH = _PROJECT_ROOT / "dictionnaires" / "nlu_concepts.json"
+_REGLES_PATH = _PROJECT_ROOT / "dictionnaires" / "asr_normalizer_regles.json"
 
 
 def _load_exact_corrections() -> dict[str, str]:
@@ -50,6 +51,29 @@ def _load_nlu_vocabulary() -> set[str]:
     return vocab
 
 
+def _load_regles() -> dict:
+    """Charge les règles de graphie des étapes 3 et 4 (asr_normalizer_regles.json).
+
+    Voyelles, confusions admises, suffixes de pluriel et paramètres de la
+    reconstruction de cultures (ADR-0042). Sans ce fichier, aucune valeur de
+    repli n'est codée en dur (constraints.md §1.2) : aucune voyelle n'est
+    connue, aucune fenêtre n'est configurée, l'étape 4 ne fait rien et l'étape 3
+    ne rapproche plus que des graphies identiques aux tons et à un « n » final
+    près.
+    """
+    try:
+        with open(_REGLES_PATH, encoding="utf-8") as f:
+            regles = json.load(f)
+        logger.info("[ASR-NORM] Règles de graphie chargées depuis %s", _REGLES_PATH.name)
+        return regles
+    except FileNotFoundError:
+        logger.warning("[ASR-NORM] Fichier %s non trouvé", _REGLES_PATH)
+    except Exception as e:
+        logger.error("[ASR-NORM] Erreur chargement règles de graphie: %s", e)
+    return {}
+
+
 _EXACT_CORRECTIONS = _load_exact_corrections()
 _NLU_VOCAB = _load_nlu_vocabulary()
 _NLU_VOCAB_LIST = sorted(_NLU_VOCAB)
+_REGLES = _load_regles()

@@ -1,0 +1,62 @@
+{
+  "_description": "Règles de graphie du normalizer post-ASR (app/services/asr/normalizer, étapes 3 et 4). Listes et seuils externalisés (docs/constraints.md §1.2). ADR-0042 (proposé) : chaque règle reprend une erreur documentée dans le dépôt et reste à valider nativement (ADR-0014).",
+
+  "_voyelles": "Lettres traitées comme voyelles pour comparer deux graphies, tons retirés. Toute autre lettre compte comme consonne : une transcription n'est rapprochée d'un mot du vocabulaire que si les deux ont autant de consonnes, dans le même ordre.",
+  "voyelles": "aeɛiouɔ",
+
+  "_confusions_courantes": "Confusions admises aux étapes 3 et 4, [lettre de la transcription, lettre du mot du vocabulaire]. e/ɛ et o/ɔ : transcription sans lettres API (asr_corrections.json : « wulafe » → « wulafɛ », « sufe » → « sufɛ », « malo sene » → « malo sɛnɛ » ; sources citées dans fuzzy.py : Wikipedia Bambara phonology, Vydrin 2020). i → o : erreur de production « mali » → « malo » (tests/unit/test_asr_normalizer.py, test_mali_to_malo) ; le sens o → i n'est pas observé (il réécrivait « bolo » en « boli »).",
+  "confusions_courantes": [
+    ["e", "ɛ"],
+    ["ɛ", "e"],
+    ["o", "ɔ"],
+    ["ɔ", "o"],
+    ["i", "o"]
+  ],
+
+  "_confusions_reconstruction": "Confusions documentées admises en plus par l'étape 4 seulement (reconstruction de cultures : verbe agricole présent, aucune culture nommée), dans le sens observé. o → u : « ku » transcrit « ko » (app/services/asr_bambara_normalizer.py, PHRASE_SUBS). a → ɔ et a → o : « sagɔma » → « sɔgɔma », « sagoma » → « sogoma » (asr_corrections.json, salutations). g → r : « mangogo » → « mangoro » (asr_corrections.json, cultures_nemo_errors). r → g : « sɔrɔma » → « sɔgɔma », « soroma » → « sogoma » (salutations). Admises à l'étape 3, elles réécrivaient des mots courants (« fagali » → « farali » ×37 dans data/hf_datasets ; mesure du 2026-10-07, ADR-0042).",
+  "confusions_reconstruction": [
+    ["o", "u"],
+    ["a", "ɔ"],
+    ["a", "o"],
+    ["g", "r"],
+    ["r", "g"]
+  ],
+
+  "_suffixes_pluriel": "Suffixes de pluriel ignorés à l'étape 3, tons et accents retirés : un mot transcrit rejoint son mot-clé au singulier ou au pluriel. -w : pluriel dioula (data/GRAMMAIRE_DIOULA_REGLES.md §9) ; -s : pluriel des mots-clés français du NLU (« insectes » → « insecte », « récoltés » → « récolte »). Reprend un comportement de BASE (1332c8b). Il en découle « fura » → « furaw » (ACTION_TRAITER), que reponse_fr lit pourtant « feuilles » ou « floraison » dans corpus_ivr.json : à valider nativement (ADR-0042).",
+  "suffixes_pluriel": ["w", "s"],
+
+  "_e_final_francais": "« e » final des mots-clés français ignoré à l'étape 3, comme le faisait BASE : « cacaoyère » → « cacaoyer » (CULTURE_CACAO), « plant » → « plante ». Le radical doit avoir au moins longueur_min_radical lettres : « Mile » (la ville de Milet, francophonia_bambara_french) ne devient pas « mil ». Mesure du 2026-10-07 : la règle ne change aucun texte dioula de référence ni de data/hf_datasets (ADR-0042).",
+  "e_final_francais": {"suffixes": ["e"], "longueur_min_radical": 4},
+
+  "reconstruction_cultures": {
+    "_description": "Étape 4 (culture.py) : reconstruction d'un nom de culture à partir de fragments, quand la phrase a un verbe agricole et ne nomme aucune culture.",
+
+    "_tailles_fenetre": "Nombre de mots voisins fusionnés. Le mot seul relève de mot_seul.",
+    "taille_fenetre_min": 2,
+    "taille_fenetre_max": 3,
+
+    "_confusions_graphie": "« Exactement un nom de culture » (mot_court_du_vocabulaire, mot_outil_final, groupe_de_consonnes) s'entend à la graphie près : e/ɛ et o/ɔ, transcription sans lettres API ; les tons et l'allongement final sont ignorés.",
+    "confusions_graphie": [
+      ["e", "ɛ"],
+      ["ɛ", "e"],
+      ["o", "ɔ"],
+      ["ɔ", "o"]
+    ],
+
+    "_mot_seul": "Un mot seul, hors vocabulaire NLU, n'est rapproché que d'un nom de culture d'au moins longueur_min_culture lettres, à distance_max au plus, par une confusion documentée (« mangogo » → « mangoro », « kɔgɔni » → « kɔrɔni »). Les noms de 4 lettres sont exclus : « nɛgɛ » (le métal, 114 fois dans findora_fr_dioula) deviendrait « nɛrɛ » (néré), « muru » (couteau) « mugu » (haricot) ; mesuré : +68 textes hf qui gagnent une culture.",
+    "_mot_seul_sans_verbe_agricole": "Si vrai, le mot seul est lu même quand la phrase n'a pas de verbe agricole (« lemuro bɛ ji fɛ caman » → « lemuru », agrumes) ; la consonne parasite et les fusions de plusieurs mots exigent toujours le verbe agricole. Mesure du 2026-10-12 (ADR-0042) : aucune réécriture nouvelle sur le dioula de référence, data/hf_datasets ni les 3 597 textes propres ; erreurs simulées sans verbe agricole mieux corrigées que dans BASE.",
+    "mot_seul": {"distance_max": 1, "longueur_min_culture": 5, "sans_verbe_agricole": true},
+
+    "_groupe_de_consonnes": "Un mot seul où deux consonnes se suivent sans nasale en tête (« tigka », asr_corrections.json) est aussi lu sans l'une d'elles ; la lecture doit donner exactement un nom de culture d'au moins longueur_min_culture lettres (« tigka » → « tiga »). nasales : consonnes qui peuvent précéder une autre consonne dans un mot dioula (« ntomati », « sanji ») ; un tel groupe n'est jamais lu comme une erreur.",
+    "groupe_de_consonnes": {"nasales": "nmŋɲ", "longueur_min_culture": 4},
+
+    "_mot_court_du_vocabulaire": "Un mot du vocabulaire NLU n'est jamais fondu dans un nom de culture, sauf s'il a au plus longueur_max lettres (« sɔ », « ku », « jɔ ») et que la fusion donne exactement un nom de culture : « sɔ mɔ » → « sɔmɔ », « ba nan ku » → « bananku ».",
+    "mot_court_du_vocabulaire": {"longueur_max": 2},
+
+    "_mot_outil_final": "Un mot-outil (_NEVER_FUSE de culture.py : « ni », « la », « o »…) ne peut que finir une fenêtre, juste avant un verbe agricole, et la fusion doit donner exactement un nom de culture d'au moins longueur_min_culture lettres : « kɔrɔ ni sɛnɛ » → « kɔrɔni sɛnɛ », « ka ka o sɛnɛ » → « kakao sɛnɛ » (asr_corrections.json). Sans le verbe agricole, « kɔrɔ ni » et « kan ka o » devenaient coton et cacao 46 fois dans findora_fr_dioula (mesure du 2026-10-07).",
+    "mot_outil_final": {"longueur_min_culture": 5},
+
+    "_detection": "Mots-clés CULTURE_* de nlu_concepts.json qui montrent qu'une culture est déjà nommée (l'étape ne fait alors rien) : ceux d'au moins longueur_min lettres, sauf mots_ignores. « ku » et « ɲɔ » sont trop courts (« ba nan ku » doit redevenir « bananku ») ; « mais » est aussi la conjonction française du dioula mêlé de français.",
+    "detection": {"longueur_min": 3, "mots_ignores": ["mais"]}
+  }
+}
