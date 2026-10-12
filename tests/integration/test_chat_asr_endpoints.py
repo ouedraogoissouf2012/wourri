@@ -98,6 +98,39 @@ def test_chat_delegates_to_chat_service(client):
     }
 
 
+def test_chat_metric_culture_is_first_cited_culture_not_animal(client):
+    """La culture des métriques est la première CULTURE_ citée, comme sur
+    /api/asr : un animal cité avant n'est pas une culture."""
+    service = MagicMock()
+    service.process = AsyncMock(
+        return_value=ChatResult(
+            response="Conseil",
+            response_dioula="Ladilikan",
+            audio_url=None,
+            city="Bouaké",
+            language="both",
+            audio_language=None,
+            meta={
+                "intent": "CONSEIL_PRODUCTION",
+                "source": "ivr_exact",
+                "cultures": ["ANIMAL_BOVIN", "CULTURE_RIZ", "CULTURE_MAIS"],
+            },
+        )
+    )
+
+    with (
+        patch("app.routers.chat.get_chat_service", return_value=service),
+        patch("app.routers.chat.set_request_metric_context") as metric_context,
+    ):
+        response = client.post(
+            "/api/chat/",
+            json={"message": "mes boeufs et mon riz", "city": "Bouaké", "language": "both"},
+        )
+
+    assert response.status_code == 200
+    assert metric_context.call_args.kwargs["culture"] == "CULTURE_RIZ"
+
+
 def test_asr_transcribe_bambara_uses_default_chain(client):
     """POST /api/asr/transcribe utilise la chaîne bambara pour `bam`."""
     chain = MagicMock()

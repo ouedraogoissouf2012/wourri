@@ -39,11 +39,14 @@ async def chat(request: Request, body: ChatRequest):
 
     meta = result.meta or {}
     cultures = meta.get("cultures")
-    culture = (
-        cultures[0]
-        if isinstance(cultures, list) and cultures and isinstance(cultures[0], str)
-        else None
-    )
+    culture = None
+    if isinstance(cultures, list):
+        # Première culture citée (un ANIMAL_ cité avant n'est pas une culture),
+        # comme la métrique de /api/asr.
+        culture = next(
+            (c for c in cultures if isinstance(c, str) and c.startswith("CULTURE_")),
+            None,
+        )
     intent = meta.get("intent") if isinstance(meta.get("intent"), str) else None
     set_request_metric_context(
         request,

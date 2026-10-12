@@ -1,5 +1,5 @@
 {
-  "version": "3.3",
+  "version": "3.4",
   "description": "Lexique NLU pour Wourri - assistant agricole Bambara/Dioula Côte d'Ivoire / Mali",
   "notes": "Mots-clés incluent variantes NeMo TDT (sans tons), dioula ivoirien, bambara malien, emprunts français",
   "correction_v1.1": "2026-03-03 — termes bambara corrigés: igname jaba→ku, manioc barikama→bananku, mil woso→nyɔ, coton fini→kɔrɔni",
@@ -1429,6 +1429,125 @@
       "description": "Aucun concept agricole détecté → hors sujet"
     }
   ],
+  "homographes": {
+    "description": "Mots-clés de culture qui sont aussi des mots français courants (ADR-0041). Une occurrence est sûre si elle est écrite sous une de ses « formes_sures », si elle précède un de ses « mots_apres_surs », ou si elle suit un de ses « mots_avant_surs » sans précéder un de ses « mots_apres_douteux » ; sinon elle est douteuse. Une culture vue seulement par des occurrences douteuses est retirée quand la phrase cite une autre culture par un mot entier ou un multi-mots (un partiel ne suffit pas), et gardée sinon : « mais comment faire pour mon manioc » parle du manioc, « mes jeunes mais jaunissent » reste une question sur le maïs (jamais un refus hors-sujet). Gardée, elle passe après les mots entiers et avant les cultures vues seulement par un partiel. L'intent se calcule sur tous les concepts, avant ce retrait : la règle choisit la culture, elle ne change pas l'intent.",
+    "comparaison": "Mots comparés tels qu'écrits, en minuscules, accents et tréma compris (« maïs » est une forme sûre, « mais » non ; « nôtre » n'est pas « notre »). La ponctuation détachée est sautée, pas un nombre (« le 12 mais » : le mot avant est « 12 »). Le mot avant ne compte pas s'il est accolé par un trait d'union (« arrose-le mais », pronom) ou s'il termine un mot-clé multi-mots reconnu (« i ni ce mais », salutation).",
+    "mots": {
+      "mais": {
+        "concept": "CULTURE_MAIS",
+        "formes_sures": [
+          "maïs"
+        ],
+        "mots_avant_surs": [
+          "le",
+          "les",
+          "des",
+          "du",
+          "de",
+          "d",
+          "au",
+          "aux",
+          "mon",
+          "ton",
+          "son",
+          "notre",
+          "votre",
+          "leur",
+          "mes",
+          "tes",
+          "ses",
+          "nos",
+          "vos",
+          "leurs",
+          "ce",
+          "ces",
+          "pour",
+          "pr",
+          "sur",
+          "avec",
+          "sans",
+          "après",
+          "apres",
+          "entre",
+          "ou",
+          "et"
+        ],
+        "mots_apres_douteux": [
+          "pas"
+        ],
+        "mots_apres_surs": [
+          "et",
+          "ou"
+        ],
+        "sens_courant": "conjonction « mais » (« mais comment faire pour mon manioc », « traite le mais pas en plein soleil »)",
+        "note": "« un » n'est pas un mot avant sûr (« j'en ai planté un mais il est mort ») : aucune phrase des jeux de mesure ne l'emploie devant le maïs. « la », « ma », « sa », « ta » non plus : maïs est masculin, et « la », « ma » s'écrivent aussi dans le dioula du dépôt (« foro la », « Ku ma fini »). « le » et « de » sont aussi des particules dioula (« magamaw le ye », « Kabako de Kɛra ») : un « … le mais … » en dioula compte comme maïs, à valider nativement (ADR-0014)."
+      },
+      "fini": {
+        "concept": "CULTURE_MIL",
+        "mots_avant_surs": [],
+        "sens_courant": "participe de « finir » (« j'ai fini de semer », « l'engrais a fini »)",
+        "note": "Le sens culture (fonio) est dioula : aucun mot français ne le rend sûr. « fini » ne compte donc que si la phrase ne cite aucune autre culture ; « Ku ma fini ka ji don » (igname_stockage_001) ne donne plus le mil à côté de l'igname. À valider nativement (ADR-0014). « finiforo » et « fonio » ne sont pas concernés."
+      },
+      "beni": {
+        "concept": "CULTURE_SESAME",
+        "mots_avant_surs": [],
+        "sens_courant": "« béni », participe de « bénir » (« Dieu a béni ma récolte », « soyez béni »)",
+        "note": "Le sens culture (sésame) est dioula : aucun mot français ne le rend sûr. « beni » ne compte donc que si la phrase ne cite aucune autre culture. À valider nativement (ADR-0014). « bɛnɛ », « bene » et « sésame » ne sont pas concernés."
+      },
+      "mil": {
+        "concept": "CULTURE_MIL",
+        "mots_avant_surs": [
+          "le",
+          "du",
+          "au",
+          "mon",
+          "ton",
+          "son",
+          "notre",
+          "votre",
+          "leur",
+          "ce",
+          "pour",
+          "pr",
+          "ou"
+        ],
+        "mots_apres_douteux": [
+          "f",
+          "fr",
+          "frs",
+          "francs",
+          "fcfa",
+          "cfa"
+        ],
+        "mots_apres_surs": [
+          "et",
+          "ou"
+        ],
+        "sens_courant": "numéral (« en mil neuf cent quatre-vingt ») et « mille » mal écrit (« 50 mil francs »)",
+        "note": "Ni « de », « un », « les », « des », « et » avant (« plus de mil f », « les mil francs », « et » écrit pour « est »)."
+      },
+      "caoutchouc": {
+        "concept": "CULTURE_HEVEA",
+        "mots_avant_surs": [
+          "le",
+          "du",
+          "au",
+          "mon",
+          "ton",
+          "son",
+          "notre",
+          "votre",
+          "leur",
+          "ce",
+          "pour",
+          "pr",
+          "ou"
+        ],
+        "sens_courant": "la matière ou le sachet (« gants en caoutchouc », « un caoutchouc noir »)",
+        "note": "Ni « de », « en », « un » avant (« gants de caoutchouc », « un caoutchouc » = un sachet)."
+      }
+    }
+  },
   "out_of_scope_response": {
     "fr": "Je suis Wourri, assistant agricole pour les cultivateurs de Côte d'Ivoire. Je réponds uniquement aux questions sur l'agriculture et les cultures. Pose-moi une question sur tes cultures !",
     "bambara": "Ne ye Wourri ye, sɛnɛkɛlaw dɛmɛbaga. N bɛ se ka dɛmɛ i ma sɛnɛ ko la dɔrɔn. I ka ɲinini kɛ i ka foro ko la.",
@@ -1456,6 +1575,15 @@
   "correction_v1.7": "2026-03-13 — ENGRAIS_FERTILISANT nettoyé (dolo/furakɛ duguma/natiri/dɔgɔw RETIRÉS). Ajout: nɔgɔfin(engrais organique), nafanma fɛnw(nutriments), kɔmpɔsi(compost). Source: Access Agriculture 230 + validation Bayelemabaga.",
   "correction_v1.8": "2026-03-13 — PROBLEME_INSECTE: limɔgɔ/limogo (mouche, 8 Baye). Nouvelle culture CULTURE_MANGUE: maŋoro (15 Baye + 30 Jeli). dunmuni CONFIRMÉ = manger/nourriture (PAS insecte). Source: Access Agriculture 130.",
   "changelog": [
+    {
+      "version": "3.4",
+      "date": "2026-10-12",
+      "changes": [
+        "Section « homographes » ajoutée (ADR-0041) : « mais », « fini », « beni », « mil » et « caoutchouc » ont chacun leurs contextes sûrs (forme « maïs », mots avant, mots après). Une culture vue seulement par des occurrences douteuses est retirée quand la phrase cite une autre culture par un mot entier ou un multi-mots, gardée sinon : « mais comment faire pour mon manioc » partait vers le maïs, « mes jeunes mais jaunissent » reste une question sur le maïs.",
+        "Ordre des concepts (ADR-0041) : mots entiers et multi-mots, puis homographes douteux gardés, puis partiels seuls ; dans chaque groupe, première apparition dans le texte. L'intent se calcule sur tous les concepts, homographes douteux compris. La première culture citée par un mot entier est celle de la phrase française, du préfixe DeepSeek et de l'IVR, quelle que soit la graine PYTHONHASHSEED.",
+        "À valider nativement (ADR-0014) : « fini » (fonio) et « beni » (sésame) ne comptent plus quand la phrase cite une autre culture ; « le » et « de », aussi particules dioula, restent des mots avant sûrs de « mais »."
+      ]
+    },
     {
       "version": "3.3",
       "date": "2026-10-07",

@@ -340,7 +340,13 @@ def chercher_reponse_ivr(
             question_emb = _format_vector(_embed_query(question))
         return _query_candidates(intent, question, culture_filter, query_emb=question_emb)
 
-    # Essai 1 : intent + chaque culture exacte
+    # Essai 1 : intent + chaque culture exacte, dans l'ordre reçu. L'appelant passe
+    # les cultures dans l'ordre du NLU, première culture citée en tête (ADR-0041).
+    # Repli assumé (politique inchangée) : si la première n'a pas d'entrée pour cet
+    # intent (agrumes × saison de plantation, hévéa, mangue ou néré hors de leurs
+    # intents), la boucle sert la culture SUIVANTE. La réponse porte alors sur une
+    # autre culture que la phrase française et le préfixe DeepSeek ; ne servir que
+    # la première enverrait ces questions vers DeepSeek et l'escalade.
     for culture in cultures:
         try:
             rows = _candidates(f"{intent} {culture}", culture)

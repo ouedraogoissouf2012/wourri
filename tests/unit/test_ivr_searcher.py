@@ -211,6 +211,60 @@ async def test_try_ivr_exact_transmet_la_question_au_corpus():
     assert search.call_args.kwargs["query_text"] == "Comment avoir une bonne récolte de riz ?"
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("concepts", "culture_retournee", "culture_du_conseil"),
+    [
+        # Réponse ananas : le conseil ne parle pas du maïs cité avant
+        ({"CULTURE_MAIS": 1.0, "CULTURE_ANANAS": 1.0}, "CULTURE_ANANAS", "CULTURE_ANANAS"),
+        # Réponse générique ou champ absent : première culture citée (pas l'animal)
+        ({"ANIMAL_PORC": 1.0, "CULTURE_RIZ": 1.0, "CULTURE_MAIS": 1.0}, "*", "CULTURE_RIZ"),
+        ({"CULTURE_IGNAME": 1.0, "CULTURE_RIZ": 1.0}, None, "CULTURE_IGNAME"),
+    ],
+)
+async def test_try_ivr_exact_conseil_saisonnier_sur_la_culture_servie(
+    concepts, culture_retournee, culture_du_conseil
+):
+    """Le conseil saisonnier porte sur la culture de la réponse servie, et non
+    sur la première culture de la question qui a un calendrier."""
+    nlu = _make_nlu(intent="CONSEIL_PRODUCTION", concepts=concepts)
+    entree = {"id": "x", "reponse_bambara": "B", "reponse_fr": "F"}
+    if culture_retournee:
+        entree["cultures"] = culture_retournee
+    with patch(
+        "app.services.corpus_service.chercher_reponse_ivr",
+        return_value=entree,
+    ), patch(
+        "app.services.corpus_service.get_phrases_for_intent",
+        return_value=[],
+    ), patch(
+        "app.services.chat.ivr_searcher.get_conseil_saisonnier",
+        return_value=None,
+    ) as conseil:
+        await try_ivr_exact(nlu, "Abidjan", None, False, Language.DIOULA)
+
+    conseil.assert_called_once_with([culture_du_conseil], intent="CONSEIL_PRODUCTION")
+
+
+@pytest.mark.asyncio
+async def test_try_ivr_exact_transmet_toutes_les_cultures_dans_l_ordre_du_nlu():
+    """ADR-0041 : la liste part au corpus dans l'ordre du NLU, première culture
+    citée en tête, et entière : si la première n'a pas d'entrée pour l'intent,
+    le corpus sert la suivante (repli conservé, documenté dans
+    chercher_reponse_ivr). L'animal reste à sa place dans la liste."""
+    nlu = _make_nlu(
+        intent="QUESTION_SAISON_PLANTATION",
+        concepts={"CULTURE_AGRUMES": 1.0, "ANIMAL_POULET": 1.0, "CULTURE_IGNAME": 1.0},
+    )
+    with patch(
+        "app.services.corpus_service.chercher_reponse_ivr",
+        return_value=None,
+    ) as search:
+        await try_ivr_exact(nlu, "Abidjan", None, False, Language.DIOULA)
+
+    assert search.call_args.args[1] == ["CULTURE_AGRUMES", "ANIMAL_POULET", "CULTURE_IGNAME"]
+
+
 # ─────────────────────────────────────────────
 # try_ivr_concept — 3 branches
 # ─────────────────────────────────────────────

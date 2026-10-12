@@ -50,7 +50,9 @@ class IntentClassifier:
                 'saison': 'pluie'|'seche'|'general'|None
               }
         """
-        concept_keys = set(concepts.keys())
+        # Liste, pas set : on garde l'ordre de l'extracteur (ADR-0041 : première
+        # culture citée en tête), dont dépend culture_concept.
+        concept_keys = list(concepts)
 
         # ---- Cas simples immédiats ----
 
@@ -63,7 +65,7 @@ class IntentClassifier:
         # au scoring même sans concept agricole — ils ont leur propre corpus
         _TIME_SALUTATIONS = {"SALUTATION_MATIN", "SALUTATION_MIDI", "SALUTATION_SOIR", "SALUTATION_NUIT"}
         has_agri = self._has_agricultural(concept_keys)
-        if not has_agri and not (concept_keys & _TIME_SALUTATIONS):
+        if not has_agri and not (set(concept_keys) & _TIME_SALUTATIONS):
             if "SALUTATION" in concept_keys:
                 return "SALUTATION_SEULE", 1.0, {"has_greeting": True}
             return "HORS_SUJET", 1.0, {}
@@ -161,7 +163,7 @@ class IntentClassifier:
 
     # ---- Méthodes privées ----
 
-    def _has_agricultural(self, concept_keys: set) -> bool:
+    def _has_agricultural(self, concept_keys: list) -> bool:
         """Vérifie si au moins un concept agricole est présent."""
         agri_prefixes = (
             "CULTURE_", "ANIMAL_", "ACTION_PLANTER", "ACTION_RECOLTER",
@@ -184,19 +186,21 @@ class IntentClassifier:
         )
 
     def _match_concept_list(
-        self, pattern_list: list, concept_keys: set
+        self, pattern_list: list, concept_keys: list
     ) -> list:
-        """Trouve tous les concepts qui correspondent à la liste (supporte wildcards '*')."""
+        """Trouve tous les concepts qui correspondent à la liste (supporte wildcards '*').
+
+        Le résultat suit l'ordre de `concept_keys` (ordre de l'extracteur), qu'un
+        concept soit désigné par un joker ou par son nom : la première culture du
+        résultat est la première culture de l'extracteur (ADR-0041).
+        """
         matched = []
-        for pattern in pattern_list:
-            if pattern.endswith("*"):
-                prefix = pattern[:-1]
-                for k in concept_keys:
-                    if k.startswith(prefix) and k not in matched:
-                        matched.append(k)
-            elif pattern in concept_keys:
-                if pattern not in matched:
-                    matched.append(pattern)
+        for k in concept_keys:
+            for pattern in pattern_list:
+                joker = pattern.endswith("*")
+                if (joker and k.startswith(pattern[:-1])) or (not joker and k == pattern):
+                    matched.append(k)
+                    break
         return matched
 
     def _update_entity_data(self, matched_concepts: list, data: dict):
