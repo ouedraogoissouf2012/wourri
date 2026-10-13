@@ -86,6 +86,9 @@ async def try_ivr_exact(
     # la façade multi-backend et Chroma ont été retirés).
     from app.services.corpus_service import chercher_reponse_ivr, get_phrases_for_intent
 
+    # Ordre du NLU : première culture citée en tête (ADR-0041). Toute la liste est
+    # transmise au corpus, qui sert la culture suivante quand la première n'a pas
+    # d'entrée pour l'intent (repli documenté dans chercher_reponse_ivr, essai 1).
     cultures = [k for k in nlu.concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
     conditions = [k for k in nlu.concepts if k.startswith("PROBLEME_") or k.startswith("TEMPS_")]
 
@@ -132,8 +135,15 @@ async def try_ivr_exact(
     ivr_bambara = re.sub(r"\{\{[^}]+\}\}", "", ivr_bambara).strip()
     ivr_fr = re.sub(r"\{\{[^}]+\}\}", "", ivr_fr).strip()
 
-    # Conseil saisonnier (bilingue)
-    conseil = get_conseil_saisonnier(cultures, intent=nlu.intent)
+    # Conseil saisonnier (bilingue) : il porte sur la culture de la réponse servie,
+    # jamais sur une autre culture citée dans la question. Réponse générique (`*`)
+    # ou champ absent (anciens adapters, tests) : première culture citée.
+    culture_servie = result.get("cultures")
+    if culture_servie in (None, "", "*"):
+        culture_servie = next((c for c in cultures if c.startswith("CULTURE_")), None)
+    conseil = get_conseil_saisonnier(
+        [culture_servie] if culture_servie else [], intent=nlu.intent
+    )
     if conseil:
         if conseil.get("phase") == "plantation_passe":
             # #509 C1 : hors saison de semis, le conseil daté fait AUTORITÉ. Le
@@ -286,6 +296,7 @@ async def search_ivr_by_concept(
 
     from app.services.corpus_service import chercher_reponse_ivr
 
+    # Même ordre et même repli sur la culture suivante que try_ivr_exact.
     cultures = [k for k in concepts if k.startswith("CULTURE_") or k.startswith("ANIMAL_")]
     if not cultures:
         # Fix #94 : plus de fallback silencieux vers CULTURE_MAIS.

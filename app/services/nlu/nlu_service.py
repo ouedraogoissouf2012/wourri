@@ -113,11 +113,14 @@ class NLUService:
             )
 
         # ---- Étape 1: Extraction des concepts ----
-        concepts = self._extractor.extract(bambara_text)
+        extraction = self._extractor.extraire(bambara_text)
+        concepts = extraction.concepts
         logger.info(f"[NLU] Concepts: {list(concepts.keys())}")
 
         # ---- Étape 2: Classification de l'intention ----
-        intent, confidence, matched_data = self._classifier.classify(concepts)
+        # Sur tous les concepts, homographes douteux compris (ADR-0041) : la règle
+        # des homographes choisit la culture, elle ne change pas l'intent.
+        intent, confidence, matched_data = self._classifier.classify(extraction.concepts_intent)
         logger.info(f"[NLU] Intent: {intent} (confiance={confidence:.2f})")
 
         # ---- Étape 3: Reconstruction de la phrase française ----
