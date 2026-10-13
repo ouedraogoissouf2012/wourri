@@ -164,3 +164,9 @@ des datasets bruts est caduque).
   taux 100 % ≥ critère 90 %). Non-régression : suite complète 1065 passed / 1 skip
   (les 2 erreurs restantes = tests d'intégration Postgres, hors périmètre, skippés
   en CI). Limite documentée : voisinage `wolo`/`woro` inerte (early-return vocab).
+- 2026-10-12 — le rapprochement des graphies du normalizer post-ASR (étapes 3 et 4)
+  relève désormais de l'[ADR-0042](0042-normalizer-post-asr-preserver-le-dioula.md)
+  (proposé). Les 5 règles phonologiques de cet ADR sont inchangées ; une variante
+  n'est plus appliquée quand plusieurs sont dans le vocabulaire (« laba » → « daba »
+  ou « jaba » selon PYTHONHASHSEED). L'écart à la Décision (la variante réécrit le
+  texte servi) reste à trancher : voir ADR-0042, §Conséquences.
