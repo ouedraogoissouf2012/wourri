@@ -102,6 +102,7 @@ def decode_to_16k_mono(raw: bytes, filename: str):
 
 def _decode_via_librosa(raw: bytes, filename: str):
     import tempfile
+    import warnings
 
     import librosa
 
@@ -110,7 +111,13 @@ def _decode_via_librosa(raw: bytes, filename: str):
         tmp.write(raw)
         path = tmp.name
     try:
-        wav, sr = librosa.load(path, sr=None, mono=True)  # float32 mono
+        # webm : soundfile échoue toujours, librosa passe par audioread + ffmpeg. Ses deux
+        # avertissements (« PySoundFile failed », dépréciation d'audioread) sortiraient une fois
+        # par clip et noieraient la sortie du notebook (433 clips = 433 paires).
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            warnings.simplefilter("ignore", FutureWarning)
+            wav, sr = librosa.load(path, sr=None, mono=True)  # float32 mono
     finally:
         Path(path).unlink(missing_ok=True)
     return wav, sr
