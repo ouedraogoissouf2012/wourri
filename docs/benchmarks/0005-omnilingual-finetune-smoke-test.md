@@ -51,6 +51,18 @@ Garde-fous : `finetune/test_dictee_to_parquet.py` reproduit, avec pyarrow seul, 
 
 Données : Common Voice `bci`, miroir `Klayt/baoule-common-voice` (révision épinglée du benchmark 0003). Le split `train` (319 clips) sert à l'entraînement et le split `dev` (267 clips) à la validation. Le split **`test` (290 clips) reste hors entraînement** : c'est le set du benchmark 0003, réservé à la comparaison du CER fine-tuné avec le CER zero-shot.
 
+**Séparation vérifiée le 2026-10-13 (QUA-2 de la feuille de route).** La vérification porte sur les `train.tsv`, `dev.tsv` et `test.tsv` publiés à la même révision (`client_id` = identifiant anonymisé du locuteur). Les textes ont été comparés après la normalisation de `dictee_to_parquet.py`.
+
+| Contrôle | train ∩ dev | train ∩ test | dev ∩ test |
+|---|---|---|---|
+| Locuteurs communs | 0 | 0 | 0 |
+| Phrases communes | 0 | 0 | 0 |
+
+- **Dictée d'esse** (433 phrases, en entraînement) : 0 phrase commune avec le dev et 0 avec le test.
+- **Conséquence** : un CER mesuré sur le split `test` après fine-tune ne sera gonflé ni par une fuite de locuteur, ni par une fuite de texte. Le CER zero-shot de 0003 (22,1 %) ne pouvait de toute façon pas l'être : le modèle n'avait été entraîné sur aucune de ces données.
+- **Limite à garder en tête : peu de locuteurs.** Le train en compte 3 (le plus prolifique : 46 % des clips), le dev 3 (58 %), le test 9 (33 %), soit 15 au total. L'entraînement voit donc 4 voix (3 de Common Voice, plus esse) et le CER de test en couvre 9. Un gain mesuré sur ce test ne dit pas encore grand-chose de la robustesse sur des voix d'agriculteurs au téléphone. L'essai de terrain (BAO-6) reste nécessaire.
+- **Non vérifiable ici** : si esse a lui-même contribué à Common Voice `bci`, car les `client_id` sont anonymisés. À lui demander.
+
 | Essai | Modèle | Encodeur | Voie (étude 0004) |
 |---|---|---|---|
 | **A** | `omniASR_CTC_300M` | entraîné (fine-tune complet) | A |
