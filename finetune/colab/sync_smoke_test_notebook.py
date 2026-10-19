@@ -1,30 +1,51 @@
-"""Recopie finetune/dictee_to_parquet.py dans la cellule %%writefile du notebook
-omnilingual_finetune_smoke_test.ipynb, qui doit rester autonome sur Kaggle.
+"""Recopie les modules de finetune/ dans les cellules %%writefile des notebooks de
+finetune/colab/, qui doivent rester autonomes (Kaggle, GPU loué).
+
+Chaque cellule de code commençant par « %%writefile <module>.py » reçoit le contenu
+exact de finetune/<module>.py, si ce module existe. Une cellule %%writefile propre au
+notebook (ex. prepare_data.py du notebook Kaggle) est laissée telle quelle.
 
 Usage : python finetune/colab/sync_smoke_test_notebook.py
-Garde-fou : finetune/test_dictee_to_parquet.py::test_notebook_embarque_le_module_a_jour.
+Garde-fous : finetune/test_dictee_to_parquet.py et finetune/test_prepare_bci_dataset.py.
 """
 import json
+import re
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-NOTEBOOK = HERE / "omnilingual_finetune_smoke_test.ipynb"
-MODULE = HERE.parent / "dictee_to_parquet.py"
-MARKER = "%%writefile dictee_to_parquet.py\n"
+FINETUNE = HERE.parent
+NOTEBOOKS = [
+    HERE / "omnilingual_finetune_smoke_test.ipynb",
+    HERE / "omnilingual_finetune_1b_gpu_loue.ipynb",
+]
+MARKER = re.compile(r"%%writefile ([\w.]+\.py)\n")
+
+
+def embedded_modules(nb):
+    """[(cellule, nom du module)] des cellules %%writefile d'un notebook."""
+    found = []
+    for cell in nb["cells"]:
+        if cell["cell_type"] != "code":
+            continue
+        m = MARKER.match("".join(cell["source"]))
+        if m:
+            found.append((cell, m.group(1)))
+    return found
 
 
 def main():
-    nb = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
-    cells = [
-        c
-        for c in nb["cells"]
-        if c["cell_type"] == "code" and "".join(c["source"]).startswith(MARKER)
-    ]
-    if len(cells) != 1:
-        raise SystemExit(f"{len(cells)} cellule(s) '{MARKER.strip()}' trouvée(s), 1 attendue")
-    cells[0]["source"] = MARKER + MODULE.read_text(encoding="utf-8")
-    NOTEBOOK.write_text(json.dumps(nb, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    print(f"OK : {MODULE.name} recopié dans {NOTEBOOK.name}")
+    for notebook in NOTEBOOKS:
+        nb = json.loads(notebook.read_text(encoding="utf-8"))
+        synced = []
+        for cell, name in embedded_modules(nb):
+            module = FINETUNE / name
+            if module.is_file():
+                cell["source"] = f"%%writefile {name}\n" + module.read_text(encoding="utf-8")
+                synced.append(name)
+        if not synced:
+            raise SystemExit(f"{notebook.name} : aucune cellule %%writefile d'un module de finetune/")
+        notebook.write_text(json.dumps(nb, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        print(f"OK : {', '.join(synced)} recopié(s) dans {notebook.name}")
 
 
 if __name__ == "__main__":
