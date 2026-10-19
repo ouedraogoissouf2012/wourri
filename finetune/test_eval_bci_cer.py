@@ -108,7 +108,7 @@ def test_verdict_du_temoin(cer, n, ok):
 
 def test_notebook_eval_embarque_les_modules_a_jour():
     """Le notebook d'évaluation recopie les modules (%%writefile) : copies identiques exigées."""
-    cells = _cells("omnilingual_eval_finetune_kaggle.ipynb")
+    cells = _cells("omnilingual_eval_finetune.ipynb")
     for name in ("dictee_to_parquet.py", "prepare_bci_dataset.py", "eval_bci_cer.py"):
         marker = f"%%writefile {name}\n"
         embedded = [src[len(marker):] for src in cells if src.startswith(marker)]

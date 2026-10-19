@@ -18,7 +18,7 @@ FINETUNE = HERE.parent
 NOTEBOOKS = [
     HERE / "omnilingual_finetune_smoke_test.ipynb",
     HERE / "omnilingual_finetune_1b_gpu_loue.ipynb",
-    HERE / "omnilingual_eval_finetune_kaggle.ipynb",
+    HERE / "omnilingual_eval_finetune.ipynb",
 ]
 MARKER = re.compile(r"%%writefile ([\w.]+\.py)\n")
 
