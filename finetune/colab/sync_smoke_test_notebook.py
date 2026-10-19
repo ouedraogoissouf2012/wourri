@@ -6,7 +6,8 @@ exact de finetune/<module>.py, si ce module existe. Une cellule %%writefile prop
 notebook (ex. prepare_data.py du notebook Kaggle) est laissée telle quelle.
 
 Usage : python finetune/colab/sync_smoke_test_notebook.py
-Garde-fous : finetune/test_dictee_to_parquet.py et finetune/test_prepare_bci_dataset.py.
+Garde-fous : finetune/test_dictee_to_parquet.py, finetune/test_prepare_bci_dataset.py
+et finetune/test_eval_bci_cer.py.
 """
 import json
 import re
@@ -17,6 +18,7 @@ FINETUNE = HERE.parent
 NOTEBOOKS = [
     HERE / "omnilingual_finetune_smoke_test.ipynb",
     HERE / "omnilingual_finetune_1b_gpu_loue.ipynb",
+    HERE / "omnilingual_eval_finetune_kaggle.ipynb",
 ]
 MARKER = re.compile(r"%%writefile ([\w.]+\.py)\n")
 
