@@ -1,6 +1,6 @@
 # Test mécanique #0005 — Fine-tune Omnilingual sur le baoulé (étape 2 de l'étude 0004)
 
-**Statut** : en cours — essai A réussi (2026-10-07), essai B à relancer
+**Statut** : clos — essai A réussi (2026-10-07) ; essai B abandonné au profit de la voie C ([ADR-0044](../adr/0044-procedure-finetune-asr-baoule.md), résultats : [0006](0006-omnilingual-1b-finetune-resultats.md))
 **Date de rédaction** : 2026-10-07
 **Décision qu'il informe** : futur ADR « procédure de fine-tune » (#474) — choix A / B / C de l'[étude 0004](0004-omnilingual-finetune-feasibility.md)
 **Fondations** : [étude 0004](0004-omnilingual-finetune-feasibility.md) · [benchmark 0003](0003-asr-baoule-evaluation-results.md) · [ADR-0036](../adr/0036-choix-modele-asr-baoule.md)
@@ -136,3 +136,4 @@ Une baisse de la perte ou de l'UER est **un bon signe, pas un critère** : 100 �
 - **2026-10-07** : rédaction. Écarts du pont #506 trouvés en lisant le code amont (`omnilingual-asr` 0.1.0, `fairseq2` 0.6.0) et corrigés ; notebook Kaggle prêt à exécuter.
 - **2026-10-07** : export de la dictée vérifié (`dictee_bci_433.zip` : 433 paires, tous les audios retrouvés par leur nom exact, aucun texte vide après normalisation). Kaggle est passé en Python 3.13 : le notebook crée désormais son propre Python 3.12 avec `uv`.
 - **2026-10-07** : **essai A réussi** (300M complet, voir §6). Quatre pièges d'exécution ont été corrigés (§2). Pendant l'essai B, la session Kaggle a été perdue, cause inconnue. Le notebook relève désormais le pic de RAM et le disque libre, et installe sans cache `uv` (environ 6 Go de disque en moins). L'essai B est à relancer.
+- **2026-10-19** : test clos. L'essai B (1B encodeur gelé sur T4) n'a pas été relancé : le projet dispose d'un budget, et le valideur a choisi le fine-tune complet du 1B sur un A100 loué (voie C, [ADR-0044](../adr/0044-procedure-finetune-asr-baoule.md)). Résultats du run : [fiche 0006](0006-omnilingual-1b-finetune-resultats.md).

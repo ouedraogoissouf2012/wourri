@@ -110,3 +110,4 @@ Réponses (discussion du 2026-10-19) :
 ## Historique
 
 - 2026-10-19 — proposé (voie C et budget de départ de 15 USD choisis en discussion avec le valideur).
+- 2026-10-19 — premier passage exécuté sur RunPod (A100 SXM 80 GB, **4,71 USD** au total). La meilleure version (étape 1 200, choisie sur `dev`) donne sur `test` une UER de 21,94 → **18,70 %** et un WER de 56,45 → **45,34 %**. Le gain plafonne après environ 1 200 étapes, et la cible CER < 15 % d'ADR-0036 n'est pas atteinte : le levier suivant est d'avoir plus de voix. Détails, courbe complète et pièges d'exécution corrigés dans le notebook : [résultats 0006](../benchmarks/0006-omnilingual-1b-finetune-resultats.md).
