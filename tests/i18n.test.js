@@ -158,10 +158,10 @@ describe("i18n — mécanisme anti-régression (validateI18nCompleteness)", () =
         assert.doesNotThrow(() => validateI18nCompleteness());
     });
 
-    test("SUPPORTED_LANGUAGES contient les 4 langues attendues", () => {
+    test("SUPPORTED_LANGUAGES contient les 5 langues attendues (baoule : #477)", () => {
         assert.deepStrictEqual(
             [...SUPPORTED_LANGUAGES].sort(),
-            ["both", "dioula", "english", "french"]
+            ["baoule", "both", "dioula", "english", "french"]
         );
     });
 
