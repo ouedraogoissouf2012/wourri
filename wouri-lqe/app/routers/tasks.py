@@ -28,6 +28,16 @@ def get_tasks(user: dict = Depends(current_user)):
     }
 
 
+@router.get("/validations")
+def get_validations(kind: str, user: dict = Depends(current_user)):
+    """Mots-cles ou paires question/reponse de la langue du compte, tous statuts (ADR-0045).
+
+    Sert a reconstruire le NLU depuis les seules decisions du locuteur."""
+    lang = user["lang"]
+    entries = workflow.list_validations(language=lang, kind=kind)
+    return {"language": lang, "kind": kind, "entries": entries, "count": len(entries)}
+
+
 @router.post("/decision")
 def post_decision(body: DecisionBody, user: dict = Depends(require_role("review"))):
     result = workflow.decide(body.id, body.decision, language=user["lang"])

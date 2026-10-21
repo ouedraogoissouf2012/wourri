@@ -63,4 +63,15 @@ def promote(item_id: str, *, language: str, actor: str) -> dict:
 
 
 def list_corpus(*, language: str) -> list[dict]:
-    return repo.list_by(language=language, status="production")
+    # Le corpus ne porte que du contenu servi : jamais un mot-cle ni une paire (ADR-0045).
+    return repo.list_by(language=language, status="production", kind=repo.CONTENU)
+
+
+def list_validations(*, language: str, kind: str) -> list[dict]:
+    """Elements de validation (mot_cle, paire_qr) d'une langue, tous statuts (ADR-0045).
+
+    Le NLU baoule ne retient que les elements 'admin_accepted' (texte eventuellement
+    corrige par le locuteur) ; les autres statuts restent visibles pour le suivi."""
+    if kind == repo.CONTENU or kind not in repo.KINDS:
+        return []
+    return repo.list_by(language=language, kind=kind)

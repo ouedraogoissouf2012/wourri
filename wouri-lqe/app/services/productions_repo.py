@@ -14,15 +14,20 @@ from app.db import get_conn
 
 _COLS = (
     "id, concept_id, language, text_local, text_fr, intent, cultures,"
-    " audio_url, status, fingerprint, created_by, promoted_by, promoted_at, meta"
+    " audio_url, status, fingerprint, created_by, promoted_by, promoted_at, meta, kind"
 )
 _SELECT = f"SELECT {_COLS} FROM productions"
+
+# Type d'element (ADR-0045). Seul 'contenu' est servi (corpus, couverture, promotion) ;
+# 'mot_cle' et 'paire_qr' sont des validations du locuteur, jamais du contenu.
+CONTENU = "contenu"
+KINDS = (CONTENU, "mot_cle", "paire_qr")
 
 
 def _row(r: tuple) -> dict:
     (
         pid, concept_id, language, text_local, text_fr, intent, cultures,
-        audio_url, status, fingerprint, created_by, promoted_by, promoted_at, meta,
+        audio_url, status, fingerprint, created_by, promoted_by, promoted_at, meta, kind,
     ) = r
     return {
         "id": str(pid),
@@ -39,6 +44,7 @@ def _row(r: tuple) -> dict:
         "promoted_by": promoted_by,
         "promoted_at": promoted_at.isoformat() if promoted_at else None,
         "meta": meta or {},
+        "kind": kind or CONTENU,
     }
 
 
@@ -51,7 +57,7 @@ def _as_int(item_id) -> int | None:
 
 def insert_bronze(
     *, language, text_local, text_fr, intent="", cultures=None, audio_url=None,
-    fingerprint=None, concept_id=None, created_by=None, meta=None,
+    fingerprint=None, concept_id=None, created_by=None, meta=None, kind=CONTENU,
 ) -> dict:
     """INSERT une ligne 'bronze'. Dedup atomique par (language, fingerprint) via l'index
     unique partiel + ON CONFLICT DO NOTHING (protege contre les ingests concurrents).
@@ -60,26 +66,29 @@ def insert_bronze(
         row = conn.execute(
             "INSERT INTO productions"
             " (concept_id, language, text_local, text_fr, intent, cultures,"
-            "  audio_url, status, fingerprint, created_by, meta)"
-            " VALUES (%s, %s, %s, %s, %s, %s, %s, 'bronze', %s, %s, %s)"
+            "  audio_url, status, fingerprint, created_by, meta, kind)"
+            " VALUES (%s, %s, %s, %s, %s, %s, %s, 'bronze', %s, %s, %s, %s)"
             " ON CONFLICT (language, fingerprint) WHERE fingerprint IS NOT NULL"
             " DO NOTHING"
             " RETURNING id",
             (
                 concept_id, language, text_local, text_fr, intent, list(cultures or []),
-                audio_url, fingerprint, created_by, Jsonb(meta or {}),
+                audio_url, fingerprint, created_by, Jsonb(meta or {}), kind,
             ),
         ).fetchone()
         conn.commit()
     return {"inserted": row is not None, "id": str(row[0]) if row else None}
 
 
-def list_by(*, language: str, status: str | None = None) -> list[dict]:
+def list_by(*, language: str, status: str | None = None, kind: str | None = None) -> list[dict]:
     sql = _SELECT + " WHERE language = %s"
-    params: tuple = (language,)
+    params: list = [language]
     if status:
         sql += " AND status = %s"
-        params = (language, status)
+        params.append(status)
+    if kind:
+        sql += " AND kind = %s"
+        params.append(kind)
     sql += " ORDER BY id"
     with get_conn() as conn:
         return [_row(r) for r in conn.execute(sql, params).fetchall()]
@@ -142,13 +151,16 @@ def promote(*, item_id, language: str, actor: str, allowed_from) -> dict:
         return {"ok": False, "reason": "not_found"}
     with get_conn() as conn:
         row = conn.execute(
-            "SELECT status FROM productions WHERE id = %s AND language = %s FOR UPDATE",
+            "SELECT status, kind FROM productions WHERE id = %s AND language = %s FOR UPDATE",
             (pid, language),
         ).fetchone()
         if not row:
             conn.rollback()
             return {"ok": False, "reason": "not_found"}
-        status = row[0]
+        status, kind = row
+        if kind != CONTENU:  # ADR-0045 : une validation (mot-cle, paire) n'est jamais publiee
+            conn.rollback()
+            return {"ok": False, "reason": "not_promotable", "kind": kind}
         if status not in allowed_from:
             conn.rollback()
             return {"ok": False, "reason": "not_accepted", "status": status}
@@ -167,7 +179,8 @@ def covered_concept_ids(*, language: str) -> set[str]:
     with get_conn() as conn:
         rows = conn.execute(
             "SELECT DISTINCT concept_id FROM productions"
-            " WHERE language = %s AND status = 'production' AND concept_id IS NOT NULL",
-            (language,),
+            " WHERE language = %s AND status = 'production' AND concept_id IS NOT NULL"
+            " AND kind = %s",
+            (language, CONTENU),
         ).fetchall()
     return {r[0] for r in rows}

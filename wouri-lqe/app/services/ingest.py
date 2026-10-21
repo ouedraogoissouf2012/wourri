@@ -104,6 +104,11 @@ def parse_upload(filename: str, data: bytes) -> list[dict]:
     return _rows_from_table(rows[0], rows[1:])
 
 
+def is_validation_kind(kind) -> bool:
+    """Vrai pour un element de validation (ADR-0045) : ni contenu, ni type inconnu."""
+    return kind in repo.KINDS and kind != repo.CONTENU
+
+
 def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
     if not is_known(language):
         return {"ok": False, "accepted": 0, "duplicates_skipped": 0, "errors": ["langue inconnue"]}
@@ -116,7 +121,13 @@ def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
         if not local or not fr:
             errors.append(f"[{i}] text_local et text_fr requis")
             continue
+        kind = str(raw.get("kind") or repo.CONTENU).strip()
+        if kind not in repo.KINDS:
+            errors.append(f"[{i}] type inconnu : {kind}")
+            continue
         ext = str(raw.get("id") or raw.get("external_id") or "").strip() or None
+        if ext and kind != repo.CONTENU:
+            ext = f"{kind}:{ext}"  # un mot-cle ne se confond jamais avec un contenu de meme id
         fp = fingerprint(language=language, text_local=local, text_fr=fr, external_id=ext)
         concept_id = str(raw.get("concept_id") or "").strip() or None
         meta = {
@@ -126,6 +137,11 @@ def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
             "external_id": ext,
             "actor": actor,
         }
+        # Contexte de validation (ADR-0045) : concept NLU d'un mot-cle, reponse proposee
+        # pour une paire. Affiche dans l'ecran « A accepter », jamais servi.
+        for key in ("concept_nlu", "reponse_bci", "reponse_fr"):
+            if is_validation_kind(kind) and raw.get(key):
+                meta[key] = str(raw[key]).strip()[:2000]
         try:
             res = repo.insert_bronze(
                 language=language,
@@ -138,6 +154,7 @@ def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
                 concept_id=concept_id,
                 created_by=actor,
                 meta=meta,
+                kind=kind,
             )
         except Exception as exc:  # une ligne fautive n'annule pas le lot (tolerance par ligne)
             logger.warning("ingest ligne %s: %s", i, exc)
