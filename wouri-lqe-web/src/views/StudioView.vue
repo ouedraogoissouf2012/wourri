@@ -26,11 +26,16 @@ const can = (r) => {
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 const mediaSrc = (r) => (r.audio_url ? API_BASE + "/media/" + r.audio_url.split("/").pop() : null);
 
+// Type d'element (ADR-0045) : un mot-cle ou une paire question/reponse se valide ici
+// mais n'est jamais du contenu servi, donc jamais « a promouvoir ».
+const kindOf = (r) => r.kind || "contenu";
+const promotable = computed(() => accepted.value.filter((r) => kindOf(r) === "contenu"));
+
 const tabs = computed(() => {
   const out = [];
   if (can("ingest")) out.push(["upload", "Ajouter"]);
   if (can("review")) out.push(["bronze", "À accepter (" + bronze.value.length + ")"]);
-  if (can("promote")) out.push(["accepted", "À promouvoir (" + accepted.value.length + ")"]);
+  if (can("promote")) out.push(["accepted", "À promouvoir (" + promotable.value.length + ")"]);
   out.push(["corpus", "Corpus (" + corpus.value.length + ")"]);
   return out;
 });
@@ -186,6 +191,26 @@ async function promote(id) {
             <button class="border px-2 py-1" type="button" @click="cancelEdit">Annuler</button>
           </div>
         </template>
+        <template v-else-if="kindOf(r) === 'mot_cle'">
+          <p class="text-xs font-semibold uppercase text-wouri-700" data-kind="mot_cle">Mot-clé de compréhension</p>
+          <p>« <strong>{{ r.text_local }}</strong> » veut dire : <strong>{{ r.text_fr }}</strong></p>
+          <p class="text-xs text-stone-500">Accepter si ce mot a bien ce sens dans une question de paysan.</p>
+          <button class="mr-2 mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_accepted')">Accepter</button>
+          <button class="mr-2 mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_rejected')">Rejeter</button>
+          <button class="mt-2 border px-2 py-1" type="button" @click="startEdit(r)">Corriger</button>
+        </template>
+        <template v-else-if="kindOf(r) === 'paire_qr'">
+          <p class="text-xs font-semibold uppercase text-wouri-700" data-kind="paire_qr">Question → réponse</p>
+          <p class="text-xs text-stone-500 mt-1">Question</p>
+          <p><strong>{{ r.text_local }}</strong></p>
+          <p class="text-stone-600">{{ r.text_fr }}</p>
+          <p class="text-xs text-stone-500 mt-2">Réponse proposée</p>
+          <p><strong>{{ (r.meta || {}).reponse_bci }}</strong></p>
+          <p class="text-stone-600">{{ (r.meta || {}).reponse_fr }}</p>
+          <p class="text-xs text-stone-500">Accepter si cette réponse répond bien à cette question.</p>
+          <button class="mr-2 mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_accepted')">Accepter</button>
+          <button class="mr-2 mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_rejected')">Rejeter</button>
+        </template>
         <template v-else>
           <p><strong>{{ r.text_local }}</strong></p>
           <p class="text-stone-600">{{ r.text_fr }}</p>
@@ -199,13 +224,13 @@ async function promote(id) {
     </section>
 
     <section v-show="tab==='accepted' && can('promote')" class="mt-4 space-y-3">
-      <article v-for="r in accepted" :key="r.id" class="border rounded p-3 bg-white">
+      <article v-for="r in promotable" :key="r.id" class="border rounded p-3 bg-white">
         <p><strong>{{ r.text_local }}</strong></p>
         <p class="text-stone-600">{{ r.text_fr }}</p>
         <audio v-if="r.audio_url" :src="mediaSrc(r)" crossorigin="use-credentials" controls class="mt-2 h-8"></audio>
         <button class="mt-2 bg-wouri-700 text-white px-2 py-1 rounded" type="button" @click="promote(r.id)">Promouvoir</button>
       </article>
-      <p v-if="!accepted.length" class="text-stone-500 text-sm">Rien à promouvoir.</p>
+      <p v-if="!promotable.length" class="text-stone-500 text-sm">Rien à promouvoir.</p>
     </section>
 
     <section v-show="tab==='corpus'" class="mt-4 space-y-3">

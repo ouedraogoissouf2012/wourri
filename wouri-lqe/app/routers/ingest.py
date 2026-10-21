@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from app.routers.session import require_role
 from app.services.assignments import parity_ok
 from app.services.audio_store import LocalAudioStore
-from app.services.ingest import ingest, ingest_response, parse_upload
+from app.services.ingest import ingest, ingest_response, is_validation_kind, parse_upload
 from app.services.pg_catalog import PgCorpusCatalog
 
 router = APIRouter(prefix="/ingest")
@@ -17,8 +17,13 @@ def _guard_parity(entries: list, language: str) -> None:
     d'entree libre dans le meme lot (sinon le lot entier est refuse)."""
     catalog = PgCorpusCatalog()
     known_ids = {c.id for c in catalog.list_concepts()}
+    # Un mot-cle ou une paire question/reponse (ADR-0045) n'est pas une extension du
+    # contenu servi : il echappe a la garde. Tout autre type reste soumis a la parite.
     has_extension = any(
-        not (isinstance(e, dict) and str(e.get("concept_id") or "").strip() in known_ids)
+        not (isinstance(e, dict) and (
+            str(e.get("concept_id") or "").strip() in known_ids
+            or is_validation_kind(e.get("kind"))
+        ))
         for e in entries
     )
     if has_extension and not parity_ok(catalog, language=language):

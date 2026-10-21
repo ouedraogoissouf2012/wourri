@@ -184,6 +184,34 @@ def build_config(candidates, base_config) -> dict:
     }
 
 
+def atelier_entries(candidates, pairs, rows, concept_labels) -> list[dict]:
+    """Lot à importer dans l'atelier (onglet « Ajouter », ADR-0045), à faire valider par
+    le locuteur dans « À accepter » :
+    - un `mot_cle` par mot candidat : « mot » veut dire « libellé du concept » ;
+    - une `paire_qr` par paire reliée par le SENS (alignement) — celles reliées par leur
+      position dans l'export n'ont pas besoin de validation.
+    """
+    out = []
+    for concept in sorted(candidates):
+        for mot, k, _, _ in candidates[concept]:
+            out.append({
+                "kind": "mot_cle", "id": f"{concept}:{mot}",
+                "text_local": mot, "text_fr": concept_labels.get(concept, concept),
+                "concept_nlu": concept, "notes": f"vu dans {k} questions de la dictée",
+            })
+    for p in pairs:
+        if p["method"] != "alignement" or p["a"] is None:
+            continue
+        q, a = rows[p["q"]], rows[p["a"]]
+        out.append({
+            "kind": "paire_qr", "id": f"paire:{p['q']}:{p['a']}",
+            "text_local": q["transcription"], "text_fr": q["text_fr"],
+            "reponse_bci": a["transcription"], "reponse_fr": a["text_fr"],
+            "notes": f"{p['filiere']} — reliée par le sens",
+        })
+    return out
+
+
 def nlu_from_config(config):
     from app.services.nlu.nlu_service import NLUService
 
@@ -266,6 +294,9 @@ def main(argv=None):
                 w.writerow([c, g, k, n, f"{p:.2f}", ""])
     (out / "nlu_concepts_bci_candidat.json").write_text(
         json.dumps(build_config(cands, base), ensure_ascii=False, indent=1), encoding="utf-8")
+    labels_fr = {c: v.get("label_fr", c) for c, v in base["concepts"].items()}
+    lot = atelier_entries(cands, pairs, rows, labels_fr)
+    (out / "atelier_import.json").write_text(json.dumps(lot, ensure_ascii=False, indent=1), encoding="utf-8")
 
     cv = cross_validate(texts, q_labels, base, **kw)
     report = (
@@ -273,6 +304,8 @@ def main(argv=None):
         f"Paires question->réponse : {sum(p['a'] is not None for p in pairs)} "
         f"(dont {sum(p['method'] == 'alignement' and p['a'] is not None for p in pairs)} par alignement de sens)\n"
         f"Concepts avec mots-clés candidats : {len(cands)} ; mots-clés : {sum(len(v) for v in cands.values())}\n"
+        f"Lot pour l'atelier (atelier_import.json) : {sum(e['kind'] == 'mot_cle' for e in lot)} mots-clés, "
+        f"{sum(e['kind'] == 'paire_qr' for e in lot)} paires à valider\n"
         f"Validation croisée ({cv['k']} plis, questions jamais vues) :\n"
         f"  culture retrouvée : {cv['culture_ok']}/{cv['n_avec_culture']}\n"
         f"  intention retrouvée : {cv['intent_ok']}/{cv['n']}\n"

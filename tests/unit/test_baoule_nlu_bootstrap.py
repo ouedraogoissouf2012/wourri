@@ -71,6 +71,22 @@ def test_build_config_reprend_les_intents_du_dioula_et_classe():
     assert "CULTURE_CACAO" in res.concepts and res.intent == "QUESTION_SAISON_PLANTATION"
 
 
+def test_atelier_entries_mots_cles_et_paires_reliees_par_le_sens():
+    rows = _rows()
+    cands = {"CULTURE_CACAO": [("kakao", 2, 2, 1.0)]}
+    pairs = [{"filiere": "CACAO", "q": 0, "a": 2, "sim": 0.9, "method": "alignement"},
+             {"filiere": "CACAO", "q": 1, "a": None, "sim": None, "method": "alignement"}]
+    lot = boot.atelier_entries(cands, pairs, rows, {"CULTURE_CACAO": "cacao"})
+    assert lot[0] == {"kind": "mot_cle", "id": "CULTURE_CACAO:kakao", "text_local": "kakao",
+                      "text_fr": "cacao", "concept_nlu": "CULTURE_CACAO",
+                      "notes": "vu dans 2 questions de la dictée"}
+    assert [e["kind"] for e in lot] == ["mot_cle", "paire_qr"]  # question sans réponse : rien
+    assert lot[1]["reponse_bci"] == rows[2]["transcription"]
+    # une paire reliée par position n'est pas soumise à validation
+    pos = [{**pairs[0], "method": "position"}]
+    assert boot.atelier_entries({}, pos, rows, {}) == []
+
+
 def test_read_export_zip(tmp_path):
     z = tmp_path / "dictee.zip"
     with zipfile.ZipFile(z, "w") as f:
