@@ -17,6 +17,9 @@
 - **CER mesuré exactement comme au benchmark 0003** (mêmes 290 clips, même normalisation, témoin dans la même session) :
   **22,0 % → 18,7 %** (WER 56,7 % → 45,2 %). Le témoin retrouve les 22,1 % du benchmark : la comparaison est recevable.
   **Le critère d'acceptation de BAO-2 est rempli** (§3.5).
+- Les transcriptions vides viennent toutes d'**un seul locuteur du split test, dont les 13 enregistrements sont quasi
+  muets** (volume environ 100 fois plus faible que les autres). Sur les 277 clips audibles, analyse faite **a posteriori** :
+  CER **18,3 % → 14,8 %** (§3.6).
 - La meilleure version est celle de l'**étape 1 200**, choisie sur `dev` uniquement.
 - Au-delà d'environ 1 200 étapes, le gain **plafonne** : les données manquent, pas le temps de calcul.
 - **La cible d'ADR-0036 (CER < 15 % sur `test`) n'est pas atteinte.** Le levier suivant est d'avoir **plus de voix**, pas plus d'étapes.
@@ -129,10 +132,8 @@ Outils : `finetune/eval_bci_cer.py` et `finetune/colab/omnilingual_eval_finetune
 - **Gain : −3,3 points de CER (−15 % en relatif) et −11,5 points de WER.** Il confirme l'UER de la recette (§3.1 :
   21,94 → 18,70 %). La différence de normalisation ne change pas le résultat.
 - **Cible d'ADR-0036 (CER < 15 %) non atteinte.**
-- **Les transcriptions vides ne sont pas résolues** : 11 clips vides avant, 12 après. Parmi les 10 exemples affichés, les
-  clips 5 à 8 sont vides et le clip 9 quasi vide **pour les deux modèles**. Chaque clip vide compte pour 100 % d'erreur.
-  Le fine-tune n'y change rien : la cause tient probablement à ces enregistrements (silence, niveau trop faible ?) ou au
-  traitement de l'audio à l'inférence, plutôt qu'au modèle. **Hypothèse non vérifiée**, à instruire (§6).
+- **Les transcriptions vides ne sont pas résolues** : 11 clips vides avant, 12 après, tous dans le même bloc de clips
+  (n° 5 à 17 du split test). Chaque clip vide compte pour 100 % d'erreur. La cause est identifiée au §3.6.
 
 Exemples (les trois premiers sont ceux de la fiche 0003 §3) :
 
@@ -147,6 +148,36 @@ Le modèle fine-tuné écrit nettement plus « baoulé » : `ɛ`/`ɔ` au lieu de
 (`wʼa`), meilleure segmentation (`yo kpa`, `kɔ lika`, `be nian`, `be se`), gémination rétablie (`nnɛnʼm`). Ce sont les écarts typiques relevés au benchmark 0003 §3.
 Il reste des fusions et des découpages fautifs (`ninngemun`, `a in man`).
 
+### 3.6 Les transcriptions vides : un locuteur quasi muet (analyse a posteriori, 2026-10-21)
+
+Diagnostic fait sur le pod, juste après la mesure :
+
+- Les clips vides sont n° 5, 6, 7, 8, 10, 12 à 17 (témoin) et les mêmes plus le n° 11 (fine-tuné). Le n° 9 est quasi vide
+  pour les deux.
+- Ces clips n° 5 à 17 sont **les 13 enregistrements d'un même locuteur** (`client_id` commençant par `ac0f60ef98`).
+- Leur volume est **environ 100 fois plus faible** que celui des autres locuteurs : rms 0,0002 à 0,0006 et pic 0,001 à
+  0,005, contre rms 0,02 à 0,05 et pic 0,23 à 0,58 pour les clips voisins.
+- Le pipeline d'inférence normalise déjà le signal (`normalize_audio=True` dans `ASRInferencePipeline`, omnilingual-asr
+  0.1.0) : un gain uniforme n'y changerait rien. Ces enregistrements contiennent trop peu de signal utile ; ni le modèle
+  ni le fine-tune n'en sont la cause.
+
+CER et WER **sans ce locuteur** (277 clips, mêmes transcriptions, même score) :
+
+| Modèle | CER | WER | n | Transcriptions vides |
+|---|---|---|---|---|
+| 1B de départ | 18,3 % | 54,6 % | 277 | 0 |
+| **1B fine-tuné (`step_1200`)** | **14,8 %** | **42,6 %** | 277 | 0 |
+
+**Lecture, avec ses limites :**
+- **Le chiffre qui fait foi pour BAO-2 reste 18,7 %** sur les 290 clips : c'est le protocole fixé à l'avance et comparable
+  au benchmark 0003.
+- Ces 13 clips ont été retirés **après avoir vu les résultats**. Le critère est objectif (volume mesuré), mais l'analyse
+  est a posteriori. Elle ne permet pas d'écrire que la cible d'ADR-0036 est atteinte : 14,8 % est juste sous le seuil de
+  15 %, sur un sous-ensemble choisi après coup.
+- Savoir si la cible d'ADR-0036 doit porter sur l'audio audible relève du **valideur**.
+- **Conséquence pour la production** : un message vocal quasi muet donne une transcription vide, quel que soit le modèle.
+  Le futur service ASR doit détecter ces vocaux et demander à l'agriculteur de réenregistrer (§6).
+
 ---
 
 ## 4. Coût
@@ -156,7 +187,7 @@ Il reste des fusions et des découpages fautifs (`ninngemun`, `a in man`).
 | Total facturé (installation, préparation, MESURE, COMPLET, envoi vers Hugging Face) | **4,71 USD** |
 | Plafond ADR-0044 | 15 USD |
 | Crédit RunPod restant après le run | 15,29 USD (sur 20 USD versés) |
-| Mesure du CER (§3.5, 2026-10-21, 1× A40 à 0,59 USD/h) | environ 0,3 USD |
+| Mesure du CER (§3.5–3.6, 2026-10-21, 1× A40 à 0,59 USD/h) | 0,50 USD (crédit restant : 14,66 USD) |
 
 La procédure en deux temps a fonctionné comme prévu. La MESURE a donné la vitesse, et le nombre d'étapes du COMPLET (2 000, le plafond) tenait largement dans le budget.
 
@@ -180,11 +211,13 @@ Ils s'ajoutent à ceux de la fiche 0005. Chacun est corrigé dans `finetune/cola
 ## 6. Suite
 
 1. **Plus de voix** : c'est le premier levier. Le modèle plafonne avec 4 voix à l'entraînement. Il faut de nouvelles sessions de dictée par d'autres locuteurs (femmes, hommes, régions différentes), avec un consentement consigné (QUA-3, #575).
-2. **Transcriptions vides** (§3.5) : identifier les 11 à 12 clips vides dans les résultats de la mesure, écouter ces
-   enregistrements et mesurer leur niveau. Si l'audio est en cause, normaliser le volume avant l'inférence ; ce point
-   concerne aussi le futur service en production.
-3. **ADR « service ASR baoulé »** : quantification int8/ONNX du 1B et latence sur le CPU de Contabo. Ensuite, et seulement si le résultat le justifie, passage de l'option W à l'option A d'[ADR-0043](../adr/0043-accueil-baoule-langue-annoncee.md).
-4. Toute relance payante demande l'accord du valideur (ADR-0044). Le crédit restant (15,29 USD) couvre largement un deuxième passage quand les nouvelles voix seront là.
+2. **Vocaux quasi muets** (§3.6) : le futur service ASR doit mesurer le niveau du message vocal et, sous un seuil,
+   demander à l'agriculteur de réenregistrer, au lieu de transcrire du vide. Le seuil est à fixer sur de vrais messages
+   WhatsApp, pas sur Common Voice.
+3. **Décision du valideur** : la cible d'ADR-0036 (CER < 15 %) porte-t-elle sur tout le split `test` ou sur l'audio
+   audible ? Sur l'audio audible, le fine-tuné est à 14,8 % (§3.6, a posteriori).
+4. **ADR « service ASR baoulé »** : quantification int8/ONNX du 1B et latence sur le CPU de Contabo. Ensuite, et seulement si le résultat le justifie, passage de l'option W à l'option A d'[ADR-0043](../adr/0043-accueil-baoule-langue-annoncee.md).
+5. Toute relance payante demande l'accord du valideur (ADR-0044). Le crédit restant (14,66 USD) couvre largement un deuxième passage quand les nouvelles voix seront là.
 
 ---
 
@@ -193,10 +226,11 @@ Ils s'ajoutent à ceux de la fiche 0005. Chacun est corrigé dans `finetune/cola
 - **Checkpoint retenu** : dépôt Hugging Face **privé** `seven990/omniasr-ctc-1b-bci-wourri`. Il contient `step_1200/` (environ 3,9 Go), `model.yaml` (carte du modèle) et `config_complet.yaml` (configuration exacte du run).
 - **Machine** : arrêtée après le run. Elle doit être **supprimée** (Terminate) pour ne plus rien facturer : le volume de stockage reste payant tant que le pod existe.
 - Les autres checkpoints (étapes 200 à 2 000) et le journal complet ne sont pas conservés hors de la machine. Le tableau §3.2 en garde les scores.
+- **Résultats bruts de la mesure du CER (§3.5)** : [`0006-eval-bci-cer-results.json`](0006-eval-bci-cer-results.json). Il contient, pour chaque modèle, CER, WER, nombre de clips vides et les 290 transcriptions dans l'ordre du split `test` (révision épinglée).
 
 ---
 
 ## Historique
 
 - **2026-10-19** : premier passage exécuté (MESURE puis COMPLET 2 000 étapes, 4,71 USD). Meilleure version : étape 1 200, choisie sur `dev`. Le checkpoint est sauvegardé sur Hugging Face (privé). Les pièges du §5 sont corrigés dans le notebook.
-- **2026-10-21** : CER mesuré avec le protocole du benchmark 0003 (§3.5, RunPod A40, Kaggle étant inaccessible depuis le poste du valideur) : témoin 22,0 %, fine-tuné **18,7 %**. Critère d'acceptation de BAO-2 rempli. Transcriptions vides non résolues, à instruire.
+- **2026-10-21** : CER mesuré avec le protocole du benchmark 0003 (§3.5, RunPod A40, Kaggle étant inaccessible depuis le poste du valideur) : témoin 22,0 %, fine-tuné **18,7 %**. Critère d'acceptation de BAO-2 rempli. Transcriptions vides expliquées : un locuteur du split test aux 13 enregistrements quasi muets ; sans lui, 18,3 → 14,8 % (a posteriori, §3.6).
