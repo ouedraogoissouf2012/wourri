@@ -1,6 +1,6 @@
 # Résultats #0006 — Fine-tune complet d'Omnilingual 1B sur le baoulé (GPU loué)
 
-**Statut** : terminé — premier passage exécuté le 2026-10-19
+**Statut** : terminé — premier passage exécuté le 2026-10-19 ; CER comparable au benchmark 0003 mesuré le 2026-10-21 (BAO-2 clos)
 **Date de rédaction** : 2026-10-19
 **Décision exécutée** : [ADR-0044](../adr/0044-procedure-finetune-asr-baoule.md) (voie C : 1B complet sur A100 loué, budget de départ 15 USD)
 **Fondations** : [benchmark 0003](0003-asr-baoule-evaluation-results.md) · [étude 0004](0004-omnilingual-finetune-feasibility.md) · [test mécanique 0005](0005-omnilingual-finetune-smoke-test.md) · [ADR-0036](../adr/0036-choix-modele-asr-baoule.md)
@@ -14,6 +14,9 @@
 - Sur le split `test` (Common Voice `bci`, **jamais entraîné**, 9 locuteurs absents de l'entraînement) :
   - **UER : 21,94 % → 18,70 %**, soit −3,2 points (−15 % en relatif) ;
   - **WER : 56,45 % → 45,34 %**, soit −11,1 points (−20 % en relatif).
+- **CER mesuré exactement comme au benchmark 0003** (mêmes 290 clips, même normalisation, témoin dans la même session) :
+  **22,0 % → 18,7 %** (WER 56,7 % → 45,2 %). Le témoin retrouve les 22,1 % du benchmark : la comparaison est recevable.
+  **Le critère d'acceptation de BAO-2 est rempli** (§3.5).
 - La meilleure version est celle de l'**étape 1 200**, choisie sur `dev` uniquement.
 - Au-delà d'environ 1 200 étapes, le gain **plafonne** : les données manquent, pas le temps de calcul.
 - **La cible d'ADR-0036 (CER < 15 % sur `test`) n'est pas atteinte.** Le levier suivant est d'avoir **plus de voix**, pas plus d'étapes.
@@ -102,7 +105,47 @@ Elle compare le modèle non entraîné (validation au départ) et la meilleure v
 
 - ADR-0036 vise un **CER < 15 %** sur `test`. Le résultat est **18,70 % d'UER** : **cible non atteinte**.
 - L'UER de la recette n'est **pas exactement** le CER du benchmark 0003, car la normalisation diffère (ADR-0044, conséquences). L'ordre de grandeur concorde : 21,94 % d'UER au départ ici, contre 22,1 % de CER zero-shot au benchmark 0003.
-- Pour un chiffre strictement comparable au benchmark 0003, il faut réévaluer `step_1200` sur les 290 clips avec la normalisation du benchmark (§6). Ce n'est pas fait ici.
+- Le chiffre strictement comparable au benchmark 0003 est mesuré au §3.5 : **CER 18,7 %**, la cible n'est pas atteinte.
+
+### 3.5 CER mesuré comme au benchmark 0003 (critère de BAO-2, 2026-10-21)
+
+Le critère d'acceptation de BAO-2 (`docs/wouri-planning/10`) demande le CER sur **le même jeu**, comparé aux 22,1 %. La
+mesure est refaite avec le protocole exact du benchmark 0003 :
+- mêmes 290 clips, **aucun exclu** (pas de filtre des 2 s ici) ;
+- normalisation et score copiés du notebook 0003 (copie vérifiée par un test) ;
+- même pipeline : `ASRInferencePipeline`, un clip à la fois, langue `bci_Latn` ;
+- le 1B de départ est remesuré dans la même session comme **témoin**.
+
+Outils : `finetune/eval_bci_cer.py` et `finetune/colab/omnilingual_eval_finetune.ipynb`. Exécution : RunPod, 1× A40.
+
+| Modèle | CER | WER | n | Transcriptions vides |
+|---|---|---|---|---|
+| Témoin : 1B de départ | 22,0 % | 56,7 % | 290 | 11 |
+| **1B fine-tuné (`step_1200`)** | **18,7 %** | **45,2 %** | 290 | 12 |
+| *Rappel : benchmark 0003 (2026-08-27, T4)* | *22,1 %* | *56,7 %* | *290* | — |
+
+- **Témoin conforme** : 22,0 % contre 22,1 % (écart toléré ± 0,5 point) et WER identique. L'environnement reproduit le
+  benchmark 0003 : la comparaison est recevable.
+- **Gain : −3,3 points de CER (−15 % en relatif) et −11,5 points de WER.** Il confirme l'UER de la recette (§3.1 :
+  21,94 → 18,70 %). La différence de normalisation ne change pas le résultat.
+- **Cible d'ADR-0036 (CER < 15 %) non atteinte.**
+- **Les transcriptions vides ne sont pas résolues** : 11 clips vides avant, 12 après. Parmi les 10 exemples affichés, les
+  clips 5 à 8 sont vides et le clip 9 quasi vide **pour les deux modèles**. Chaque clip vide compte pour 100 % d'erreur.
+  Le fine-tune n'y change rien : la cause tient probablement à ces enregistrements (silence, niveau trop faible ?) ou au
+  traitement de l'audio à l'inférence, plutôt qu'au modèle. **Hypothèse non vérifiée**, à instruire (§6).
+
+Exemples (les trois premiers sont ceux de la fiche 0003 §3) :
+
+| Référence | 1B de départ | 1B fine-tuné |
+|---|---|---|
+| E kwla yo ninnge mun likawlɛ naan sran kwlaa wʼa yo kpa. | e kwla yo ningɛ mun likawlɛ nan sran kwlaa wa yokpa | e kloʼn yo ninngemun likawlɛn nan sran kwlaa wʼa yo kpa |
+| Ye wa kɔ lika mmuammua ainman. | ye wa kolika mwamwa ayima | ye wa kɔ lika muamua a in man |
+| Blaʼm be nian fieʼn nun nnɛnʼm be lika, be man be aliɛ… | blaʼm be niamfieʼ nu nnɛʼm be lika be mam be aliɛ… | blaʼm be nian fieʼ ni nnɛnʼm be lika be manʼm be aliɛ… |
+| Kɛ be se kɛ chiliʼn wʼa wie i kanninʼn nunʼn, á fá ɔ tiʼn kɔ́. | kẹ bese kẹ chili wa yie ikanni nunyi afa tikọ | kɛ be se kɛ chili wa ye ikanʼn nin nunn a fa ɔ ti kɔʼ |
+
+Le modèle fine-tuné écrit nettement plus « baoulé » : `ɛ`/`ɔ` au lieu de `ẹ`/`ọ`/`o`, apostrophe tonale `ʼ` conservée
+(`wʼa`), meilleure segmentation (`yo kpa`, `kɔ lika`, `be nian`, `be se`), gémination rétablie (`nnɛnʼm`). Ce sont les écarts typiques relevés au benchmark 0003 §3.
+Il reste des fusions et des découpages fautifs (`ninngemun`, `a in man`).
 
 ---
 
@@ -113,6 +156,7 @@ Elle compare le modèle non entraîné (validation au départ) et la meilleure v
 | Total facturé (installation, préparation, MESURE, COMPLET, envoi vers Hugging Face) | **4,71 USD** |
 | Plafond ADR-0044 | 15 USD |
 | Crédit RunPod restant après le run | 15,29 USD (sur 20 USD versés) |
+| Mesure du CER (§3.5, 2026-10-21, 1× A40 à 0,59 USD/h) | environ 0,3 USD |
 
 La procédure en deux temps a fonctionné comme prévu. La MESURE a donné la vitesse, et le nombre d'étapes du COMPLET (2 000, le plafond) tenait largement dans le budget.
 
@@ -136,7 +180,9 @@ Ils s'ajoutent à ceux de la fiche 0005. Chacun est corrigé dans `finetune/cola
 ## 6. Suite
 
 1. **Plus de voix** : c'est le premier levier. Le modèle plafonne avec 4 voix à l'entraînement. Il faut de nouvelles sessions de dictée par d'autres locuteurs (femmes, hommes, régions différentes), avec un consentement consigné (QUA-3, #575).
-2. **Chiffre comparable au benchmark 0003** : réévaluer `step_1200` sur les 290 clips de `test` avec la normalisation du benchmark 0003, pour un CER directement comparable aux 22,1 %.
+2. **Transcriptions vides** (§3.5) : identifier les 11 à 12 clips vides dans les résultats de la mesure, écouter ces
+   enregistrements et mesurer leur niveau. Si l'audio est en cause, normaliser le volume avant l'inférence ; ce point
+   concerne aussi le futur service en production.
 3. **ADR « service ASR baoulé »** : quantification int8/ONNX du 1B et latence sur le CPU de Contabo. Ensuite, et seulement si le résultat le justifie, passage de l'option W à l'option A d'[ADR-0043](../adr/0043-accueil-baoule-langue-annoncee.md).
 4. Toute relance payante demande l'accord du valideur (ADR-0044). Le crédit restant (15,29 USD) couvre largement un deuxième passage quand les nouvelles voix seront là.
 
@@ -153,3 +199,4 @@ Ils s'ajoutent à ceux de la fiche 0005. Chacun est corrigé dans `finetune/cola
 ## Historique
 
 - **2026-10-19** : premier passage exécuté (MESURE puis COMPLET 2 000 étapes, 4,71 USD). Meilleure version : étape 1 200, choisie sur `dev`. Le checkpoint est sauvegardé sur Hugging Face (privé). Les pièges du §5 sont corrigés dans le notebook.
+- **2026-10-21** : CER mesuré avec le protocole du benchmark 0003 (§3.5, RunPod A40, Kaggle étant inaccessible depuis le poste du valideur) : témoin 22,0 %, fine-tuné **18,7 %**. Critère d'acceptation de BAO-2 rempli. Transcriptions vides non résolues, à instruire.
