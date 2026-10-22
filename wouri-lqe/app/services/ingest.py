@@ -109,6 +109,14 @@ def is_validation_kind(kind) -> bool:
     return kind in repo.KINDS and kind != repo.CONTENU
 
 
+def external_id(raw: dict, kind: str) -> str | None:
+    """Identifiant externe d'une entree importee, tel que garde dans `meta.external_id`."""
+    ext = str(raw.get("id") or raw.get("external_id") or "").strip() or None
+    if ext and kind != repo.CONTENU:
+        ext = f"{kind}:{ext}"  # un mot-cle ne se confond jamais avec un contenu de meme id
+    return ext
+
+
 def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
     if not is_known(language):
         return {"ok": False, "accepted": 0, "duplicates_skipped": 0, "errors": ["langue inconnue"]}
@@ -125,10 +133,8 @@ def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
         if kind not in repo.KINDS:
             errors.append(f"[{i}] type inconnu : {kind}")
             continue
-        ext = str(raw.get("id") or raw.get("external_id") or "").strip() or None
-        if ext and kind != repo.CONTENU:
-            ext = f"{kind}:{ext}"  # un mot-cle ne se confond jamais avec un contenu de meme id
-        fp = fingerprint(language=language, text_local=local, text_fr=fr, external_id=ext)
+        ext = external_id(raw, kind)
+        fp =fingerprint(language=language, text_local=local, text_fr=fr, external_id=ext)
         concept_id = str(raw.get("concept_id") or "").strip() or None
         meta = {
             "region": str(raw.get("region") or "CI"),

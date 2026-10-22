@@ -8,6 +8,7 @@ const me = ref({ user: "", language: "", roles: [] });
 const tab = ref("upload");
 const bronze = ref([]);
 const accepted = ref([]);
+const decided = ref([]); // decisions et corrections du locuteur, qu'il peut reprendre
 const corpus = ref([]);
 const jsonText = ref('[{"text_local":"","text_fr":""}]');
 const msg = ref("");
@@ -34,11 +35,16 @@ const newestFirst = (rows) => [...rows].sort((a, b) => Number(b.id) - Number(a.i
 const bronzeShown = computed(() => newestFirst(bronze.value));
 const promotable = computed(() => newestFirst(accepted.value.filter((r) => kindOf(r) === "contenu")));
 const corpusShown = computed(() => newestFirst(corpus.value));
+const decidedShown = computed(() => newestFirst(decided.value));
+const ETAT = { admin_accepted: "Accepté", admin_rejected: "Rejeté", bronze: "Corrigé, pas encore décidé" };
+const etatOf = (r) => ETAT[r.status] || r.status;
+const origineOf = (r) => (r.meta || {}).texte_origine || null;
 
 const tabs = computed(() => {
   const out = [];
   if (can("ingest")) out.push(["upload", "Ajouter"]);
   if (can("review")) out.push(["bronze", "À accepter (" + bronze.value.length + ")"]);
+  if (can("review")) out.push(["decided", "Mes décisions (" + decided.value.length + ")"]);
   if (can("promote")) out.push(["accepted", "À promouvoir (" + promotable.value.length + ")"]);
   out.push(["corpus", "Corpus (" + corpus.value.length + ")"]);
   return out;
@@ -48,6 +54,7 @@ async function refresh() {
   const t = await api("/tasks");
   bronze.value = t.bronze || [];
   accepted.value = t.accepted || [];
+  decided.value = t.decided || [];
   const c = await api("/corpus");
   corpus.value = c.entries || [];
 }
@@ -133,6 +140,22 @@ async function saveEdit(id) {
       body: JSON.stringify({ id, text_local: editLocal.value, text_fr: editFr.value }),
     });
     editing.value = null;
+    await refresh();
+  } catch (e) {
+    err.value = String(e.message || e);
+  }
+}
+
+// Le locuteur annule sa decision et sa correction : la fiche revient dans « A accepter »
+// avec son texte d'origine.
+async function reprendre(id) {
+  err.value = "";
+  try {
+    await api("/tasks/reprendre", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
     await refresh();
   } catch (e) {
     err.value = String(e.message || e);
@@ -225,6 +248,22 @@ async function promote(id) {
         </template>
       </article>
       <p v-if="!bronze.length" class="text-stone-500 text-sm">Aucune phrase Bronze.</p>
+    </section>
+
+    <section v-show="tab==='decided' && can('review')" class="mt-4 space-y-3">
+      <p class="text-xs text-stone-500">Une erreur ? « Reprendre » remet la fiche dans « À accepter », avec son texte d'origine.</p>
+      <article v-for="r in decidedShown" :key="r.id" class="border rounded p-3 bg-white" :data-etat="r.status">
+        <p class="text-xs font-semibold uppercase text-wouri-700">{{ etatOf(r) }}</p>
+        <p v-if="kindOf(r) === 'mot_cle'">« <strong>{{ r.text_local }}</strong> » veut dire : <strong>{{ r.text_fr }}</strong></p>
+        <template v-else>
+          <p><strong>{{ r.text_local }}</strong></p>
+          <p class="text-stone-600">{{ r.text_fr }}</p>
+        </template>
+        <p v-if="kindOf(r) === 'paire_qr'" class="text-stone-600">Réponse : {{ (r.meta || {}).reponse_bci }}</p>
+        <p v-if="origineOf(r)" class="text-xs text-stone-500 mt-1">Texte d'origine : {{ origineOf(r).text_local }}</p>
+        <button class="mt-2 border px-2 py-1" type="button" @click="reprendre(r.id)">Reprendre</button>
+      </article>
+      <p v-if="!decided.length" class="text-stone-500 text-sm">Aucune décision pour l'instant.</p>
     </section>
 
     <section v-show="tab==='accepted' && can('promote')" class="mt-4 space-y-3">

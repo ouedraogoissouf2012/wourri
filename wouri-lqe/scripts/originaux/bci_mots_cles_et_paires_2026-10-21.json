@@ -1,0 +1,2372 @@
+[
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:lua",
+  "text_local": "lua",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 25 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:be lua",
+  "text_local": "be lua",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 11 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:amun lua",
+  "text_local": "amun lua",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:fie kaan",
+  "text_local": "fie kaan",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:gualɛ wafa",
+  "text_local": "gualɛ wafa",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:waka ɔ",
+  "text_local": "waka ɔ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:fa gua",
+  "text_local": "fa gua",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:lua avie",
+  "text_local": "lua avie",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:lua waka",
+  "text_local": "lua waka",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:a lua",
+  "text_local": "a lua",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:able ɔ",
+  "text_local": "able ɔ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:be gualɛ",
+  "text_local": "be gualɛ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:di blɛ",
+  "text_local": "di blɛ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:di ɔ",
+  "text_local": "di ɔ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:i kpɛlɛ",
+  "text_local": "i kpɛlɛ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:kpa mun",
+  "text_local": "kpa mun",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:kpɛlɛ",
+  "text_local": "kpɛlɛ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:kpɛlɛ n",
+  "text_local": "kpɛlɛ n",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:kun lika",
+  "text_local": "kun lika",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:kɔfie",
+  "text_local": "kɔfie",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:lua able",
+  "text_local": "lua able",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:lua fɔkɔ",
+  "text_local": "lua fɔkɔ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:lua kakao",
+  "text_local": "lua kakao",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:mma benin",
+  "text_local": "mma benin",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:mma mun",
+  "text_local": "mma mun",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:mɔ be",
+  "text_local": "mɔ be",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:nin i",
+  "text_local": "nin i",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:nɲa wafa",
+  "text_local": "nɲa wafa",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:uflɛ ɔ",
+  "text_local": "uflɛ ɔ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:ɔ nin",
+  "text_local": "ɔ nin",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:kaan",
+  "text_local": "kaan",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:kaan kun",
+  "text_local": "kaan kun",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:kɛ amun",
+  "text_local": "kɛ amun",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:amun",
+  "text_local": "amun",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:gualɛ",
+  "text_local": "gualɛ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:i gualɛ",
+  "text_local": "i gualɛ",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:nun waka",
+  "text_local": "nun waka",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:cɛn benin",
+  "text_local": "cɛn benin",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 11 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:a kpɛ",
+  "text_local": "a kpɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 7 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:ɔ di",
+  "text_local": "ɔ di",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 7 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:ko kpɛ",
+  "text_local": "ko kpɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:cɛ cɛn",
+  "text_local": "cɛ cɛn",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:di cɛn",
+  "text_local": "di cɛn",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛ n",
+  "text_local": "kpɛ n",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:su wa",
+  "text_local": "su wa",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:wa",
+  "text_local": "wa",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:ɔ ka",
+  "text_local": "ɔ ka",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:i kpa",
+  "text_local": "i kpa",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:i kpɛ",
+  "text_local": "i kpɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:wa kpɛ",
+  "text_local": "wa kpɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:ɔ su",
+  "text_local": "ɔ su",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:ko tu",
+  "text_local": "ko tu",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛ fɔkɔ",
+  "text_local": "kpɛ fɔkɔ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:ti kafe",
+  "text_local": "ti kafe",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:a tu",
+  "text_local": "a tu",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:amango n",
+  "text_local": "amango n",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:di blɛ",
+  "text_local": "di blɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:fa sie",
+  "text_local": "fa sie",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:i kpɛlɛ",
+  "text_local": "i kpɛlɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛ able",
+  "text_local": "kpɛ able",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛ avie",
+  "text_local": "kpɛ avie",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛ i",
+  "text_local": "kpɛ i",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛ kokowe",
+  "text_local": "kpɛ kokowe",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛlɛ",
+  "text_local": "kpɛlɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛlɛ n",
+  "text_local": "kpɛlɛ n",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kɛ ɔ",
+  "text_local": "kɛ ɔ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:nin i",
+  "text_local": "nin i",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:tu duo",
+  "text_local": "tu duo",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:ɔ ko",
+  "text_local": "ɔ ko",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:ɔ nin",
+  "text_local": "ɔ nin",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:cɛn",
+  "text_local": "cɛn",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 11 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:klikli n",
+  "text_local": "klikli n",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 7 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:tu",
+  "text_local": "tu",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛ",
+  "text_local": "kpɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 34 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:be ko",
+  "text_local": "be ko",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 11 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:cɛ",
+  "text_local": "cɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:ɔ cɛ",
+  "text_local": "ɔ cɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:ko",
+  "text_local": "ko",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 13 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:fɔkɔ n",
+  "text_local": "fɔkɔ n",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛ klikli",
+  "text_local": "kpɛ klikli",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:be kpɛ",
+  "text_local": "be kpɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 14 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:klikli",
+  "text_local": "klikli",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 7 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:n wafa",
+  "text_local": "n wafa",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 9 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛ kaa",
+  "text_local": "kpɛ kaa",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kwla sie",
+  "text_local": "kwla sie",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:tu agba",
+  "text_local": "tu agba",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_STOCKER:kwla sie",
+  "text_local": "kwla sie",
+  "text_fr": "stocker",
+  "concept_nlu": "ACTION_STOCKER",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_STOCKER:fa sie",
+  "text_local": "fa sie",
+  "text_fr": "stocker",
+  "concept_nlu": "ACTION_STOCKER",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_STOCKER:i kpa",
+  "text_local": "i kpa",
+  "text_fr": "stocker",
+  "concept_nlu": "ACTION_STOCKER",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ANACARDE:kaa",
+  "text_local": "kaa",
+  "text_fr": "anacarde / noix de cajou",
+  "concept_nlu": "CULTURE_ANACARDE",
+  "notes": "vu dans 15 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ANACARDE:kaa n",
+  "text_local": "kaa n",
+  "text_fr": "anacarde / noix de cajou",
+  "concept_nlu": "CULTURE_ANACARDE",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ANACARDE:kaa waka",
+  "text_local": "kaa waka",
+  "text_fr": "anacarde / noix de cajou",
+  "concept_nlu": "CULTURE_ANACARDE",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ANACARDE:kpɛ kaa",
+  "text_local": "kpɛ kaa",
+  "text_fr": "anacarde / noix de cajou",
+  "concept_nlu": "CULTURE_ANACARDE",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ANACARDE:kɛ kaa",
+  "text_local": "kɛ kaa",
+  "text_fr": "anacarde / noix de cajou",
+  "concept_nlu": "CULTURE_ANACARDE",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ANACARDE:wun kaa",
+  "text_local": "wun kaa",
+  "text_fr": "anacarde / noix de cajou",
+  "concept_nlu": "CULTURE_ANACARDE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ANANAS:ablɛlɛ",
+  "text_local": "ablɛlɛ",
+  "text_fr": "ananas",
+  "concept_nlu": "CULTURE_ANANAS",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ANANAS:ablɛlɛ n",
+  "text_local": "ablɛlɛ n",
+  "text_fr": "ananas",
+  "concept_nlu": "CULTURE_ANANAS",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ANANAS:ablɛlɛ m",
+  "text_local": "ablɛlɛ m",
+  "text_fr": "ananas",
+  "concept_nlu": "CULTURE_ANANAS",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ANANAS:wun ablɛlɛ",
+  "text_local": "wun ablɛlɛ",
+  "text_fr": "ananas",
+  "concept_nlu": "CULTURE_ANANAS",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:banana",
+  "text_local": "banana",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "vu dans 11 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:plantain",
+  "text_local": "plantain",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "vu dans 9 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:plantain banana",
+  "text_local": "plantain banana",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:kɛ plantain",
+  "text_local": "kɛ plantain",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:banana fie",
+  "text_local": "banana fie",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:banana n",
+  "text_local": "banana n",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:banana nga",
+  "text_local": "banana nga",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:plantain n",
+  "text_local": "plantain n",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:wun plantain",
+  "text_local": "wun plantain",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CACAO:kakao",
+  "text_local": "kakao",
+  "text_fr": "cacao",
+  "concept_nlu": "CULTURE_CACAO",
+  "notes": "vu dans 19 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CACAO:kakao waka",
+  "text_local": "kakao waka",
+  "text_fr": "cacao",
+  "concept_nlu": "CULTURE_CACAO",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CACAO:kakao fie",
+  "text_local": "kakao fie",
+  "text_fr": "cacao",
+  "concept_nlu": "CULTURE_CACAO",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CACAO:kpɛ kakao",
+  "text_local": "kpɛ kakao",
+  "text_fr": "cacao",
+  "concept_nlu": "CULTURE_CACAO",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CACAO:kakao n",
+  "text_local": "kakao n",
+  "text_fr": "cacao",
+  "concept_nlu": "CULTURE_CACAO",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CACAO:kakao nma",
+  "text_local": "kakao nma",
+  "text_fr": "cacao",
+  "concept_nlu": "CULTURE_CACAO",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CACAO:kun kakao",
+  "text_local": "kun kakao",
+  "text_fr": "cacao",
+  "concept_nlu": "CULTURE_CACAO",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CACAO:lua kakao",
+  "text_local": "lua kakao",
+  "text_fr": "cacao",
+  "concept_nlu": "CULTURE_CACAO",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CACAO:wun kakao",
+  "text_local": "wun kakao",
+  "text_fr": "cacao",
+  "concept_nlu": "CULTURE_CACAO",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CAFE:kafe",
+  "text_local": "kafe",
+  "text_fr": "café",
+  "concept_nlu": "CULTURE_CAFE",
+  "notes": "vu dans 15 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CAFE:kafe waka",
+  "text_local": "kafe waka",
+  "text_fr": "café",
+  "concept_nlu": "CULTURE_CAFE",
+  "notes": "vu dans 11 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CAFE:ti kafe",
+  "text_local": "ti kafe",
+  "text_fr": "café",
+  "concept_nlu": "CULTURE_CAFE",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CAFE:be ti",
+  "text_local": "be ti",
+  "text_fr": "café",
+  "concept_nlu": "CULTURE_CAFE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_CAFE:wun kafe",
+  "text_local": "wun kafe",
+  "text_fr": "café",
+  "concept_nlu": "CULTURE_CAFE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_COTON:fɔkɔ",
+  "text_local": "fɔkɔ",
+  "text_fr": "coton",
+  "concept_nlu": "CULTURE_COTON",
+  "notes": "vu dans 12 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_COTON:fɔkɔ n",
+  "text_local": "fɔkɔ n",
+  "text_fr": "coton",
+  "concept_nlu": "CULTURE_COTON",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_COTON:fɔkɔ waka",
+  "text_local": "fɔkɔ waka",
+  "text_fr": "coton",
+  "concept_nlu": "CULTURE_COTON",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_COTON:kpɛ fɔkɔ",
+  "text_local": "kpɛ fɔkɔ",
+  "text_fr": "coton",
+  "concept_nlu": "CULTURE_COTON",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_COTON:fɔkɔ ɔ",
+  "text_local": "fɔkɔ ɔ",
+  "text_fr": "coton",
+  "concept_nlu": "CULTURE_COTON",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_COTON:lua fɔkɔ",
+  "text_local": "lua fɔkɔ",
+  "text_fr": "coton",
+  "concept_nlu": "CULTURE_COTON",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_COTON:yo fɔkɔ",
+  "text_local": "yo fɔkɔ",
+  "text_fr": "coton",
+  "concept_nlu": "CULTURE_COTON",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_GOMBO:aubergine",
+  "text_local": "aubergine",
+  "text_fr": "gombo",
+  "concept_nlu": "CULTURE_GOMBO",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_GOMBO:chili",
+  "text_local": "chili",
+  "text_fr": "gombo",
+  "concept_nlu": "CULTURE_GOMBO",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_GOMBO:okra",
+  "text_local": "okra",
+  "text_fr": "gombo",
+  "concept_nlu": "CULTURE_GOMBO",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_GOMBO:chili n",
+  "text_local": "chili n",
+  "text_fr": "gombo",
+  "concept_nlu": "CULTURE_GOMBO",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_GOMBO:kun su",
+  "text_local": "kun su",
+  "text_fr": "gombo",
+  "concept_nlu": "CULTURE_GOMBO",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_GOMBO:okra ɔ",
+  "text_local": "okra ɔ",
+  "text_fr": "gombo",
+  "concept_nlu": "CULTURE_GOMBO",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_HEVEA:evea",
+  "text_local": "evea",
+  "text_fr": "hévéa / caoutchouc",
+  "concept_nlu": "CULTURE_HEVEA",
+  "notes": "vu dans 12 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_HEVEA:evea n",
+  "text_local": "evea n",
+  "text_fr": "hévéa / caoutchouc",
+  "concept_nlu": "CULTURE_HEVEA",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_HEVEA:kɛ evea",
+  "text_local": "kɛ evea",
+  "text_fr": "hévéa / caoutchouc",
+  "concept_nlu": "CULTURE_HEVEA",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_HEVEA:evea waka",
+  "text_local": "evea waka",
+  "text_fr": "hévéa / caoutchouc",
+  "concept_nlu": "CULTURE_HEVEA",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_HEVEA:bo evea",
+  "text_local": "bo evea",
+  "text_fr": "hévéa / caoutchouc",
+  "concept_nlu": "CULTURE_HEVEA",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_HEVEA:bo waka",
+  "text_local": "bo waka",
+  "text_fr": "hévéa / caoutchouc",
+  "concept_nlu": "CULTURE_HEVEA",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_HEVEA:kwla bo",
+  "text_local": "kwla bo",
+  "text_fr": "hévéa / caoutchouc",
+  "concept_nlu": "CULTURE_HEVEA",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_IGNAME:duo",
+  "text_local": "duo",
+  "text_fr": "igname",
+  "concept_nlu": "CULTURE_IGNAME",
+  "notes": "vu dans 13 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_IGNAME:duo n",
+  "text_local": "duo n",
+  "text_fr": "igname",
+  "concept_nlu": "CULTURE_IGNAME",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_IGNAME:kɔfie",
+  "text_local": "kɔfie",
+  "text_fr": "igname",
+  "concept_nlu": "CULTURE_IGNAME",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_IGNAME:tu duo",
+  "text_local": "tu duo",
+  "text_fr": "igname",
+  "concept_nlu": "CULTURE_IGNAME",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_IGNAME:wun duo",
+  "text_local": "wun duo",
+  "text_fr": "igname",
+  "concept_nlu": "CULTURE_IGNAME",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MAIS:able",
+  "text_local": "able",
+  "text_fr": "maïs",
+  "concept_nlu": "CULTURE_MAIS",
+  "notes": "vu dans 15 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MAIS:able n",
+  "text_local": "able n",
+  "text_fr": "maïs",
+  "concept_nlu": "CULTURE_MAIS",
+  "notes": "vu dans 6 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MAIS:able waka",
+  "text_local": "able waka",
+  "text_fr": "maïs",
+  "concept_nlu": "CULTURE_MAIS",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MAIS:able ɔ",
+  "text_local": "able ɔ",
+  "text_fr": "maïs",
+  "concept_nlu": "CULTURE_MAIS",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MAIS:kpɛ able",
+  "text_local": "kpɛ able",
+  "text_fr": "maïs",
+  "concept_nlu": "CULTURE_MAIS",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MAIS:lua able",
+  "text_local": "lua able",
+  "text_fr": "maïs",
+  "concept_nlu": "CULTURE_MAIS",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MAIS:wun able",
+  "text_local": "wun able",
+  "text_fr": "maïs",
+  "concept_nlu": "CULTURE_MAIS",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANGUE:amango",
+  "text_local": "amango",
+  "text_fr": "mangue",
+  "concept_nlu": "CULTURE_MANGUE",
+  "notes": "vu dans 9 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANGUE:amango waka",
+  "text_local": "amango waka",
+  "text_fr": "mangue",
+  "concept_nlu": "CULTURE_MANGUE",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANGUE:kpɛ amango",
+  "text_local": "kpɛ amango",
+  "text_fr": "mangue",
+  "concept_nlu": "CULTURE_MANGUE",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANGUE:amango n",
+  "text_local": "amango n",
+  "text_fr": "mangue",
+  "concept_nlu": "CULTURE_MANGUE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANGUE:wun amango",
+  "text_local": "wun amango",
+  "text_fr": "mangue",
+  "concept_nlu": "CULTURE_MANGUE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANIOC:agba",
+  "text_local": "agba",
+  "text_fr": "manioc",
+  "concept_nlu": "CULTURE_MANIOC",
+  "notes": "vu dans 15 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANIOC:agba n",
+  "text_local": "agba n",
+  "text_fr": "manioc",
+  "concept_nlu": "CULTURE_MANIOC",
+  "notes": "vu dans 7 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANIOC:tu agba",
+  "text_local": "tu agba",
+  "text_fr": "manioc",
+  "concept_nlu": "CULTURE_MANIOC",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANIOC:agba fie",
+  "text_local": "agba fie",
+  "text_fr": "manioc",
+  "concept_nlu": "CULTURE_MANIOC",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANIOC:fa agba",
+  "text_local": "fa agba",
+  "text_fr": "manioc",
+  "concept_nlu": "CULTURE_MANIOC",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANIOC:wun agba",
+  "text_local": "wun agba",
+  "text_fr": "manioc",
+  "concept_nlu": "CULTURE_MANIOC",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_PALMIER_HUILE:nme",
+  "text_local": "nme",
+  "text_fr": "palmier à huile",
+  "concept_nlu": "CULTURE_PALMIER_HUILE",
+  "notes": "vu dans 9 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_PALMIER_HUILE:ahe",
+  "text_local": "ahe",
+  "text_fr": "palmier à huile",
+  "concept_nlu": "CULTURE_PALMIER_HUILE",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_PALMIER_HUILE:nme waka",
+  "text_local": "nme waka",
+  "text_fr": "palmier à huile",
+  "concept_nlu": "CULTURE_PALMIER_HUILE",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_PALMIER_HUILE:ahe nma",
+  "text_local": "ahe nma",
+  "text_fr": "palmier à huile",
+  "concept_nlu": "CULTURE_PALMIER_HUILE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_PALMIER_HUILE:kpɛ nme",
+  "text_local": "kpɛ nme",
+  "text_fr": "palmier à huile",
+  "concept_nlu": "CULTURE_PALMIER_HUILE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_PALMIER_HUILE:kun nme",
+  "text_local": "kun nme",
+  "text_fr": "palmier à huile",
+  "concept_nlu": "CULTURE_PALMIER_HUILE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_PALMIER_HUILE:kɛ nme",
+  "text_local": "kɛ nme",
+  "text_fr": "palmier à huile",
+  "concept_nlu": "CULTURE_PALMIER_HUILE",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:avie",
+  "text_local": "avie",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "vu dans 15 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:avie n",
+  "text_local": "avie n",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "vu dans 7 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:avie fie",
+  "text_local": "avie fie",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:avie mɔ",
+  "text_local": "avie mɔ",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:lua avie",
+  "text_local": "lua avie",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:di avie",
+  "text_local": "di avie",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:gua su",
+  "text_local": "gua su",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:kpɛ avie",
+  "text_local": "kpɛ avie",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:mɔ nzue",
+  "text_local": "mɔ nzue",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:wun avie",
+  "text_local": "wun avie",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:fa nglo",
+  "text_local": "fa nglo",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:lɔ ninnge",
+  "text_local": "lɔ ninnge",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:fa nɲa",
+  "text_local": "fa nɲa",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:nɲa nɲɛ",
+  "text_local": "nɲa nɲɛ",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:nɲɛ",
+  "text_local": "nɲɛ",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 4 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:nɲɛ be",
+  "text_local": "nɲɛ be",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:yo waka",
+  "text_local": "yo waka",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:benin be",
+  "text_local": "benin be",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:fa yo",
+  "text_local": "fa yo",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 12 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:nglo",
+  "text_local": "nglo",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:nglo lɔ",
+  "text_local": "nglo lɔ",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:ninnge benin",
+  "text_local": "ninnge benin",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ENGRAIS_FERTILISANT:lɔ",
+  "text_local": "lɔ",
+  "text_fr": "engrais",
+  "concept_nlu": "ENGRAIS_FERTILISANT",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "PROBLEME_MALADIE:i tukpacɛ",
+  "text_local": "i tukpacɛ",
+  "text_fr": "maladie",
+  "concept_nlu": "PROBLEME_MALADIE",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "PROBLEME_MALADIE:tukpacɛ kun",
+  "text_local": "tukpacɛ kun",
+  "text_fr": "maladie",
+  "concept_nlu": "PROBLEME_MALADIE",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "PROBLEME_MALADIE:tukpacɛ n",
+  "text_local": "tukpacɛ n",
+  "text_fr": "maladie",
+  "concept_nlu": "PROBLEME_MALADIE",
+  "notes": "vu dans 13 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "PROBLEME_MALADIE:tukpacɛ",
+  "text_local": "tukpacɛ",
+  "text_fr": "maladie",
+  "concept_nlu": "PROBLEME_MALADIE",
+  "notes": "vu dans 16 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "PROBLEME_SOL:naan asiɛ",
+  "text_local": "naan asiɛ",
+  "text_fr": "problème de sol",
+  "concept_nlu": "PROBLEME_SOL",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "PROBLEME_SOL:a saci",
+  "text_local": "a saci",
+  "text_fr": "problème de sol",
+  "concept_nlu": "PROBLEME_SOL",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:amun lua",
+  "text_local": "amun lua",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 10 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:waka ɔ",
+  "text_local": "waka ɔ",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 5 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:lua waka",
+  "text_local": "lua waka",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 3 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:banana nga",
+  "text_local": "banana nga",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:okra ɔ",
+  "text_local": "okra ɔ",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:plantain n",
+  "text_local": "plantain n",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 2 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:nun yɛ",
+  "text_local": "nun yɛ",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 34 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:blɛ benin",
+  "text_local": "blɛ benin",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 36 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:blɛ",
+  "text_local": "blɛ",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 39 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:kɛ amun",
+  "text_local": "kɛ amun",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 11 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:amun",
+  "text_local": "amun",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 11 questions de la dictée"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "TEMPS_SAISON_GENERAL:lua",
+  "text_local": "lua",
+  "text_fr": "saison/période",
+  "concept_nlu": "TEMPS_SAISON_GENERAL",
+  "notes": "vu dans 19 questions de la dictée"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:59:265",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ amun lua waka nga be flɛ i kɛ kaa’n niɔn ?",
+  "text_fr": "Quand faut-il planter l'anacardier ?",
+  "reponse_bci": "Ɔ fata kɛ be di fie’n, kɛ nzue tɔlɛ blɛ’n bo i bo’n. Ɔ fata kɛ asiɛ’n su nzue’n sin kpa.",
+  "reponse_fr": "Il faut planter en début de saison des pluies. Le sol doit être bien drainé.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:60:266",
+  "text_local": "Ɔ fata kɛ be fa waka nga be flɛ i kɛ kaa’n i nun waka’m be gualɛ wafa benin ?",
+  "text_fr": "Quelle densité de plantation choisir pour l'anacardier ?",
+  "reponse_bci": "Kɛ be fa waka 100 lele 150 be gua hectare kun nun’n, be ti tɛtɛ kpa. I wafa nga be fali’n, i su yɛ ɔ taka be afiɛn’n niɔn.",
+  "reponse_fr": "Une densité de 100 à 150 plants par hectare est courante. L'espacement dépend de la variété choisie.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:61:267",
+  "text_local": "Wafa sɛ yɛ be kwla wun kaa waka’n i tukpacɛ’n i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître une maladie de l'anacardier ?",
+  "reponse_bci": "Nɲa annzɛ waka mma’m be kwla yi lika nga be timan kpa’n. Ɔ ti cinnjin ekun kɛ be nian waka mma’m be su naan b’a wu.",
+  "reponse_fr": "Les feuilles ou les fruits peuvent présenter des taches anormales. Il faut aussi surveiller le dessèchement des branches.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:62:268",
+  "text_local": "Wafa sɛ yɛ be kwla kun kakaa nga be tɔ kaa waka’m be su’n niɔn ?",
+  "text_fr": "Comment lutter contre les insectes qui attaquent l'anacardier ?",
+  "reponse_bci": "Fie’m be su like sifuɛ kun kwla se be kɛ be yo be ayre ng’ɔ nin i fata’n. Kɛ be nian be lika titi’n, ɔ yo maan be tranman lɛ kun.",
+  "reponse_fr": "Un traitement adapté peut être recommandé par un technicien agricole. Un entretien régulier limite aussi leur présence.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:63:269",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ kaa’n niɔn ?",
+  "text_fr": "Quand faut-il récolter les noix de cajou ?",
+  "reponse_bci": "Kɛ nɲa’m be tɔ asiɛ’n su be bɔbɔ be wun’n, yɛ be kpɛ ninnge’m be nun ɔn. Pɔm nga be flɛ i kɛ cashew’n, ɔ yo mlanmlanmlan wie.",
+  "reponse_fr": "On récolte quand les noix tombent naturellement au sol. La pomme cajou devient aussi bien colorée.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:64:270",
+  "text_local": "Kɛ be ko kpɛ kaa’n, wafa sɛ yɛ be kwla yo naan w’a wu kpa ɔ ?",
+  "text_fr": "Comment bien sécher les noix de cajou après récolte ?",
+  "reponse_bci": "Be fa nɲa’m be gua via’n i lika sanwun kun su cɛn ba kpanngban. Ɔ fata kɛ be kaci be nun titi.",
+  "reponse_fr": "On étale les noix au soleil sur une aire propre pendant plusieurs jours. Il faut les retourner régulièrement.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:67:271",
+  "text_local": "Kɛ ɔ ko yo naan b’a kpɛ kaa waka’n i kpɛ klikli’n, ɔ di cɛn benin nun ?",
+  "text_fr": "Combien de temps avant la première récolte d'un anacardier ?",
+  "reponse_bci": "Titi’n, kɛ be ko di fie’n, afuɛ 3 sin yɛ be kpɛ fie’n i nun ninnge klikli’n niɔn. I sin’n, kɛ waka’n ko yo kpɛnngbɛn’n, i nun ninnge’m be yo dan.",
+  "reponse_fr": "La première récolte arrive généralement 3 ans après la plantation. La production augmente ensuite avec l'âge de l'arbre.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:68:272",
+  "text_local": "Wafa sɛ yɛ e kwla wun kaa nma ng’ɔ ti kpa’n i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître une noix de cajou de bonne qualité ?",
+  "reponse_bci": "Noix kpa’n, ɔ ti kpa, ɔ ti nɔnnin, yɛ i nzɔliɛ’n ti ufue kunngba cɛ. Ɔ fataman kɛ kalɛ’m be kpɛ i nun annzɛ be saci i.",
+  "reponse_fr": "Une bonne noix est bien formée, lourde et de couleur grise uniforme. Elle ne doit pas être fendue ou attaquée par des insectes.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:69:273",
+  "text_local": "Wafa sɛ yɛ be kpɛ kaa waka’n i nun ɔn ?",
+  "text_fr": "Comment tailler un anacardier ?",
+  "reponse_bci": "Yɛ waka mma nga be wuli’n annzɛ nga be timan kpa’n, amun yi be. Kɛ lika’n ti mlanwa’n, yɛ ɔ ti kpa kɛ be kpɛ waka’n niɔn.",
+  "reponse_fr": "On enlève les branches mortes ou mal orientées. La taille se fait de préférence en saison sèche.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:70:274",
+  "text_local": "Wafa sɛ yɛ be kwla sasa kaa waka’n naan sin w’a tɔman ijre’m be nun ɔn ?",
+  "text_fr": "Comment protéger l'anacardier contre les feux de brousse ?",
+  "reponse_bci": "Ɔ fata kɛ be yi sin jranwlɛ kun fie’n i wun lɛ. Kɛ lika’n tɔ nvlɛ’n, ɔ ti cinnjin kɛ be nian be su.",
+  "reponse_fr": "Il faut créer un pare-feu autour de la plantation. La surveillance pendant la saison sèche est essentielle.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:71:275",
+  "text_local": "Kaa wafa benin mun yɛ be man mma kpa ɔ ?",
+  "text_fr": "Quelles variétés d'anacardier donnent le meilleur rendement ?",
+  "reponse_bci": "Ɔ fata kɛ amun fa wafa nga CNRA waan be fa man amun akpasua’n. Fie dilɛ nun junman difuɛ kun kwla man amun afɔtuɛ.",
+  "reponse_fr": "Il faut choisir des variétés recommandées par le CNRA pour votre région. Un technicien agricole peut vous conseiller.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:72:276",
+  "text_local": "Wafa sɛ yɛ be kwla sie kaa’ma be ka naan b’a yo be atɛ ɔ ?",
+  "text_fr": "Comment conserver les noix de cajou avant la vente ?",
+  "reponse_bci": "Ɔ fata kɛ be sie be lika m’ɔ ti nvuɛn, mɔ aunmuan’n wlu lɔ kpa’n. Be se kɛ be fa saci sanwun mɔ be ti mlanwa’n be sie i lika sɔ’n nun.",
+  "reponse_fr": "Il faut les stocker dans un endroit sec et bien aéré. Des sacs propres et secs sont recommandés pour le stockage.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:73:277",
+  "text_local": "Kɛ waka nga be flɛ i kɛ kaa’n ɔ́ fíte’n, like benin yɛ ɔ fata kɛ be fa nian su ɔ ?",
+  "text_fr": "Quel entretien faire pendant la période de floraison de l'anacardier ?",
+  "reponse_bci": "Ɔ fata kɛ be yo ayre nga be kwla yo flɛri’m be tɛ’n, be kan. Kakã’m be lika nianlɛ’n te yo cinnjin kpa.",
+  "reponse_fr": "Il faut limiter les traitements qui pourraient nuire aux fleurs. Une surveillance contre les insectes reste importante.",
+  "notes": "ANACARDIER (CAJOU) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:102:305",
+  "text_local": "Able mma benin yɛ ɔ fata kɛ n fa gua able’n su ɔ ?",
+  "text_fr": "Quelle densité de semis choisir pour le maïs ?",
+  "reponse_bci": "Be fa waka kɔe 60.000 lele 70.000 be sie i hectare kun su. Be afiɛn’n taka wafawafa’m be su.",
+  "reponse_fr": "Une densité d'environ 60 000 à 70 000 plants par hectare est courante. L'espacement dépend de la variété.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:104:306",
+  "text_local": "Wafa sɛ yɛ be kwla wun able tukpacɛ kun i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître une maladie du maïs ?",
+  "reponse_bci": "Nɲa’m be kwla yo nzɔliɛ annzɛ be kwla kaci ufue wafa ng’ɔ timan su’n. Ɔ fata kɛ be nian able su’m be ɲinlɛ’n su wie.",
+  "reponse_fr": "Les feuilles peuvent présenter des taches ou brunir anormalement. Il faut aussi surveiller la croissance des épis.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:105:307",
+  "text_local": "Wafa sɛ yɛ be kwla kun kakaa nga be tɔ able’n su’n niɔn ?",
+  "text_fr": "Comment lutter contre la chenille légionnaire d'automne sur le maïs ?",
+  "reponse_bci": "Fie’m be su like sifuɛ kun kwla se be kɛ be yo be ayre ng’ɔ nin i fata’n. Sɛ be nian fie’n su titi’n, be kwla yo like ndɛndɛ.",
+  "reponse_fr": "Un traitement adapté peut être recommandé par un technicien agricole. Une surveillance régulière du champ permet d'intervenir tôt.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:106:308",
+  "text_local": "Wafa sɛ yɛ be kwla kun able waka’n i bofuɛ mun ɔn ?",
+  "text_fr": "Comment lutter contre les foreurs de tige du maïs ?",
+  "reponse_bci": "Ɔ kwla yo cinnjin kɛ be fa ayre nga be fa kun kacikacifuɛ mun’n be yo be ayre kpa. Fie’m be kacilɛ’n kusu uka naan b’a sɔnman.",
+  "reponse_fr": "Un traitement insecticide adapté peut être nécessaire. La rotation des cultures aide aussi à limiter leur présence.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:107:309",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ able’n niɔn ?",
+  "text_fr": "Quand faut-il récolter le maïs ?",
+  "reponse_bci": "Kɛ able’n ko yo kekle mɔ i nɲa’m be ko wu’n, yɛ be kpɛ able’n niɔn. Ɔ fataman kɛ be yo i ndɛndɛ ngboko.",
+  "reponse_fr": "On récolte quand les grains deviennent durs et les feuilles sèchent. Il ne faut pas récolter trop tôt.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:108:310",
+  "text_local": "Wafa sɛ yɛ be kwla wun able ng’ɔ su wa kpɛ’n i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître un maïs prêt pour la récolte ?",
+  "reponse_bci": "Nɲa nin nɲa’m be kaci mlanmlanmlan, kpɛkun be kaci mlanmlanmlan. Nɲa’m be kanlɛ’n ti kekle.",
+  "reponse_fr": "Les feuilles et les spathes deviennent sèches et jaunes. Les grains sont durs au toucher.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:109:311",
+  "text_local": "Kɛ be ko kpɛ able’n, wafa sɛ yɛ be kwla sie i kpa ɔ ?",
+  "text_fr": "Comment bien conserver le maïs après récolte ?",
+  "reponse_bci": "Ɔ fata kɛ be jran able’n i su’n i kpa ka naan b’a sie i lika kun. Lika nga lika’n ti mlanwa’n, mɔ aunmuan’n wlu lɔ kpa’n, mɔ nnɛn ngble’m be kwlá wluman lɔ’n, yɛ ɔ ti kpa ɔ.",
+  "reponse_fr": "Il faut bien sécher les épis avant stockage. Un endroit sec et aéré, à l'abri des insectes, est recommandé.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:110:312",
+  "text_local": "Wafa sɛ yɛ be kwla kun nnɛn ngble nga be o able nga be sieli’n be nun’n niɔn ?",
+  "text_fr": "Comment lutter contre les charançons du maïs stocké ?",
+  "reponse_bci": "Be kwla fa ayre nga be nin i fata’n be fa sasa i. Sɛ be sie be lika m’ɔ ti nvuɛn’n nun’n, ɔ yo maan be yoman kpa wie.",
+  "reponse_fr": "Un traitement de conservation adapté peut être utilisé. Un stockage dans un endroit sec limite aussi leur développement.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:111:313",
+  "text_local": "Able waka’m be afiɛn’n, lika benin yɛ ɔ fata kɛ be ɲin yi i ɔ ?",
+  "text_fr": "Quel espacement respecter entre les plants de maïs ?",
+  "reponse_bci": "Kɛ be fa nzɔliɛ like’m be afiɛn’n, ɔ ti kɛ santimɛtri kɔe 80 sa, yɛ nzɔliɛ’m be afiɛn’n ti nun santimɛtri kɔe 40. I sɔ’n kusu fin wafa nga be ti’n.",
+  "reponse_fr": "Un espacement d'environ 80 cm entre les lignes et 40 cm sur la ligne est courant. Cela dépend aussi de la variété.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:112:314",
+  "text_local": "Wafa sɛ yɛ be fa able nin fie uflɛ mun be bo nun ɔn ?",
+  "text_fr": "Comment associer le maïs avec d'autres cultures ?",
+  "reponse_bci": "Able’n ɲin kpa nɲa kɛ nannin nɲa sa’m be wun lɛ. Be afiɛn siesielɛ sɔ’n yo maan asiɛ’n yo kpa.",
+  "reponse_fr": "Le maïs s'associe bien avec des légumineuses comme le niébé. Cette association améliore la fertilité du sol.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:113:315",
+  "text_local": "Able’n i gualɛ’n nin i kpɛlɛ’n be afiɛn’n ti nun cɛn benin nun ?",
+  "text_fr": "Combien de temps entre le semis et la récolte du maïs ?",
+  "reponse_bci": "Titi’n, ɔ di anglo 3 annzɛ 4, ɔ taka wafa nga be fa yo’n su. Lɔ lika’n i nun lika’n kwla yo maan blɛ sɔ’n yo kpa wie.",
+  "reponse_fr": "Il faut généralement compter 3 à 4 mois selon la variété. Le climat local peut aussi influencer ce délai.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:114:316",
+  "text_local": "Wafa sɛ yɛ be siesie asiɛ’n ka naan b’a lua able ɔ ?",
+  "text_fr": "Comment préparer le sol avant de semer le maïs ?",
+  "reponse_bci": "Ɔ fata kɛ be di fie’n i kpa naan be yi ijre’n. Asiɛ ng’ɔ ti mlanwa’n, ɔ yo maan ninnge’m be ɲin kpa.",
+  "reponse_fr": "Il faut bien labourer et désherber la parcelle. Un sol meuble favorise une bonne levée des graines.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:115:317",
+  "text_local": "Able wafa benin yɛ ɔ fata kɛ n fa naan m’an ɲin kpa ɔ ?",
+  "text_fr": "Quelle variété de maïs choisir pour un bon rendement ?",
+  "reponse_bci": "Ɔ fata kɛ amun fa wafa nga CNRA waan amun fa man amun akpasua’n. Fie dilɛ nun junman difuɛ kun kwla man amun afɔtuɛ.",
+  "reponse_fr": "Il faut choisir une variété recommandée par le CNRA pour votre région. Un technicien agricole peut vous conseiller.",
+  "notes": "MAÏS — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:116:318",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ be ta agba niɔn ?",
+  "text_fr": "Quand faut-il planter le manioc ?",
+  "reponse_bci": "Ɔ fata kɛ be di fie’n, kɛ nzue tɔlɛ blɛ’n bo i bo’n. Ɔ fata kɛ waka mma’m be yo uflɛuflɛ naan be yo juejue.",
+  "reponse_fr": "Il faut planter en début de saison des pluies. Les boutures doivent être fraîches et saines.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:117:319",
+  "text_local": "Wafa sɛ yɛ be kwla fa agba nɲa kpa mun naan b’a di fie ɔ ?",
+  "text_fr": "Comment choisir de bonnes boutures de manioc pour la plantation ?",
+  "reponse_bci": "Ɔ fata kɛ amun fa waka mma nga be ti juejue’n, nán be ti kaan kpa annzɛ be ti kpɛnngbɛn kpa. Ɔ fata kɛ be fin waka nga tukpacɛ nunman be su’n be nun.",
+  "reponse_fr": "Il faut choisir des tiges saines, ni trop jeunes ni trop vieilles. Elles doivent provenir de plants sans maladie.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:118:320",
+  "text_local": "Ɔ fata kɛ be fa fie dilɛ wafa benin yɛ ɔ fata kɛ be fa di agba fie niɔn ?",
+  "text_fr": "Quelle densité de plantation choisir pour le manioc ?",
+  "reponse_bci": "Hectare kun nun’n, waka kɔe 10.000 be sɔnnin kpa. Titi’n, be afiɛn’n ti mɛtri 1 nin mɛtri 1.",
+  "reponse_fr": "Une densité d'environ 10 000 plants par hectare est courante. L'espacement habituel est de 1 mètre sur 1 mètre.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:119:321",
+  "text_local": "Wafa sɛ yɛ be kwla wun agba tukpacɛ’n i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître une maladie du manioc ?",
+  "reponse_bci": "Nɲa’m be kwla yo mlanmlanmlan annzɛ be kwla yi mozaiki ng’ɔ ti ufue’n i nglo. Ɔ fata kɛ be nian wafa nga waka’n i bo’n ti’n wie.",
+  "reponse_fr": "Les feuilles peuvent se déformer ou présenter des mosaïques de couleur. Il faut aussi surveiller l'état des tiges.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:120:322",
+  "text_local": "Wafa sɛ yɛ be kwla kun agba nun tukpacɛ’n niɔn ?",
+  "text_fr": "Comment lutter contre la mosaïque du manioc ?",
+  "reponse_bci": "Ɔ fata kɛ be fa waka nga be ti juejue’n, mɔ be le fluwa’n. Ɔ fata kɛ be kpɛ waka nga tukpacɛ’n o be su’n, be bo naan be nunnun be.",
+  "reponse_fr": "Il faut utiliser des boutures saines et certifiées. Les plants malades doivent être arrachés et détruits.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:121:323",
+  "text_local": "Wafa sɛ yɛ be kwla kun nnɛn nga be flɛ i kɛ agba’n niɔn ?",
+  "text_fr": "Comment lutter contre la cochenille farineuse du manioc ?",
+  "reponse_bci": "Fie’m be su like sifuɛ kun kwla se be kɛ be yo be ayre ng’ɔ nin i fata’n. Sɛ e fa waka mma nga be ti juejue’n e di junman’n, ɔ yo maan ɔ truman kpa wie.",
+  "reponse_fr": "Un traitement adapté peut être recommandé par un technicien agricole. L'utilisation de boutures saines limite aussi sa propagation.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:122:324",
+  "text_local": "Ɔ cɛ cɛn benin nun naan b’a tu agba’n?",
+  "text_fr": "Combien de temps avant la récolte du manioc ?",
+  "reponse_bci": "Titi’n, kɛ nga waka’n i wafa’n fa ti’n sa’n, be kpɛ ijre’n anglo 9 nin 18 be afiɛn. Teknisiɛn kun kwla man e afɔtuɛ blɛ kpafuɛ’n su.",
+  "reponse_fr": "La récolte se fait généralement entre 9 et 18 mois selon la variété. Un technicien peut conseiller le meilleur moment.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:123:325",
+  "text_local": "Wafa sɛ yɛ be kwla wun agba nga be su wa kpɛ’n i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître un manioc prêt pour la récolte ?",
+  "reponse_bci": "Nɲa nga be o i bo lɔ’n, be su bo jranlɛ bo, kpɛkun be su tɔ. Tubers’m be juli dan kpa.",
+  "reponse_fr": "Les feuilles du bas commencent à jaunir et tomber. Les tubercules ont atteint une bonne taille.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:124:326",
+  "text_local": "Wafa sɛ yɛ be tu agba’n niɔn ?",
+  "text_fr": "Comment faire le recépage du manioc ?",
+  "reponse_bci": "Be kpɛ waka’n i bo lɔ lika ng’ɔ nin i fata’n nun naan w’a wla waka’m be fanngan kɛ be ɲin uflɛuflɛ. I sɔ yolɛ’n uka naan b’a yi ninnge mun lele.",
+  "reponse_fr": "On coupe les tiges à une hauteur adaptée pour favoriser de nouvelles pousses. Cette technique aide à prolonger la production.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:125:327",
+  "text_local": "Kɛ be ko tu agba’n, wafa sɛ yɛ be sie i ɔ ?",
+  "text_fr": "Comment conserver le manioc après la récolte ?",
+  "reponse_bci": "Manniɛn uflɛuflɛ’n, ɔ jranman kpa; ɔ fata kɛ be di junman su ndɛndɛ. Asa ekun’n, be kwla yaci i asiɛ’n nun lele naan b’a saci.",
+  "reponse_fr": "Le manioc frais se conserve mal, il faut le transformer rapidement. On peut aussi le laisser en terre jusqu'au besoin.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:126:328",
+  "text_local": "Wafa sɛ yɛ be kwla nian ijre tɛ nga be o agba fie nun’n be lika ɔ ?",
+  "text_fr": "Comment lutter contre les mauvaises herbes dans un champ de manioc ?",
+  "reponse_bci": "Ɔ fata kɛ be kpɛ ijre’m be nun titi, i li anglo klikli’m be nun. Sɛ be fa nɲa be gua be su’n, ɔ kwla yo maan be su yoman dan kun.",
+  "reponse_fr": "Un désherbage régulier est nécessaire surtout les premiers mois. Le paillage peut aussi limiter leur pousse.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:127:329",
+  "text_local": "Kɛ asiɛ’n i wafa’n fa ti’n, ɔ fata kɛ be fa agba wafa benin ?",
+  "text_fr": "Quelle variété de manioc choisir selon le type de sol ?",
+  "reponse_bci": "Ɔ fata kɛ amun fa waka wafa ng’ɔ nin amun asiɛ’n nin like nga amun sa miɛn i wun’n be kɔ likawlɛ’n. Fie dilɛ nun junman difuɛ kun kwla man amun afɔtuɛ.",
+  "reponse_fr": "Il faut choisir une variété adaptée à votre sol et vos besoins. Un technicien agricole peut vous conseiller.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:128:330",
+  "text_local": "Wafa sɛ yɛ be kwla yo naan kɛ be ko tu agba’n, w’a kaciman ufue ɔ ?",
+  "text_fr": "Comment éviter le brunissement du manioc après récolte ?",
+  "reponse_bci": "Kɛ be ko kpɛ mannzin’n, ɔ fata kɛ be di junman annzɛ be di i ndɛndɛ. Sɛ be sie i lɔ lele’n, ɔ yo maan ɔ yo ufue.",
+  "reponse_fr": "Il faut transformer ou consommer le manioc rapidement après récolte. Le stockage prolongé favorise ce brunissement.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:129:331",
+  "text_local": "Kɛ be ko lua agba’n, anglo klikli’m be nun’n, like benin yɛ ɔ fata kɛ be yo ɔ?",
+  "text_fr": "Quel entretien faire dans les premiers mois après la plantation du manioc ?",
+  "reponse_bci": "Anglo klikli’m be nun’n, ɔ ti cinnjin kɛ be kpɛ ijre’m be nun titi. Be se kɛ be nian tukpacɛ’m be lika wie.",
+  "reponse_fr": "Un désherbage régulier est essentiel dans les premiers mois. Une surveillance contre les maladies est aussi recommandée.",
+  "notes": "MANIOC — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:131:332",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ be bo duo’n niɔn ?",
+  "text_fr": "Quand faut-il planter l'igname ?",
+  "reponse_bci": "Ɔ fata kɛ be di fie’n, kɛ nzue tɔlɛ blɛ’n bo i bo’n. Ɔ fata kɛ be siesie asiɛ’n i kpa nglo lɔ lika’m be nun.",
+  "reponse_fr": "Il faut planter en début de saison des pluies. Le sol doit être bien préparé en billons.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:132:333",
+  "text_local": "Wafa sɛ yɛ be kwla fa duo mma kpa naan b’a fa bo kɔfie ɔ ?",
+  "text_fr": "Comment choisir de bonnes semences d'igname pour la plantation ?",
+  "reponse_bci": "Ɔ fata kɛ amun fa nɲa nga be ti juejue’n, mɔ be leman tukpacɛ nin tukpacɛ’n. Ɔ fata kɛ nɲa’m be yo dan kpa.",
+  "reponse_fr": "Il faut choisir des tubercules sains, sans blessure ni maladie. Les semences doivent être de bonne taille.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:133:334",
+  "text_local": "Ɔ fata kɛ be fa fie’n i nun ninnge benin yɛ ɔ fata kɛ be di ɔ ?",
+  "text_fr": "Quelle densité de plantation choisir pour l'igname ?",
+  "reponse_bci": "Be fa waka kɔe 10.000 lele 15.000 be sie i hectare kun su. Be afiɛn’n taka wafawafa’m be su.",
+  "reponse_fr": "Une densité d'environ 10 000 à 15 000 plants par hectare est courante. L'espacement dépend de la variété.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:134:335",
+  "text_local": "Wafa sɛ yɛ be kwla fa suan like kun be sie ɔ ?",
+  "text_fr": "Comment installer un tuteur pour l'igname ?",
+  "reponse_bci": "Ɔ fata kɛ be fa waka ng’ɔ ti kekle kpa’n be sie i waka kunngunngun’m be wun lɛ. Kɛ viɲin waka’m bé bó ɲinlɛ bo cɛ’n, ɔ fata kɛ be kle be atin naan be wɔ waka’n i wun lɔ.",
+  "reponse_fr": "Il faut planter un tuteur solide près de chaque plant. Les lianes doivent être guidées vers le tuteur dès leur croissance.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:135:336",
+  "text_local": "Wafa sɛ yɛ be kwla wun duo tukpacɛ’n i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître une maladie de l'igname ?",
+  "reponse_bci": "Nɲa’m be kwla yi nzɔliɛ. Kɛ be ko kpɛ ijre’n, ɔ fata kɛ be nian wafa nga ijre’m be ti’n wie.",
+  "reponse_fr": "Les feuilles peuvent présenter des taches. Il faut aussi surveiller l'état des tubercules après récolte.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:137:337",
+  "text_local": "Ɔ cɛ cɛn benin nun naan b’a tu duo’n ?",
+  "text_fr": "Combien de temps avant la récolte de l'igname ?",
+  "reponse_bci": "Titi’n, kɛ nga waka’n i wafa’n fa ti’n sa’n, be kpɛ ijre’n anglo 6 nin 10 be afiɛn. Teknisiɛn kun kwla man e afɔtuɛ blɛ kpafuɛ’n su.",
+  "reponse_fr": "La récolte se fait généralement entre 6 et 10 mois selon la variété. Un technicien peut conseiller le meilleur moment.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:138:338",
+  "text_local": "Wafa sɛ yɛ e kwla wun duo ng’ɔ su wa tu’n i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître une igname prête pour la récolte ?",
+  "reponse_bci": "Nɲa’m be kaci jɔɔflɛ blɛblɛblɛ kpɛkun be wu. I sɔ’n kle kɛ waka’m be ti mlanwa.",
+  "reponse_fr": "Les feuilles jaunissent et sèchent progressivement. C'est un signe que les tubercules sont matures.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:139:339",
+  "text_local": "Kɛ be ko tu duo’n, wafa sɛ yɛ be kwla sie i kpa ɔ ?",
+  "text_fr": "Comment bien conserver l'igname après la récolte ?",
+  "reponse_bci": "Ɔ fata kɛ be sie i lika m’ɔ ti nvuɛn, mɔ aunmuan’n wlu lɔ kpa’n, mɔ lika’n ti mlanwa’n. Lã sua’n i ti su lɔ lika nga aunmuan’n wlu lɔ kpa’n, ɔ ti kpa.",
+  "reponse_fr": "Il faut la stocker dans un endroit sec, aéré et à l'ombre. Un grenier traditionnel bien ventilé convient bien.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:140:340",
+  "text_local": "Wafa sɛ yɛ be kwla kun nnɛn ngble be su bo'n be su i duo fie kun ɔ ?",
+  "text_fr": "Comment lutter contre les nématodes dans un champ d'igname ?",
+  "reponse_bci": "Fie’m be kacilɛ’n uka be naan b’a sɔnman. Fie dilɛ nun junman difuɛ kun kwla kle amun wafa uflɛ nga be nin i fata’n.",
+  "reponse_fr": "La rotation des cultures aide à limiter leur présence. Un technicien agricole peut recommander d'autres méthodes adaptées.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:141:341",
+  "text_local": "Duo kponan wafa benin yɛ ɔ o lɛ ɔ, yɛ ngue ti yɛ be bu i like dan ɔn ?",
+  "text_fr": "Quelle est la variété d'igname Kponan et pourquoi est-elle appréciée ?",
+  "reponse_bci": "Kponan ti lɔ waka wafa kun mɔ be bu i like dan kpa’n, i fɛ’n nin i nvan’n ti. Be kunndɛ i kpa Côte d'Ivoire lɔ gua’m be su.",
+  "reponse_fr": "Le Kponan est une variété locale appréciée pour son goût et sa texture. Elle est très demandée sur les marchés ivoiriens.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:142:342",
+  "text_local": "Wafa sɛ yɛ be siesie kɔfie kun mɔ be fa lua duo’n niɔn ?",
+  "text_fr": "Comment préparer un billon pour la plantation de l'igname ?",
+  "reponse_bci": "Ɔ fata kɛ be yo asiɛ m’ɔ ti mlanmlanmlan’n, mɔ nzue’n sin nun kpa’n, i okaoka mun. Ɔklo’n i dan’n fin waka wafa nga be luali’n.",
+  "reponse_fr": "Il faut former des buttes de terre meuble et bien drainées. La taille du billon dépend de la variété plantée.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:143:343",
+  "text_local": "Kɛ duo’n ɔ́ ɲín’n, like benin yɛ ɔ fata kɛ be nian su ɔ ?",
+  "text_fr": "Quel entretien faire pendant la croissance de l'igname ?",
+  "reponse_bci": "Ɔ fata kɛ be kpɛ ijre’m be nun titi, yɛ be fa waka’m be sie be su kpa. Ɔ ti cinnjin ekun kɛ be nian tukpacɛ’m be su naan b’a fiteman.",
+  "reponse_fr": "Un désherbage régulier et un bon tuteurage sont nécessaires. Il faut aussi surveiller l'apparition de maladies.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:144:344",
+  "text_local": "Wafa sɛ yɛ be kwla yo naan duo w’a saciman asiɛ’n nun ɔn ?",
+  "text_fr": "Comment éviter la pourriture des tubercules d'igname en terre ?",
+  "reponse_bci": "Asiɛ’n i nun nzue’n i sin sinlɛ kpa’n, ɔ yo maan sa sɔ’n yo kaan. Ɔ fata kɛ be kpalo lika nga kɛ nzue’n ko tɔ’n, nzue’n jran lɛ’n.",
+  "reponse_fr": "Un bon drainage du sol limite ce risque. Il faut éviter les zones où l'eau stagne après la pluie.",
+  "notes": "IGNAME — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:168:367",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ be lua okra ɔ ?",
+  "text_fr": "Quand faut-il semer le gombo ?",
+  "reponse_bci": "Ɔ fata kɛ be lua ninnge mun nzue tɔlɛ blɛ’n i bo bolɛ nun. Ɔ fata kɛ be siesie asiɛ’n i kpa naan ɔ yo nɲa.",
+  "reponse_fr": "Il faut semer en début de saison des pluies. Le sol doit être bien préparé et fertile.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:169:368",
+  "text_local": "Wafa sɛ yɛ be kwla wun okra tukpacɛ’n i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître une maladie du gombo ?",
+  "reponse_bci": "Nɲa’m be kwla ɲan nzɔliɛ annzɛ be kwla mlɔn. Ɔ fata kɛ be nian wafa nga waka mma’n ti’n wie.",
+  "reponse_fr": "Les feuilles peuvent présenter des taches ou se flétrir. Il faut surveiller aussi l'état des fruits.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:170:369",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ amun lua aubergine mma mun ɔn ?",
+  "text_fr": "Quand faut-il semer l'aubergine ?",
+  "reponse_bci": "Ɔ fata kɛ be lua ninnge’m be lika kun naan b’a fa be b’a sie i lika uflɛ. Kɛ be ko gua fie’n, le mɔcuɛ nsan annzɛ nnan sin yɛ be fa fie’n be sie i lika uflɛ ɔ.",
+  "reponse_fr": "Il faut semer en pépinière avant de repiquer. Le repiquage se fait généralement 3 à 4 semaines après le semis.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:171:370",
+  "text_local": "Wafa sɛ yɛ be kwla kun nnɛn ngble nga be tɔ aubergine’n su’n niɔn ?",
+  "text_fr": "Comment lutter contre les insectes qui attaquent l'aubergine ?",
+  "reponse_bci": "Fie’m be su like sifuɛ kun kwla se be kɛ be yo be ayre ng’ɔ nin i fata’n. Sɛ be nian be su titi’n, be kwla yo be like ndɛndɛ.",
+  "reponse_fr": "Un traitement adapté peut être recommandé par un technicien agricole. Une surveillance régulière permet d'intervenir tôt.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:172:371",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ be lua chili ɔ ?",
+  "text_fr": "Quand faut-il semer le piment ?",
+  "reponse_bci": "Ɔ fata kɛ be lua ninnge’m be lika kun naan b’a fa be b’a sie i lika uflɛ. Kɛ be ko gua fie’n, le mɔcuɛ nnan annzɛ nsiɛn sin yɛ be fa fie’n be sie i lika uflɛ ɔ.",
+  "reponse_fr": "Il faut semer en pépinière avant de repiquer. Le repiquage se fait généralement 4 à 6 semaines après le semis.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:173:372",
+  "text_local": "Wafa sɛ yɛ e kwla wun chili'n i tukpacɛ'n i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître une maladie du piment ?",
+  "reponse_bci": "Nɲa annzɛ waka mma’m be kwla yi lika nga be timan kpa’n. Ɔ fata kɛ be nian waka’m be nun titi.",
+  "reponse_fr": "Les feuilles ou les fruits peuvent présenter des taches anormales. Il faut surveiller régulièrement les plants.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:174:373",
+  "text_local": "Ɔ fata kɛ be fa nglo lɔ ninnge benin yɛ ɔ fata kɛ be fa di fie’n niɔn ?",
+  "text_fr": "Quelle quantité d'engrais utiliser pour les cultures maraîchères ?",
+  "reponse_bci": "I nuan’n fin ijre wafa’n nin asiɛ’n i nun nianlɛ’n. Fie dilɛ’n i su like sifuɛ kun kwla se amun kɛ amun fa ayre sɔ’n i wafa ng’ɔ nin i fata’n.",
+  "reponse_fr": "La quantité dépend du type de légume et de l'analyse du sol. Un technicien agricole peut recommander la dose adaptée.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:175:374",
+  "text_local": "Wafa sɛ yɛ be kwla gua fie kun su nzue kpa blɛ mɔ lika’n ti mlanwa’n nun ɔn ?",
+  "text_fr": "Comment arroser correctement un jardin maraîcher en saison sèche ?",
+  "reponse_bci": "Ɔ fata kɛ amun gua su nzue titi, sɛ ɔ ti kpa’n, amun gua su nzue nglɛmun ndɛ kpa annzɛ cɛn’n i awieliɛ lɔ. Mulching kusu uka naan lika’n w’a yoman mlanmlanmlan.",
+  "reponse_fr": "Il faut arroser régulièrement, de préférence tôt le matin ou en fin de journée. Le paillage aide aussi à conserver l'humidité.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:176:375",
+  "text_local": "Wafa sɛ yɛ be kwla kun tukpacɛ nɲa nga be fite fie’n nun waka’m be bo’n niɔn ?",
+  "text_fr": "Comment lutter contre les nématodes dans un jardin maraîcher ?",
+  "reponse_bci": "Kɛ waka mma’m be te yo kaan’n, mɔ be te yo mlanmlanmlan’n, yɛ amun kpɛ be ɔ. Nán amun minndɛ lele naan b’a yo nɲa dan.",
+  "reponse_fr": "On récolte quand les fruits sont encore jeunes et tendres. Il ne faut pas attendre qu'ils deviennent trop fibreux.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:178:376",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ amun kpɛ aubergine ɔ ?",
+  "text_fr": "Quand faut-il récolter l'aubergine ?",
+  "reponse_bci": "Kɛ waka mma’n ko yo kpa’n, sanngɛ ɔ te kpaja’n, yɛ be kpɛ i ɔ. Blɛ sunman nun’n, waka mma ng’ɔ timan mlanwa’n, ɔ ɲin tra su.",
+  "reponse_fr": "On récolte quand le fruit est bien formé mais encore brillant. Un fruit terne est souvent trop mûr.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:179:377",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ chili’n niɔn ?",
+  "text_fr": "Quand faut-il récolter le piment ?",
+  "reponse_bci": "Kɛ waka mma’n ko ju i nɲa kasiɛn’n su’n, yɛ be kpɛ i ɔ, ɔ taka waka mma wafa’n su. Sɛ be kpɛ ninnge’m be nun titi’n, ɔ yo maan be yi ninnge mun titi.",
+  "reponse_fr": "On récolte quand le fruit atteint sa couleur finale, selon la variété. Une récolte régulière favorise la production continue.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:180:378",
+  "text_local": "Kɛ be ko kpɛ nɲa’n, wafa sɛ yɛ be fa sie ɔ ?",
+  "text_fr": "Comment conserver les légumes après la récolte ?",
+  "reponse_bci": "Ɔ fata kɛ be sie be lika n'ga jɔ, n'ga awun'muan sin kpa. Be se kɛ be yo n'ɲa n'ga be yo be atɛ nin'dɛ anzɛ be di.",
+  "reponse_fr": "Il faut les stocker dans un endroit frais et aéré. Une vente ou consommation rapide est recommandée pour les légumes fragiles.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:181:379",
+  "text_local": "Wafa sɛ yɛ be siesie fie’n i nun nɲa’n niɔn?",
+  "text_fr": "Comment préparer une planche de culture maraîchère ?",
+  "reponse_bci": "Ɔ fata kɛ be jran asiɛ’n su naan be fa ninnge nga be ti nɲa’n be gua nun. Laliɛ ng’ɔ ti nglo lɔ’n, ɔ yo maan nzue’n sin sin kpa wie.",
+  "reponse_fr": "Il faut bien ameublir le sol et incorporer de la matière organique. Une planche surélevée facilite aussi le drainage.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:182:380",
+  "text_local": "Wafa sɛ yɛ be kwla kun ijre tɛ mun fie kun nun ɔn ?",
+  "text_fr": "Comment lutter contre les mauvaises herbes dans un jardin maraîcher ?",
+  "reponse_bci": "Be se kɛ be kpɛ ijre’m be nun titi, sɛ be fa be sa annzɛ be fa ijre nɲa be kpɛ ijre’m be nun’n. I li le mɔcuɛ klikli’m be nun yɛ ɔ ti cinnjin kpa kɛ be fa be wun wlɛ i ndɛ’n nun ɔn.",
+  "reponse_fr": "Un désherbage régulier, manuel ou avec paillage, est recommandé. Il faut intervenir surtout dans les premières semaines.",
+  "notes": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE) — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:183:381",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ amun lua kokowe waka ɔ ?",
+  "text_fr": "Quand faut-il planter le cocotier ?",
+  "reponse_bci": "Ɔ fata kɛ be lua i nzue’n i bo bolɛ nun. Ɔ fata kɛ asiɛ’n su nzue’n sin kpa, sɛ ɔ ti kpa’n, ɔ ti aunɲan.",
+  "reponse_fr": "Il faut planter en début de saison des pluies. Le sol doit être bien drainé, idéalement sableux.",
+  "notes": "COCOTIER — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:184:382",
+  "text_local": "Ɔ fata kɛ be fa kokowe waka’m be nun waka’m be nun nɲa wafa benin ?",
+  "text_fr": "Quelle densité de plantation choisir pour le cocotier ?",
+  "reponse_bci": "Be fa waka kɔe 140 lele 160 be sie i hectare kun su. Titi’n, be afiɛn’n ti nun mɛtri 8 lele 9.",
+  "reponse_fr": "Une densité d'environ 140 à 160 plants par hectare est courante. L'espacement habituel est de 8 à 9 mètres.",
+  "notes": "COCOTIER — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:185:383",
+  "text_local": "Wafa sɛ yɛ be kwla wun kokowe waka’n i tukpacɛ’n i wlɛ ɔ ?",
+  "text_fr": "Comment reconnaître une maladie du cocotier ?",
+  "reponse_bci": "Nɲa’m be kwla yo jɔɔ annzɛ be kwla wu mlɔnmlɔn. Ɔ fata kɛ be nian wafa nga kokowe’n i awlɛn’n ti’n wie.",
+  "reponse_fr": "Les feuilles peuvent jaunir ou se dessécher anormalement. Il faut aussi surveiller l'état du cœur du cocotier.",
+  "notes": "COCOTIER — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:186:384",
+  "text_local": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ kokowe mun ɔn ?",
+  "text_fr": "Quand faut-il récolter les noix de coco ?",
+  "reponse_bci": "Be kpɛ ninnge’m be nun kɛ nga be sunnzunnin kɛ bé fá dí junman’n sa: be ti kaan be fa yo kokowe nzue, be ti kpɛnngbɛn be fa yo kokowe nnɛn nin druvi. Klɔ’n i kplo’n i klanman’n kle kɛ w’a yo kpɛnngbɛn.",
+  "reponse_fr": "On récolte selon l'usage voulu : jeune pour l'eau de coco, mature pour la chair et l'huile. La couleur de la coque indique la maturité.",
+  "notes": "COCOTIER — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:187:385",
+  "text_local": "Ɔ fata kɛ n fa nɲa nɲɛ n fa yo kokowe waka kun ?",
+  "text_fr": "Quelle quantité d'engrais utiliser pour le cocotier ?",
+  "reponse_bci": "I nuan’n fin waka’n i afuɛ’n nin asiɛ’n i wafa’n. Fie dilɛ’n i su like sifuɛ kun kwla se amun kɛ amun fa ayre sɔ’n i wafa ng’ɔ nin i fata’n.",
+  "reponse_fr": "La quantité dépend de l'âge de l'arbre et du type de sol. Un technicien agricole peut recommander la dose adaptée.",
+  "notes": "COCOTIER — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:188:386",
+  "text_local": "Ɔ ka naan b’a kpɛ kokowe waka’n i su ninnge klikli’n, ɔ cɛ cɛn benin nun ?",
+  "text_fr": "Combien de temps avant la première récolte d'un cocotier ?",
+  "reponse_bci": "Titi’n, kɛ be ko di fie’n, afuɛ 5 annzɛ 6 sin yɛ be kpɛ fie’n i nun ninnge klikli’n niɔn. I sin’n, kɛ waka’n ko yo kpɛnngbɛn’n, i nun ninnge’m be yo dan.",
+  "reponse_fr": "La première récolte arrive généralement 5 à 6 ans après la plantation. La production augmente ensuite avec l'âge de l'arbre.",
+  "notes": "COCOTIER — reliée par le sens"
+ },
+ {
+  "kind": "paire_qr",
+  "id": "paire:189:387",
+  "text_local": "Wafa sɛ yɛ be nian kokowe fie kaan kun lika ɔ ?",
+  "text_fr": "Comment entretenir une jeune plantation de cocotier ?",
+  "reponse_bci": "Sɛ be lua waka’n i lika fanunfanun nun’n, ɔ nin aunmuan’n i jranwlɛ’n, be kwla uka be. Kɛ be bo bolɛ nun’n, be bo’n yo kpa’n, ɔ yo maan be kwla jran kekle wie.",
+  "reponse_fr": "Une plantation en quinconce et des brise-vents naturels peuvent aider. Un bon ancrage racinaire dès la jeunesse renforce aussi la résistance.",
+  "notes": "COCOTIER — reliée par le sens"
+ }
+]

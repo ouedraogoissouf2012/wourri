@@ -1,0 +1,170 @@
+[
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_LABOURER:soma",
+  "text_local": "soma",
+  "text_fr": "labourer",
+  "concept_nlu": "ACTION_LABOURER",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Herminette. ; Outil en forme de \"daba\", outil africain servant à labourer la terre."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_IGNAME:asawa",
+  "text_local": "asawa",
+  "text_fr": "igname",
+  "concept_nlu": "CULTURE_IGNAME",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Igname, variété d'igname précoce originaire d'Afrique de l'ouest."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "PROBLEME_INSECTE:lalo",
+  "text_local": "lalo",
+  "text_fr": "ravageurs",
+  "concept_nlu": "PROBLEME_INSECTE",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — criquet"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "PROBLEME_INSECTE:asan",
+  "text_local": "asan",
+  "text_fr": "ravageurs",
+  "concept_nlu": "PROBLEME_INSECTE",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Arbre de la famille des Ulmaceae. ; Chenille des papillons de forme ovale, aplaties, aux pattes courtes et couverte de p"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_AGRUMES:bawle lomin",
+  "text_local": "bawle lomin",
+  "text_fr": "agrumes (citron, lime, orange)",
+  "concept_nlu": "CULTURE_AGRUMES",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — citron"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:mannda",
+  "text_local": "mannda",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Banane plantain."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_BANANE:blɔfuɛ mannda",
+  "text_local": "blɔfuɛ mannda",
+  "text_fr": "banane / plantain",
+  "concept_nlu": "CULTURE_BANANE",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — banane douce"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_PATATE:alenda",
+  "text_local": "alenda",
+  "text_fr": "patate douce",
+  "concept_nlu": "CULTURE_PATATE",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Patate douce."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_RECOLTER:kpɛkpɛ",
+  "text_local": "kpɛkpɛ",
+  "text_fr": "récolter",
+  "concept_nlu": "ACTION_RECOLTER",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — couper plusieurs fois ; tailler"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:sanndi",
+  "text_local": "sanndi",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Disperser, se disperser ; se séparer, partir chacun de son côté. ; Semer à la volée."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANIOC:atukpu",
+  "text_local": "atukpu",
+  "text_fr": "manioc",
+  "concept_nlu": "CULTURE_MANIOC",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Gâteau de manioc écorché puis cuit à la vapeur."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "PROBLEME_INSECTE:zugu",
+  "text_local": "zugu",
+  "text_fr": "ravageurs",
+  "concept_nlu": "PROBLEME_INSECTE",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Chenille dont la piqûre des poils provoquent des démangeaisons."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_MANIOC:kokosoklo",
+  "text_local": "kokosoklo",
+  "text_fr": "manioc",
+  "concept_nlu": "CULTURE_MANIOC",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Variété de manioc à peau rouge."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_GOMBO:kakaje",
+  "text_local": "kakaje",
+  "text_fr": "gombo",
+  "concept_nlu": "CULTURE_GOMBO",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Brigand. ; Fourmi."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_RIZ:awie",
+  "text_local": "awie",
+  "text_fr": "riz",
+  "concept_nlu": "CULTURE_RIZ",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Riz"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:asanninnya",
+  "text_local": "asanninnya",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Plante médicinale employée comme diurétique, antidysentérique, antiabortif et qui serait aphrodisiaque."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_ARACHIDE:n gate",
+  "text_local": "n'gatè",
+  "text_fr": "arachide",
+  "concept_nlu": "CULTURE_ARACHIDE",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Arachide"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "CULTURE_GOMBO:jungble",
+  "text_local": "jungble",
+  "text_fr": "gombo",
+  "concept_nlu": "CULTURE_GOMBO",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — gombo sec"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_PLANTER:laboli",
+  "text_local": "laboli",
+  "text_fr": "planter",
+  "concept_nlu": "ACTION_PLANTER",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — plante"
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ACTION_CHERCHER_CONSEIL:nnolo",
+  "text_local": "nnolo",
+  "text_fr": "chercher conseil",
+  "concept_nlu": "ACTION_CHERCHER_CONSEIL",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Annonce, avis par lequel on fait savoir quelque chose au public."
+ },
+ {
+  "kind": "mot_cle",
+  "id": "ANIMAL_POISSON:ajuenvan",
+  "text_local": "ajuenvan",
+  "text_fr": "poissons",
+  "concept_nlu": "ANIMAL_POISSON",
+  "notes": "source : Wiktionnaire (CC BY-SA 4.0) — Poisson fermenté et séché au soleil, dégageant une forte odeur."
+ }
+]
