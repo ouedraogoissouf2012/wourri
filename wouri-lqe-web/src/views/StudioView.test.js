@@ -45,7 +45,10 @@ describe("StudioView — types d'element", () => {
     // « Corriger » : mot-cle et contenu oui, paire non (on accepte ou on rejette la paire)
     const articles = w.findAll("article");
     const corriger = (a) => a.findAll("button").some((b) => b.text() === "Corriger");
+    // le plus recent (id le plus grand) en haut : contenu (3), paire (2), mot-cle (1)
     expect(articles.map(corriger)).toEqual([true, false, true]);
+    expect(articles[0].text()).toContain("Aw ni ce");
+    expect(articles[2].text()).toContain("kakao");
   });
 
   it("n'affiche que le contenu dans « A promouvoir »", async () => {
