@@ -7,7 +7,8 @@ notebook (ex. prepare_data.py du notebook Kaggle) est laissée telle quelle.
 
 Usage : python finetune/colab/sync_smoke_test_notebook.py
 Garde-fous : finetune/test_dictee_to_parquet.py, finetune/test_prepare_bci_dataset.py
-et finetune/test_eval_bci_cer.py.
+finetune/test_eval_bci_cer.py
+et finetune/test_serveur_voix_bci.py.
 """
 import json
 import re
@@ -19,6 +20,7 @@ NOTEBOOKS = [
     HERE / "omnilingual_finetune_smoke_test.ipynb",
     HERE / "omnilingual_finetune_1b_gpu_loue.ipynb",
     HERE / "omnilingual_eval_finetune.ipynb",
+    HERE / "serveur_voix_baoule_runpod.ipynb",
 ]
 MARKER = re.compile(r"%%writefile ([\w.]+\.py)\n")
 

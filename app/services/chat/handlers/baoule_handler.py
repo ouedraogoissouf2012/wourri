@@ -13,6 +13,7 @@ dioula le fait avant le LLM.
 from __future__ import annotations
 
 import logging
+from pathlib import PurePosixPath
 from typing import Optional
 
 from app.models.schemas import Language
@@ -23,6 +24,17 @@ logger = logging.getLogger(__name__)
 
 SOURCE_IVR_BCI = "ivr_bci"
 SOURCE_HORS_CORPUS_BCI = "bci_hors_corpus"
+
+
+def _audio_url(entry: dict) -> Optional[str]:
+    """Enregistrement de la réponse par le locuteur natif (ogg/opus), si la base est configurée."""
+    from app.config import settings
+
+    base = (settings.bci_audio_base_url or "").rstrip("/")
+    fichier = entry.get("audio_reponse")
+    if not base or not fichier:
+        return None
+    return f"{base}/{PurePosixPath(fichier).stem}.ogg"
 
 
 def _sujets(corpus) -> str:
@@ -50,9 +62,12 @@ class BaouleHandler:
         if trouvaille is not None:
             e = trouvaille.entry
             logger.info("[BCI] réponse %s (sim=%.2f, intent=%s)", e.get("id"), trouvaille.similarite, nlu.intent)
+            audio_url = _audio_url(e) if include_audio else None
             return ChatResult(
                 response=e.get("reponse_fr") or e["reponse_bci"],
                 response_local=e["reponse_bci"],
+                audio_url=audio_url,
+                audio_language="Baoulé" if audio_url else None,
                 city=city,
                 language=language.value,
                 meta={

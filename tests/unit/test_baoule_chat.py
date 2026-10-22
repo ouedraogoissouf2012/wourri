@@ -105,6 +105,26 @@ async def test_handler_sert_la_reponse_native(branche):
 
 
 @pytest.mark.asyncio
+async def test_handler_audio_voix_du_locuteur(branche, monkeypatch):
+    from app.config import settings
+
+    corpus = ({**CACAO_PLANTER, "audio_reponse": "audio/e10c94c3aa11.webm"}, MAIS_RECOLTER)
+    monkeypatch.setattr(baoule_ivr, "entrees", lambda path=None: corpus)
+    monkeypatch.setattr(settings, "bci_audio_base_url", "https://voix.example/audio/")
+    nlu = nlu_preprocessor.preprocess_nlu(CACAO_PLANTER["question_bci"], None, Language.BAOULE)
+    nlu.message_original = CACAO_PLANTER["question_bci"]
+    r = await BaouleHandler().process(nlu, None, "Bouaké", True, Language.BAOULE, "u1")
+    assert r.audio_url == "https://voix.example/audio/e10c94c3aa11.ogg"
+    assert r.audio_language == "Baoulé"
+    # sans base configurée, ou si l'appelant ne veut pas d'audio : pas d'URL
+    r = await BaouleHandler().process(nlu, None, "Bouaké", False, Language.BAOULE, "u1")
+    assert r.audio_url is None
+    monkeypatch.setattr(settings, "bci_audio_base_url", "")
+    r = await BaouleHandler().process(nlu, None, "Bouaké", True, Language.BAOULE, "u1")
+    assert r.audio_url is None
+
+
+@pytest.mark.asyncio
 async def test_handler_repli_honnete_et_escalade(branche):
     nlu = nlu_preprocessor.preprocess_nlu("Mmo, a ti ?", None, Language.BAOULE)
     nlu.message_original = "Mmo, a ti ?"
