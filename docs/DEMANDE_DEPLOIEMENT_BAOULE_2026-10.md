@@ -1,10 +1,11 @@
 # Demande de déploiement — Baoulé (version démo terrain)
 
-- **Date** : 2026-10-22
+- **Date** : 2026-10-22 (révisé le même jour d'après les mesures de la fenêtre déploiement)
 - **Demandeur** : Ouedraogo Issouf (chef de projet)
 - **Échéance** : vendredi 2026-10-24 (présentation aux paysans)
-- **Destinataire** : la fenêtre « déploiement » (machine qui a accès à la VM Scaleway et aux réglages GitHub)
-- **Réf.** : ADR-0045, issue #475
+- **Destinataire** : la fenêtre « déploiement » (accès au serveur et à Dokploy)
+- **Réf.** : ADR-0045, issue #475, ADR-0026 (Dokploy)
+- **Réponses Q1–Q6** : https://github.com/ouedraogoissouf2012/wourri/pull/588#issuecomment-6344084737
 
 ## 1. Ce qu'on veut obtenir
 
@@ -17,78 +18,111 @@ est remontée à l'équipe.
 Tout est derrière un interrupteur **éteint par défaut** : `WOURI_BAOULE_SERVI=0`. Tant qu'il est
 à 0, rien ne change pour les utilisateurs.
 
-## 2. Ce qui est déjà fusionné (rien à coder)
+## 2. Comment la production est déployée (mesuré le 2026-10-22)
 
-| Brique | Où | État |
-|---|---|---|
-| API : NLU baoulé, réponses natives, repli | `APIPy`, PR #586 | fusionné |
-| WhatsApp : vocal baoulé → serveur voix, réponse audio d'abord | `whatsappServeur`, PR #587 | fusionné |
-| Atelier LQE : validations `mot_cle` / `paire_qr` | PR #584 et #585 | fusionnés |
-| Serveur voix baoulé (notebook RunPod) | `finetune/colab/serveur_voix_baoule_runpod.ipynb` | fusionné |
-| Dictionnaire démo + passage des variables dans le compose | PR #588 | **à fusionner** |
+| Élément | Réalité |
+|---|---|
+| Serveur | VPS Contabo piloté par **Dokploy**, services **Docker Swarm** |
+| Service API | `wourri-wouriapi-4phcqw` |
+| Service WhatsApp | `wourri-whatsappserver-wtpodc` |
+| Construction des images | Dokploy surveille les branches et reconstruit à chaque fusion |
+| Variables d'environnement | saisies **dans Dokploy, par service** (onglet *Environment*) |
 
-## 3. Ce qu'on demande, dans l'ordre
+Ce qui n'existe pas et ne doit pas être utilisé : `/srv/wourri`, `.env.prod`, `docker compose up -d`,
+les workflows GitHub `deploy-api` / `deploy-wa`.
 
-### Étape A — Vérifier les interrupteurs de déploiement (GitHub → Settings → Variables)
+Les workflows `deploy-api` / `deploy-wa` visent l'ancien hôte Scaleway. Leur job *deploy* est
+sauté, car `DEPLOY_*_ENABLED` n'est pas défini. **Ne pas activer ces variables.**
 
-1. `DEPLOY_API_ENABLED` vaut-il `true` ? (workflow `deploy-api.yml`)
-2. `DEPLOY_WA_ENABLED` vaut-il `true` ? (workflow `deploy-wa.yml`)
-3. Le workflow `deploy-wa` lancé par la fusion de #587 (2026-10-22 13:18 UTC, commit `dcaeb96`)
-   est-il vert ? L'image `wourri-whatsapp:latest` sur la VM est-elle bien celle-là ?
+> Le bloc `environment:` de `docker-compose.prod.yml` liste aussi ces variables (PR #588). C'est
+> pour la cohérence du dépôt et le contrôle CI `check_env_consistency` : en production, c'est
+> Dokploy qui fait foi.
 
-### Étape B — Après la fusion de la PR #588
+## 3. Ce qui est déjà en place
 
-La fusion déclenche `deploy-api.yml`, car elle touche `dictionnaires/**` et `docker-compose.prod.yml`.
-Ce workflow copie le compose sur la VM (`/srv/wourri/`) et redéploie l'API.
+| Brique | État mesuré |
+|---|---|
+| WhatsApp : vocal baoulé → serveur voix, réponse audio d'abord (PR #587, `dcaeb96`) | ✅ dans l'image du 2026-10-22 13:28 |
+| API : NLU baoulé, réponses natives, repli (PR #586) | ✅ image du 2026-10-22 13:27 |
+| Front de l'atelier LQE (PR #585) | ✅ image du 2026-10-22 13:18 |
+| Sortie HTTPS du serveur vers `*.proxy.runpod.net` | ✅ ouverte |
+| Dictionnaire démo (PR #588) | **à fusionner**. Dokploy reconstruit alors l'API, qui embarque `dictionnaires/` |
+| Variables baoulé dans les conteneurs | ❌ aucune pour l'instant (`printenv` vide) — normal |
 
-4. Le workflow `deploy-api` est-il vert ?
-5. Sur la VM, `docker-compose.prod.yml` contient-il bien :
-   - `BCI_AUDIO_BASE_URL` pour `wouri-api` ;
-   - les quatre `WOURI_BAOULE_*` pour `whatsapp-server` ?
+## 4. Mise en service
 
-> ⚠️ Ces variables doivent être listées dans le bloc `environment:` du compose. Sans cela, les
-> écrire dans `.env.prod` n'a **aucun effet**. C'est ce que fait la PR #588.
+### Étape C — Répétition, AVANT jeudi, interrupteur ÉTEINT
 
-### Étape C — Ajouter les réglages dans `/srv/wourri/.env.prod` (ne pas activer encore)
+But : vérifier la chaîne Dokploy → conteneur sans rien changer pour les utilisateurs.
 
-```bash
-WOURI_BAOULE_SERVI=0
-WOURI_BAOULE_ASR_URL=
-WOURI_BAOULE_ASR_KEY=
-WOURI_BAOULE_AUDIO_REPLI=
-BCI_AUDIO_BASE_URL=
-```
+1. Dans Dokploy, service **whatsapp-server**, onglet *Environment*, ajouter :
 
-Les valeurs réelles (URL et clé) seront transmises par le chef de projet, **hors git**, au moment
-où le serveur voix tournera sur RunPod. La clé ne doit jamais être commitée.
+   ```
+   WOURI_BAOULE_SERVI=0
+   ```
 
-### Étape D — Le jour de la démo : activer
+2. Cliquer **Deploy**.
+3. Vérifier **dans le conteneur**, sans se fier à l'interface seule :
+
+   ```bash
+   C=$(docker ps -q -f name=wourri-whatsappserver-wtpodc | head -1)
+   docker exec "$C" printenv WOURI_BAOULE_SERVI          # attendu : 0
+   ```
+
+4. Si rien ne s'affiche, regarder si la variable est dans la définition du service.
+   La commande n'affiche que les **noms** des variables, jamais les valeurs :
+
+   ```bash
+   docker service inspect wourri-whatsappserver-wtpodc \
+     --format '{{range .Spec.TaskTemplate.ContainerSpec.Env}}{{println .}}{{end}}' | cut -d= -f1
+   ```
+
+   - **Le nom est présent** mais `printenv` reste vide : `docker service update --force wourri-whatsappserver-wtpodc`.
+   - **Le nom est absent** : Dokploy n'a pas appliqué le changement. Refaire *Deploy* dans Dokploy, puis revérifier.
+
+5. Noter ici ce qui a marché (Deploy seul, ou Deploy + `--force`). C'est ce qu'on refera jeudi.
+
+### Étape D — Le jour de la démo : allumer
 
 Le serveur voix tourne sur un GPU loué (RunPod). Son adresse a la forme
 `https://<POD_ID>-8000.proxy.runpod.net` et **change à chaque nouveau pod**.
 
-```bash
-# dans /srv/wourri/.env.prod
-WOURI_BAOULE_SERVI=1
-WOURI_BAOULE_ASR_URL=https://<POD_ID>-8000.proxy.runpod.net
-WOURI_BAOULE_ASR_KEY=<clé affichée par le notebook>
-BCI_AUDIO_BASE_URL=https://<POD_ID>-8000.proxy.runpod.net/audio
+Le chef de projet transmet l'adresse et la clé **par message privé, jamais sur git**. Il n'y a
+pas de clé pour `BCI_AUDIO_BASE_URL`, qui n'est qu'une adresse.
 
-cd /srv/wourri
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d wouri-api whatsapp-server
-```
+1. Dokploy, service **API** (`wouri-api`), onglet *Environment* :
 
-Il faut `up -d` (qui recrée les conteneurs) et non `restart` : `restart` ne relit pas `.env.prod`.
+   ```
+   BCI_AUDIO_BASE_URL=https://<POD_ID>-8000.proxy.runpod.net/audio
+   ```
+
+   Puis **Deploy**.
+
+2. Dokploy, service **whatsapp-server**, onglet *Environment* :
+
+   ```
+   WOURI_BAOULE_SERVI=1
+   WOURI_BAOULE_ASR_URL=https://<POD_ID>-8000.proxy.runpod.net
+   WOURI_BAOULE_ASR_KEY=<clé affichée par le notebook>
+   ```
+
+   Puis **Deploy**. `WOURI_BAOULE_AUDIO_REPLI` (vocal de repli) est facultatif : le laisser absent.
 
 ### Étape E — Vérifications
 
 ```bash
-# depuis la VM : le serveur voix répond
+# 1. le serveur voix répond (depuis le serveur)
 curl -s https://<POD_ID>-8000.proxy.runpod.net/health
 
-# les variables sont bien arrivées dans les conteneurs (n'affiche pas la clé)
-docker compose -f docker-compose.prod.yml exec whatsapp-server printenv WOURI_BAOULE_SERVI WOURI_BAOULE_ASR_URL
-docker compose -f docker-compose.prod.yml exec wouri-api printenv BCI_AUDIO_BASE_URL
+# 2. les variables sont dans les conteneurs (la clé : on vérifie sa longueur, pas sa valeur)
+W=$(docker ps -q -f name=wourri-whatsappserver-wtpodc | head -1)
+docker exec "$W" printenv WOURI_BAOULE_SERVI WOURI_BAOULE_ASR_URL
+docker exec "$W" sh -c 'printf %s "$WOURI_BAOULE_ASR_KEY" | wc -c'      # attendu : > 0
+A=$(docker ps -q -f name=wourri-wouriapi-4phcqw | head -1)
+docker exec "$A" printenv BCI_AUDIO_BASE_URL
+
+# 3. un enregistrement de réponse est servi (nom pris dans dictionnaires/corpus_ivr_bci.json, en .ogg)
+curl -s -o /dev/null -w '%{http_code}\n' "https://<POD_ID>-8000.proxy.runpod.net/audio/<nom>.ogg"   # attendu : 200
 ```
 
 Puis, sur WhatsApp :
@@ -99,25 +133,22 @@ Puis, sur WhatsApp :
 
 ### Retour arrière (immédiat)
 
-```bash
-# dans /srv/wourri/.env.prod
-WOURI_BAOULE_SERVI=0
-
-docker compose --env-file .env.prod -f docker-compose.prod.yml up -d whatsapp-server
-```
+1. Dans Dokploy, service **whatsapp-server** : `WOURI_BAOULE_SERVI=0`, puis **Deploy**.
+2. Vérifier avec `printenv`, comme à l'étape C.
 
 Le baoulé redevient « bientôt disponible ». Rien d'autre n'est touché.
 
-## 4. Questions à la fenêtre déploiement
+### Après la démo
+
+- Le pod RunPod est arrêté (*Terminate*) par le chef de projet.
+- Remettre `WOURI_BAOULE_SERVI=0`. Sinon les vocaux baoulé partent vers une adresse morte, et le paysan reçoit le message d'erreur de transcription.
+
+## 5. Questions restantes
 
 | # | Question | Réponse |
 |---|---|---|
-| Q1 | `DEPLOY_API_ENABLED` et `DEPLOY_WA_ENABLED` sont-ils à `true` ? | |
-| Q2 | L'image WhatsApp en production contient-elle le commit `dcaeb96` (PR #587) ? | |
-| Q3 | Le front de l'atelier LQE (PR #585 : ordre « plus récent en haut », affichage des types) est-il redéployé ? Sinon, comment le redéployer ? | |
-| Q4 | La VM peut-elle joindre `*.proxy.runpod.net` en HTTPS (pas de pare-feu sortant) ? | |
-| Q5 | Qui modifie `.env.prod` le jour J, et comment le chef de projet transmet-il la clé (canal hors git) ? | |
-| Q6 | Y a-t-il un blocage à faire ces étapes avant vendredi 2026-10-24 ? | |
+| Q5 | Qui saisit les variables dans Dokploy le jour J ? | à fixer par le chef de projet |
+| Q7 | Résultat de la répétition (étape C) : Deploy seul suffit-il, ou faut-il `--force` ? | |
 
-**Comment répondre** : remplir la colonne « Réponse » ci-dessus. Puis pousser sur la branche
-`fix/475-baoule-dictionnaire-demo` (avant fusion), ou commenter la PR #588.
+**Comment répondre** : en commentaire sur la PR #588 (le fichier reste lisible après fusion,
+dans `docs/` sur `APIPy`).
