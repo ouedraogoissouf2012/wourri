@@ -18,6 +18,9 @@ DECIDABLE_FROM = {"bronze", "admin_accepted", "admin_rejected"}
 # corriger le texte (role review) : autorise seulement AVANT publication (jamais une
 # 'production' deja servie). Le locuteur ecoute, relit et corrige puis valide.
 EDITABLE_FROM = {"bronze", "admin_accepted"}
+# reprendre (role review) : le locuteur annule sa decision et sa correction, la fiche
+# redevient « a valider ». Jamais depuis 'production' (publiee, role promote).
+REPRENABLE_FROM = {"bronze", "admin_accepted", "admin_rejected"}
 
 
 def list_tasks(*, language: str, status: str | None = None) -> list[dict]:
@@ -54,6 +57,24 @@ def edit_text(item_id: str, *, language: str, text_local: str, text_fr: str) -> 
     ):
         return {"ok": False, "reason": "locked", "status": row["status"]}
     return {"ok": True, "id": str(item_id), "text_local": text_local, "text_fr": text_fr}
+
+
+def reprendre(item_id: str, *, language: str) -> dict:
+    """Annule la decision ET la correction du locuteur : bronze + texte d'origine."""
+    row = repo.get(item_id=item_id, language=language)
+    if row is None:
+        return {"ok": False, "reason": "not_found"}
+    if not repo.reprendre(item_id=item_id, language=language, allowed_from=REPRENABLE_FROM):
+        return {"ok": False, "reason": "locked", "status": row["status"]}
+    return {"ok": True, "id": str(item_id), "status": "bronze"}
+
+
+def list_decided(*, language: str) -> list[dict]:
+    """Ce que le locuteur peut reprendre : fiches acceptees ou rejetees, et fiches encore
+    a valider mais deja corrigees (texte d'origine garde)."""
+    rows = repo.list_by(language=language)
+    return [r for r in rows if r["status"] in DECISIONS
+            or (r["status"] == "bronze" and "texte_origine" in r["meta"])]
 
 
 def promote(item_id: str, *, language: str, actor: str) -> dict:

@@ -129,13 +129,40 @@ def set_status(*, item_id, language: str, status: str, allowed_from=None) -> boo
 def update_text(*, item_id, language: str, text_local: str, text_fr: str, allowed_from) -> bool:
     """UPDATE le texte (text_local/text_fr) d'une ligne, TOUJOURS filtre par langue
     (isolation inter-locuteurs). N'agit QUE depuis `allowed_from` (garde atomique :
-    on n'edite jamais une 'production' deja publiee). Retourne True si une ligne a change."""
+    on n'edite jamais une 'production' deja publiee). Retourne True si une ligne a change.
+
+    A la premiere correction, le texte d'origine est garde dans `meta.texte_origine`
+    (les valeurs a droite d'un SET sont celles d'avant l'UPDATE) : `reprendre` peut ainsi
+    annuler une correction."""
     pid = _as_int(item_id)
     if pid is None:
         return False
     with get_conn() as conn:
         cur = conn.execute(
-            "UPDATE productions SET text_local = %s, text_fr = %s, updated_at = now()"
+            "UPDATE productions SET text_local = %s, text_fr = %s, updated_at = now(),"
+            " meta = CASE WHEN meta ? 'texte_origine' THEN meta ELSE meta || jsonb_build_object("
+            "  'texte_origine', jsonb_build_object('text_local', text_local, 'text_fr', text_fr)) END"
+            " WHERE id = %s AND language = %s AND status = ANY(%s)",
+            (text_local, text_fr, pid, language, list(allowed_from)),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+
+
+def reprendre(*, item_id, language: str, allowed_from, text_local=None, text_fr=None) -> bool:
+    """Remet une fiche « a valider » (bronze), comme avant toute intervention du locuteur :
+    statut bronze, texte d'origine restaure. Le texte vient de `meta.texte_origine`, sinon
+    de `text_local`/`text_fr` fournis (fichier d'import d'origine), sinon reste tel quel.
+    Toujours filtre par langue ; n'agit QUE depuis `allowed_from` (jamais une 'production')."""
+    pid = _as_int(item_id)
+    if pid is None:
+        return False
+    with get_conn() as conn:
+        cur = conn.execute(
+            "UPDATE productions SET status = 'bronze', updated_at = now(),"
+            " text_local = COALESCE(meta->'texte_origine'->>'text_local', %s, text_local),"
+            " text_fr = COALESCE(meta->'texte_origine'->>'text_fr', %s, text_fr),"
+            " meta = meta - 'texte_origine'"
             " WHERE id = %s AND language = %s AND status = ANY(%s)",
             (text_local, text_fr, pid, language, list(allowed_from)),
         )

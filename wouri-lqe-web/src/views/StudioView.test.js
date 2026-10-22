@@ -22,10 +22,10 @@ const PAIRE = {
 };
 const CONTENU = { id: "3", text_local: "Aw ni ce", text_fr: "Merci" };
 
-function routes({ bronze = [], accepted = [] } = {}) {
+function routes({ bronze = [], accepted = [], decided = [] } = {}) {
   apiMock.mockImplementation(async (path) => {
     if (path === "/auth/me") return { user: "loc", language: "bci", roles: ["ingest", "review", "promote"] };
-    if (path === "/tasks") return { bronze, accepted };
+    if (path === "/tasks") return { bronze, accepted, decided };
     if (path === "/corpus") return { entries: [] };
     return {};
   });
@@ -61,5 +61,26 @@ describe("StudioView — types d'element", () => {
     const section = w.findAll("section").find((s) => s.text().includes("Promouvoir"));
     expect(section.text()).toContain("Aw ni ce");
     expect(section.text()).not.toContain("kakao");
+  });
+});
+
+describe("StudioView — Mes décisions", () => {
+  it("montre l'état et le texte d'origine, et « Reprendre » remet la fiche à accepter", async () => {
+    const corrige = { ...MOT, status: "admin_rejected", text_local: "kakaw",
+                      meta: { texte_origine: { text_local: "kakao", text_fr: "cacao" } } };
+    routes({ decided: [corrige, { ...PAIRE, status: "admin_accepted" }] });
+    const w = mount(StudioView);
+    await flushPromises();
+    const onglet = w.findAll("nav button").find((b) => b.text().startsWith("Mes décisions"));
+    expect(onglet.text()).toBe("Mes décisions (2)");
+    await onglet.trigger("click");
+    const fiches = w.findAll("[data-etat]");
+    expect(fiches.map((a) => a.attributes("data-etat"))).toEqual(["admin_accepted", "admin_rejected"]);
+    expect(fiches[1].text()).toContain("Rejeté");
+    expect(fiches[1].text()).toContain("Texte d'origine : kakao");
+    await fiches[1].findAll("button").find((b) => b.text() === "Reprendre").trigger("click");
+    await flushPromises();
+    const appel = apiMock.mock.calls.find(([path]) => path === "/tasks/reprendre");
+    expect(JSON.parse(appel[1].body)).toEqual({ id: "1" });
   });
 });
