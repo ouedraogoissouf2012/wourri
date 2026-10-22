@@ -1,0 +1,1698 @@
+{
+ "version": "bci-2026-10-22",
+ "statut": "demo",
+ "entries": [
+  {
+   "id": "bci-q0",
+   "filiere": "CACAO",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ amun lua kakao waka ɔ ?",
+   "question_fr": "Quand faut-il planter le cacaoyer ?",
+   "reponse_bci": "Ɔ fata kɛ be lua kakao waka mun nzue tɔlɛ blɛ’n i bo bolɛ nun. I sɔ’n yo maan waka kanngan’m be kwla jran kekle kpa.",
+   "reponse_fr": "Il faut planter le cacaoyer en début de saison des pluies. Cela permet aux jeunes plants de bien s'enraciner.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/8997be055c794c7783a25f3eeabf64f0.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q1",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be se kɛ be lua kakao waka mun ɔn ?",
+   "question_fr": "Quelle est la densité de plantation recommandée pour le cacaoyer ?",
+   "reponse_bci": "Be se kɛ be fa waka kɔe 1100 be sie hectare kun su. Titi’n, be afiɛn’n ti nun mɛtri 3 nin mɛtri 3.",
+   "reponse_fr": "On recommande environ 1100 plants par hectare. L'espacement habituel est de 3 mètres sur 3 mètres.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/1a3861afc0b14b25a0d08a8e5f55fea0.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q2",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kwla ɲan kakao kpa ɔ ?",
+   "question_fr": "Comment obtenir des fèves de cacao de bonne qualité ?",
+   "reponse_bci": "Ɔ fata kɛ nnɛn’m be ɲin kpa naan b’a jran kpa. Kɛ be ɲin’n, be kpɛlɛ’n ti cinnjin wie.",
+   "reponse_fr": "Il faut bien fermenter puis bien sécher les fèves. Une récolte à maturité est aussi essentielle.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/fc691e5899674ecc8ead2cef7fef7247.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q3",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kwla wun kakao waka’m be su tukpacɛ’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître la maladie du swollen shoot sur le cacaoyer ?",
+   "reponse_bci": "Nɲa’m be kaci jɔɔ, kpɛkun waka’m be ɲin mlɔnmlɔn. Ɔ fata kɛ be kpɛ waka nga tukpacɛ’n o be su’n, be bo naan be ra be ndɛndɛ.",
+   "reponse_fr": "Les feuilles jaunissent et les tiges gonflent de façon anormale. Il faut arracher et brûler les arbres infectés rapidement.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/3858776f9b9644d5ae27de6da144eef6.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q4",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kwla kun kakao nma ng’ɔ tin men mun saci’n ɔ ?",
+   "question_fr": "Comment lutter contre la pourriture brune des cabosses (Phytophthora) ?",
+   "reponse_bci": "Ɔ fata kɛ be yi nɲa nga tukpacɛ’n o be su’n, naan be saci be titi. Sɛ nzue’n sin lika’n nun kpa’n, ɔ uka naan tukpacɛ’n w’a tɔman sran’m be su wie.",
+   "reponse_fr": "Il faut retirer et détruire les cabosses malades régulièrement. Un bon drainage de la parcelle aide aussi à limiter la maladie.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/f8201ddedcca45c1be78601ef3f38dd4.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q5",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kwla kun kakao fie nun ndre tɛ mun ɔn ?",
+   "question_fr": "Comment lutter contre les mirides du cacaoyer ?",
+   "reponse_bci": "Be fa ayre nga fie dilɛ nun junman difuɛ kun se kɛ be fa kun kacikacifuɛ mun’n. Sɛ be nian waka mma fie’m be lika titi’n, be sɔnman kun wie.",
+   "reponse_fr": "On utilise des traitements insecticides recommandés par un technicien agricole. L'entretien régulier du verger réduit aussi leur présence.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/b33e23a10eb74d09b3bdb4d9c3ff939d.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q6",
+   "filiere": "CACAO",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ kakao’n i nɲa’n niɔn ?",
+   "question_fr": "Quand faut-il récolter les cabosses de cacao ?",
+   "reponse_bci": "Kɛ nɲa’m be kaci be nɲa’n, mɔ be ɲin’n, yɛ be kpɛ nɲa’n niɔn. Ɔ fataman kɛ be yaci nun naan be ɲin tratra su.",
+   "reponse_fr": "On récolte quand les cabosses changent de couleur et deviennent mûres. Il ne faut pas attendre qu'elles soient trop mûres.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/a6abab0901c04bdcba4367c31d3f5aad.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q7",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kwla fa kakao mma’m be ɲin kpa ɔ ?",
+   "question_fr": "Comment bien fermenter les fèves de cacao ?",
+   "reponse_bci": "Be fa nnɛn ng’ɔ ti nɲa uflɛuflɛ’n be sie i banana nɲa’m be bo cɛn ba 5 annzɛ 7. Kɛ bé fá kɔ́’n, ɔ fata kɛ be sɛsɛ be titi.",
+   "reponse_fr": "On entasse les fèves fraîches sous des feuilles de bananier pendant 5 à 7 jours. Il faut les remuer régulièrement pendant la fermentation.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/7ced03ddaee843d391b468353de99ddc.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q8",
+   "filiere": "CACAO",
+   "question_bci": "Kɛ be ko yo naan kakao’n w’a ɲin’n, wafa sɛ yɛ be kwla yo naan w’a wu kpa ɔ ?",
+   "question_fr": "Comment bien sécher les fèves de cacao après la fermentation ?",
+   "reponse_bci": "Be fa nnɛn’m be gua via’n nun trɔ kun su tʃin ba kpanngban. Ɔ fata kɛ be kaci be titi naan b’a jran bɔbɔ.",
+   "reponse_fr": "On étale les fèves au soleil sur une claie pendant plusieurs jours. Il faut les retourner régulièrement pour un séchage uniforme.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/93ae27ee0ef34c09a858f27a924c49d0.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q9",
+   "filiere": "CACAO",
+   "question_bci": "Kɛ be di kakao fie kaan kun’n, ɔ fata kɛ lika’n yo mlanmlanmlan lele ju sɛ ?",
+   "question_fr": "Quelle ombre faut-il pour une jeune plantation de cacaoyer ?",
+   "reponse_bci": "Afuɛ klikli’m be nun’n, ɔ fata kɛ lika’n yo mlanmlanmlan. Be fa banana waka annzɛ waka nga be ɲi ndɛndɛ’n be di junman blɛ sunman nun.",
+   "reponse_fr": "Une ombre légère est nécessaire les premières années. On utilise souvent des bananiers ou des arbres à croissance rapide.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/307f8cdc15624a198124ab9ad3c31922.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q10",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kwla nian kakao fie kun m’ɔ o lɛ’n i lika ɔ ?",
+   "question_fr": "Comment entretenir une cacaoyère déjà en production ?",
+   "reponse_bci": "Amun kpɛ ijre’m be nun titi yɛ amun kpɛ waka mma nga be wuli’n be nun. Afuɛ kwlaa nun’n, kɛ be fa nnɛn’m be gua nun’n, ɔ yo maan be ɲinma’m be yo kpa wie.",
+   "reponse_fr": "Il faut désherber régulièrement et tailler les branches mortes. Une fertilisation annuelle améliore aussi la production.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/0a6a78f10ce24f4cbcf70642ca3fe6fa.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q11",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kwla yo maan kakao fie kun m’ɔ w’a yo kpɛnngbɛn’n, ɔ yo kpa ekun ɔn ?",
+   "question_fr": "Comment faire une régénération de cacaoyère vieillissante ?",
+   "reponse_bci": "Be kwla fa waka laa mun be sie i waka nɲa’m be su annzɛ be kwla fa waka uflɛuflɛ be gua waka nga be o lɛ laa’n be afiɛn. Fie dilɛ nun junman difuɛ kun kwla man e afɔtuɛ wafa kpafuɛ’n su.",
+   "reponse_fr": "On peut recéper les vieux arbres ou planter de nouveaux plants entre les anciens. Un technicien agricole peut conseiller la meilleure méthode.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/eb65b74f6d634f1284615665a6ca05a9.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q12",
+   "filiere": "CACAO",
+   "question_bci": "Kakao waka wafa benin mun yɛ ɔ fata kɛ be fa be di fie uflɛ ɔ ?",
+   "question_fr": "Quelles variétés de cacaoyer choisir pour une nouvelle plantation ?",
+   "reponse_bci": "Ɔ fata kɛ amun fa wafa nga CNRA waan amun fa’n, mɔ tukpacɛ nga be o lɔ’n be kwla tɔman be su’n. Fie dilɛ nun junman difuɛ kun kwla kle amun atin kɛ nga amun akpasua’n fa ti’n sa.",
+   "reponse_fr": "Il faut choisir des variétés recommandées par le CNRA, résistantes aux maladies locales. Un technicien agricole peut vous orienter selon votre région.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/cc6e5c15f40a49eab30da5f3f35a5738.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q13",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kpɛ kakao waka’n niɔn ?",
+   "question_fr": "Comment tailler un cacaoyer ?",
+   "reponse_bci": "Yrɛ waka mma nga be wuli’n, annzɛ tukpacɛ’n o be su’n, annzɛ nga be timan kpa’n. Kɛ be ko kpɛ ninnge’m be nun dan’n, yɛ ɔ ti kpa kɛ be kpɛ waka’n niɔn.",
+   "reponse_fr": "On enlève les branches mortes, malades ou mal orientées. La taille se fait de préférence après la récolte principale.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/37742765fbb14ba4b56b3b6a4ef2fc65.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q14",
+   "filiere": "CACAO",
+   "question_bci": "Ɔ fata kɛ be fa nɲa benin yɛ be fa yo kakao waka’n niɔn ?",
+   "question_fr": "Quelle quantité d'engrais utiliser pour le cacaoyer ?",
+   "reponse_bci": "I nuan’n fin asiɛ’n i nun nianlɛ’n, ɔ nin waka’m be afuɛ’n. Fie dilɛ’n i su like sifuɛ kun kwla se amun kɛ amun fa ayre sɔ’n i wafa trele.",
+   "reponse_fr": "La quantité dépend de l'analyse du sol et de l'âge des arbres. Un technicien agricole peut recommander la dose exacte.",
+   "intent": "QUESTION_ENGRAIS",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/1d12615446994772b71e162e02350912.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q15",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kwla wun kakao ng’ɔ ti blowa’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une cabosse mûre ?",
+   "reponse_bci": "Klɔklɔ’n i wafa’n ti’n, i nɲa’n i wafa’n kaci, ɔ kaci ufue, ɔ kaci ufue annzɛ ɔkulɛ. Kɛ a tin su’n, i nɛn’n kaci nvlɛ wie.",
+   "reponse_fr": "La couleur de la cabosse change, du vert au jaune ou orange selon la variété. Le son devient aussi creux quand on tape dessus.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/74e6a1d4996f44c1a4e1a89a152955ab.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q16",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kwla sasa kakao fie kaan kun via’n i lika ɔ ?",
+   "question_fr": "Comment protéger une jeune plantation de cacao contre le soleil ?",
+   "reponse_bci": "Be lua waka nga be fa ɲanmiɛn su lɔ blɛ kpe kan kɛ banana waka sa’n. Sɛ be fa nɲa be bo sin yia waka kanngan’m be bo’n, ɔ uka be wie.",
+   "reponse_fr": "On plante des arbres d'ombrage temporaires comme le bananier. Le paillage au pied des jeunes plants aide aussi.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/e5a6642ad2534fb4a6f0694b23b9cf51.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q17",
+   "filiere": "CACAO",
+   "question_bci": "Fie’m be nun ninnge benin mun yɛ be nin kakaa waka’m be kɔ likawlɛ kpa ɔ ?",
+   "question_fr": "Quelles sont les meilleures associations de cultures avec le cacaoyer ?",
+   "reponse_bci": "Banana plantain nin waka mma wie’m be ɲin kpa kakaa waka’m be wun lɛ. Be man sran’m be lika m’ɔ ti mlanwa’n, kpɛkun be ɲan sika uflɛ.",
+   "reponse_fr": "Le bananier plantain et certains arbres fruitiers s'associent bien avec le cacaoyer. Ils apportent de l'ombre et un revenu supplémentaire.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/2c2e4bff904a49ce897d8bd8b00094a0.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q18",
+   "filiere": "CACAO",
+   "question_bci": "Wafa sɛ yɛ be kwla kun nnɛn ngble nga be tɔ kakao nɲa’m be su’n niɔn ?",
+   "question_fr": "Comment lutter contre les rongeurs qui attaquent les cabosses ?",
+   "reponse_bci": "Ɔ fata kɛ be yo fie’n i nun sanwun titi naan lika nga be fiali lɔ’n, w’a sɔnman. Be kwla sie aya mun wie.",
+   "reponse_fr": "Il faut nettoyer régulièrement la plantation pour limiter leurs abris. Des pièges peuvent aussi être installés.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/b4b3dce12ddf4b829175b23cc380cfbc.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q19",
+   "filiere": "CACAO",
+   "question_bci": "Kɛ ɔ ko yo naan b’a kpɛ kakao nma’n i kpɛ klikli’n, ɔ di cɛn benin nun ?",
+   "question_fr": "Combien de temps avant la première récolte d'un cacaoyer ?",
+   "reponse_bci": "Titi’n, kɛ be ko di fie’n, afuɛ 3 nin 5 be afiɛn yɛ be kpɛ fie’n i nun ninnge klikli’n niɔn. Ɔ fin wafa nga be ti’n, ɔ nin wafa nga be nian be lika’n.",
+   "reponse_fr": "La première récolte arrive généralement entre 3 et 5 ans après la plantation. Elle dépend de la variété et de l'entretien.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_CACAO"
+   ],
+   "audio_reponse": "audio/3b0fbe6f76a644ff96ce2d11d427abff.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q20",
+   "filiere": "CAFÉ",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ amun lua kafe waka ɔ ?",
+   "question_fr": "Quand faut-il planter le caféier ?",
+   "reponse_bci": "Ɔ fata kɛ be lua kafe waka’n kɛ nzue tɔlɛ blɛ’n bo i bo’n. Ɔ fata kɛ be siesie asiɛ’n i kpa ka naan b’a lua like.",
+   "reponse_fr": "Il faut planter le caféier en début de saison des pluies. Le sol doit être bien préparé avant la plantation.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/522f44870efb46debebf23b0bcb150ba.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q21",
+   "filiere": "CAFÉ",
+   "question_bci": "Kafe waka wafa benin yɛ be di i Côte d’Ivoire lɔ ɔ ?",
+   "question_fr": "Quelle est l'espèce de caféier cultivée en Côte d'Ivoire ?",
+   "reponse_bci": "Robusta yɛ be di i su like dan kpa Côte d’Ivoire lɔ ɔ. Ɔ nin lɔ lika’n be kɔ likawlɛ kpa.",
+   "reponse_fr": "C'est principalement le robusta qui est cultivé en Côte d'Ivoire. Il est bien adapté au climat local.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/e7788d7886924b708e15a30844a3f07d.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q22",
+   "filiere": "CAFÉ",
+   "question_bci": "Wafa sɛ yɛ be kwla wun kafe waka’n i tukpacɛ’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie du caféier ?",
+   "reponse_bci": "Blɛ sunman nun’n, nɲa’m be yi nzɔliɛ annzɛ be ti jɔɔflɛ wafa ng’ɔ timan su’n. Ɔ fata kɛ be nian wafa nga waka mma nin sɛri’m be ti’n wie.",
+   "reponse_fr": "Les feuilles présentent souvent des taches ou jaunissent anormalement. Il faut observer aussi l'état des branches et des cerises.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/ed59cdd60fc04761a7dfd8d90a9da6ff.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q23",
+   "filiere": "CAFÉ",
+   "question_bci": "Min kafe waka’m be nɲa’m be ti jɔɔ, ngue yɛ ɔ fata kɛ n yo ɔ ?",
+   "question_fr": "Mes plants de café ont des feuilles jaunes, que dois-je faire ?",
+   "reponse_bci": "I sɔ’n kwla yo kɛ nglo lɔ ninnge’m be nunman lɛ’n, annzɛ tukpacɛ wie ti ɔ. Ɔ ti kpa kɛ be ko wun fie dilɛ’n i su like sifuɛ kun wun naan w’a wun like trele nga ti yɛ ɔ yo sɔ’n.",
+   "reponse_fr": "Cela peut venir d'un manque d'engrais ou d'une maladie. Il est conseillé de consulter un technicien agricole pour identifier la cause exacte.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/a99c29538a1d4ab6a9352c67aa92bca4.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q24",
+   "filiere": "CAFÉ",
+   "question_bci": "Wafa sɛ yɛ be kwla kun kafe waka’m be nun tukpacɛ’n niɔn ?",
+   "question_fr": "Comment lutter contre la trachéomycose du caféier ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ waka nga tukpacɛ’n w’a tɔ be su kpa’n, be bo naan be ra be. Sɛ be nian be lika kpa’n, tukpacɛ’n i trulɛ’n yo kaan wie.",
+   "reponse_fr": "Il faut arracher et brûler les plants gravement atteints. Un bon entretien général limite aussi la propagation de la maladie.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/dc00dc29268c484f9f40f0daaeb8cf56.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q25",
+   "filiere": "CAFÉ",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be ti kafe nma mun ɔn ?",
+   "question_fr": "Quand faut-il récolter les cerises de café ?",
+   "reponse_bci": "Kɛ sɛri’m be yo ɔkwlɛ kpa mɔ be ɲin’n, yɛ e kpɛ be ɔ. Ɔ fataman kɛ amun kpɛ sɛri nga be te yo nɲa’n.",
+   "reponse_fr": "On récolte quand les cerises deviennent bien rouges et mûres. Il ne faut pas récolter les cerises encore vertes.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/49665f07c0274d42b4769e7a38257cc1.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q26",
+   "filiere": "CAFÉ",
+   "question_bci": "Kɛ be ko ti kafe’n, wafa sɛ yɛ be kwla yo naan b’a wu kpa ɔ ?",
+   "question_fr": "Comment bien sécher les grains de café après récolte ?",
+   "reponse_bci": "Be fa sɛri’m be gua lika sanwun kun su via’n nun. Ɔ fata kɛ be kaci be titi lele naan b’a jran mlɔnmlɔn.",
+   "reponse_fr": "On étale les cerises au soleil sur une aire propre. Il faut les retourner régulièrement jusqu'à séchage complet.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/50964122080e486b8e708ed339fe17c6.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q27",
+   "filiere": "CAFÉ",
+   "question_bci": "Ɔ fata kɛ be fa kafe waka’m be nun waka’m be nun nɲa wafa benin ?",
+   "question_fr": "Quelle densité de plantation choisir pour le caféier ?",
+   "reponse_bci": "Hectare kun nun’n, waka kɔe 1600 lele 2000 be sɔnnin kpa. I sɔ’n kusu taka wafa nga be fali’n su.",
+   "reponse_fr": "Une densité d'environ 1600 à 2000 plants par hectare est courante. Cela dépend aussi de la variété choisie.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/563b550617a64af8bc3d2cc2973d4b87.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q28",
+   "filiere": "CAFÉ",
+   "question_bci": "Wafa sɛ yɛ be kwla kpɛ kafe waka’n i nun naan w’a yo kpa ɔ ?",
+   "question_fr": "Comment tailler un caféier pour améliorer la production ?",
+   "reponse_bci": "Be yi waka mma nga be wuli’n, ɔ nin waka mma nga be timan cinnjin’n. Kɛ be kpɛ waka’n, ɔ yo maan aunmuan’n wlu lɔ, kpɛkun ɔ man waka mma.",
+   "reponse_fr": "On enlève les branches mortes et les gourmands inutiles. La taille favorise l'aération et la fructification.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/0ba85cf39afb4505917e9d411e8cacea.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q29",
+   "filiere": "CAFÉ",
+   "question_bci": "Ɔ fata kɛ be fa nglo lɔ ninnge benin yɛ ɔ fata kɛ be fa yo kafe waka mun ɔn ?",
+   "question_fr": "Quelle quantité d'engrais utiliser pour le caféier ?",
+   "reponse_bci": "I sɔ’n taka kafe waka’n i afuɛ’n su, ɔ nin asiɛ’n i nun nianlɛ’n su. Fie’m be su junman difuɛ kun kwla man amun afɔtuɛ trele kun.",
+   "reponse_fr": "La dose dépend de l'âge du caféier et de l'analyse du sol. Un technicien agricole peut donner une recommandation précise.",
+   "intent": "QUESTION_ENGRAIS",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/cfe27263e555439da1d80984ec04941a.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q30",
+   "filiere": "CAFÉ",
+   "question_bci": "Wafa sɛ yɛ be kwla sasa kafe waka mun naan nnɛn ngble’m b’a saciman be ɔ ?",
+   "question_fr": "Comment protéger le caféier contre les scolytes ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ sɛri mɔ w’a ɲin’n ndɛndɛ naan b’a truman. Aya trele wie’m be o lɛ wie.",
+   "reponse_fr": "Il faut récolter rapidement les cerises mûres pour limiter leur installation. Des pièges spécifiques existent aussi.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/73b9941500304ab7966ed6d8c53d5309.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q31",
+   "filiere": "CAFÉ",
+   "question_bci": "Ɔ ka naan b’a ti kafe waka’n i kpɛ klikli’n, ɔ di cɛn benin nun ?",
+   "question_fr": "Combien de temps avant la première récolte d'un caféier ?",
+   "reponse_bci": "Titi’n, kɛ be ko di fie’n, afuɛ nɲɔn nin nsan be afiɛn yɛ be kpɛ fie’n i nun ninnge klikli’n niɔn. I sin’n, kɛ waka’n i afuɛ’n ɔ́ kɔ́ i ɲrun’n, i nun ninnge’m be yilɛ’n yo dan.",
+   "reponse_fr": "La première récolte arrive généralement entre 2 et 3 ans après la plantation. La production augmente ensuite avec l'âge du plant.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/0c35846006cd46a49a74824021992f72.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q32",
+   "filiere": "CAFÉ",
+   "question_bci": "Wafa sɛ yɛ be kwla yo maan kafe fie laa’m be yo uflɛuflɛ ɔ ?",
+   "question_fr": "Comment rajeunir une vieille caféière ?",
+   "reponse_bci": "Be kwla kpɛ waka laa’m be nun naan be wla uflɛuflɛ’m be fanngan. Wawa blɛ nun yɛ be yo i sɔ ɔ.",
+   "reponse_fr": "On peut recéper les vieux pieds pour qu'ils repartent avec de nouvelles branches. Cette opération se fait pendant la saison sèche.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/43a13715e2d34b769e1e1e80b6ffbc00.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q33",
+   "filiere": "CAFÉ",
+   "question_bci": "Kafe waka’n i wunmiɛn’n ti sɛ ?",
+   "question_fr": "Quelle ombre faut-il pour le caféier ?",
+   "reponse_bci": "Wawɛ m’ɔ ti mlanmlanmlan’n, ɔ yo maan sɛri’n yo kpa. Be se kɛ be fa waka nga be kwla man sran’m be wun’n.",
+   "reponse_fr": "Une ombre légère à modérée favorise la qualité des cerises. Des arbres d'ombrage adaptés sont recommandés.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/0e1b096a837941c382375955d7c50818.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q34",
+   "filiere": "CAFÉ",
+   "question_bci": "Wafa sɛ yɛ e kwla wun kafe ng’ɔ ti blowa’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une cerise de café mûre ?",
+   "reponse_bci": "Sɛri’n kaci ɔkwlɛ kpa, kpɛkun kɛ be kan’n, ɔ yo mlanmlanmlan kan. Sɛri ng’ɔ te yo nɲa annzɛ m’ɔ ti kekle’n, ɔ nin a juman.",
+   "reponse_fr": "La cerise devient rouge vif et légèrement molle au toucher. Une cerise encore verte ou dure n'est pas prête.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_CAFE"
+   ],
+   "audio_reponse": "audio/faf8f597e2df4103a7616b0a28e4ada7.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q35",
+   "filiere": "HÉVÉA",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ amun lua waka nga be flɛ i kɛ evea’n niɔn ?",
+   "question_fr": "Quand faut-il planter l'hévéa ?",
+   "reponse_bci": "Ɔ fata kɛ be lua waka nga be flɛ i kɛ lastikɛ’n, kɛ nzue tɔlɛ blɛ’n bo i bo’n. Ɔ fata kɛ asiɛ’n yo mlanmlanmlan, yɛ nzue’n sin nun kpa.",
+   "reponse_fr": "Il faut planter l'hévéa en début de saison des pluies. Le sol doit être meuble et bien drainé.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/40da144bfdf441708c351541daf75123.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q36",
+   "filiere": "HÉVÉA",
+   "question_bci": "Evea waka i wafa benin yɛ ɔ fata kɛ n fa di fie uflɛ ɔ ?",
+   "question_fr": "Quel clone d'hévéa choisir pour une nouvelle plantation ?",
+   "reponse_bci": "Ɔ fata kɛ amun fa klon kun mɔ teknisiɛn kun m’ɔ nian amun akpasua’n su’n, ɔ kan kle amun’n. Klone wie’m be kwla tra tukpacɛ nga be o lɔ’n be kpa.",
+   "reponse_fr": "Il faut choisir un clone recommandé par un technicien selon votre région. Certains clones sont plus résistants aux maladies locales.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/c63df7527b9f4e4f8464667209a2ff03.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q37",
+   "filiere": "HÉVÉA",
+   "question_bci": "Afuɛ benin nun yɛ be kwla bo evea waka’n i bo ɔ ?",
+   "question_fr": "À quel âge peuton commencer la saignée de l'hévéa ?",
+   "reponse_bci": "Titi’n, kɛ be ko di afuɛ 6 annzɛ 7, yɛ be bo i bo kɛ be bo i bo’n niɔn. Sran ng’ɔ si waka’n i yo kpa’n, ɔ kwla nian sɛ waka’n w’a yo kpa o.",
+   "reponse_fr": "La saignée commence généralement vers 6 à 7 ans, quand le tronc a une taille suffisante. Un technicien peut vérifier si l'arbre est prêt.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/3f5904c3d4814f0199966ff9627fab1e.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q38",
+   "filiere": "HÉVÉA",
+   "question_bci": "Wafa sɛ yɛ be kwla bo waka nga be flɛ i kɛ evea’n i su kpa naan b’a sacimɛn i ɔ ?",
+   "question_fr": "Comment bien saigner un hévéa sans l'abîmer ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ waka’n i kplo’n nun kan naan w’a kanman waka’n. Ɔ fata kɛ be kpɛ waka’n i nun titi naan waka’n w’a saciman.",
+   "reponse_fr": "Il faut inciser légèrement l'écorce sans toucher le bois. La saignée doit suivre un rythme régulier pour préserver l'arbre.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/4b4f0bafec5e45649a7b63d4a16f635b.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q39",
+   "filiere": "HÉVÉA",
+   "question_bci": "Wafa sɛ yɛ be kwla wun tukpacɛ kun m’ɔ o evea waka’n su’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie de l'hévéa ?",
+   "reponse_bci": "Blɛ sunman nun’n, i nɲa’n annzɛ i nɲa’n i lika wie’m be timan kpa. Ɔ fata kɛ be nian wafa nga latɛsi’n i yilɛ’n su kan ase’n su wie.",
+   "reponse_fr": "Les feuilles ou l'écorce présentent souvent des taches anormales. Il faut surveiller aussi la baisse de production de latex.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/ed2e83076fc140cf9b0fddeccecffa6d.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q40",
+   "filiere": "HÉVÉA",
+   "question_bci": "Wafa sɛ yɛ be kwla kun tukpacɛ nga be tɔ evea waka’n i nɲa’m be su’n niɔn ?",
+   "question_fr": "Comment lutter contre les maladies des feuilles de l'hévéa ?",
+   "reponse_bci": "Fie’m be su like sifuɛ kun kwla se be kɛ be yo be ayre ng’ɔ nin i fata’n. Sɛ waka’m be afiɛn’n ti nun kpa’n, ɔ yo maan tukpacɛ’n truman kpa wie.",
+   "reponse_fr": "Un traitement adapté peut être recommandé par un technicien agricole. Un bon espacement des arbres limite aussi la propagation.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/3e52553843b144698af2008c3d662e18.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q41",
+   "filiere": "HÉVÉA",
+   "question_bci": "Ɔ fata kɛ be fa waka nga be flɛ i kɛ evea’n be gua waka’m be nun ?",
+   "question_fr": "Quelle densité de plantation choisir pour l'hévéa ?",
+   "reponse_bci": "Waka 400 lele 500 be sɔnnin hectare kun nun. I liɛ’n, waka kunngunngun’m be kwla yo kpa.",
+   "reponse_fr": "Une densité de 400 à 500 arbres par hectare est courante. Cela permet un bon développement de chaque arbre.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/67ed07fd9cd24d69984024f2ce6ebd52.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q42",
+   "filiere": "HÉVÉA",
+   "question_bci": "Ɔ fata kɛ be fa nɲa nɲɛ be fa yo waka nga be flɛ i kɛ evea’n ?",
+   "question_fr": "Quelle quantité d'engrais utiliser pour l'hévéa ?",
+   "reponse_bci": "I nuan’n fin waka’n i afuɛ’n nin asiɛ’n i wafa’n. Fie dilɛ nun teknisiɛn kun kwla man afɔtuɛ trele kun.",
+   "reponse_fr": "La quantité dépend de l'âge de l'arbre et du type de sol. Un technicien agricole peut donner une recommandation précise.",
+   "intent": "QUESTION_ENGRAIS",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/e3e0cf2c092941729a0f80e5c1b0841d.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q43",
+   "filiere": "HÉVÉA",
+   "question_bci": "Wafa sɛ yɛ be nian waka kaan kun m’ɔ ti kɛ evea sa’n i lika ɔ ?",
+   "question_fr": "Comment entretenir une jeune plantation d'hévéa ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ ijre tɛ waka kanngan’m be wun lɛ titi. Tukpacɛ’m be su nianlɛ’n ti cinnjin wie.",
+   "reponse_fr": "Il faut désherber régulièrement autour des jeunes plants. Une surveillance contre les maladies est aussi nécessaire.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/95335268dd8c4dafb9ca33d38e4f0177.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q44",
+   "filiere": "HÉVÉA",
+   "question_bci": "Ɔ cɛ kan naan b’a bo waka nga be flɛ i kɛ evea’n i bo kpɛ klikli’n ?",
+   "question_fr": "Combien de temps avant la première saignée d'un hévéa ?",
+   "reponse_bci": "Titi’n, kɛ be ko lua’n, ɔ fata kɛ be minndɛ afuɛ 6 annzɛ 7. Ɔ fata kɛ waka’n i bo’n yo nglo lɔ lika’n i wunmuan’n.",
+   "reponse_fr": "Il faut généralement attendre 6 à 7 ans après la plantation. Le tronc doit avoir une circonférence suffisante.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/97219ce69c5d4a4dbaadaa1176c0f0a5.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q45",
+   "filiere": "HÉVÉA",
+   "question_bci": "Kɛ i ndjue’n ko gua’n, wafa sɛ yɛ be kwla sasa evea’n niɔn ?",
+   "question_fr": "Comment conserver le latex après la saignée ?",
+   "reponse_bci": "Ɔ fata kɛ be fa ndɛndɛ be gua sɛ kun m’ɔ ti sanwun’n nun. Ɔ fata kɛ be fa latɛsi’n be kɔ lika nga be fa yo ninnge mun lɔ’n, naan w’a cɛman.",
+   "reponse_fr": "Il faut le collecter rapidement dans un récipient propre. Le latex doit être transporté vers le lieu de traitement sans tarder.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/032412f1fb8845a988968c91ee2dd782.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q46",
+   "filiere": "HÉVÉA",
+   "question_bci": "Cɛn’n nun’n, blɛ benin yɛ ɔ ti kpa kɛ be bo evea waka’n su ɔ ?",
+   "question_fr": "Quel est le meilleur moment de la journée pour saigner l'hévéa ?",
+   "reponse_bci": "Nglɛmun ndɛ kpa’n, yɛ ɔ ti blɛ kpafuɛ’n niɔn, afin latɛsi’n i nun nzue’n ti dan. Cɛn’n i dolɛ’n ti’n, nzue sɔ’n i sin sinlɛ’n yo kaan.",
+   "reponse_fr": "Tôt le matin est le meilleur moment car le flux de latex est plus important. La chaleur du jour réduit ce flux.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_HEVEA"
+   ],
+   "audio_reponse": "audio/18b83c7dc4d64f92986584a9a129415f.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q47",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be lua nme waka mun ɔn ?",
+   "question_fr": "Quand faut-il planter le palmier à huile ?",
+   "reponse_bci": "Ɔ fata kɛ be di fie’n, kɛ nzue tɔlɛ blɛ’n bo i bo’n. Kunman nga be siesie i kpa’n, ɔ yo maan waka’n i bo’n yo kpa.",
+   "reponse_fr": "Il faut planter en début de saison des pluies. Un trou bien préparé favorise l'enracinement.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/e5d01be8a916450badb05133608a4046.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q48",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Ɔ fata kɛ be fa ahe nma wafa benin yɛ be fa di fie’n niɔn ?",
+   "question_fr": "Quelle densité de plantation choisir pour le palmier à huile ?",
+   "reponse_bci": "Hectare kun nun’n, waka 143 be sɔnnin kpa. Be nga be se kɛ be afiɛn’n ti nun’n, ɔ ti kɛ mɛtri 9 sa, ɔ ti kɛ triangle sa.",
+   "reponse_fr": "Une densité de 143 plants par hectare est courante. L'espacement recommandé est d'environ 9 mètres en triangle.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/c32e0ffe9f784e17bdd8806baa34cfa6.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q49",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Wafa sɛ yɛ be kwla wun nme nun tukpacɛ’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie du palmier à huile ?",
+   "reponse_bci": "Nɲa’m be kwla yo jɔɔ annzɛ be kwla wu mlɔnmlɔn. Ɔ fata kɛ be nian wafa nga waka’n i awlɛn’n ti’n wie.",
+   "reponse_fr": "Les feuilles peuvent jaunir ou se dessécher anormalement. Il faut aussi observer l'état du cœur du palmier.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/16b06b5d31714a87973f538733b18917.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q50",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Wafa sɛ yɛ be kwla kun nme awlɛn m’ɔ saci’n ɔn ?",
+   "question_fr": "Comment lutter contre la pourriture du cœur du palmier à huile ?",
+   "reponse_bci": "Ɔ fata kɛ be yi lika nga tukpacɛ’n w’a tɔ be su’n, naan be saci be ndɛndɛ. Sɛ nzue’n sin lika kpa’n, tukpacɛ sɔ’n i ɲanlɛ’n yo kaan wie.",
+   "reponse_fr": "Il faut retirer et détruire les parties atteintes rapidement. Un bon drainage limite aussi le risque de cette maladie.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/906a2fab5754461fbdf48530747fba7e.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q51",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ ahe mun ɔn ?",
+   "question_fr": "Quand faut-il récolter les régimes de palme ?",
+   "reponse_bci": "Kɛ waka mma’m be bo i bo be bɔbɔ be tɔlɛ asiɛ’n su’n, yɛ be bo ijre’n i kpɛlɛ bo ɔ. I sɔ’n kle kɛ nɲa’n w’a ɲin.",
+   "reponse_fr": "On récolte quand les fruits commencent à tomber naturellement au sol. Cela indique que le régime est mûr.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/3d7ae0167e1d41289951a27624e27bd2.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q52",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Wafa sɛ yɛ be kwla wun ahe nma m’ɔ ti blowa’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître un régime de palme mûr ?",
+   "reponse_bci": "Fluwa mma’m be su kaci ɔkulɛ yɛ wie’m be su bo i bo. Kpɛkun, kpanwun’n su yo nɔnnin kpa.",
+   "reponse_fr": "Les fruits deviennent orangés et certains commencent à se détacher. Le régime devient aussi plus lourd.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/ee9f6011211846a9871b59e6d88b6245.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q53",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Ɔ fata kɛ be fa nɲa nɲɛ be fa yo waka nga be flɛ i kɛ nme’n ?",
+   "question_fr": "Quelle quantité d'engrais utiliser pour le palmier à huile ?",
+   "reponse_bci": "I nuan’n fin ijre’n i afuɛ’n nin asiɛ’n i nun nianlɛ’n. Fie dilɛ’n i su like sifuɛ kun kwla se amun kɛ amun fa ayre sɔ’n i wafa ng’ɔ nin i fata’n.",
+   "reponse_fr": "La quantité dépend de l'âge du palmier et de l'analyse du sol. Un technicien agricole peut recommander la dose adaptée.",
+   "intent": "QUESTION_ENGRAIS",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/6e82dbea88354793ba285d136914f61d.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q54",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Wafa sɛ yɛ be nian nme fie kaan kun i lika ɔ ?",
+   "question_fr": "Comment entretenir une jeune plantation de palmier à huile ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ ijre tɛ waka kanngan’m be wun lɛ titi. Sɛ be fa nnɛn’n i nzɔliɛ like’n be gua be nun kpa’n, ɔ yo maan be yo dan wie.",
+   "reponse_fr": "Il faut désherber régulièrement autour des jeunes plants. Une fertilisation adaptée favorise aussi leur croissance.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/d5f0da21a77f4b899114093fc56767fa.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q55",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Ɔ ka naan b’a kpɛ nme waka’n i su mma klikli’n, ɔ cɛ cɛn benin nun ?",
+   "question_fr": "Combien de temps avant la première récolte d'un palmier à huile ?",
+   "reponse_bci": "Titi’n, kɛ be ko di fie’n, afuɛ 3 annzɛ 4 sin yɛ be kpɛ fie’n i nun ninnge klikli’n niɔn. I sin’n, ninnge nga be yi be’n, be sɔnnin blɛblɛblɛ.",
+   "reponse_fr": "La première récolte arrive généralement 3 à 4 ans après la plantation. La production augmente ensuite progressivement.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/49c7956cf38c4b698374fca139e608a9.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q56",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Wafa sɛ yɛ be kwla kun nme nu nnɛn mun ɔn ?",
+   "question_fr": "Comment lutter contre les rats palmistes ?",
+   "reponse_bci": "Be kwla fa aya annzɛ wafa nga teknisiɛn kun kle be’n. Sɛ be nian fie’n su kpa’n, ɔ yo maan be tranman lɛ kun.",
+   "reponse_fr": "Des pièges ou des méthodes recommandées par un technicien peuvent être utilisés. Un bon entretien de la plantation limite aussi leur présence.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/3c08b74a6e0c4accb881a837acb23867.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q57",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Wafa sɛ yɛ be kpɛ nme waka’n i nɲa m’ɔ ti kee’n niɔn ?",
+   "question_fr": "Comment tailler les palmes sèches du palmier à huile ?",
+   "reponse_bci": "Be fa like ng’ɔ nin i fata’n be kpɛ waka nɲa nga be ti mlanwa annzɛ tukpacɛ’n o be su’n. I liɛ’n, aunmuan’n wlu lɔ kpa, kpɛkun ɔ yo maan like’m be kpɛlɛ’n yo pɔpɔ.",
+   "reponse_fr": "On coupe les palmes sèches ou malades avec un outil adapté. Cela améliore l'aération et facilite la récolte.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/3973ef28416348d09f294c61efeb5d45.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q58",
+   "filiere": "PALMIER À HUILE",
+   "question_bci": "Ajalɛ wafa benin yɛ ɔ fata kɛ be nian waka ng’ɔ ti kɛ nme sa’n i lika ɔ ?",
+   "question_fr": "Quel entretien faire autour d'un jeune palmier à huile ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ ijre’m be nun titi, naan be nian tukpacɛ’m be lika. Sɛ be fa asiɛ’n be gua asiɛ’n su’n, ɔ kwla uka naan asiɛ’n w’a yoman mlanmlanmlan.",
+   "reponse_fr": "Il faut désherber régulièrement et surveiller les maladies. Un paillage peut aussi aider à conserver l'humidité du sol.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_PALMIER_HUILE"
+   ],
+   "audio_reponse": "audio/92823cb66d0145dbbfd1edc2f5909821.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q74",
+   "filiere": "COTON",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be lua fɔkɔ ɔ ?",
+   "question_fr": "Quand faut-il semer le coton ?",
+   "reponse_bci": "Ɔ fata kɛ nzue tɔlɛ blɛ’n i bo bolɛ nun yɛ be gua fie’n niɔn. Cɛn trele nga bé fá dí junman’n, ɔ fin lika nga be o’n.",
+   "reponse_fr": "Il faut semer en début de saison des pluies. La date exacte dépend de la région.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/7833ad5878884bc6b56e5a05274bafed.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q75",
+   "filiere": "COTON",
+   "question_bci": "Ɔ fata kɛ n fa awie gualɛ wafa benin yɛ ɔ fata kɛ n fa gua fɔkɔ’n su ɔ ?",
+   "question_fr": "Quelle densité de semis choisir pour le coton ?",
+   "reponse_bci": "Be fa waka kɔe 80.000 lele 100.000 be sie i hectare kun su. Asiɛ wafa’n su yɛ ɔ taka be afiɛn’n niɔn.",
+   "reponse_fr": "Une densité d'environ 80 000 à 100 000 plants par hectare est courante. L'espacement dépend du type de sol.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/977b88a164184f7998a3f10c691c3b74.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q76",
+   "filiere": "COTON",
+   "question_bci": "Wafa sɛ yɛ be kwla wun fɔkɔ waka’n i tukpacɛ’n niɔn ?",
+   "question_fr": "Comment reconnaître une maladie du cotonnier ?",
+   "reponse_bci": "Nɲa’m be kwla ɲan nzɔliɛ annzɛ be kwla yo mlanmlanmlan. Ɔ fata kɛ be nian wafa nga kapsulu’m be ti’n su wie.",
+   "reponse_fr": "Les feuilles peuvent présenter des taches ou se déformer. Il faut aussi surveiller l'état des capsules.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/a452005eac1b4202bb72e0515b5c4627.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q77",
+   "filiere": "COTON",
+   "question_bci": "Wafa sɛ yɛ be kwla kun fɔkɔ waka’n i nun nnɛn mun ɔn ?",
+   "question_fr": "Comment lutter contre les chenilles du cotonnier ?",
+   "reponse_bci": "Sran ng’ɔ si ayre sɔ’n i yo kpa’n, ɔ kwla se amun kɛ amun fa ayre nga be fa kun kacikacifuɛ mun’n. Sɛ be nian fie’n su titi’n, ɔ uka be naan b’a kwla wlu nun ndɛndɛ.",
+   "reponse_fr": "Un traitement insecticide adapté peut être recommandé par un technicien. Une surveillance régulière du champ aide à intervenir tôt.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/abd3c19ef1fb41c08b57791f8da2eeae.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q78",
+   "filiere": "COTON",
+   "question_bci": "Ɔ fata kɛ n fa nglo lɔ ninnge benin yɛ ɔ fata kɛ n fa yo fɔkɔ ɔ ?",
+   "question_fr": "Quelle quantité d'engrais utiliser pour le coton ?",
+   "reponse_bci": "I nuan’n fin asiɛ’n i nun nianlɛ’n nin i wafawafa’n. Fie dilɛ’n i su like sifuɛ kun kwla se amun kɛ amun fa ayre sɔ’n i wafa ng’ɔ nin i fata’n.",
+   "reponse_fr": "La quantité dépend de l'analyse du sol et de la variété. Un technicien agricole peut recommander la dose adaptée.",
+   "intent": "QUESTION_ENGRAIS",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/5f9183c09dc5403d80f52e21cbac0c46.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q79",
+   "filiere": "COTON",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ fɔkɔ’n niɔn ?",
+   "question_fr": "Quand faut-il récolter le coton ?",
+   "reponse_bci": "Kɛ kapsulu’m be tike mlɔnmlɔn’n, yɛ be kpɛ ninnge’m be nun ɔn. Ɔ ti kpa kɛ be kpɛ i lika nga lika’n ti mlanwa’n nun.",
+   "reponse_fr": "On récolte quand les capsules s'ouvrent complètement. Il faut récolter par temps sec de préférence.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/612d2626f41f4f499fb2faf199afef81.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q80",
+   "filiere": "COTON",
+   "question_bci": "Kɛ be ko kpɛ fɔkɔ’n, wafa sɛ yɛ be kwla sie i kpa ɔ ?",
+   "question_fr": "Comment bien conserver le coton après récolte ?",
+   "reponse_bci": "Ɔ fata kɛ be sie i lika m’ɔ ti nvuɛn m’ɔ ti sanwun’n nun. Ɔ fataman kɛ be fa fɔkɔ’n be sanngan ninnge fiɛnfiɛn’m be nun.",
+   "reponse_fr": "Il faut le stocker dans un endroit sec et propre. Le coton ne doit pas être mélangé avec des impuretés.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/497cd73e85e042c5ae4762d814334e77.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q81",
+   "filiere": "COTON",
+   "question_bci": "Wafa sɛ yɛ be kwla nian ijre tɛ nga be o fɔkɔ fie nun’n be lika ɔ ?",
+   "question_fr": "Comment lutter contre les mauvaises herbes dans un champ de coton ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ ijre’m be nun titi, sɛ be fa be sa annzɛ be fa ninnge ng’ɔ nin i fata’n. I li le mɔcuɛ klikli’m be nun yɛ ɔ ti cinnjin kpa kɛ be fa be wun wlɛ i ndɛ’n nun ɔn.",
+   "reponse_fr": "Un désherbage régulier, manuel ou avec des produits adaptés, est nécessaire. Il faut intervenir surtout dans les premières semaines.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/58848b954e2b4eff92d289e00ee7482b.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q82",
+   "filiere": "COTON",
+   "question_bci": "Ajalɛ benin yɛ ɔ fata kɛ be ɲin yi i fɔkɔ waka’m be afiɛn ɔn ?",
+   "question_fr": "Quel espacement respecter entre les plants de coton ?",
+   "reponse_bci": "Ɔ ti tɛtɛ kɛ be fa nglo lɔ ninnge’m be afiɛn’n i nun 80 cm sa. Wafa nga waka’m be afiɛn’n ti nun’n, ɔ fin waka wafawafa’n.",
+   "reponse_fr": "Un espacement d'environ 80 cm entre les lignes est courant. L'espacement entre les plants dépend de la variété.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/17df2e5662ec4799b6287f0ffc70d2fd.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q83",
+   "filiere": "COTON",
+   "question_bci": "Kɛ be lua fɔkɔ’n, ɔ nin kɛ be kpɛ i’n, ɔ di blɛ benin nun ?",
+   "question_fr": "Combien de temps entre le semis et la récolte du coton ?",
+   "reponse_bci": "Titi’n, kɛ be ko gua like’n, ɔ di anglo 5 annzɛ 6. I sɔ’n kwla yo fanunfanun, ɔ fin wafa nga be ti’n, ɔ nin lika’n i nun lika’n.",
+   "reponse_fr": "Il faut généralement compter 5 à 6 mois entre le semis et la récolte. Cela peut varier selon la variété et le climat.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/ea6d6d1466804b7ea8b816f905f898ec.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q84",
+   "filiere": "COTON",
+   "question_bci": "Wafa sɛ yɛ be yo fɔkɔ mma’m be ayre ka naan b’a lua ɔ ?",
+   "question_fr": "Comment traiter les graines de coton avant le semis ?",
+   "reponse_bci": "Be kwla se kɛ be yo tukpacɛ’n i ayre ka naan b’a lua fie’n. Ɔ fata kɛ be fa nɲa nga be le fluwa’n, mɔ be ti kpa’n.",
+   "reponse_fr": "Un traitement contre les maladies peut être recommandé avant le semis. Il faut utiliser des graines certifiées de bonne qualité.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/d2dc85b2cbf043d78a8eafde08c1743f.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q85",
+   "filiere": "COTON",
+   "question_bci": "Wafa sɛ yɛ e kwla wun blɛ kpa nga be kwla kpɛ fɔkɔ’n niɔn ?",
+   "question_fr": "Comment reconnaître le moment idéal de récolte du coton ?",
+   "reponse_bci": "Kapsulu nga be ti tikewa kpa mɔ be wun fɔkɔ ufue’n, be kle blɛ kpa’n. Nán amun minndɛ lele naan fɔkɔ’n w’a yo fiɛn.",
+   "reponse_fr": "Les capsules bien ouvertes avec du coton blanc visible indiquent le bon moment. Il ne faut pas attendre que le coton se salisse.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_COTON"
+   ],
+   "audio_reponse": "audio/79b23d5d27574e799a97e90547e78365.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q86",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Blɛ benin nun yɛ ɔ ti kpa kɛ be lua avie mɔ nzue tɔ’n niɔn ?",
+   "question_fr": "Quelle est la meilleure période pour semer le riz pluvial ?",
+   "reponse_bci": "Ɔ fata kɛ be lua ninnge mun nzue tɔlɛ blɛ’n i bo bolɛ nun. Ɔ fata kɛ be siesie asiɛ’n i kpa ka naan b’a lua like.",
+   "reponse_fr": "Il faut semer en début de saison des pluies. Le sol doit être bien préparé avant le semis.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/4b7af46351c74e6d846b35dceb39aa31.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q87",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Blɛ benin nun yɛ ɔ ti kpa kɛ be lua avie mɔ be gua su nzue’n niɔn ?",
+   "question_fr": "Quelle est la meilleure période pour semer le riz irrigué ?",
+   "reponse_bci": "Nzue ng’ɔ o lɛ’n su yɛ be kwla lua fie’n niɔn. Fie dilɛ’n i su like sifuɛ kun kwla man e afɔtuɛ lika sɔ’n nun lɔ blɛ kpafuɛ’n su.",
+   "reponse_fr": "Le semis peut se faire à différentes périodes selon la disponibilité en eau. Un technicien agricole peut conseiller le meilleur calendrier local.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/66c99aa819d4466987bddffa92bccdeb.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q88",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Ɔ fata kɛ be fa fie’n i gualɛ wafa benin yɛ ɔ fata kɛ be fa gua avie’n su ɔ ?",
+   "question_fr": "Quelle densité de semis choisir pour le riz ?",
+   "reponse_bci": "Nɲa mma kilo 80 lele 100 be sɔnnin kpa hectare kun nun. I sɔ’n taka wafa nga be fa lua like’n su.",
+   "reponse_fr": "Une densité d'environ 80 à 100 kg de semences par hectare est courante. Cela dépend de la méthode de semis utilisée.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/fcbf510c59514eeba8928a539d8b0841.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q89",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Wafa sɛ yɛ be kwla wun avie tukpacɛ kun i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie du riz ?",
+   "reponse_bci": "Nɲa’m be kwla yo nzɔliɛ annzɛ be kwla kaci ufue wafa ng’ɔ timan su’n. Ɔ fata kɛ be nian waka’m be ɲrun’n su wie.",
+   "reponse_fr": "Les feuilles peuvent présenter des taches ou brunir anormalement. Il faut aussi surveiller la croissance des plants.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/46597084967e43dcb1ecd7448da91735.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q90",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Wafa sɛ yɛ be kwla kun avie’n i tɔlɛ’n niɔn ?",
+   "question_fr": "Comment lutter contre la pyriculariose du riz ?",
+   "reponse_bci": "Fie’m be su like sifuɛ kun kwla se be kɛ be yo be ayre ng’ɔ nin i fata’n. Be wafawafa nga be kwla jran kekle’n, be o lɛ wie.",
+   "reponse_fr": "Un traitement adapté peut être recommandé par un technicien agricole. Des variétés résistantes existent aussi.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/e65da7a0ee374c4ea6021e6e7b3e5a8c.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q91",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Wafa sɛ yɛ be kwla nian anunman nga be di avie’n be lika avie fie nun ɔn ?",
+   "question_fr": "Comment lutter contre les oiseaux granivores dans une rizière ?",
+   "reponse_bci": "Srɛ m’ɔ kun sran mun annzɛ be nian be su titi’n, ɔ kwla yo maan like’n saciman. I li kɛ waka’m be su mantan ɲinlɛ’n, yɛ ɔ ti cinnjin kpa kɛ be yo be like ɔ.",
+   "reponse_fr": "Des épouvantails ou une surveillance régulière peuvent limiter les dégâts. Il faut intervenir surtout à l'approche de la maturité.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/6aabe9eeac444acab32fbe3268f5bed5.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q92",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Ɔ fata kɛ be fa nglo lɔ ninnge benin yɛ be fa yo avie’n niɔn ?",
+   "question_fr": "Quelle quantité d'engrais utiliser pour le riz ?",
+   "reponse_bci": "I nuan’n fin avie wafa’n nin asiɛ’n i nun nianlɛ’n. Fie dilɛ’n i su like sifuɛ kun kwla se amun kɛ amun fa ayre sɔ’n i wafa ng’ɔ nin i fata’n.",
+   "reponse_fr": "La quantité dépend du type de riz et de l'analyse du sol. Un technicien agricole peut recommander la dose adaptée.",
+   "intent": "QUESTION_ENGRAIS",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/16734f7e242344f49c9057ea4f6894df.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q93",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Wafa sɛ yɛ be fa nzue’n be di junman avie fie nga be gua su nzue’n i nun ɔn ?",
+   "question_fr": "Comment gérer l'eau dans une rizière irriguée ?",
+   "reponse_bci": "Ɔ fata kɛ nzue’n i dan’n yo titi kɛ nga nnɛn’n i ɲinlɛ’n fa ti’n sa. Ɔ fata kɛ be fa nzue’n i sin lika kpa wie.",
+   "reponse_fr": "Il faut maintenir un niveau d'eau constant selon le stade de croissance. Un bon système de drainage est aussi nécessaire.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/8d4294c45b3d448ba4b92def7fba77c3.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q94",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ avie’n niɔn?",
+   "question_fr": "Quand faut-il récolter le riz ?",
+   "reponse_bci": "Kɛ awie’m be kaci sika ɔkwlɛ mɔ be yo kekle’n, yɛ be kpɛ awie’n niɔn. Nán amun minndɛ lele naan awie’n w’a tɔ.",
+   "reponse_fr": "On récolte quand les grains deviennent dorés et durs. Il ne faut pas attendre que les grains tombent.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/047be3e73a174c49add3f86cfb73908e.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q95",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Wafa sɛ yɛ e kwla wun avie ng’ɔ su wa kpɛ’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître un riz prêt pour la récolte ?",
+   "reponse_bci": "Su’m be kaci sika ɔkwlɛ ufue, kpɛkun be jran kan. Nɲa’m be kanlɛ’n ti kekle.",
+   "reponse_fr": "Les épis deviennent jaune doré et s'inclinent légèrement. Les grains sont durs au toucher.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/54b8761ec07c4ca899f202ae6e1bdcbb.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q96",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Kɛ be ko kpɛ avie’n, wafa sɛ yɛ be kwla luɛ i kpa ɔ ?",
+   "question_fr": "Comment bien sécher le riz après la récolte ?",
+   "reponse_bci": "Be fa avie’n be gua via’n nun lika sanwun kun su. Ɔ fata kɛ be kaci i titi lele naan w’a jran mlɔnmlɔn.",
+   "reponse_fr": "On étale le riz au soleil sur une aire propre. Il faut le retourner régulièrement jusqu'à séchage complet.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/2ea4978c6c6d40b5ac89b45e009ee61a.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q97",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Wafa sɛ yɛ be kwla nian ijre tɛ nga be o avie fie nun’n be lika ɔ ?",
+   "question_fr": "Comment lutter contre les mauvaises herbes dans une rizière ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ ijre’m be nun titi, sɛ ɔ ti be sa nun annzɛ be fa ninnge ng’ɔ nin i fata’n. I li kɛ be ko gua fie’n i le mɔcuɛ klikli’m be nun’n, yɛ ɔ ti cinnjin kpa kɛ be fa be wun wlɛ i nun ɔn.",
+   "reponse_fr": "Un désherbage régulier, manuel ou adapté, est nécessaire. Il faut intervenir surtout dans les premières semaines après le semis.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/078e28f2504345a4b00752631b33cb03.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q98",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Kɛ asiɛ’n i wafa’n fa ti’n, avie wafa benin yɛ ɔ fata kɛ be fa ɔ ?",
+   "question_fr": "Quelle variété de riz choisir selon le type de sol ?",
+   "reponse_bci": "Ɔ fata kɛ amun fa waka wafa ng’ɔ nin amun asiɛ’n i wafa’n, ɔ nin avie’n i dilɛ’n be kɔ likawlɛ’n. Fie dilɛ nun junman difuɛ kun kwla man amun afɔtuɛ.",
+   "reponse_fr": "Il faut choisir une variété adaptée à votre type de sol et de riziculture. Un technicien agricole peut vous conseiller.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/d009199398b643ba95dcb41a2851b05e.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q99",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Kɛ be lua avie’n, ɔ nin i kpɛlɛ’n be afiɛn’n, ɔ di cɛn benin ?",
+   "question_fr": "Combien de temps entre le semis et la récolte du riz ?",
+   "reponse_bci": "Titi’n, ɔ di anglo 3 annzɛ 5, ɔ taka wafa nga be fa yo’n su. Lɔ lika’n i nun lika’n kwla yo maan blɛ sɔ’n yo kpa wie.",
+   "reponse_fr": "Il faut généralement compter 3 à 5 mois selon la variété. Le climat local peut aussi influencer ce délai.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/9e01f5e8dc5146cd8f92a0286202400e.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q100",
+   "filiere": "RIZ (PLUVIAL ET IRRIGUÉ)",
+   "question_bci": "Wafa sɛ yɛ be siesie asiɛ kun naan b’a di avie mɔ nzue’n tɔ su’n niɔn ?",
+   "question_fr": "Comment préparer une parcelle pour la riziculture pluviale ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ ijre tɛ’m be nun kpa naan be di fie’n ka naan b’a lua fie’n. Sɛ asiɛ’n ti mlanwa kpa’n, fie dilɛ’n yo pɔpɔ wie.",
+   "reponse_fr": "Il faut bien désherber et labourer la parcelle avant le semis. Un bon nivellement du sol facilite aussi la culture.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_RIZ"
+   ],
+   "audio_reponse": "audio/1a0b446c6e854a3c84a2a24ca350d9db.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q146",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be lua banana nga be flɛ i kɛ plantain’n niɔn ?",
+   "question_fr": "Quand faut-il planter la banane plantain ?",
+   "reponse_bci": "Ɔ fata kɛ be di fie’n, kɛ nzue tɔlɛ blɛ’n bo i bo’n. Ɔ fata kɛ asiɛ’n yo kpa, yɛ nzue’n sin nun kpa.",
+   "reponse_fr": "Il faut planter en début de saison des pluies. Le sol doit être riche et bien drainé.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/26915f7dae834620a0f4d642236567d6.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q147",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Ɔ fata kɛ be fa waka nga be flɛ i kɛ plantain banana’n i gualɛ wafa benin ?",
+   "question_fr": "Quelle densité de plantation choisir pour la banane plantain ?",
+   "reponse_bci": "Hectare kun nun’n, waka kɔe 1600 lele 2000 be sɔnnin kpa. Titi’n, be afiɛn’n ti nun mɛtri 2,5 nin mɛtri 2,5.",
+   "reponse_fr": "Une densité d'environ 1600 à 2000 plants par hectare est courante. L'espacement habituel est de 2,5 mètres sur 2,5 mètres.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/ce12e25532d14e38b209e581b90fdc80.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q148",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Wafa sɛ yɛ be kwla wun plantain banana tukpacɛ’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie de la banane plantain ?",
+   "reponse_bci": "Nɲa’m be kwla yi nzɔliɛ annzɛ be kaci jɔɔ ng’ɔ timan su’n. Ɔ fata kɛ be nian pseudotronc’n su wie.",
+   "reponse_fr": "Les feuilles peuvent présenter des taches ou jaunir anormalement. Il faut aussi surveiller le pseudo-tronc.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/b727f4fecdd946f7ab330d7065f9966f.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q149",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Wafa sɛ yɛ be kwla kun cercospora i nɲa’n i nzɔliɛ’n niɔn ?",
+   "question_fr": "Comment lutter contre la cercosporiose du bananier plantain ?",
+   "reponse_bci": "Ɔ fata kɛ be yi nɲa nga tukpacɛ’n w’a tɔ be su’n titi. Sɛ waka’m be afiɛn’n ti nun kpa’n, ɔ yo maan be truman lika’n wie.",
+   "reponse_fr": "Il faut retirer les feuilles atteintes régulièrement. Un bon espacement des plants limite aussi la propagation.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/9f48447c5c144c9b9cbc74b9ab6a126b.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q150",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Wafa sɛ yɛ be kwla kun banana nnɛn’n niɔn ?",
+   "question_fr": "Comment lutter contre le charançon du bananier ?",
+   "reponse_bci": "Sɛ be nian fie’n su kpa’n, lika ng’ɔ fiali lɔ’n, ɔ sɔnman. Be kwla fa aya trele wie mun ekun.",
+   "reponse_fr": "Un bon entretien de la plantation limite ses abris. Des pièges spécifiques peuvent aussi être utilisés.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/f95e1fddbc9b4bddbcf9224a0ec096da.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q151",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ banana nga be flɛ i kɛ plantain’n niɔn ?",
+   "question_fr": "Quand faut-il récolter le régime de banane plantain ?",
+   "reponse_bci": "Kɛ be sa mma’m be ko yi mɔ be ti kluklu’n, yɛ be kpɛ be ɔ. Nán amun minndɛ lele naan b’a ɲin viɲin waka’n su.",
+   "reponse_fr": "On récolte quand les doigts sont bien remplis et arrondis. Il ne faut pas attendre qu'ils soient trop mûrs sur pied.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/715abbffc2844c1e90c65e01d4b57f96.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q152",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Wafa sɛ yɛ e kwla wun plantain banana nɲa kun m’ɔ ti kpa kɛ be kpɛ’n niɔn ?",
+   "question_fr": "Comment reconnaître un régime de banane plantain mûr pour la récolte ?",
+   "reponse_bci": "Kɛ be bo i bo’n, be sa mma’m be kaci mlanmlanmlan kpa, kpɛkun be yo nglonglo kan. I nɲa’n ka lɛ ti ufue sanngɛ waka mma’n ti tɛtɛ.",
+   "reponse_fr": "Les doigts deviennent bien pleins et légèrement anguleux au début de maturité. La couleur reste verte mais le fruit est ferme.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/ab1fa77e173c4b639db0ee82e66ebaa5.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q153",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Ɔ fata kɛ n fa nglo lɔ ninnge benin yɛ ɔ fata kɛ n fa yo banana plantain ɔ ?",
+   "question_fr": "Quelle quantité d'engrais utiliser pour la banane plantain ?",
+   "reponse_bci": "I nuan’n fin asiɛ’n i nun nianlɛ’n nin waka’n i afuɛ’n. Fie dilɛ’n i su like sifuɛ kun kwla se amun kɛ amun fa ayre sɔ’n i wafa ng’ɔ nin i fata’n.",
+   "reponse_fr": "La quantité dépend de l'analyse du sol et de l'âge du plant. Un technicien agricole peut recommander la dose adaptée.",
+   "intent": "QUESTION_ENGRAIS",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/86f1a5bfa830467aac534ef11df66b73.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q154",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Wafa sɛ yɛ be nian plantain banana fie’n su ɔ ?",
+   "question_fr": "Comment entretenir une bananeraie de plantain ?",
+   "reponse_bci": "Ijre tɛ’m be nunnunlɛ titi’n, ɔ nin nɲa kpinngbin mɔ be ti mlanwa’n be nunnunlɛ’n ti cinnjin. Sɛ be fa nnɛn’n be gua nun titi’n, ɔ yo maan nnɛn’m be ɲin kpa wie.",
+   "reponse_fr": "Il faut désherber régulièrement et retirer les vieilles feuilles sèches. Une fertilisation régulière favorise aussi la production.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/25b5123d518f44b0b40909f4adf30ecf.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q155",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Ɔ ka naan b’a kpɛ plantain banana klikli’n, ɔ di cɛn benin nun ?",
+   "question_fr": "Combien de temps avant la première récolte de la banane plantain ?",
+   "reponse_bci": "Kɛ be ko di fie’n, anglo 10 annzɛ 12 sin yɛ be kpɛ fie’n i nun ninnge klikli’n niɔn. I sɔ’n kwla yo fanunfanun, ɔ taka lika nga lika’n ti’n su.",
+   "reponse_fr": "La première récolte arrive généralement 10 à 12 mois après la plantation. Cela peut varier selon les conditions locales.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/644a60a69a584aefa5325e9370b90793.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q156",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Wafa sɛ yɛ be fa waka nga be flɛ i kɛ plantain banana’n be sie i waka’n su ɔ ?",
+   "question_fr": "Comment tuteurer un bananier plantain chargé ?",
+   "reponse_bci": "Ɔ fata kɛ be fa waka ng’ɔ ti kekle kpa’n be fa jran waka’n i sin. I liɛ’n, waka’n kwlá bubuman trɔ’n i bo.",
+   "reponse_fr": "Il faut installer un tuteur solide pour soutenir le régime. Cela évite que le pied ne se casse sous le poids.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/2fae1758bfbb4449b23f0429e06141af.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q157",
+   "filiere": "BANANE PLANTAIN",
+   "question_bci": "Wafa sɛ yɛ be kwla yo naan asiɛ’n w’a yo kpa ekun banana fie kun nun ɔn ?",
+   "question_fr": "Comment restaurer la fertilité du sol dans une bananeraie ?",
+   "reponse_bci": "Sɛ be fa ninnge nga be ti nɲa’n be gua nun’n, mɔ be fa fie’m be nun nɲa’m be kacikaci be’n, ɔ uka asiɛ’n naan w’a yo kpa w’a tra laa’n. Fie dilɛ nun junman difuɛ kun kwla man e afɔtuɛ wafa ng’ɔ nin i fata’n su.",
+   "reponse_fr": "L'apport de matière organique et une rotation avec des légumineuses aident à restaurer le sol. Un technicien agricole peut conseiller un plan adapté.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [
+    "CULTURE_BANANE"
+   ],
+   "audio_reponse": "audio/644edc6a2a154d2d8f1ba15c75bccd42.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q158",
+   "filiere": "ANANAS",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ amun lua ablɛlɛ ɔ ?",
+   "question_fr": "Quand faut-il planter l'ananas ?",
+   "reponse_bci": "Ɔ fata kɛ nzue tɔlɛ blɛ’n i bo bolɛ nun yɛ be lua fie’n niɔn. Ɔ fata kɛ asiɛ’n su nzue’n sin kpa.",
+   "reponse_fr": "Il faut planter en début de saison des pluies de préférence. Le sol doit être bien drainé.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_ANANAS"
+   ],
+   "audio_reponse": "audio/cbcb5faa86834386b6a706859b646461.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q159",
+   "filiere": "ANANAS",
+   "question_bci": "Ɔ fata kɛ n fa ablɛlɛ’m be gualɛ wafa benin ?",
+   "question_fr": "Quelle densité de plantation choisir pour l'ananas ?",
+   "reponse_bci": "Be fa waka kɔe 40.000 lele 60.000 be sie i hectare kun su. Ɔ fin wafa nga be fa di fie’n.",
+   "reponse_fr": "Une densité d'environ 40 000 à 60 000 plants par hectare est courante. Cela dépend du système de plantation choisi.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_ANANAS"
+   ],
+   "audio_reponse": "audio/84f20d1cc05c4e49b7896602715f4ecc.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q160",
+   "filiere": "ANANAS",
+   "question_bci": "Wafa sɛ yɛ be kwla wun ablɛlɛ tukpacɛ’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie de l'ananas ?",
+   "reponse_bci": "Nɲa’m be kwla kaci jɔɔ annzɛ be awlɛn’n kwla kplɔ. Ɔ fata kɛ be nian wafa nga waka’m be ti’n su titi.",
+   "reponse_fr": "Les feuilles peuvent jaunir ou le cœur peut pourrir. Il faut surveiller régulièrement l'état des plants.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_ANANAS"
+   ],
+   "audio_reponse": "audio/30e8e36811d84f31bc52fb77ac53605f.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q161",
+   "filiere": "ANANAS",
+   "question_bci": "Wafa sɛ yɛ be kwla yo naan ablɛlɛ’n w’a fite ɔ ?",
+   "question_fr": "Comment provoquer la floraison de l'ananas ?",
+   "reponse_bci": "Be kwla fa ayre trele kun mɔ be flɛ i kɛ ɔrmɔnun’n be yo naan flɛri’m b’a yo kunngba’n. Fie dilɛ nun junman difuɛ kun kwla man e afɔtuɛ wafa kpafuɛ’n su.",
+   "reponse_fr": "Un traitement hormonal spécifique peut être appliqué pour uniformiser la floraison. Un technicien agricole peut conseiller la bonne méthode.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_ANANAS"
+   ],
+   "audio_reponse": "audio/87cff32ca6e64c499af9b50a2d064164.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q162",
+   "filiere": "ANANAS",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ ablɛlɛ’n niɔn ?",
+   "question_fr": "Quand faut-il récolter l'ananas ?",
+   "reponse_bci": "Kɛ waka mma’n i nɲa’n kaci’n, mɔ i bo lɔ’n kaci ble’n, ɔ kaci ɔkulɛ-ɔranzi’n, yɛ be bo i su kpɛlɛ bo ɔ. Kɛ kacilɛ sɔ’n ko sin’n, nán amun minndɛ lele.",
+   "reponse_fr": "On récolte quand le fruit change de couleur, du vert au jaune orangé à la base. Il ne faut pas attendre trop longtemps après ce changement.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_ANANAS"
+   ],
+   "audio_reponse": "audio/82d3a1d7e17c4b25af038a6ed1043364.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q163",
+   "filiere": "ANANAS",
+   "question_bci": "Wafa sɛ yɛ e kwla wun ablɛlɛ m’ɔ ti mlanmlanmlan’n i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître un ananas mûr pour la récolte ?",
+   "reponse_bci": "Fluwa mma’n i bo’n kaci ɔkulɛ-ɔkulɛ, kpɛkun ɔ yi nvan fɛfɛ. Fluwa mma’n i ɲinma’m be ti tɛtɛ kan.",
+   "reponse_fr": "La base du fruit devient jaune orangé et dégage une odeur sucrée. Les yeux du fruit s'aplatissent légèrement.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_ANANAS"
+   ],
+   "audio_reponse": "audio/0cf2690ad0694a04b3c258f1600c86e6.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q164",
+   "filiere": "ANANAS",
+   "question_bci": "Ɔ fata kɛ n fa nglo lɔ ninnge benin yɛ ɔ fata kɛ n fa yo ablɛlɛ fie ɔ ?",
+   "question_fr": "Quelle quantité d'engrais utiliser pour l'ananas ?",
+   "reponse_bci": "I nuan’n taka asiɛ’n i nun nianlɛ’n nin wafa ng’ɔ su yo’n be su. Fie dilɛ nun junman difuɛ kun kwla se amun kɛ amun fa ayre sɔ’n i wafa ng’ɔ nin i fata’n.",
+   "reponse_fr": "La quantité dépend de l'analyse du sol et du stade de croissance. Un technicien agricole peut recommander la dose adaptée.",
+   "intent": "QUESTION_ENGRAIS",
+   "cultures": [
+    "CULTURE_ANANAS"
+   ],
+   "audio_reponse": "audio/68cde40b473a4228b85e53286b443992.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q165",
+   "filiere": "ANANAS",
+   "question_bci": "Wafa sɛ yɛ be kwla kun ablɛlɛ i bo’n niɔn ?",
+   "question_fr": "Comment lutter contre la pourriture du cœur de l'ananas ?",
+   "reponse_bci": "Asiɛ’n i nun nzue’n i sin sinlɛ kpa’n, ɔ yo maan sa sɔ’n yo kaan. Ɔ fata kɛ be yo naan nzue’n w’a sɔnman waka’n i wun lɛ.",
+   "reponse_fr": "Un bon drainage du sol limite ce risque. Il faut éviter l'excès d'eau au niveau du plant.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_ANANAS"
+   ],
+   "audio_reponse": "audio/5737208fded441c4a9c6b80637021c84.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q166",
+   "filiere": "ANANAS",
+   "question_bci": "Kɛ be ko di ablɛlɛ’n fie, ɔ di blɛ benin yɛ ɔ fa di ɔ ?",
+   "question_fr": "Combien de temps entre la plantation et la récolte de l'ananas ?",
+   "reponse_bci": "Titi’n, ɔ di anglo 12 lele anglo 18, ɔ taka wafa nga be ti’n su. Lɔ lika’n i nun lika’n kwla yo maan blɛ sɔ’n yo kpa wie.",
+   "reponse_fr": "Il faut généralement compter 12 à 18 mois selon la variété. Le climat local peut aussi influencer ce délai.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_ANANAS"
+   ],
+   "audio_reponse": "audio/2f7b8cec864c487bbf49533baa62ffcf.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q167",
+   "filiere": "ANANAS",
+   "question_bci": "Wafa sɛ yɛ be siesie ablɛlɛ waka mma mun naan b’a di fie ɔ ?",
+   "question_fr": "Comment préparer les rejets d'ananas pour la plantation ?",
+   "reponse_bci": "Ɔ fata kɛ amun fa nnɛn nga be ti juejue’n, mɔ be dan’n ti kpa’n. Ɔ fata kɛ be jran be kan naan b’a lua be.",
+   "reponse_fr": "Il faut choisir des rejets sains de bonne taille. Ils doivent être légèrement séchés avant la plantation.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_ANANAS"
+   ],
+   "audio_reponse": "audio/b3b90be402e943ccb296b57b1a6c9d8f.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q191",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ n kwla si kɛ min asiɛ’n ti kpa kɛ be di fie kun ɔn ?",
+   "question_fr": "Comment savoir si mon sol est adapté pour telle ou telle culture ?",
+   "reponse_bci": "Kɛ fie difuɛ kun nian asiɛ’n su’n, yɛ ɔ tɛ kosan sɔ’n su kpa ɔ. Kɛ be nian waka’m be su’n, be wun like wie mun ekun.",
+   "reponse_fr": "Une analyse de sol chez un technicien agricole donne la réponse la plus fiable. L'observation de la végétation naturelle donne aussi des indices.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": "audio/eaf649c4e0434514b020e5af26f07565.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q192",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ be kwla yo naan asiɛ nga w’a saci’n, w’a yo kpa ɔ ?",
+   "question_fr": "Comment améliorer la fertilité d'un sol épuisé ?",
+   "reponse_bci": "Sɛ be fa ninnge kɛ kɔmpɔstu sa be gua nun’n, ɔ uka asiɛ’n naan w’a yo kpa w’a tra laa’n. Sɛ be fa nɲa be kacikaci fie’m be nun’n, ɔ ti kpa wie.",
+   "reponse_fr": "L'apport de matière organique comme le compost aide à restaurer le sol. La rotation avec des légumineuses est aussi bénéfique.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": "audio/77896e994ff64a1fa5d17dae9d394574.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q193",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Afuɛ’n nun blɛ benin yɛ ɔ ti kpa kɛ be siesie fie kun ɔn ?",
+   "question_fr": "Quelle est la meilleure période de l'année pour préparer un champ ?",
+   "reponse_bci": "Kɛ lika’n tɔ nzue’n i awieliɛ lɔ’n, ɔ ti kpa kɛ be siesie fie kun. I liɛ’n, amun kwla siesie amun wun naan nzue’n w’a bo i bo.",
+   "reponse_fr": "La fin de la saison sèche est idéale pour préparer un champ. Cela permet d'être prêt pour le début des pluies.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": "audio/e740b12a478b4292884a5727443aa8d7.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q194",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ e kwla wun nzue tɔlɛ blɛ’n i bo bolɛ’n niɔn ?",
+   "question_fr": "Comment reconnaître le début de la saison des pluies ?",
+   "reponse_bci": "Nzue m’ɔ tɔ kpɛ sunman’n, m’ɔ tɔ titi’n, yɛ ɔ ti i bo bolɛ’n niɔn. Be nga be nian lika’n su’n, be kan lika’n i ndɛ kpa ekun.",
+   "reponse_fr": "Des pluies plus fréquentes et régulières marquent son début. Les services météo locaux donnent aussi des prévisions fiables.",
+   "intent": "QUESTION_METEO_AGRICOLE",
+   "cultures": [],
+   "audio_reponse": "audio/f2dc16c630424b129391eb666d42f047.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q195",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ n kwla sasa min fie’m be su naan lika’n w’a tɔman ɔ?",
+   "question_fr": "Comment protéger mes cultures contre une sécheresse ?",
+   "reponse_bci": "Kɛ be fa ijre’n be gua su’n, ɔ nin kɛ be gua su nzue’n, ɔ yo maan lika’n i nun nzue’n w’a yoman dan. Be nga be kwla jran kekle’n, be o fie wie’m be nun wie.",
+   "reponse_fr": "Le paillage et l'irrigation d'appoint aident à limiter les effets de la sécheresse. Des variétés résistantes existent aussi pour certaines cultures.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": "audio/a912bede49cf48a4b4347422fa8d1bc6.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q196",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ n kwla sasa min fie’m be su naan nzue w’a tɔman dan ɔn ?",
+   "question_fr": "Comment protéger mes cultures contre des pluies trop abondantes ?",
+   "reponse_bci": "Ɔ ti cinnjin kɛ lika’n nun nzue’n sin kpa. Lika nga be ti nglo lɔ mɔ nzue’n tra be’n, be nun yɛ ɔ fataman kɛ be di fie ɔ.",
+   "reponse_fr": "Un bon drainage de la parcelle est essentiel. Il faut éviter de cultiver dans les zones basses qui retiennent l'eau.",
+   "intent": "QUESTION_METEO_AGRICOLE",
+   "cultures": [],
+   "audio_reponse": "audio/cec517eddec24f05a6f1a2244988c566.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q197",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ n kwla sasa min fie’m be nun ninnge mun kpa naan nnɛn ngble nga be sie be’n b’a tɔman be su ɔ ?",
+   "question_fr": "Comment bien conserver mes récoltes contre les insectes de stockage ?",
+   "reponse_bci": "Sɛ be sie ninnge mun lika m’ɔ ti nvuɛn, m’ɔ ti sanwun’n, m’ɔ ti tɛtɛ kpa’n, ɔ yo maan kacikaci’m be su wluman be nun kun. Ninnge nga be kwla fa sasa like’n, be o lɛ wie.",
+   "reponse_fr": "Un stockage dans un endroit sec, propre et bien fermé limite les insectes. Des produits de conservation adaptés existent aussi.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": "audio/d9c9b577fb444839a27a066c123de7be.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q198",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ n kwla kun ijre sin ng’ɔ o min fie’n i wun lɛ’n niɔn ?",
+   "question_fr": "Comment lutter contre les feux de brousse autour de ma plantation ?",
+   "reponse_bci": "Ɔ fata kɛ be yi sin jranwlɛ kun lika’n i wun lɛ. Ɔ fata kɛ be nian be lika kpa blɛ mɔ lika’n ti mlanwa’n nun.",
+   "reponse_fr": "Il faut créer un pare-feu autour de la parcelle. Une surveillance accrue est nécessaire pendant la saison sèche.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": "audio/025e2cf0146e469c8a2e76348b798c88.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q199",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ be kwla fa fie ninnge kpanngban be bo nun asiɛ kunngba’n su ɔ ?",
+   "question_fr": "Comment associer plusieurs cultures sur une même parcelle ?",
+   "reponse_bci": "Ɔ fata kɛ be fa fie’m be su ninnge uflɛ mun, kɛ legume nin cereale sa. I sɔ’n yo maan be wu ba kpa, kpɛkun lika’n yo kpa.",
+   "reponse_fr": "Il faut choisir des cultures complémentaires, comme une légumineuse avec une céréale. Cela améliore la fertilité et optimise l'espace.",
+   "intent": "HORS_SUJET",
+   "cultures": [],
+   "audio_reponse": "audio/8dccfe15ae8b476d89619fd841f4c11d.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q200",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ e kwla wun asiɛ ng’ɔ sacili’n m’ɔ fata kɛ be yaci i lɛ naan ɔ lo wunmiɛn’n niɔn ?",
+   "question_fr": "Comment reconnaître un sol appauvri qu'il faut laisser au repos ?",
+   "reponse_bci": "Sɛ ninnge nga be ɲin be’n be su kan ase titi’n, i sɔ’n kle kɛ like sɔ’n ti weiin. Sɛ ijre wie’m be o lɛ’n, ɔ kle kɛ asiɛ’n timan kpa wie.",
+   "reponse_fr": "Une baisse continue des rendements est un signe clair. La présence de certaines mauvaises herbes indique aussi un sol pauvre.",
+   "intent": "HORS_SUJET",
+   "cultures": [],
+   "audio_reponse": "audio/dbfbcf5a264549f8923339d05f1bd575.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q201",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Ninnge kpa benin mun yɛ be kwla yo naan b’a di fie ɔ ?",
+   "question_fr": "Quelles sont les bonnes pratiques pour l'agriculture biologique ?",
+   "reponse_bci": "Compost i falɛ, fie’m be kacilɛ, ɔ nin nnɛn ngble’m be kunlɛ’n ti cinnjin kpa. Ɔ fata kɛ be faman ninnge chimiki nga be fa yo ninnge mun’n.",
+   "reponse_fr": "L'utilisation de compost, la rotation des cultures et la lutte naturelle contre les nuisibles sont essentielles. Il faut éviter les produits chimiques de synthèse.",
+   "intent": "HORS_SUJET",
+   "cultures": [],
+   "audio_reponse": "audio/0f9f1160eb024c59bf7438c92dd9a527.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q202",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ n yo kɔmpɔstu naan min fie’n w’a yo nɲa ɔ ?",
+   "question_fr": "Comment fabriquer un compost pour fertiliser mon champ ?",
+   "reponse_bci": "E fa waka’m be nun nɲa’n e sanngan asiɛ kan nun, kpɛkun e yaci i lɛ naan ɔ saci le mɔcuɛ kpanngban. Ɔ fata kɛ e kaci kpanwun’n titi.",
+   "reponse_fr": "On mélange des déchets végétaux avec un peu de terre et on laisse décomposer plusieurs semaines. Il faut retourner le tas régulièrement.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": "audio/23a12fbaa2f9454ab8001147de2f15c6.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q203",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Nin yɛ n kwla ɲan fie dilɛ’n i su afɔtuɛ manfuɛ min wun koko lɛ ɔ ?",
+   "question_fr": "Où trouver un conseiller agricole près de chez moi ?",
+   "reponse_bci": "ANADER le i lɔ biro mun Côte d’Ivoire lɔ lika sunman nun. Asa ekun’n, amun kwla ko wun CNRA i wun naan be man amun afɔtuɛ tekniki nun.",
+   "reponse_fr": "L'ANADER dispose d'antennes locales dans plusieurs régions de Côte d'Ivoire. Vous pouvez aussi contacter le CNRA pour des conseils techniques.",
+   "intent": "HORS_SUJET",
+   "cultures": [],
+   "audio_reponse": "audio/6231ce7fc8754f9f85b20e0e6e3b11a0.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q204",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ be kwla ɲan nɲa annzɛ waka kpa mun ɔn ?",
+   "question_fr": "Comment obtenir des semences ou plants de bonne qualité ?",
+   "reponse_bci": "Anuannzɛ kɛ ANADER annzɛ nnɛn’m be talɛ lika nga be le fluwa’n sa’n, be man nnɛn mma kpa. Ɔ fata kɛ be kpalo ninnge nga be siman be finwlɛ’n.",
+   "reponse_fr": "Les structures comme l'ANADER ou des pépinières certifiées proposent des semences de qualité. Il faut éviter les semences d'origine incertaine.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": "audio/0daaef3b174242ae86f7cc8f179fc1b9.webm",
+   "appariement": "position"
+  },
+  {
+   "id": "bci-q205",
+   "filiere": "QUESTIONS GÉNÉRALES (SOL | MÉTÉO | STOCKAGE | PRIX)",
+   "question_bci": "Wafa sɛ yɛ n kwla sasa min fie’m be su naan m’an faman ayre chimiki m’an diman junman ɔn ?",
+   "question_fr": "Comment protéger mes cultures sans utiliser de produits chimiques ?",
+   "reponse_bci": "I wafa nga be fa yo ninnge mun’n, kɛ waka’m be nun nzue’n annzɛ like nga be flɛ i kɛ biologique’n i su nianlɛ’n, be o lɛ. Fie dilɛ nun junman difuɛ kun kwla man amun afɔtuɛ wafa uflɛ nga be nin i fata’n be su.",
+   "reponse_fr": "Des méthodes naturelles comme les extraits de plantes ou la lutte biologique existent. Un technicien agricole peut vous conseiller sur les alternatives adaptées.",
+   "intent": "HORS_SUJET",
+   "cultures": [],
+   "audio_reponse": "audio/98fc9678bf6a4a04b829ca8f4ab8e3c9.webm",
+   "appariement": "position"
+  }
+ ]
+}
