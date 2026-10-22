@@ -136,13 +136,16 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("export", help="ZIP de l'écran Dictée ou metadata.csv")
     ap.add_argument("--provisoire", action="store_true", help="candidats de l'amorçage (jamais déployé)")
+    ap.add_argument("--demo", action="store_true",
+                    help="démo terrain (décision du valideur 2026-10-22) : mots-clés de l'amorçage, "
+                         "seulement les paires reliées par position ; remplacé par la version validée")
     ap.add_argument("--mots-cles", help="JSON de /tasks/validations?kind=mot_cle (atelier)")
     ap.add_argument("--paires", help="JSON de /tasks/validations?kind=paire_qr (atelier)")
     ap.add_argument("--out", default=str(DICTIONNAIRES), help="dossier de sortie")
     ap.add_argument("--taux-bruit", type=float, default=0.19, help="CER simulé (fiche 0006 : 18,7 %)")
     args = ap.parse_args(argv)
-    if not args.provisoire and not (args.mots_cles and args.paires):
-        ap.error("--mots-cles et --paires requis (ou --provisoire)")
+    if not (args.provisoire or args.demo) and not (args.mots_cles and args.paires):
+        ap.error("--mots-cles et --paires requis (ou --provisoire / --demo)")
 
     from app.services.nlu.nlu_service import NLUService, build_bci_config
 
@@ -152,12 +155,17 @@ def main(argv=None):
     labels = boot.label_rows(rows, NLUService(str(boot.CONCEPTS_FR), min_confidence=0.0))
     pairs = boot.pair_qa(rows, boot._st_similarity())
 
-    if args.provisoire:
+    if args.provisoire or args.demo:
         q_idx = [i for i, r in enumerate(rows) if boot.is_question(r)]
         cands = boot.keyword_candidates([rows[i]["transcription"] for i in q_idx],
                                         [labels[i]["concepts"] for i in q_idx])
         keywords = {c: [g for g, *_ in v] for c, v in cands.items()}
-        statut, keep = "provisoire", (lambda pid: True)
+        if args.demo:
+            # Démo terrain : les réponses servies restent 100 % natives ; on écarte les
+            # paires reliées par le sens (non vérifiées), seule source de réponse à côté.
+            statut, keep = "demo", (lambda pid: False)
+        else:
+            statut, keep = "provisoire", (lambda pid: True)
     else:
         load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
         keywords = keywords_from_validations(load(args.mots_cles))

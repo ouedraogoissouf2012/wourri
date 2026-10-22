@@ -164,6 +164,9 @@ services:
       # --proxy-headers). Défaut = loopback (sûr). Au Sprint J (reverse
       # proxy), mettre l'IP du proxy — JAMAIS '*' (bypass rate limiting).
       FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
+      # ADR-0045 : base des enregistrements des réponses baoulé (serveur voix baoulé,
+      # GPU loué). Vide = réponse baoulé sans audio. Cf. docs/DEMANDE_DEPLOIEMENT_BAOULE_2026-10.md
+      BCI_AUDIO_BASE_URL: ${BCI_AUDIO_BASE_URL:-}
       # HuggingFace cache : pointe vers le volume monté
       HF_HOME: /app/.cache/huggingface
       TRANSFORMERS_CACHE: /app/.cache/huggingface
@@ -247,6 +250,13 @@ services:
       # quand même les bons chemins).
       USER_PREFS_FILE: /app/data/user_preferences.json
       PENDING_MESSAGES_FILE: /app/data/pending_messages.json
+      # ADR-0045 : baoulé servi par l'API (interrupteur ÉTEINT par défaut) et vocaux
+      # baoulé transcrits par le serveur voix baoulé (GPU loué). Cf.
+      # docs/DEMANDE_DEPLOIEMENT_BAOULE_2026-10.md. Dette : passer la clé en Docker secret.
+      WOURI_BAOULE_SERVI: ${WOURI_BAOULE_SERVI:-0}
+      WOURI_BAOULE_ASR_URL: ${WOURI_BAOULE_ASR_URL:-}
+      WOURI_BAOULE_ASR_KEY: ${WOURI_BAOULE_ASR_KEY:-}
+      WOURI_BAOULE_AUDIO_REPLI: ${WOURI_BAOULE_AUDIO_REPLI:-}
     secrets:
       # Issue #257 : la clé du whatsapp-server EST la clé API (contrat
       # X-API-Key, ADR-0012) → on RÉUTILISE l'unique secret api_secret_key

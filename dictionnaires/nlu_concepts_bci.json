@@ -1,0 +1,325 @@
+{
+ "version": "bci-2026-10-22",
+ "statut": "demo",
+ "description": "NLU baoulé (ADR-0045) : mots-clés par concept ; intents = nlu_concepts.json",
+ "concepts": {
+  "ACTION_PLANTER": {
+   "label_fr": "planter",
+   "keywords": [
+    "lua",
+    "be lua",
+    "amun lua",
+    "fie kaan",
+    "gualɛ wafa",
+    "waka ɔ",
+    "fa gua",
+    "lua avie",
+    "lua waka",
+    "a lua",
+    "able ɔ",
+    "be gualɛ",
+    "di blɛ",
+    "di ɔ",
+    "i kpɛlɛ",
+    "kpa mun",
+    "kpɛlɛ",
+    "kpɛlɛ n",
+    "kun lika",
+    "kɔfie",
+    "lua able",
+    "lua fɔkɔ",
+    "lua kakao",
+    "mma benin",
+    "mma mun",
+    "mɔ be",
+    "nin i",
+    "nɲa wafa",
+    "uflɛ ɔ",
+    "ɔ nin",
+    "kaan",
+    "kaan kun",
+    "kɛ amun",
+    "amun",
+    "gualɛ",
+    "i gualɛ",
+    "nun waka"
+   ]
+  },
+  "ACTION_RECOLTER": {
+   "label_fr": "récolter",
+   "keywords": [
+    "cɛn benin",
+    "a kpɛ",
+    "ɔ di",
+    "ko kpɛ",
+    "cɛ cɛn",
+    "di cɛn",
+    "kpɛ n",
+    "su wa",
+    "wa",
+    "ɔ ka",
+    "i kpa",
+    "i kpɛ",
+    "wa kpɛ",
+    "ɔ su",
+    "ko tu",
+    "kpɛ fɔkɔ",
+    "ti kafe",
+    "a tu",
+    "amango n",
+    "di blɛ",
+    "fa sie",
+    "i kpɛlɛ",
+    "kpɛ able",
+    "kpɛ avie",
+    "kpɛ i",
+    "kpɛ kokowe",
+    "kpɛlɛ",
+    "kpɛlɛ n",
+    "kɛ ɔ",
+    "nin i",
+    "tu duo",
+    "ɔ ko",
+    "ɔ nin",
+    "cɛn",
+    "klikli n",
+    "tu",
+    "kpɛ",
+    "be ko",
+    "cɛ",
+    "ɔ cɛ",
+    "ko",
+    "fɔkɔ n",
+    "kpɛ klikli",
+    "be kpɛ",
+    "klikli",
+    "n wafa",
+    "kpɛ kaa",
+    "kwla sie",
+    "tu agba"
+   ]
+  },
+  "ACTION_STOCKER": {
+   "label_fr": "stocker",
+   "keywords": [
+    "kwla sie",
+    "fa sie",
+    "i kpa"
+   ]
+  },
+  "CULTURE_ANACARDE": {
+   "label_fr": "anacarde / noix de cajou",
+   "keywords": [
+    "kaa",
+    "kaa n",
+    "kaa waka",
+    "kpɛ kaa",
+    "kɛ kaa",
+    "wun kaa"
+   ]
+  },
+  "CULTURE_ANANAS": {
+   "label_fr": "ananas",
+   "keywords": [
+    "ablɛlɛ",
+    "ablɛlɛ n",
+    "ablɛlɛ m",
+    "wun ablɛlɛ"
+   ]
+  },
+  "CULTURE_BANANE": {
+   "label_fr": "banane / plantain",
+   "keywords": [
+    "banana",
+    "plantain",
+    "plantain banana",
+    "kɛ plantain",
+    "banana fie",
+    "banana n",
+    "banana nga",
+    "plantain n",
+    "wun plantain"
+   ]
+  },
+  "CULTURE_CACAO": {
+   "label_fr": "cacao",
+   "keywords": [
+    "kakao",
+    "kakao waka",
+    "kakao fie",
+    "kpɛ kakao",
+    "kakao n",
+    "kakao nma",
+    "kun kakao",
+    "lua kakao",
+    "wun kakao"
+   ]
+  },
+  "CULTURE_CAFE": {
+   "label_fr": "café",
+   "keywords": [
+    "kafe",
+    "kafe waka",
+    "ti kafe",
+    "be ti",
+    "wun kafe"
+   ]
+  },
+  "CULTURE_COTON": {
+   "label_fr": "coton",
+   "keywords": [
+    "fɔkɔ",
+    "fɔkɔ n",
+    "fɔkɔ waka",
+    "kpɛ fɔkɔ",
+    "fɔkɔ ɔ",
+    "lua fɔkɔ",
+    "yo fɔkɔ"
+   ]
+  },
+  "CULTURE_GOMBO": {
+   "label_fr": "gombo",
+   "keywords": [
+    "aubergine",
+    "chili",
+    "okra",
+    "chili n",
+    "kun su",
+    "okra ɔ"
+   ]
+  },
+  "CULTURE_HEVEA": {
+   "label_fr": "hévéa / caoutchouc",
+   "keywords": [
+    "evea",
+    "evea n",
+    "kɛ evea",
+    "evea waka",
+    "bo evea",
+    "bo waka",
+    "kwla bo"
+   ]
+  },
+  "CULTURE_IGNAME": {
+   "label_fr": "igname",
+   "keywords": [
+    "duo",
+    "duo n",
+    "kɔfie",
+    "tu duo",
+    "wun duo"
+   ]
+  },
+  "CULTURE_MAIS": {
+   "label_fr": "maïs",
+   "keywords": [
+    "able",
+    "able n",
+    "able waka",
+    "able ɔ",
+    "kpɛ able",
+    "lua able",
+    "wun able"
+   ]
+  },
+  "CULTURE_MANGUE": {
+   "label_fr": "mangue",
+   "keywords": [
+    "amango",
+    "amango waka",
+    "kpɛ amango",
+    "amango n",
+    "wun amango"
+   ]
+  },
+  "CULTURE_MANIOC": {
+   "label_fr": "manioc",
+   "keywords": [
+    "agba",
+    "agba n",
+    "tu agba",
+    "agba fie",
+    "fa agba",
+    "wun agba"
+   ]
+  },
+  "CULTURE_PALMIER_HUILE": {
+   "label_fr": "palmier à huile",
+   "keywords": [
+    "nme",
+    "ahe",
+    "nme waka",
+    "ahe nma",
+    "kpɛ nme",
+    "kun nme",
+    "kɛ nme"
+   ]
+  },
+  "CULTURE_RIZ": {
+   "label_fr": "riz",
+   "keywords": [
+    "avie",
+    "avie n",
+    "avie fie",
+    "avie mɔ",
+    "lua avie",
+    "di avie",
+    "gua su",
+    "kpɛ avie",
+    "mɔ nzue",
+    "wun avie"
+   ]
+  },
+  "ENGRAIS_FERTILISANT": {
+   "label_fr": "engrais",
+   "keywords": [
+    "fa nglo",
+    "lɔ ninnge",
+    "fa nɲa",
+    "nɲa nɲɛ",
+    "nɲɛ",
+    "nɲɛ be",
+    "yo waka",
+    "benin be",
+    "fa yo",
+    "nglo",
+    "nglo lɔ",
+    "ninnge benin",
+    "lɔ"
+   ]
+  },
+  "PROBLEME_MALADIE": {
+   "label_fr": "maladie",
+   "keywords": [
+    "i tukpacɛ",
+    "tukpacɛ kun",
+    "tukpacɛ n",
+    "tukpacɛ"
+   ]
+  },
+  "PROBLEME_SOL": {
+   "label_fr": "problème de sol",
+   "keywords": [
+    "naan asiɛ",
+    "a saci"
+   ]
+  },
+  "TEMPS_SAISON_GENERAL": {
+   "label_fr": "saison/période",
+   "keywords": [
+    "amun lua",
+    "waka ɔ",
+    "lua waka",
+    "banana nga",
+    "okra ɔ",
+    "plantain n",
+    "nun yɛ",
+    "blɛ benin",
+    "blɛ",
+    "kɛ amun",
+    "amun",
+    "lua"
+   ]
+  }
+ }
+}
