@@ -29,7 +29,11 @@ const mediaSrc = (r) => (r.audio_url ? API_BASE + "/media/" + r.audio_url.split(
 // Type d'element (ADR-0045) : un mot-cle ou une paire question/reponse se valide ici
 // mais n'est jamais du contenu servi, donc jamais « a promouvoir ».
 const kindOf = (r) => r.kind || "contenu";
-const promotable = computed(() => accepted.value.filter((r) => kindOf(r) === "contenu"));
+// Le plus recent en haut, le plus ancien en bas (id croissant a l'insertion).
+const newestFirst = (rows) => [...rows].sort((a, b) => Number(b.id) - Number(a.id));
+const bronzeShown = computed(() => newestFirst(bronze.value));
+const promotable = computed(() => newestFirst(accepted.value.filter((r) => kindOf(r) === "contenu")));
+const corpusShown = computed(() => newestFirst(corpus.value));
 
 const tabs = computed(() => {
   const out = [];
@@ -179,7 +183,7 @@ async function promote(id) {
     </section>
 
     <section v-show="tab==='bronze' && can('review')" class="mt-4 space-y-3">
-      <article v-for="r in bronze" :key="r.id" class="border rounded p-3 bg-white">
+      <article v-for="r in bronzeShown" :key="r.id" class="border rounded p-3 bg-white">
         <template v-if="editing === r.id">
           <label class="block text-xs text-stone-500">Texte (langue locale)</label>
           <input v-model="editLocal" class="w-full border rounded p-1 mb-2 font-semibold" />
@@ -234,7 +238,7 @@ async function promote(id) {
     </section>
 
     <section v-show="tab==='corpus'" class="mt-4 space-y-3">
-      <article v-for="r in corpus" :key="r.id" class="border rounded p-3 bg-white">
+      <article v-for="r in corpusShown" :key="r.id" class="border rounded p-3 bg-white">
         <p><strong>{{ r.text_local }}</strong></p>
         <p class="text-stone-600">{{ r.text_fr }}</p>
         <audio v-if="r.audio_url" :src="mediaSrc(r)" crossorigin="use-credentials" controls class="mt-2 h-8"></audio>
