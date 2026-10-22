@@ -46,3 +46,5 @@ class ChatResult:
     language: str = "both"
     audio_language: Optional[str] = None
     meta: Optional[dict] = None
+    # Texte dans la langue locale quand ce n'est pas le dioula (baoulé, ADR-0045).
+    response_local: Optional[str] = None

@@ -126,6 +126,12 @@ def preprocess_nlu(
     if language == Language.FRENCH:
         return _detect_intent_fr(message)
 
+    # Baoulé (ADR-0045) : NLU baoulé sur la transcription (ou le texte tapé), même
+    # moteur d'intention que le dioula. Ni phrase reconstruite ni refus « hors sujet »
+    # ici : le BaouleHandler choisit la réponse validée ou le repli honnête.
+    if language == Language.BAOULE:
+        return _detect_baoule(bambara_text or message, message)
+
     if language not in (Language.DIOULA, Language.BOTH):
         return NLUResult(message_for_deepseek=message)
 
@@ -202,6 +208,26 @@ def _detect_intent_fr(message: str) -> NLUResult:
         )
     except Exception as e:
         logger.error("[NLU] erreur (FR intent-only): %s", e)
+        return NLUResult(message_for_deepseek=message)
+
+
+def _detect_baoule(text: str, message: str) -> NLUResult:
+    """Baoulé : intention + concepts du NLU baoulé, message original conservé."""
+    try:
+        from app.services.nlu.baoule_text import prepare_bci
+        from app.services.nlu.nlu_service import get_nlu_service_bci
+
+        nlu = get_nlu_service_bci()
+        if nlu is None:
+            return NLUResult(message_for_deepseek=message)
+        result = nlu.process(prepare_bci(text))
+        return NLUResult(
+            message_for_deepseek=message,
+            intent=result.intent,
+            concepts=result.concepts or {},
+        )
+    except Exception as e:
+        logger.error("[NLU-BCI] erreur: %s", e)
         return NLUResult(message_for_deepseek=message)
 
 

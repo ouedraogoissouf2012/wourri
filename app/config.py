@@ -201,6 +201,12 @@ class Settings(BaseSettings):
     # Code langue {lang}_{script} parmi les 1672 langues supportées (ex: "dyu_Latn", "bam_Latn")
     omnilingual_default_lang: str = "dyu_Latn"
 
+    # ========== Baoulé : voix du locuteur natif (ADR-0045) ==========
+    # Base des enregistrements des réponses baoulé (lus par le locuteur pendant la
+    # dictée, convertis en ogg/opus) — ex. le serveur voix baoulé sur RunPod :
+    # https://<pod>-8000.proxy.runpod.net/audio. Vide = réponse baoulé sans audio.
+    bci_audio_base_url: str = ""
+
     # ========== Qualité IVR (issue #297, ADR-0028) ==========
     # Phase A1 = INSTRUMENTATION SEULE : ces réglages n'induisent AUCUN rejet.
     #

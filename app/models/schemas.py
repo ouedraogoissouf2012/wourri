@@ -17,6 +17,9 @@ class Language(str, Enum):
     DIOULA = "dioula"
     BOTH = "both"  # Français ET Dioula
     ENGLISH = "english"  # ADR-0015 PR 4/4 : passthrough DeepSeek direct + Piper TTS EN
+    # ADR-0045 : NLU baoulé (concepts -> intention) + réponses natives validées ;
+    # jamais de LLM ni de baoulé généré. Pas de TTS baoulé.
+    BAOULE = "baoule"
 
 
 class IvorianLanguage(str, Enum):

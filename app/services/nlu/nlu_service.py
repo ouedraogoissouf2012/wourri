@@ -52,7 +52,12 @@ class NLUResult:
 class NLUService:
     """Service NLU principal — singleton."""
 
-    def __init__(self, concepts_path: str, min_confidence: Optional[float] = None):
+    def __init__(
+        self,
+        concepts_path: Optional[str] = None,
+        min_confidence: Optional[float] = None,
+        config: Optional[dict] = None,
+    ):
         """Charge la configuration NLU depuis le fichier JSON.
 
         Args:
@@ -61,9 +66,14 @@ class NLUService:
                 reconstruite. Injectable (tests, DIP) ; si `None`, lu depuis
                 `settings.nlu_min_confidence` (issue #297 — externalisation du
                 hardcode historique 0.2, valeur par défaut inchangée).
+            config: configuration déjà assemblée, à la place d'un fichier
+                (NLU baoulé : concepts baoulé + intents du dioula, ADR-0045).
         """
-        if not os.path.exists(concepts_path):
-            raise FileNotFoundError(f"[NLU] Fichier concepts non trouvé: {concepts_path}")
+        if config is None:
+            if not concepts_path or not os.path.exists(concepts_path):
+                raise FileNotFoundError(f"[NLU] Fichier concepts non trouvé: {concepts_path}")
+            with open(concepts_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
 
         if min_confidence is None:
             from app.config import settings
@@ -71,8 +81,7 @@ class NLUService:
             min_confidence = settings.nlu_min_confidence
         self._min_confidence = float(min_confidence)
 
-        with open(concepts_path, "r", encoding="utf-8") as f:
-            self._config = json.load(f)
+        self._config = config
 
         self._extractor = ConceptExtractor(self._config)
         self._classifier = IntentClassifier(self._config.get("intents", []))
@@ -198,4 +207,51 @@ def get_nlu_service() -> Optional[NLUService]:
         return _nlu_service
     except Exception as e:
         logger.error(f"[NLU] Erreur chargement: {e}")
+        return None
+
+
+# ---- NLU baoulé (ADR-0045) ----
+_nlu_service_bci: Optional[NLUService] = None
+
+
+def _dictionnaires_dir() -> str:
+    return os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
+        "dictionnaires",
+    )
+
+
+def build_bci_config(bci: dict, base: dict) -> dict:
+    """Config du NLU baoulé : concepts et mots-clés baoulé, intents du dioula.
+
+    Les intents ne sont jamais recopiés dans nlu_concepts_bci.json : une seule
+    définition, celle de nlu_concepts.json, sert les deux langues.
+    """
+    return {
+        "version": bci.get("version", "?"),
+        "concepts": bci.get("concepts", {}),
+        "intents": base.get("intents", []),
+        "out_of_scope_response": base.get("out_of_scope_response", {}),
+    }
+
+
+def get_nlu_service_bci() -> Optional[NLUService]:
+    """NLU baoulé (singleton, lazy) ; None si dictionnaires/nlu_concepts_bci.json est absent."""
+    global _nlu_service_bci
+    if _nlu_service_bci is not None:
+        return _nlu_service_bci
+    bci_path = os.path.join(_dictionnaires_dir(), "nlu_concepts_bci.json")
+    base_path = os.path.join(_dictionnaires_dir(), "nlu_concepts.json")
+    if not os.path.exists(bci_path):
+        logger.warning(f"[NLU-BCI] Fichier non trouvé: {bci_path} — NLU baoulé désactivé")
+        return None
+    try:
+        with open(bci_path, "r", encoding="utf-8") as f:
+            bci = json.load(f)
+        with open(base_path, "r", encoding="utf-8") as f:
+            base = json.load(f)
+        _nlu_service_bci = NLUService(config=build_bci_config(bci, base), min_confidence=0.0)
+        return _nlu_service_bci
+    except Exception as e:
+        logger.error(f"[NLU-BCI] Erreur chargement: {e}")
         return None
