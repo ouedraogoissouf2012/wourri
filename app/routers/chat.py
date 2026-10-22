@@ -59,7 +59,7 @@ async def chat(request: Request, body: ChatRequest):
     return ChatResponse(
         response=result.response,
         response_dioula=result.response_dioula,
-        response_local=None,
+        response_local=result.response_local,
         audio_url=result.audio_url,
         city=result.city,
         language=result.language,

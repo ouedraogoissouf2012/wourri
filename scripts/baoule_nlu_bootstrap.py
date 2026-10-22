@@ -33,10 +33,8 @@ import argparse
 import csv
 import io
 import json
-import re
 import sys
 import tempfile
-import unicodedata
 import zipfile
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -46,10 +44,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 CONCEPTS_FR = ROOT / "dictionnaires" / "nlu_concepts.json"
 
-# Apostrophes du baoulé (déterminants accolés : fie’n, be’m) : séparent les mots,
-# comme l'apostrophe ASCII dans le ConceptExtractor.
-_APOSTROPHES = "’ʼ‘`'"
-_NON_LETTRE = re.compile(r"[^\w\s]")
+# Même mise en forme que le NLU baoulé de l'API (apostrophes et tons, ADR-0045).
+from app.services.nlu.baoule_text import prepare_bci, tokens_bci  # noqa: E402,F401
 
 
 def read_export(path) -> list[dict]:
@@ -66,22 +62,6 @@ def read_export(path) -> list[dict]:
 
 def is_question(row) -> bool:
     return row["text_fr"].strip().endswith("?")
-
-
-def tokens_bci(text: str) -> list[str]:
-    """Mots baoulé comparables au ConceptExtractor : minuscules, tons retirés,
-    apostrophes et ponctuation → espace (les lettres ɛ ɔ ɲ sont gardées)."""
-    from app.services.nlu.concept_extractor import strip_tones
-
-    t = strip_tones(unicodedata.normalize("NFC", text or "").lower())
-    for a in _APOSTROPHES:
-        t = t.replace(a, " ")
-    return _NON_LETTRE.sub(" ", t).split()
-
-
-def prepare_bci(text: str) -> str:
-    """Texte baoulé prêt pour le ConceptExtractor (mêmes mots que tokens_bci)."""
-    return " ".join(tokens_bci(text))
 
 
 def align(questions_fr: list[str], answers_fr: list[str], similarity) -> list[tuple[int, int, float]]:

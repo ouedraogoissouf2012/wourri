@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from app.models.schemas import Language
 from app.services.chat.handlers._protocol import LanguageHandler
+from app.services.chat.handlers.baoule_handler import BaouleHandler
 from app.services.chat.handlers.both_handler import BothHandler
 from app.services.chat.handlers.dioula_handler import DioulaHandler
 from app.services.chat.handlers.english_handler import EnglishHandler
@@ -36,12 +37,15 @@ HANDLERS: dict[Language, LanguageHandler] = {
     Language.BOTH:    BothHandler(),
     # ADR-0015 PR 4/4 : EnglishHandler — pure extension du pattern Strategy
     Language.ENGLISH: EnglishHandler(),
+    # ADR-0045 : NLU baoulé + réponses natives validées, jamais de LLM
+    Language.BAOULE:  BaouleHandler(),
 }
 
 
 __all__ = [
     "HANDLERS",
     "LanguageHandler",
+    "BaouleHandler",
     "FrenchHandler",
     "DioulaHandler",
     "BothHandler",
