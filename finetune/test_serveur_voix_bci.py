@@ -69,7 +69,7 @@ def test_audio_servi_sans_sortir_du_dossier(tmp_path):
     assert c.get("/audio/absent.ogg").status_code == 404
     assert c.get("/audio/..%2F..%2Fsecret.ogg").status_code == 404
     assert c.get("/audio/x.webm").status_code == 404
-    assert c.get("/health").json() == {"ok": True, "modele_charge": True, "reponses_audio": 1}
+    assert c.get("/health").json() == {"ok": True, "modele_charge": True, "modele_langue": False, "reponses_audio": 1}
 
 
 def test_app_sans_cle_refuse_tout(tmp_path):
@@ -84,7 +84,8 @@ def test_notebook_runpod_embarque_les_modules_a_jour():
     here = Path(__file__).parent
     nb = json.loads((here / "colab" / "serveur_voix_baoule_runpod.ipynb").read_text(encoding="utf-8"))
     cells = ["".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code"]
-    for name in ("dictee_to_parquet.py", "prepare_bci_dataset.py", "eval_bci_cer.py", "serveur_voix_bci.py"):
+    for name in ("dictee_to_parquet.py", "prepare_bci_dataset.py", "eval_bci_cer.py", "serveur_voix_bci.py",
+                 "cv27_split.py", "lm_bci.py", "mesure_lm_bci.py"):
         marker = f"%%writefile {name}\n"
         embedded = [src[len(marker):] for src in cells if src.startswith(marker)]
         assert len(embedded) == 1, f"cellule {marker.strip()} introuvable"

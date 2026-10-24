@@ -3,7 +3,8 @@
 Tourne sur un GPU loué (RunPod), lancé par finetune/colab/serveur_voix_baoule_runpod.ipynb.
 
 - `POST /transcribe` (clé `X-Api-Key`) : le vocal WhatsApp (ogg/opus, multipart `audio`)
-  → texte baoulé, par le 1B fine-tuné (fiche 0006 : CER 18,7 %). Le serveur WhatsApp
+  → texte baoulé, par le 1B fine-tuné (fiche 0007 : CER 13,4 %), avec le modèle de langue
+  si `BCI_VOIX_LM` désigne le fichier retenu par mesure_lm_bci.py. Le serveur WhatsApp
   envoie ensuite ce texte à `/api/chat/` en langue « baoule ».
 - `GET /audio/<nom>.ogg` : les réponses LUES par le locuteur pendant la dictée, converties
   en ogg/opus (format des notes vocales WhatsApp). L'API renvoie leur adresse
@@ -12,7 +13,7 @@ Tourne sur un GPU loué (RunPod), lancé par finetune/colab/serveur_voix_baoule_
 
 Réglages (variables d'environnement) : `BCI_VOIX_CLE` (clé partagée avec le serveur
 WhatsApp), `BCI_VOIX_CARTE` (carte fairseq2 du modèle, cf. eval_bci_cer.write_card),
-`BCI_VOIX_AUDIO` (dossier des réponses ogg).
+`BCI_VOIX_AUDIO` (dossier des réponses ogg), `BCI_VOIX_LM` (facultatif : lm_bci.pkl).
 
 Ce module est recopié tel quel dans le notebook (cellule %%writefile) :
 `python finetune/colab/sync_smoke_test_notebook.py` le resynchronise, un test le vérifie.
@@ -79,7 +80,19 @@ def convertir_reponses(export_zip, dossier_ogg) -> int:
 def _pipeline_par_defaut():
     from omnilingual_asr.models.inference.pipeline import ASRInferencePipeline
 
-    return ASRInferencePipeline(model_card=os.environ["BCI_VOIX_CARTE"])
+    pipe = ASRInferencePipeline(model_card=os.environ["BCI_VOIX_CARTE"])
+    if os.environ.get("BCI_VOIX_LM"):
+        # Modèle de langue retenu par mesure_lm_bci.py (choisi sur dev) : recherche en faisceau.
+        import pickle
+
+        import lm_bci
+
+        with open(os.environ["BCI_VOIX_LM"], "rb") as f:
+            cfg = pickle.load(f)
+        dec = lm_bci.decodeur(cfg["labels"], lm_bci.modele_pyctcdecode(cfg["trigramme"], cfg["alpha"], cfg["beta"]))
+        lm_bci.brancher(pipe, cfg["ids"], cfg["labels"], decodeur=dec)
+        logger.info("modele de langue charge (alpha=%s, beta=%s)", cfg["alpha"], cfg["beta"])
+    return pipe
 
 
 def creer_app(pipeline=None, decodeur=vers_wav_16k, cle=None, dossier_audio=None) -> FastAPI:
@@ -97,6 +110,7 @@ def creer_app(pipeline=None, decodeur=vers_wav_16k, cle=None, dossier_audio=None
     @app.get("/health")
     def health():
         return {"ok": True, "modele_charge": etat["pipeline"] is not None,
+                "modele_langue": bool(os.environ.get("BCI_VOIX_LM")),
                 "reponses_audio": len(list(dossier_audio.glob("*.ogg"))) if dossier_audio.is_dir() else 0}
 
     @app.post("/transcribe")

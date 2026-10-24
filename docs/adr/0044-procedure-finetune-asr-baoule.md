@@ -131,6 +131,24 @@ Le premier passage plafonne : 18,7 %, alors que la cible est < 15 %. Le levier d
 - **Procédure** : celle du premier passage (MESURE puis COMPLET calculé pour le budget, lots de 240 s, choix sur dev, plafond relevé à 3 000 étapes). Notebook : `finetune/colab/omnilingual_finetune_1b_cv27.ipynb`.
 - **Budget** : plafond **15 USD**, accordé par le valideur le 2026-10-24 (« tu peux aller »).
 
+## Révision du 2026-10-24 (bis) — Modèle de langue au décodage
+
+Les erreurs restantes du 2e fine-tune sont surtout des mots collés ou coupés (fiche 0007 §4). Le CTC décode lettre par lettre (« glouton »). Une recherche en faisceau guidée par un modèle de langue de mots peut en corriger une partie.
+
+- **Modèle** : trigramme Kneser-Ney interpolé écrit en Python (`finetune/lm_bci.py`), aux conventions du modèle KenLM de pyctcdecode.
+  - Il est testable sans GPU.
+  - Rien à compiler sur la machine louée (KenLM demanderait lmplz).
+- **Corpus** : textes natifs (Common Voice validé, dictée, Zenodo, SMOL) et web (FineWeb-2, MADLAD, GlotCC, FinePDFs).
+  - **Aucune phrase de dev ni du test.** Toute ligne qui en contient une est retirée (mesuré : 920 lignes, dont 131 dans le web).
+  - Dev est exclu parce qu'il sert à régler. Dans le corpus, il serait couvert à 100 % contre 96 % pour le test, et le réglage serait faussé.
+  - **Pas la Bible** (décision du valideur : mot à mot seulement).
+  - **Filtre du web** : une ligne est gardée si au moins 60 % de ses mots appartiennent au vocabulaire des textes natifs. Mesuré : la répartition est bimodale. En dessous, ce sont des annonces anglaises, du français et d'autres langues ivoiriennes étiquetées baoulé (89 000 lignes écartées, 207 000 gardées).
+- **Deux candidats** : « natif » (41 600 mots) et « complet » (natif + web filtré, environ 3,1 millions de mots). La couverture des mots est équivalente sur dev et sur test (97,7 / 97,8 % pour le complet), donc dev est un bon témoin.
+- **Réglage** :
+  - le poids α du modèle de langue et le bonus β par mot sont choisis sur dev, et le candidat aussi ;
+  - le résultat est noté une seule fois sur le test, avec le protocole 0003, contre le glouton du même modèle (`finetune/mesure_lm_bci.py`) ;
+  - le serveur voix ne l'utilise **que s'il gagne sur dev** (`BCI_VOIX_LM`).
+
 ## Historique
 
 - 2026-10-19 — proposé (voie C et budget de départ de 15 USD choisis en discussion avec le valideur).
@@ -138,3 +156,4 @@ Le premier passage plafonne : 18,7 %, alors que la cible est < 15 %. Le levier d
 - 2026-10-21 — CER mesuré avec le protocole exact du benchmark 0003 (mêmes 290 clips, même normalisation, 1B de départ remesuré comme témoin : 22,0 %, conforme aux 22,1 %) : **18,7 %** pour la version retenue (WER 45,2 %). Le critère d'acceptation de BAO-2 est rempli ; la cible < 15 % ne l'est pas. Coût : 0,50 USD (RunPod A40). Les transcriptions vides viennent d'un seul locuteur du split test aux 13 enregistrements quasi muets ; sans lui (analyse a posteriori, 277 clips) : 18,3 → **14,8 %**. Savoir si la cible porte sur l'audio audible relève du valideur. Voir [résultats 0006 §3.5–3.6](../benchmarks/0006-omnilingual-1b-finetune-resultats.md).
 - 2026-10-24 — révision : 2e fine-tune avec Common Voice 27 + Zenodo + dictée, nouvelle répartition train / dev / test (ci-dessus), plafond 15 USD accordé.
 - 2026-10-24 — 2e fine-tune exécuté (RunPod A100 SXM, 3 000 étapes en 40 min). Sur le même test (623 clips, 7 voix jamais entraînées, protocole 0003) : départ 19,4 %, actuel (`step_1200`) 16,6 %, **nouveau (`step_3000`) 13,4 %** de CER ; WER 52,6 → 43,2 → **34,8 %**. Cible < 15 % atteinte sur ce test. Plateau sur le test après ~2 000 étapes. Modèle sauvegardé (HF privé `seven990/omniasr-ctc-1b-bci-wourri-cv27`), serveur voix basculé dessus. Voir [résultats 0007](../benchmarks/0007-omnilingual-1b-finetune-cv27-resultats.md).
+- 2026-10-24 — modèle de langue préparé (règles ci-dessus), testé sans GPU ; mesure sur la machine louée à suivre, avec la démo.
