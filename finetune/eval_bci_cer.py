@@ -74,11 +74,12 @@ def find_checkpoint(root, step) -> Path:
     return hits[0].resolve()
 
 
-def write_card(asset_dir, step, model_dir) -> str:
-    """Carte fairseq2 du modèle fine-tuné : hérite de BASE_CARD, remplace son checkpoint."""
+def write_card(asset_dir, step, model_dir, name=None) -> str:
+    """Carte fairseq2 du modèle fine-tuné : hérite de BASE_CARD, remplace son checkpoint.
+    `name` : obligatoire quand deux checkpoints portent la même étape (2e fine-tune)."""
     if not (Path(model_dir) / "pp_00").is_dir():
         raise SystemExit(f"{model_dir} n'est pas un checkpoint fairseq2 (pp_00/ absent)")
-    name = f"wourri_bci_ctc_1b_{step}"
+    name = name or f"wourri_bci_ctc_1b_{step}"
     asset_dir = Path(asset_dir)
     asset_dir.mkdir(parents=True, exist_ok=True)
     (asset_dir / f"{name}.yaml").write_text(
@@ -95,6 +96,17 @@ def load_test_clips(load_dataset=None, limit=None):
     rows = list(load_dataset(DATASET_REPO, revision=REV, split="test"))
     rows = rows[:limit] if limit else rows
     return [r["sentence"] for r in rows], [get_audio(r) for r in rows]
+
+
+def load_cv27_test(manifeste, cv27_dir, limit=None):
+    """Test du 2e fine-tune (finetune/cv27_split.py) : mêmes sorties que `load_test_clips`."""
+    import dictee_to_parquet as d2p
+
+    test = json.loads(Path(manifeste).read_text(encoding="utf-8"))["test"]
+    test = test[:limit] if limit else test
+    clips = Path(cv27_dir) / "clips"
+    audios = [(d2p.decode_to_16k_mono((clips / t["path"]).read_bytes(), t["path"])[0], d2p.TARGET_SR) for t in test]
+    return [t["sentence"] for t in test], audios
 
 
 def _default_pipeline(card):
@@ -127,11 +139,12 @@ def transcribe(card, paths, make_pipeline=None):
     return hyps, round(load_s, 1), round(infer_s, 1)
 
 
-def evaluate(models, out_path, load_dataset=None, make_pipeline=None, limit=None):
-    """Mesure chaque (libellé, carte) sur les mêmes clips ; résultats écrits après chaque modèle."""
+def evaluate(models, out_path, load_dataset=None, make_pipeline=None, limit=None, clips=None):
+    """Mesure chaque (libellé, carte) sur les mêmes clips ; résultats écrits après chaque modèle.
+    `clips` : (références, audios) déjà chargés (test du 2e fine-tune), sinon le test 0003."""
     import soundfile as sf
 
-    refs, audios = load_test_clips(load_dataset, limit)
+    refs, audios = clips if clips is not None else load_test_clips(load_dataset, limit)
     tmp = tempfile.mkdtemp()
     paths = []
     for i, (wav, sr) in enumerate(audios):
@@ -159,13 +172,23 @@ def control_ok(cer, n):
     return n == BENCHMARK_0003_N and abs(cer - BENCHMARK_0003_CER) <= CONTROL_TOLERANCE
 
 
-def report(results, base_label, ft_label):
-    """Tableau, verdict du témoin, gain et exemples côte à côte (texte à recopier dans la fiche 0006)."""
+def report(results, base_label, ft_label, reference_0003=True):
+    """Tableau, verdict du témoin, gain et exemples côte à côte (texte à recopier dans la fiche 0006).
+
+    `reference_0003=False` (test du 2e fine-tune) : pas de témoin à 22,1 % (autre test) ; chaque
+    modèle est comparé au départ, mesuré dans la même session sur les mêmes clips."""
     base, ft = results[base_label], results[ft_label]
     lines = [f"{'Modele':28s} {'CER':>7s} {'WER':>7s} {'n':>5s} {'vides':>6s}", "-" * 58]
     for label, r in results.items():
         lines.append(f"{label:28s} {r['cer'] * 100:6.1f}% {r['wer'] * 100:6.1f}% {r['n']:5d} {r['empty_hyps']:6d}")
-    if control_ok(base["cer"], base["n"]):
+    if not reference_0003:
+        lines.append("\nTest du 2e fine-tune (finetune/cv27_split.py) : pas de reference 0003, les modeles sont"
+                     " compares au depart dans la meme session.")
+        for label, r in results.items():
+            if label != base_label:
+                lines.append(f"Gain CER {label} : {(base['cer'] - r['cer']) * 100:+.1f} pts "
+                             f"({base['cer'] * 100:.1f}% -> {r['cer'] * 100:.1f}%)")
+    elif control_ok(base["cer"], base["n"]):
         lines.append(f"\nTEMOIN OK : {base['cer'] * 100:.1f}% (benchmark 0003 : {BENCHMARK_0003_CER * 100:.1f}%)"
                      " -> comparaison recevable.")
     else:
@@ -188,16 +211,26 @@ def main(argv=None):
     ap.add_argument("--asset-dir", default=None, help="répertoire de cartes fairseq2 (défaut : temporaire)")
     ap.add_argument("--out", default="eval_bci_cer_results.json")
     ap.add_argument("--limit", type=int, default=None, help="essai rapide sur N clips (défaut : les 290)")
+    ap.add_argument("--manifeste", default=None, help="split_cv27.json : test du 2e fine-tune (avec --cv27)")
+    ap.add_argument("--cv27", default=None, help="dossier …/bci de Common Voice 27 extrait")
+    ap.add_argument("--nouveau", nargs=2, metavar=("RACINE", "ETAPE"), default=None,
+                    help="checkpoint du 2e fine-tune, mesuré en plus sur le même test")
     args = ap.parse_args(argv)
 
     asset_dir = args.asset_dir or tempfile.mkdtemp(prefix="fairseq2_assets_")
-    card = write_card(asset_dir, args.step, find_checkpoint(args.checkpoint_root, args.step))
+    card = write_card(asset_dir, args.step, find_checkpoint(args.checkpoint_root, args.step), "wourri_bci_actuel")
+    base_label, ft_label = "temoin 1B depart", f"1B fine-tune {args.step}"
+    models = [(base_label, BASE_CARD), (ft_label, card)]
+    if args.nouveau:
+        racine, etape = args.nouveau
+        models.append((f"1B 2e fine-tune {etape}",
+                       write_card(asset_dir, etape, find_checkpoint(racine, etape), "wourri_bci_nouveau")))
     # fairseq2 lit ce répertoire à sa première utilisation : à poser avant tout chargement de modèle.
     os.environ["FAIRSEQ2_USER_ASSET_DIR"] = str(asset_dir)
 
-    base_label, ft_label = "temoin 1B depart", f"1B fine-tune {args.step}"
-    results = evaluate([(base_label, BASE_CARD), (ft_label, card)], args.out, limit=args.limit)
-    print("\n" + report(results, base_label, ft_label))
+    clips = load_cv27_test(args.manifeste, args.cv27, args.limit) if args.manifeste else None
+    results = evaluate(models, args.out, limit=args.limit, clips=clips)
+    print("\n" + report(results, base_label, ft_label, reference_0003=clips is None))
     print("\nResultats complets ->", args.out)
 
 

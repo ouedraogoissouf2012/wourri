@@ -10,9 +10,9 @@ Aucun texte ni audio de ces sources n'est versionné. Tout est téléchargé dan
 
 | Source | Mesuré | Licence | Décision |
 |---|---|---|---|
-| **Common Voice 27.0** (Mozilla Data Collective) | 5 623 clips validés, 11,1 h, 16 voix, 876 phrases. Les splits officiels (319 / 267 / 290) sont **identiques** au miroir Klayt. | CC0. **Re-hébergement interdit**, compte Mozilla requis | ✅ Entraînement : 6,8 h utilisables sans voix ni phrase du test (ADR-0044, révision à venir) |
+| **Common Voice 27.0** (Mozilla Data Collective) | 5 623 clips validés, 11,1 h, 16 voix, 876 phrases. Les splits officiels (319 / 267 / 290) sont **identiques** au miroir Klayt. | CC0. **Re-hébergement interdit**, compte Mozilla requis | ✅ 2e fine-tune : train 5,93 h (9 voix), dev 738 clips (2 voix), test 623 clips (7 voix) ; aucune voix ni phrase du test à l'entraînement (`finetune/cv27_split.py`, ADR-0044 révision 2026-10-24) |
 | **Klayt/baoule-common-voice** (HF) | Les mêmes 876 clips que les splits Common Voice (vérifié chemin par chemin) | CC0 | Doublon de Common Voice : sert de référence au test 0003 |
-| **Zenodo 6705861** (data354, 2022) | 565 clips, 4 voix, versets bibliques, 0 phrase commune avec le test. 223 commencent par un numéro de verset. | CC BY 4.0 | ✅ Entraînement. Pour les versets numérotés, on **mesure** si le numéro est prononcé |
+| **Zenodo 6705861** (data354, 2022) | 565 clips, 4 voix, versets bibliques, 0 phrase commune avec le test. 223 commencent par un numéro de verset. | CC BY 4.0 | ✅ Entraînement, les 565 clips. Numéros de verset **non prononcés** (mesuré : +0,02 s ± 0,29 s à longueur égale), retirés de la transcription |
 | Dictée d'esse (atelier) | 433 phrases, 1,3 h, locuteur natif | Projet (consentement QUA-3) | ✅ Entraînement + validation des mots |
 | `abdouaziiz/bci-bible` (HF) | 1 709 clips, 3,9 h. **C'est du bambara**, pas du baoulé (« Filisiw ye kɛlɛ kɛ… ») | non précisée | ❌ Mauvaise langue |
 | `abdouaziz/baoule2` (HF) | 8 144 clips, 18,7 h = Common Voice (**test compris**) + la Bible bambara ci-dessus | non précisée | ❌ Contaminerait le test et mélangerait les langues |

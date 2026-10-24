@@ -107,8 +107,33 @@ Réponses (discussion du 2026-10-19) :
 - `facebookresearch/omnilingual-asr` 0.1.0 : `workflows/recipes/wav2vec2/asr/` (recette, `valid_split` multiple, configs).
 - Prix A100 : relevés publics (RunPod, Lambda, Vast.ai), 2026, à revérifier au moment de louer.
 
+## Révision du 2026-10-24 — 2e fine-tune : plus de voix (Common Voice 27 + Zenodo)
+
+Le premier passage plafonne : 18,7 %, alors que la cible est < 15 %. Le levier désigné est d'avoir plus de voix.
+
+- **Données** (`docs/REGISTRE_SOURCES_BAOULE.md`) :
+  - **Common Voice 27** (Mozilla Data Collective, CC0, re-hébergement interdit) : 5 623 clips validés, 11,1 h, 16 voix. Les splits officiels n'en utilisent que 876 ;
+  - **Zenodo 6705861** (CC BY 4.0) : 565 clips, 4 voix ;
+  - la dictée d'esse.
+- **Problème** : le test du benchmark 0003 (290 clips, 9 voix) bloquait 5 h des 11 h. **Nouvelle répartition**, par une règle écrite (`finetune/cv27_split.py`) :
+  - phrases de test = les 290 phrases du test officiel : aucune voix ne les lit à l'entraînement ;
+  - voix de test = le sous-ensemble des 9 voix du test officiel qui maximise l'entraînement, avec au moins 290 clips et 4 voix au test, et 2 voix au dev ;
+  - test = ces voix × ces phrases ; dev = ces voix × les autres phrases (sert à choisir) ; train = les autres voix hors phrases du test ;
+  - mesuré : **train 5,93 h (9 voix)**, **dev 738 clips (2 voix)**, **test 623 clips (7 voix)**.
+  - Avec une seule voix au dev, on aurait 6,77 h d'entraînement mais un choix de version fragile. La règle des 2 voix est retenue pour la fiabilité.
+- **Vérifications bloquantes** : aucune voix du test et aucune phrase du test dans l'entraînement, Common Voice, Zenodo et dictée compris. Sinon, la préparation s'arrête.
+- **Zenodo** : 223 transcriptions commencent par un numéro de verset.
+  - Mesuré sur les durées du lecteur principal : **+0,02 s ± 0,29 s** à longueur égale. Le numéro n'est donc pas prononcé.
+  - Les 565 clips sont gardés, et `normalize_text` retire les nombres.
+- **Comparaison honnête** : le nouveau test n'est plus celui du benchmark 0003, donc pas de référence 22,1 %.
+  - Les **trois modèles** (départ, actuel = 1er fine-tune étape 1 200, nouveau) sont mesurés sur ce même test, dans la même session, avec le protocole de 0003 (`eval_bci_cer.py --manifeste`).
+  - Le modèle actuel n'a vu ni ces voix ni ces phrases.
+- **Procédure** : celle du premier passage (MESURE puis COMPLET calculé pour le budget, lots de 240 s, choix sur dev, plafond relevé à 3 000 étapes). Notebook : `finetune/colab/omnilingual_finetune_1b_cv27.ipynb`.
+- **Budget** : plafond **15 USD**, accordé par le valideur le 2026-10-24 (« tu peux aller »).
+
 ## Historique
 
 - 2026-10-19 — proposé (voie C et budget de départ de 15 USD choisis en discussion avec le valideur).
 - 2026-10-19 — premier passage exécuté sur RunPod (A100 SXM 80 GB, **4,71 USD** au total). La meilleure version (étape 1 200, choisie sur `dev`) donne sur `test` une UER de 21,94 → **18,70 %** et un WER de 56,45 → **45,34 %**. Le gain plafonne après environ 1 200 étapes, et la cible CER < 15 % d'ADR-0036 n'est pas atteinte : le levier suivant est d'avoir plus de voix. Détails, courbe complète et pièges d'exécution corrigés dans le notebook : [résultats 0006](../benchmarks/0006-omnilingual-1b-finetune-resultats.md).
 - 2026-10-21 — CER mesuré avec le protocole exact du benchmark 0003 (mêmes 290 clips, même normalisation, 1B de départ remesuré comme témoin : 22,0 %, conforme aux 22,1 %) : **18,7 %** pour la version retenue (WER 45,2 %). Le critère d'acceptation de BAO-2 est rempli ; la cible < 15 % ne l'est pas. Coût : 0,50 USD (RunPod A40). Les transcriptions vides viennent d'un seul locuteur du split test aux 13 enregistrements quasi muets ; sans lui (analyse a posteriori, 277 clips) : 18,3 → **14,8 %**. Savoir si la cible porte sur l'audio audible relève du valideur. Voir [résultats 0006 §3.5–3.6](../benchmarks/0006-omnilingual-1b-finetune-resultats.md).
+- 2026-10-24 — révision : 2e fine-tune avec Common Voice 27 + Zenodo + dictée, nouvelle répartition train / dev / test (ci-dessus), plafond 15 USD accordé.
