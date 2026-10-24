@@ -19,7 +19,12 @@ Ce module est recopié tel quel dans les notebooks de finetune/colab/ (cellule %
 from __future__ import annotations
 
 import argparse
+import csv
+import io
+import json
 import shutil
+import tarfile
+import zipfile
 from pathlib import Path
 
 import dictee_to_parquet as d2p
@@ -114,14 +119,92 @@ def prepare(work, dictee=None, with_test=False, load_dataset=None) -> dict:
     return {"counts": counts, "stats": stats, "card": card}
 
 
+ZENODO_DIR = "bci-datasets"  # racine de l'archive Zenodo 6705861 (data354, CC BY 4.0)
+
+
+def zenodo_rows(zip_path) -> list[tuple[str, str]]:
+    """[(fichier audio, transcription)] de l'archive Zenodo. Les numéros de verset en tête
+    (« 28 Amun… ») ne sont pas prononcés (mesuré le 2026-10-24 sur les durées : +0,02 s à
+    longueur égale) : `normalize_text` retire les mots numériques, rien d'autre à faire."""
+    with zipfile.ZipFile(zip_path) as z:
+        tsv = z.read(f"{ZENODO_DIR}/transcription.tsv").decode("utf-8-sig")
+    return [(r["id"], r["bci"]) for r in csv.DictReader(io.StringIO(tsv), delimiter="\t") if r.get("bci")]
+
+
+def zenodo_examples(zip_path, rows):
+    with zipfile.ZipFile(zip_path) as z:
+        for fichier, texte in rows:
+            wav, _ = d2p.decode_to_16k_mono(z.read(f"{ZENODO_DIR}/wav/{fichier}"), fichier)
+            yield texte, wav
+
+
+def cv27_examples(rows, dossier):
+    for r in rows:
+        raw = (Path(dossier) / "clips" / r["path"]).read_bytes()
+        wav, _ = d2p.decode_to_16k_mono(raw, r["path"])
+        yield r["sentence"], wav
+
+
+def extraire_cv27(source, work) -> Path:
+    """Dossier `…/bci` de Common Voice 27 : l'archive .tar.gz est extraite une fois dans <work>/cv27."""
+    import cv27_split as cvs  # import local : les notebooks du 1er fine-tune n'embarquent pas ce module
+
+    source = Path(source)
+    if source.is_file():
+        cible = Path(work) / "cv27"
+        if not any(cible.rglob("validated.tsv")):
+            with tarfile.open(source) as t:
+                t.extractall(cible, filter="data")
+        source = cible
+    return cvs.trouver(source)
+
+
+def prepare_cv27(work, cv27, zenodo=None, dictee=None) -> dict:
+    """2e fine-tune : Common Voice 27 réparti par `cv27_split` (train / dev / test), + Zenodo et
+    dictée en train. La répartition est vérifiée contre TOUS les textes d'entraînement
+    (aucune phrase du test chez Zenodo ni dans la dictée) avant d'écrire quoi que ce soit."""
+    import cv27_split as cvs  # import local : les notebooks du 1er fine-tune n'embarquent pas ce module
+
+    work = Path(work)
+    dataset_dir = work / "wourri_bci"
+    data_root = dataset_dir / "version=0"
+    shutil.rmtree(dataset_dir, ignore_errors=True)
+    lang = d2p.omni_language_code("bci")
+    zen = zenodo_rows(zenodo) if zenodo else []
+    dic = d2p.read_export(find_export(dictee, work)) if dictee else []
+    dossier = extraire_cv27(cv27, work)
+    rep, manifeste = cvs.preparer(dossier, [t for _, t in zen] + [r["transcription"] for r in dic])
+    counts = {}
+    for split, rows in rep.items():
+        table = d2p.make_table(cv27_examples(rows, dossier))
+        d2p.write_partition(table, data_root, "cv_bci", split, lang)
+        counts[f"cv_bci/{split}"] = table.num_rows
+    if zen:
+        table = d2p.make_table(zenodo_examples(zenodo, zen))
+        d2p.write_partition(table, data_root, "zenodo_bci", "train", lang)
+        counts["zenodo_bci/train"] = table.num_rows
+    if dic:
+        counts["wourri_dictee/train"] = d2p.build_dataset(dic, data_root, "wourri_dictee", "train", "bci")
+    (work / "split_cv27.json").write_text(json.dumps(manifeste, ensure_ascii=False, indent=1), encoding="utf-8")
+    stats = d2p.write_stats(data_root, dataset_dir / "language_distribution_0.tsv")
+    card = write_card(work / "fairseq2_assets", data_root)
+    return {"counts": counts, "stats": stats, "card": card, "splits": manifeste["splits"]}
+
+
 def main():
     ap = argparse.ArgumentParser(description="Dataset baoulé du fine-tune Omnilingual (#474)")
     ap.add_argument("--work", required=True, help="dossier de travail (sortie)")
     ap.add_argument("--dictee", default=None, help="ZIP de la dictée ou dossier qui le contient")
     ap.add_argument("--with-test", action="store_true",
                     help="ajoute le split test (évalué, jamais entraîné)")
+    ap.add_argument("--cv27", default=None, help="Common Voice 27 bci (.tar.gz ou dossier extrait) : 2e fine-tune")
+    ap.add_argument("--zenodo", default=None, help="archive Zenodo 6705861 (bci-datasets.zip), avec --cv27")
     args = ap.parse_args()
-    result = prepare(args.work, args.dictee, args.with_test)
+    if args.cv27:
+        result = prepare_cv27(args.work, args.cv27, args.zenodo, args.dictee)
+        print("Répartition :", json.dumps(result["splits"], ensure_ascii=False))
+    else:
+        result = prepare(args.work, args.dictee, args.with_test)
     for name, n in result["counts"].items():
         print(f"{name}: {n} clips")
     for s in result["stats"]:
