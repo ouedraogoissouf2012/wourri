@@ -1,0 +1,32 @@
+{
+  "test": "finetune/cv27_split.py : 623 clips, 7 voix jamais entraînées, protocole du benchmark 0003",
+  "modeles": {
+    "temoin 1B depart": {
+      "cer": 0.19391953395230294,
+      "wer": 0.5257898130238555,
+      "n": 623,
+      "empty_hyps": 12,
+      "card": "omniASR_CTC_1B",
+      "load_s": 35.4,
+      "infer_s": 20.4
+    },
+    "1B fine-tune step_1200": {
+      "cer": 0.16555616238849444,
+      "wer": 0.4323017408123791,
+      "n": 623,
+      "empty_hyps": 14,
+      "card": "wourri_bci_actuel",
+      "load_s": 30.8,
+      "infer_s": 18.7
+    },
+    "1B 2e fine-tune step_3000": {
+      "cer": 0.13413435281267067,
+      "wer": 0.3483236621534494,
+      "n": 623,
+      "empty_hyps": 12,
+      "card": "wourri_bci_nouveau",
+      "load_s": 31.5,
+      "infer_s": 18.1
+    }
+  }
+}
