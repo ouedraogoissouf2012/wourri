@@ -1,0 +1,381 @@
+{
+ "description": "Relecture des mots-clés baoulé acceptés dont le locuteur a changé la traduction (ADR-0045, révision du 2026-10-26). Un mot accepté n'entre dans son concept que si la traduction du locuteur dit encore ce concept.",
+ "date": "2026-10-26",
+ "source": "export de l'atelier /tasks/validations?kind=mot_cle du 2026-10-26 (compte esse.adc)",
+ "relecture": "classement proposé à partir des traductions du locuteur, approuvé par le chef de projet le 2026-10-26",
+ "decisions_possibles": {
+  "hors_concept": "n'entre pas dans le concept",
+  "a_confirmer": "n'entre pas tant que le locuteur n'a pas confirmé",
+  "garde": "entre dans le concept (confirmé par le locuteur)"
+ },
+ "mots": [
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:fie kaan",
+   "concept": "ACTION_PLANTER",
+   "mot": "fie kaan",
+   "sens_locuteur": "petit champs",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:kpa mun",
+   "concept": "ACTION_PLANTER",
+   "mot": "kpa mun",
+   "sens_locuteur": "ce qui est bon",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:kpɛlɛ",
+   "concept": "ACTION_PLANTER",
+   "mot": "kpɛlɛ",
+   "sens_locuteur": "manière de couper",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:kun lika",
+   "concept": "ACTION_PLANTER",
+   "mot": "lika",
+   "sens_locuteur": "endroit",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:kɔfie",
+   "concept": "ACTION_PLANTER",
+   "mot": "kɔfie",
+   "sens_locuteur": "butte",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:mma benin",
+   "concept": "ACTION_PLANTER",
+   "mot": "mma benin",
+   "sens_locuteur": "quel fruit",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:mma mun",
+   "concept": "ACTION_PLANTER",
+   "mot": "mma mun",
+   "sens_locuteur": "les fruits",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:uflɛ ɔ",
+   "concept": "ACTION_PLANTER",
+   "mot": "uflɛ",
+   "sens_locuteur": "nouveau/nouvelle",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:kaan",
+   "concept": "ACTION_PLANTER",
+   "mot": "kaan",
+   "sens_locuteur": "petit",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:kaan kun",
+   "concept": "ACTION_PLANTER",
+   "mot": "kaan kun",
+   "sens_locuteur": "petit",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:amun",
+   "concept": "ACTION_PLANTER",
+   "mot": "amun",
+   "sens_locuteur": "vous",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:nun waka",
+   "concept": "ACTION_PLANTER",
+   "mot": "waka",
+   "sens_locuteur": "bois",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:ijre",
+   "concept": "ACTION_PLANTER",
+   "mot": "ijre",
+   "sens_locuteur": "herbes",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:lika uflɛ",
+   "concept": "ACTION_PLANTER",
+   "mot": "lika uflɛ",
+   "sens_locuteur": "nouvel endroit",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_PLANTER:mma",
+   "concept": "ACTION_PLANTER",
+   "mot": "n'ma",
+   "sens_locuteur": "fruits",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_RECOLTER:cɛn benin",
+   "concept": "ACTION_RECOLTER",
+   "mot": "cɛn benin",
+   "sens_locuteur": "quel moment",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_RECOLTER:i kpa",
+   "concept": "ACTION_RECOLTER",
+   "mot": "i kpa",
+   "sens_locuteur": "qui est bon",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_RECOLTER:amango n",
+   "concept": "ACTION_RECOLTER",
+   "mot": "amango nun",
+   "sens_locuteur": "dans la mangue",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_RECOLTER:fa sie",
+   "concept": "ACTION_RECOLTER",
+   "mot": "fa sie",
+   "sens_locuteur": "il faut garder",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_RECOLTER:klikli n",
+   "concept": "ACTION_RECOLTER",
+   "mot": "klikli",
+   "sens_locuteur": "premier",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_RECOLTER:klikli",
+   "concept": "ACTION_RECOLTER",
+   "mot": "klikli",
+   "sens_locuteur": "premier",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_RECOLTER:fɔkɔ n",
+   "concept": "ACTION_RECOLTER",
+   "mot": "fɔkɔ nun",
+   "sens_locuteur": "dans le coton",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_RECOLTER:kpɛ klikli",
+   "concept": "ACTION_RECOLTER",
+   "mot": "kpɛ klikli",
+   "sens_locuteur": "première fois",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_STOCKER:fite",
+   "concept": "ACTION_STOCKER",
+   "mot": "fitɛ",
+   "sens_locuteur": "sors",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:CULTURE_RIZ:gua su",
+   "concept": "CULTURE_RIZ",
+   "mot": "gua su",
+   "sens_locuteur": "verser dessus",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ENGRAIS_FERTILISANT:fa yo",
+   "concept": "ENGRAIS_FERTILISANT",
+   "mot": "fa yo",
+   "sens_locuteur": "pour faire",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ENGRAIS_FERTILISANT:ninnge benin",
+   "concept": "ENGRAIS_FERTILISANT",
+   "mot": "ninnge benin",
+   "sens_locuteur": "quelle chose",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:TEMPS_SAISON_GENERAL:lua waka",
+   "concept": "TEMPS_SAISON_GENERAL",
+   "mot": "lua waka",
+   "sens_locuteur": "planter l'arbre",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:TEMPS_SAISON_GENERAL:amun",
+   "concept": "TEMPS_SAISON_GENERAL",
+   "mot": "amun",
+   "sens_locuteur": "vous",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:TEMPS_SAISON_GENERAL:lua",
+   "concept": "TEMPS_SAISON_GENERAL",
+   "mot": "lua",
+   "sens_locuteur": "semer/planter",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:TEMPS_SAISON_GENERAL:nuan",
+   "concept": "TEMPS_SAISON_GENERAL",
+   "mot": "i nuan",
+   "sens_locuteur": "sa limite",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:TEMPS_HORIZON_LOINTAIN:nuan",
+   "concept": "TEMPS_HORIZON_LOINTAIN",
+   "mot": "nuan",
+   "sens_locuteur": "limite",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:CULTURE_HARICOT:nma",
+   "concept": "CULTURE_HARICOT",
+   "mot": "n'ma",
+   "sens_locuteur": "fruits",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_ARROSER:lika",
+   "concept": "ACTION_ARROSER",
+   "mot": "lika",
+   "sens_locuteur": "endroit",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_CHERCHER_CONSEIL:nuan",
+   "concept": "ACTION_CHERCHER_CONSEIL",
+   "mot": "i nuan su",
+   "sens_locuteur": "sa limite",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:TEMPS_METEO:do",
+   "concept": "TEMPS_METEO",
+   "mot": "dô",
+   "sens_locuteur": "l'heure",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:TEMPS_METEO:ayrɛ",
+   "concept": "TEMPS_METEO",
+   "mot": "ayrɛ",
+   "sens_locuteur": "médicament",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:TEMPS_METEO:lika dolɛ",
+   "concept": "TEMPS_METEO",
+   "mot": "lika dolɛ",
+   "sens_locuteur": "ombre",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:INTENSITE_FORT:ekun",
+   "concept": "INTENSITE_FORT",
+   "mot": "ekun",
+   "sens_locuteur": "encore",
+   "decision": "hors_concept",
+   "motif": "le sens donné par le locuteur ne correspond pas à ce concept"
+  },
+  {
+   "external_id": "mot_cle:ACTION_STOCKER:sielɛ",
+   "concept": "ACTION_STOCKER",
+   "mot": "sielɛ",
+   "sens_locuteur": "mets-là",
+   "decision": "a_confirmer",
+   "motif": "question posée au locuteur : ce mot dit-il ce concept ?"
+  },
+  {
+   "external_id": "mot_cle:TEMPS_SAISON_GENERAL:afuɛ",
+   "concept": "TEMPS_SAISON_GENERAL",
+   "mot": "afuɛ",
+   "sens_locuteur": "année",
+   "decision": "a_confirmer",
+   "motif": "question posée au locuteur : ce mot dit-il ce concept ?"
+  },
+  {
+   "external_id": "mot_cle:SALUTATION:juejue",
+   "concept": "SALUTATION",
+   "mot": "juejue",
+   "sens_locuteur": "santé",
+   "decision": "a_confirmer",
+   "motif": "question posée au locuteur : ce mot dit-il ce concept ?"
+  },
+  {
+   "external_id": "mot_cle:ACTION_VENDRE:gua",
+   "concept": "ACTION_VENDRE",
+   "mot": "gua",
+   "sens_locuteur": "prix",
+   "decision": "a_confirmer",
+   "motif": "question posée au locuteur : ce mot dit-il ce concept ?"
+  },
+  {
+   "external_id": "mot_cle:ACTION_VENDRE:to",
+   "concept": "ACTION_VENDRE",
+   "mot": "to",
+   "sens_locuteur": "paye",
+   "decision": "a_confirmer",
+   "motif": "question posée au locuteur : ce mot dit-il ce concept ?"
+  },
+  {
+   "external_id": "mot_cle:ACTION_VENDRE:fien",
+   "concept": "ACTION_VENDRE",
+   "mot": "fien",
+   "sens_locuteur": "sale",
+   "decision": "a_confirmer",
+   "motif": "question posée au locuteur : ce mot dit-il ce concept ?"
+  },
+  {
+   "external_id": "mot_cle:ACTION_CHERCHER_CONSEIL:nnolo",
+   "concept": "ACTION_CHERCHER_CONSEIL",
+   "mot": "nnolo",
+   "sens_locuteur": "passer informations",
+   "decision": "a_confirmer",
+   "motif": "question posée au locuteur : ce mot dit-il ce concept ?"
+  }
+ ]
+}

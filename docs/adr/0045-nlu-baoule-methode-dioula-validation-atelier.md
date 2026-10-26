@@ -101,6 +101,10 @@ Réponses (discussion du 2026-10-21) :
 2. **Construction** (`scripts/baoule_nlu_build.py`) : une paire acceptée entre au corpus avec la question et la réponse **telles que le locuteur les a acceptées**, et non plus le texte de la dictée.
 3. **Audio** : l'enregistrement de la dictée dit la réponse d'origine. Si le locuteur a corrigé la réponse baoulé, elle est servie **en texte seul** (`audio_reponse` vide), jamais avec un audio qui dirait autre chose. Ces réponses sont marquées `audio_a_reenregistrer` et listées à la construction, pour un nouvel enregistrement dans l'écran Dictée.
 4. **Reprise des rejets** : `scripts/reprendre_validations.py --types paire_qr --statuts admin_rejected` remet les seules paires rejetées « à valider », pour correction. Les paires acceptées ne sont pas touchées.
+5. **Mots-clés acceptés hors concept** (approuvé par le valideur le 2026-10-26). Le locuteur accepte un mot comme baoulé correct et en précise la traduction ; cette traduction peut ne plus dire le concept (« amun » = « vous », proposé pour « planter »). Règle : un mot accepté n'entre dans son concept que si la traduction du locuteur dit encore ce concept.
+   - La décision mot par mot est une **donnée datée**, pas une liste dans le code : `dictionnaires/relecture_mots_cles_bci.json` (identifiant externe, concept, mot, sens du locuteur, décision `hors_concept` / `a_confirmer` / `garde`).
+   - Relecture du 2026-10-26 : sur 128 mots acceptés à traduction changée, 39 hors concept, 7 à confirmer par le locuteur (écartés tant qu'il n'a pas répondu), le reste garde son concept. Un mot écarté reste un mot baoulé validé avec son sens.
+   - Effet mesuré : 168 → 123 mots-clés, 38 → 35 concepts (vendre, haricot et météo n'ont plus de mot validé) ; questions de la dictée bruitées à 19 % inchangées (106 bonnes, 5 mauvaises, 14 replis). Mesure optimiste : le vrai test reste des questions vocales nouvelles.
 
 ## Historique
 

@@ -47,10 +47,20 @@ def accepted(entries) -> list[dict]:
     return [e for e in entries if e.get("status") == ACCEPTE]
 
 
-def keywords_from_validations(mots_cles) -> dict[str, list[str]]:
-    """{concept: [mot baoulé normalisé]} depuis les mots-clés acceptés (texte corrigé compris)."""
+def exclus_par_relecture(relecture) -> set[str]:
+    """Identifiants externes des mots acceptés qui n'entrent PAS dans leur concept : tout mot
+    relu dont la décision n'est pas « garde » (`dictionnaires/relecture_mots_cles_bci.json`)."""
+    return {m["external_id"] for m in (relecture or {}).get("mots", []) if m.get("decision") != "garde"}
+
+
+def keywords_from_validations(mots_cles, relecture=None) -> dict[str, list[str]]:
+    """{concept: [mot baoulé normalisé]} depuis les mots-clés acceptés (texte corrigé compris),
+    sauf ceux que la relecture écarte de leur concept (traduction du locuteur hors concept)."""
+    exclus = exclus_par_relecture(relecture)
     out: dict[str, list[str]] = {}
     for e in accepted(mots_cles):
+        if (e.get("meta") or {}).get("external_id") in exclus:
+            continue
         concept = (e.get("meta") or {}).get("concept_nlu")
         mot = boot.prepare_bci(e.get("text_local"))
         if concept and mot and mot not in out.setdefault(concept, []):
@@ -162,6 +172,8 @@ def main(argv=None):
                          "seulement les paires reliées par position ; remplacé par la version validée")
     ap.add_argument("--mots-cles", help="JSON de /tasks/validations?kind=mot_cle (atelier)")
     ap.add_argument("--paires", help="JSON de /tasks/validations?kind=paire_qr (atelier)")
+    ap.add_argument("--relecture", default=str(DICTIONNAIRES / "relecture_mots_cles_bci.json"),
+                    help="relecture des mots acceptés hors concept (ADR-0045, révision du 2026-10-26)")
     ap.add_argument("--out", default=str(DICTIONNAIRES), help="dossier de sortie")
     ap.add_argument("--taux-bruit", type=float, default=0.19, help="CER simulé (fiche 0006 : 18,7 %)")
     args = ap.parse_args(argv)
@@ -189,7 +201,10 @@ def main(argv=None):
             statut, keep = "provisoire", (lambda pid: True)
     else:
         load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
-        keywords = keywords_from_validations(load(args.mots_cles))
+        relecture = load(args.relecture)
+        keywords = keywords_from_validations(load(args.mots_cles), relecture)
+        print(f"Relecture ({relecture['date']}) : {len(exclus_par_relecture(relecture))} mot(s) accepté(s) "
+              "écarté(s) de leur concept")
         textes = accepted_pairs(load(args.paires))
         statut, keep = "valide", (lambda pid: pid in textes)
 

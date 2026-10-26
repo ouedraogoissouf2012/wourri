@@ -29,6 +29,34 @@ def test_mots_cles_acceptes_seulement_et_texte_corrige():
     assert build.keywords_from_validations(reponse) == {"CULTURE_CACAO": ["kakao", "kaka o"]}
 
 
+def test_relecture_ecarte_les_mots_hors_concept_et_a_confirmer():
+    # sens tirés de l'export de l'atelier : « amun » = « vous », rangé sous planter
+    reponse = {"entries": [
+        _item("admin_accepted", "lua", "ACTION_PLANTER", ext="mot_cle:ACTION_PLANTER:lua"),
+        _item("admin_accepted", "amun", "ACTION_PLANTER", ext="mot_cle:ACTION_PLANTER:amun"),
+        _item("admin_accepted", "gua", "ACTION_VENDRE", ext="mot_cle:ACTION_VENDRE:gua"),
+        _item("admin_accepted", "kakao", "CULTURE_CACAO", ext="mot_cle:CULTURE_CACAO:kakao"),
+    ]}
+    relecture = {"mots": [
+        {"external_id": "mot_cle:ACTION_PLANTER:amun", "decision": "hors_concept"},
+        {"external_id": "mot_cle:ACTION_VENDRE:gua", "decision": "a_confirmer"},
+        {"external_id": "mot_cle:CULTURE_CACAO:kakao", "decision": "garde"},
+    ]}
+    assert build.keywords_from_validations(reponse, relecture) == {
+        "ACTION_PLANTER": ["lua"], "CULTURE_CACAO": ["kakao"]}
+    assert build.keywords_from_validations(reponse)["ACTION_PLANTER"] == ["lua", "amun"]  # sans relecture
+
+
+def test_fichier_de_relecture_du_depot_bien_forme():
+    import json
+
+    doc = json.loads((build.DICTIONNAIRES / "relecture_mots_cles_bci.json").read_text(encoding="utf-8"))
+    assert set(doc["decisions_possibles"]) == {"hors_concept", "a_confirmer", "garde"}
+    ids = [m["external_id"] for m in doc["mots"]]
+    assert len(ids) == len(set(ids)) and all(i.startswith(f"mot_cle:{m['concept']}:") for i, m in zip(ids, doc["mots"]))
+    assert {m["decision"] for m in doc["mots"]} <= set(doc["decisions_possibles"])
+
+
 def test_paires_acceptees_par_identifiant():
     paires = [_item("admin_accepted", "q", ext="paire_qr:paire:3:210"),
               _item("admin_rejected", "q", ext="paire_qr:paire:4:211")]
