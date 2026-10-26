@@ -42,13 +42,46 @@ describe("StudioView — types d'element", () => {
     expect(w.find('[data-kind="paire_qr"]').exists()).toBe(true);
     expect(text).toContain("Réponse proposée");
     expect(text).toContain("Au début de la saison des pluies.");
-    // « Corriger » : mot-cle et contenu oui, paire non (on accepte ou on rejette la paire)
+    // « Corriger » partout : une paire presque juste se corrige au lieu d'etre rejetee
     const articles = w.findAll("article");
     const corriger = (a) => a.findAll("button").some((b) => b.text() === "Corriger");
     // le plus recent (id le plus grand) en haut : contenu (3), paire (2), mot-cle (1)
-    expect(articles.map(corriger)).toEqual([true, false, true]);
+    expect(articles.map(corriger)).toEqual([true, true, true]);
     expect(articles[0].text()).toContain("Aw ni ce");
     expect(articles[2].text()).toContain("kakao");
+  });
+
+  it("corrige une paire en entier : la question et la réponse partent à /tasks/edit", async () => {
+    apiMock.mockClear();
+    routes({ bronze: [MOT, PAIRE] });
+    const w = mount(StudioView);
+    await flushPromises();
+    const paire = w.findAll("article")[0]; // le plus recent en haut : la paire (2)
+    await paire.findAll("button").find((b) => b.text() === "Corriger").trigger("click");
+    const rep = w.find('[data-champ="reponse_bci"]');
+    expect(rep.element.value).toBe("Be lua i …"); // pre-rempli avec la reponse proposee
+    // on ne change que le francais : aucun baoule invente dans les tests
+    await w.find('[data-champ="reponse_fr"]').setValue("Au début des pluies.");
+    await w.findAll("button").find((b) => b.text() === "Enregistrer").trigger("click");
+    await flushPromises();
+    const appel = apiMock.mock.calls.find(([path]) => path === "/tasks/edit");
+    expect(JSON.parse(appel[1].body)).toEqual({
+      id: "2", text_local: PAIRE.text_local, text_fr: PAIRE.text_fr,
+      reponse_bci: "Be lua i …", reponse_fr: "Au début des pluies.",
+    });
+  });
+
+  it("un mot-clé corrigé n'envoie pas de réponse", async () => {
+    apiMock.mockClear();
+    routes({ bronze: [MOT] });
+    const w = mount(StudioView);
+    await flushPromises();
+    await w.findAll("button").find((b) => b.text() === "Corriger").trigger("click");
+    expect(w.find('[data-champ="reponse_bci"]').exists()).toBe(false);
+    await w.findAll("button").find((b) => b.text() === "Enregistrer").trigger("click");
+    await flushPromises();
+    const appel = apiMock.mock.calls.find(([path]) => path === "/tasks/edit");
+    expect(JSON.parse(appel[1].body)).toEqual({ id: "1", text_local: "kakao", text_fr: "cacao" });
   });
 
   it("n'affiche que le contenu dans « A promouvoir »", async () => {

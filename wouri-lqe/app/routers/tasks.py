@@ -16,6 +16,9 @@ class EditBody(BaseModel):
     id: str = Field(min_length=1)
     text_local: str = Field(min_length=1)
     text_fr: str = ""
+    # paire question/reponse seulement : la reponse proposee corrigee (ADR-0045)
+    reponse_bci: str | None = None
+    reponse_fr: str | None = None
 
 
 @router.get("")
@@ -66,6 +69,7 @@ def post_edit(body: EditBody, user: dict = Depends(require_role("review"))):
     result = workflow.edit_text(
         body.id, language=user["lang"],
         text_local=body.text_local, text_fr=body.text_fr,
+        reponse_bci=body.reponse_bci, reponse_fr=body.reponse_fr,
     )
     if not result.get("ok"):
         code = 404 if result.get("reason") == "not_found" else 400

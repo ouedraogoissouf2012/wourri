@@ -16,6 +16,9 @@ const err = ref("");
 const editing = ref(null); // id de la fiche en cours de correction
 const editLocal = ref("");
 const editFr = ref("");
+const editPaire = ref(false); // une paire se corrige en entier : question ET reponse
+const editRepBci = ref("");
+const editRepFr = ref("");
 
 const can = (r) => {
   const rs = me.value.roles || [];
@@ -124,6 +127,9 @@ function startEdit(r) {
   editing.value = r.id;
   editLocal.value = r.text_local;
   editFr.value = r.text_fr;
+  editPaire.value = kindOf(r) === "paire_qr";
+  editRepBci.value = (r.meta || {}).reponse_bci || "";
+  editRepFr.value = (r.meta || {}).reponse_fr || "";
   err.value = "";
 }
 
@@ -137,7 +143,10 @@ async function saveEdit(id) {
     await api("/tasks/edit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, text_local: editLocal.value, text_fr: editFr.value }),
+      body: JSON.stringify({
+        id, text_local: editLocal.value, text_fr: editFr.value,
+        ...(editPaire.value ? { reponse_bci: editRepBci.value, reponse_fr: editRepFr.value } : {}),
+      }),
     });
     editing.value = null;
     await refresh();
@@ -208,10 +217,16 @@ async function promote(id) {
     <section v-show="tab==='bronze' && can('review')" class="mt-4 space-y-3">
       <article v-for="r in bronzeShown" :key="r.id" class="border rounded p-3 bg-white">
         <template v-if="editing === r.id">
-          <label class="block text-xs text-stone-500">Texte (langue locale)</label>
+          <label class="block text-xs text-stone-500">{{ editPaire ? "Question (langue locale)" : "Texte (langue locale)" }}</label>
           <input v-model="editLocal" class="w-full border rounded p-1 mb-2 font-semibold" />
-          <label class="block text-xs text-stone-500">Traduction française</label>
+          <label class="block text-xs text-stone-500">{{ editPaire ? "Question en français" : "Traduction française" }}</label>
           <input v-model="editFr" class="w-full border rounded p-1 text-stone-600" />
+          <template v-if="editPaire">
+            <label class="block text-xs text-stone-500 mt-2">Réponse (langue locale)</label>
+            <textarea v-model="editRepBci" data-champ="reponse_bci" class="w-full border rounded p-1 mb-2 font-semibold" rows="3" />
+            <label class="block text-xs text-stone-500">Réponse en français</label>
+            <textarea v-model="editRepFr" data-champ="reponse_fr" class="w-full border rounded p-1 text-stone-600" rows="2" />
+          </template>
           <audio v-if="r.audio_url" :src="mediaSrc(r)" crossorigin="use-credentials" controls class="mt-2 h-8"></audio>
           <div class="mt-2">
             <button class="mr-2 bg-wouri-700 text-white px-2 py-1 rounded" type="button" @click="saveEdit(r.id)">Enregistrer</button>
@@ -234,9 +249,10 @@ async function promote(id) {
           <p class="text-xs text-stone-500 mt-2">Réponse proposée</p>
           <p><strong>{{ (r.meta || {}).reponse_bci }}</strong></p>
           <p class="text-stone-600">{{ (r.meta || {}).reponse_fr }}</p>
-          <p class="text-xs text-stone-500">Accepter si cette réponse répond bien à cette question.</p>
+          <p class="text-xs text-stone-500">Accepter si cette réponse répond bien à cette question. Presque juste ? Corriger, puis accepter.</p>
           <button class="mr-2 mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_accepted')">Accepter</button>
           <button class="mr-2 mt-2 border px-2 py-1" type="button" @click="decide(r.id,'admin_rejected')">Rejeter</button>
+          <button class="mt-2 border px-2 py-1" type="button" @click="startEdit(r)">Corriger</button>
         </template>
         <template v-else>
           <p><strong>{{ r.text_local }}</strong></p>

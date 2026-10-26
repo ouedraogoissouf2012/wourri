@@ -55,6 +55,33 @@ def test_corpus_garde_position_et_alignement_accepte():
     assert avec[1]["cultures"] == ["CULTURE_CACAO"]  # culture du NLU si la filière n'en donne pas
 
 
+def test_corpus_prend_les_textes_corriges_et_coupe_l_audio_si_la_reponse_change():
+    rows = [
+        {"transcription": "Q0", "text_fr": "Quand planter ?", "file_name": "audio/q0.webm"},
+        {"transcription": "R0", "text_fr": "En saison.", "file_name": "audio/r0.webm"},
+        {"transcription": "Q1", "text_fr": "Comment récolter ?", "file_name": "audio/q1.webm"},
+        {"transcription": "R1", "text_fr": "À maturité.", "file_name": "audio/r1.webm"},
+    ]
+    labels = [{"intent": "I", "concepts": [], "cultures_filiere": []}, {},
+              {"intent": "I", "concepts": [], "cultures_filiere": []}, {}]
+    pairs = [{"filiere": "F", "q": 0, "a": 1, "sim": 0.4, "method": "alignement"},
+             {"filiere": "F", "q": 2, "a": 3, "sim": 0.4, "method": "alignement"}]
+    paires = [
+        {"status": "admin_accepted", "text_local": "Q0 corrigée", "text_fr": "Quand planter ?",
+         "meta": {"external_id": "paire_qr:paire:0:1", "reponse_bci": "R0 corrigée", "reponse_fr": "En saison."}},
+        {"status": "admin_accepted", "text_local": "Q1", "text_fr": "Comment récolter ?",
+         "meta": {"external_id": "paire_qr:paire:2:3", "reponse_bci": " R1 ", "reponse_fr": "À maturité."}},
+    ]
+    textes = build.accepted_pairs(paires)
+    assert build.accepted_pair_ids(paires) == {"paire:0:1", "paire:2:3"}
+    e0, e1 = build.corpus_entries(rows, labels, pairs, lambda pid: pid in textes, textes)
+    assert (e0["question_bci"], e0["reponse_bci"]) == ("Q0 corrigée", "R0 corrigée")
+    assert e0["audio_reponse"] is None and e0["audio_a_reenregistrer"] is True
+    # réponse inchangée (aux espaces près) : l'enregistrement de la dictée reste servi
+    assert e1["reponse_bci"] == "R1" and e1["audio_reponse"] == "audio/r1.webm"
+    assert "audio_a_reenregistrer" not in e1
+
+
 def test_bruiter_reproductible_et_au_taux():
     texte = "ble benin nun ye o fata ke amun lua kakao waka" * 20
     a = build.bruiter(texte, 0.2, random.Random(1), "abɛɔ")

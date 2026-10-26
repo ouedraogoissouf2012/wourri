@@ -40,10 +40,15 @@ def decide(item_id: str, status: str, *, language: str) -> dict:
     return {"ok": True, "id": str(item_id), "status": status}
 
 
-def edit_text(item_id: str, *, language: str, text_local: str, text_fr: str) -> dict:
+def edit_text(item_id: str, *, language: str, text_local: str, text_fr: str,
+              reponse_bci: str | None = None, reponse_fr: str | None = None) -> dict:
     """Corrige le texte d'une fiche (role review), AVANT publication. Refuse si le texte
     local est vide, la fiche introuvable (ou dans une autre langue), ou deja en
-    'production' (verrou EDITABLE_FROM). Ne touche jamais le statut."""
+    'production' (verrou EDITABLE_FROM). Ne touche jamais le statut.
+
+    Une paire question/reponse se corrige en entier : la question (text_local/text_fr)
+    et la reponse proposee (reponse_bci, obligatoire, et reponse_fr). Une reponse n'a
+    de sens que sur une paire."""
     text_local = (text_local or "").strip()
     text_fr = (text_fr or "").strip()
     if not text_local:
@@ -51,12 +56,19 @@ def edit_text(item_id: str, *, language: str, text_local: str, text_fr: str) -> 
     row = repo.get(item_id=item_id, language=language)
     if row is None:
         return {"ok": False, "reason": "not_found"}
+    reponse = None
+    if row["kind"] == "paire_qr":
+        reponse = {"reponse_bci": (reponse_bci or "").strip(), "reponse_fr": (reponse_fr or "").strip()}
+        if not reponse["reponse_bci"]:
+            return {"ok": False, "reason": "empty"}
+    elif reponse_bci is not None or reponse_fr is not None:
+        return {"ok": False, "reason": "not_pair"}
     if not repo.update_text(
         item_id=item_id, language=language,
-        text_local=text_local, text_fr=text_fr, allowed_from=EDITABLE_FROM,
+        text_local=text_local, text_fr=text_fr, allowed_from=EDITABLE_FROM, reponse=reponse,
     ):
         return {"ok": False, "reason": "locked", "status": row["status"]}
-    return {"ok": True, "id": str(item_id), "text_local": text_local, "text_fr": text_fr}
+    return {"ok": True, "id": str(item_id), "text_local": text_local, "text_fr": text_fr, **(reponse or {})}
 
 
 def reprendre(item_id: str, *, language: str) -> dict:
