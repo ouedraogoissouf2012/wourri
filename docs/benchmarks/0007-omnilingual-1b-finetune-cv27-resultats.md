@@ -16,6 +16,9 @@
 | Départ (`omniASR_CTC_1B`, non entraîné) | 19,4 % | 52,6 % | 12 |
 | Actuel (1er fine-tune, `step_1200`, fiche 0006) | 16,6 % | 43,2 % | 14 |
 | **Nouveau (2e fine-tune, `step_3000`)** | **13,4 %** | **34,8 %** | 12 |
+| Nouveau + modèle de langue (ADR-0044, révision bis) | **11,6 %** | **25,3 %** | non relevé |
+
+- **Modèle de langue** (mesuré le 2026-10-24, avec la démo) : trigramme « complet » (textes natifs + web filtré, sans Bible ni phrase de dev ou du test), α = 0,4 et β = 0 choisis sur dev (CER dev 9,0 → 7,9 %), noté une seule fois sur le test. Il corrige surtout les mots collés ou coupés : −1,8 point de CER, **−9,5 points de WER**.
 
 - **Gain par rapport au modèle actuel** : −3,2 points de CER et −8,4 points de WER, soit **environ −19 %** d'erreurs en relatif dans les deux cas.
 - **Gain par rapport au départ** : −31 % de CER, −34 % de WER.
@@ -65,7 +68,7 @@ UER de la recette (normalisation de la recette, différente de celle du benchmar
 - **Ce n'est pas le test du benchmark 0003** : 3 des 9 voix de l'ancien test sont maintenant à l'entraînement. Le modèle actuel obtient 16,6 % ici contre 18,7 % sur l'ancien test : ce test est un peu plus facile. **La comparaison qui fait foi est celle des trois modèles côte à côte**, pas avec les chiffres de 0006.
 - **11 clips sont vides pour les trois modèles**, des fichiers consécutifs d'une même voix. Ce sont probablement les enregistrements quasi muets déjà relevés en 0006 §3.6 (non vérifié à l'écoute). Analyse **a posteriori**, sans ces 11 clips (612 clips) : départ 18,0 %, actuel 15,1 %, **nouveau 11,9 %** de CER.
 - **7 voix au test** : mieux que 4, mais la robustesse sur des voix d'agriculteurs au téléphone reste à mesurer sur le terrain (BAO-6).
-- **Erreurs restantes** (exemples du test) : mots collés ou coupés (« nansran » pour « naan sran », « mmua mua » pour « mmuammua »), quelques tons et voyelles (« kwlɔʼn » pour « kwla »), mots étrangers (« si loɛ » pour « silhouette »). Un modèle de langue construit avec les textes du registre (7 millions de mots) vise précisément les coupures de mots : à mesurer séparément.
+- **Erreurs restantes** (exemples du test) : mots collés ou coupés (« nansran » pour « naan sran », « mmua mua » pour « mmuammua »), quelques tons et voyelles (« kwlɔʼn » pour « kwla »), mots étrangers (« si loɛ » pour « silhouette »). Le modèle de langue (§1) vise précisément les coupures de mots : il fait passer le WER de 34,8 à 25,3 %.
 
 ## 5. Ce qui est conservé
 
