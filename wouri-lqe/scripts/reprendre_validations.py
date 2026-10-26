@@ -15,6 +15,8 @@ d'abord une sauvegarde JSON des fiches touchees (etat avant), puis applique.
 Usage (depuis wouri-lqe/ ou dans le conteneur de l'atelier, memes variables que l'app) :
     python -m scripts.reprendre_validations --langue bci --original import.json
     python -m scripts.reprendre_validations --langue bci --original import.json --appliquer
+    # seulement les paires rejetees, pour que le locuteur les corrige :
+    python -m scripts.reprendre_validations --langue bci --types paire_qr --statuts admin_rejected
 """
 from __future__ import annotations
 
@@ -44,11 +46,12 @@ def originaux(entries: list[dict]) -> dict[str, dict]:
     return out
 
 
-def planifier(rows: list[dict], origine: dict[str, dict], types) -> list[dict]:
-    """Fiches a remettre « a valider » : decidees, ou dont le texte differe de l'origine."""
+def planifier(rows: list[dict], origine: dict[str, dict], types, statuts=workflow.REPRENABLE_FROM) -> list[dict]:
+    """Fiches a remettre « a valider » : decidees, ou dont le texte differe de l'origine.
+    `statuts` restreint aux fiches dans ces statuts (ex. seulement les rejetees)."""
     plan = []
     for r in rows:
-        if r["kind"] not in types or r["status"] not in workflow.REPRENABLE_FROM:
+        if r["kind"] not in types or r["status"] not in workflow.REPRENABLE_FROM or r["status"] not in statuts:
             continue
         cible = r["meta"].get("texte_origine") or origine.get(r["meta"].get("external_id") or "")
         avant = {"text_local": r["text_local"], "text_fr": r["text_fr"]}
@@ -75,6 +78,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--langue", required=True, help="code de la langue (ex. bci)")
     ap.add_argument("--types", default=",".join(TYPES_DEFAUT), help="types de fiche, separes par des virgules")
+    ap.add_argument("--statuts", default=",".join(sorted(workflow.REPRENABLE_FROM)),
+                    help="statuts repris, separes par des virgules (ex. admin_rejected)")
     ap.add_argument("--original", action="append", default=[], help="fichier d'import d'origine (repetable)")
     ap.add_argument("--appliquer", action="store_true", help="applique (sinon essai a blanc)")
     ap.add_argument("--sauvegarde", help="fichier de sauvegarde (defaut : reprise_<langue>_<date>.json)")
@@ -84,12 +89,15 @@ def main(argv=None) -> int:
     inconnus = [t for t in types if t not in repo.KINDS]
     if inconnus:
         ap.error(f"type inconnu : {', '.join(inconnus)}")
+    statuts = {s.strip() for s in args.statuts.split(",") if s.strip()}
+    if not statuts <= workflow.REPRENABLE_FROM:
+        ap.error(f"statut non repris : {', '.join(sorted(statuts - workflow.REPRENABLE_FROM))}")
     origine = {}
     for f in args.original:
         origine.update(originaux(json.loads(Path(f).read_text(encoding="utf-8"))))
 
     rows = repo.list_by(language=args.langue)
-    plan = planifier(rows, origine, types)
+    plan = planifier(rows, origine, types, statuts)
     print(resume(plan, rows, types))
     for p in plan[:10]:
         apres = p["apres"]["text_local"] if p["apres"] else "(inchange)"

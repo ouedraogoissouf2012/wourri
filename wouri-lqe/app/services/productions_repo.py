@@ -126,24 +126,31 @@ def set_status(*, item_id, language: str, status: str, allowed_from=None) -> boo
         return cur.rowcount > 0
 
 
-def update_text(*, item_id, language: str, text_local: str, text_fr: str, allowed_from) -> bool:
+def update_text(*, item_id, language: str, text_local: str, text_fr: str, allowed_from,
+                reponse: dict | None = None) -> bool:
     """UPDATE le texte (text_local/text_fr) d'une ligne, TOUJOURS filtre par langue
     (isolation inter-locuteurs). N'agit QUE depuis `allowed_from` (garde atomique :
     on n'edite jamais une 'production' deja publiee). Retourne True si une ligne a change.
 
-    A la premiere correction, le texte d'origine est garde dans `meta.texte_origine`
-    (les valeurs a droite d'un SET sont celles d'avant l'UPDATE) : `reprendre` peut ainsi
-    annuler une correction."""
+    `reponse` ({reponse_bci, reponse_fr}, paire question/reponse) remplace aussi la
+    reponse proposee, rangee dans `meta`.
+
+    A la premiere correction, le texte d'origine (et la reponse d'origine d'une paire) est
+    garde dans `meta.texte_origine` (les valeurs a droite d'un SET sont celles d'avant
+    l'UPDATE) : `reprendre` peut ainsi annuler une correction."""
     pid = _as_int(item_id)
     if pid is None:
         return False
     with get_conn() as conn:
         cur = conn.execute(
             "UPDATE productions SET text_local = %s, text_fr = %s, updated_at = now(),"
-            " meta = CASE WHEN meta ? 'texte_origine' THEN meta ELSE meta || jsonb_build_object("
-            "  'texte_origine', jsonb_build_object('text_local', text_local, 'text_fr', text_fr)) END"
+            " meta = (CASE WHEN meta ? 'texte_origine' THEN meta ELSE meta || jsonb_build_object("
+            "  'texte_origine', jsonb_strip_nulls(jsonb_build_object('text_local', text_local, 'text_fr', text_fr,"
+            "  'reponse_bci', meta->'reponse_bci', 'reponse_fr', meta->'reponse_fr'))) END)"
+            " || COALESCE(%s::jsonb, '{}'::jsonb)"
             " WHERE id = %s AND language = %s AND status = ANY(%s)",
-            (text_local, text_fr, pid, language, list(allowed_from)),
+            (text_local, text_fr, Jsonb(reponse) if reponse else None,
+             pid, language, list(allowed_from)),
         )
         conn.commit()
         return cur.rowcount > 0
@@ -153,6 +160,7 @@ def reprendre(*, item_id, language: str, allowed_from, text_local=None, text_fr=
     """Remet une fiche « a valider » (bronze), comme avant toute intervention du locuteur :
     statut bronze, texte d'origine restaure. Le texte vient de `meta.texte_origine`, sinon
     de `text_local`/`text_fr` fournis (fichier d'import d'origine), sinon reste tel quel.
+    La reponse d'origine d'une paire, si elle a ete corrigee, est restauree aussi.
     Toujours filtre par langue ; n'agit QUE depuis `allowed_from` (jamais une 'production')."""
     pid = _as_int(item_id)
     if pid is None:
@@ -162,7 +170,9 @@ def reprendre(*, item_id, language: str, allowed_from, text_local=None, text_fr=
             "UPDATE productions SET status = 'bronze', updated_at = now(),"
             " text_local = COALESCE(meta->'texte_origine'->>'text_local', %s, text_local),"
             " text_fr = COALESCE(meta->'texte_origine'->>'text_fr', %s, text_fr),"
-            " meta = meta - 'texte_origine'"
+            " meta = (meta - 'texte_origine') || jsonb_strip_nulls(jsonb_build_object("
+            "  'reponse_bci', meta->'texte_origine'->'reponse_bci',"
+            "  'reponse_fr', meta->'texte_origine'->'reponse_fr'))"
             " WHERE id = %s AND language = %s AND status = ANY(%s)",
             (text_local, text_fr, pid, language, list(allowed_from)),
         )

@@ -58,13 +58,23 @@ def keywords_from_validations(mots_cles) -> dict[str, list[str]]:
     return out
 
 
-def accepted_pair_ids(paires) -> set[str]:
-    """Identifiants `paire:<q>:<a>` des paires acceptées (external_id `paire_qr:paire:q:a`)."""
-    ids = set()
+def accepted_pairs(paires) -> dict[str, dict]:
+    """{`paire:<q>:<a>`: textes tels que le locuteur les a acceptés} (external_id
+    `paire_qr:paire:q:a`) : question et réponse, corrigées dans l'atelier le cas échéant."""
+    out = {}
     for e in accepted(paires):
-        ext = (e.get("meta") or {}).get("external_id") or ""
-        ids.add(ext.split(":", 1)[1] if ext.startswith("paire_qr:") else ext)
-    return ids
+        meta = e.get("meta") or {}
+        ext = meta.get("external_id") or ""
+        out[ext.split(":", 1)[1] if ext.startswith("paire_qr:") else ext] = {
+            "question_bci": e.get("text_local") or "", "question_fr": e.get("text_fr") or "",
+            "reponse_bci": meta.get("reponse_bci") or "", "reponse_fr": meta.get("reponse_fr") or "",
+        }
+    return out
+
+
+def accepted_pair_ids(paires) -> set[str]:
+    """Identifiants `paire:<q>:<a>` des paires acceptées."""
+    return set(accepted_pairs(paires))
 
 
 def nlu_file(keywords: dict[str, list[str]], labels_fr: dict, statut: str) -> dict:
@@ -76,8 +86,13 @@ def nlu_file(keywords: dict[str, list[str]], labels_fr: dict, statut: str) -> di
     }
 
 
-def corpus_entries(rows, labels, pairs, keep_alignement) -> list[dict]:
-    """Une entrée par paire gardée : position toujours, alignement si `keep_alignement(id)`."""
+def corpus_entries(rows, labels, pairs, keep_alignement, textes=None) -> list[dict]:
+    """Une entrée par paire gardée : position toujours, alignement si `keep_alignement(id)`.
+
+    `textes` ({id: textes acceptés}, voir `accepted_pairs`) : la question et la réponse
+    corrigées par le locuteur remplacent celles de la dictée. Si la réponse baoulé a changé,
+    l'enregistrement de la dictée ne la dit plus : pas d'audio (réponse en texte) et
+    `audio_a_reenregistrer` pour la liste à rendre au locuteur."""
     out = []
     for p in pairs:
         if p["a"] is None:
@@ -87,13 +102,19 @@ def corpus_entries(rows, labels, pairs, keep_alignement) -> list[dict]:
             continue
         q, a, lab = rows[p["q"]], rows[p["a"]], labels[p["q"]]
         cultures = lab["cultures_filiere"] or [c for c in lab["concepts"] if c.startswith("CULTURE_")]
-        out.append({
+        entry = {
             "id": f"bci-q{p['q']}", "filiere": p["filiere"],
             "question_bci": q["transcription"], "question_fr": q["text_fr"],
             "reponse_bci": a["transcription"], "reponse_fr": a["text_fr"],
             "intent": lab["intent"], "cultures": cultures,
             "audio_reponse": a["file_name"], "appariement": p["method"],
-        })
+        }
+        corrige = (textes or {}).get(pid)
+        if corrige:
+            entry.update({k: v.strip() for k, v in corrige.items() if v and v.strip()})
+            if entry["reponse_bci"] != a["transcription"].strip():
+                entry["audio_reponse"], entry["audio_a_reenregistrer"] = None, True
+        out.append(entry)
     return out
 
 
@@ -169,11 +190,11 @@ def main(argv=None):
     else:
         load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
         keywords = keywords_from_validations(load(args.mots_cles))
-        ok_pairs = accepted_pair_ids(load(args.paires))
-        statut, keep = "valide", (lambda pid: pid in ok_pairs)
+        textes = accepted_pairs(load(args.paires))
+        statut, keep = "valide", (lambda pid: pid in textes)
 
     nlu_json = nlu_file(keywords, labels_fr, statut)
-    corpus = corpus_entries(rows, labels, pairs, keep)
+    corpus = corpus_entries(rows, labels, pairs, keep, textes if statut == "valide" else None)
     out = Path(args.out)
     (out / "nlu_concepts_bci.json").write_text(json.dumps(nlu_json, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     (out / "corpus_ivr_bci.json").write_text(json.dumps(
@@ -183,6 +204,10 @@ def main(argv=None):
     nlu = NLUService(config=build_bci_config(nlu_json, base), min_confidence=0.0)
     print(f"Statut : {statut} | concepts : {len(keywords)} | mots-clés : {sum(map(len, keywords.values()))} "
           f"| entrées du corpus : {len(corpus)}")
+    a_refaire = [e["id"] for e in corpus if e.get("audio_a_reenregistrer")]
+    if a_refaire:
+        print(f"Réponses corrigées, envoyées en texte (à réenregistrer en dictée) : {len(a_refaire)} — "
+              + ", ".join(a_refaire))
     for taux in (0.0, args.taux_bruit):
         m = mesurer(corpus, nlu, taux)
         print(f"Questions bruitées à {taux:.0%} : bonne réponse {m['bonne']}/{m['n']}, "

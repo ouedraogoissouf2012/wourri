@@ -88,7 +88,22 @@ Réponses (discussion du 2026-10-21) :
   - une migration de schéma de l'atelier, à déployer sur le serveur avant la validation.
 - **Retour arrière** : `kind` a pour défaut `contenu`, ce qui ne change rien pour l'existant. Les éléments `mot_cle` et `paire_qr` se suppriment par leur type.
 
+## Révision du 2026-10-26 — Corriger une paire question → réponse
+
+**Constat.** Une paire ne pouvait qu'être acceptée ou rejetée. Le locuteur a rejeté des paires presque justes faute de pouvoir les corriger (capture du 2026-10-26 : 34 paires rejetées sur 36 décidées). Un rejet ne disait donc pas « faux », mais « à corriger ».
+
+**Décision (approuvée par le valideur le 2026-10-26).**
+
+1. **Atelier** : « Corriger » sur une paire, comme sur un mot-clé.
+   - La question (`text_local`, `text_fr`) et la réponse proposée (`meta.reponse_bci`, obligatoire, `meta.reponse_fr`) se corrigent ensemble.
+   - À la première correction, la question et la réponse d'origine sont gardées dans `meta.texte_origine` ; « Reprendre » restaure les deux.
+   - Une réponse envoyée pour un autre type que `paire_qr` est refusée.
+2. **Construction** (`scripts/baoule_nlu_build.py`) : une paire acceptée entre au corpus avec la question et la réponse **telles que le locuteur les a acceptées**, et non plus le texte de la dictée.
+3. **Audio** : l'enregistrement de la dictée dit la réponse d'origine. Si le locuteur a corrigé la réponse baoulé, elle est servie **en texte seul** (`audio_reponse` vide), jamais avec un audio qui dirait autre chose. Ces réponses sont marquées `audio_a_reenregistrer` et listées à la construction, pour un nouvel enregistrement dans l'écran Dictée.
+4. **Reprise des rejets** : `scripts/reprendre_validations.py --types paire_qr --statuts admin_rejected` remet les seules paires rejetées « à valider », pour correction. Les paires acceptées ne sont pas touchées.
+
 ## Historique
 
 - 2026-10-21 — proposé (plan approuvé par le valideur ; validation par l'atelier exigée).
 - 2026-10-22 — **décision du valideur : démo terrain avant la fin de la validation**. « On doit partir de ce que nous connaissons et apprendre sur le terrain avec les corrections et le retour des paysans. » Les paysans ne lisent pas : la démo est vocale (serveur voix baoulé, réponses lues par le locuteur). Dictionnaire **« demo »** (`scripts/baoule_nlu_build.py --demo`) : mots-clés de l'amorçage (non encore validés, usage interne au NLU) et **seulement les 123 paires reliées par position** (9 filières) ; les 74 paires reliées par le sens restent écartées jusqu'à leur validation. Tout ce que le paysan entend ou lit reste le texte et la voix du locuteur natif. Mesure (questions de la dictée) : exacte 123/123 ; bruitée à 19 % 83 à 87 % bonnes, 4 à 7 % mauvaises, le reste en repli honnête (escaladé). Remplacé par la version validée dès la fin de la validation dans l'atelier.
+- 2026-10-26 — état de la validation (export de l'atelier) : mots-clés 290 décidés, 172 acceptés dont 128 avec une traduction précisée, 118 rejetés ; paires 74, 2 acceptées, 34 rejetées, 38 à décider. Révision « Corriger une paire » (ci-dessus). Construction validée essayée sur ces décisions : 38 concepts, 168 mots-clés, 125 réponses ; questions de la dictée exactes 125/125, bruitées à 19 % 106 bonnes, 5 mauvaises, 14 replis honnêtes. Pas encore déployée.
