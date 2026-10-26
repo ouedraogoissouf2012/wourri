@@ -168,7 +168,7 @@ def brancher(pipeline, ids, labels, decodeur=None, capture=None, beam=64):
     """Remplace le décodage glouton du pipeline : log-probas réduites aux colonnes `ids`, puis
     recherche en faisceau si `decodeur`, sinon glouton. `capture` (liste) reçoit les matrices."""
     import torch
-    from fairseq2.nn import BatchLayout
+    from fairseq2.nn.batch_layout import BatchLayout  # même import que le pipeline Omnilingual
 
     index = torch.tensor(ids)
 
