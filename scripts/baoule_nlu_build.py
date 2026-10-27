@@ -27,6 +27,7 @@ import argparse
 import json
 import random
 import sys
+from collections import Counter
 from datetime import date
 from pathlib import Path
 
@@ -203,8 +204,10 @@ def main(argv=None):
         load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
         relecture = load(args.relecture)
         keywords = keywords_from_validations(load(args.mots_cles), relecture)
+        par = Counter(m.get("decision") for m in relecture.get("mots", []))
         print(f"Relecture ({relecture['date']}) : {len(exclus_par_relecture(relecture))} mot(s) accepté(s) "
-              "écarté(s) de leur concept")
+              f"écarté(s) de leur concept : {par['hors_concept']} hors concept, "
+              f"{par['a_confirmer']} en attente de confirmation du locuteur")
         textes = accepted_pairs(load(args.paires))
         statut, keep = "valide", (lambda pid: pid in textes)
 
