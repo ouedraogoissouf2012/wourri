@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "../api.js";
+import NavBar from "../components/NavBar.vue";
 
 const router = useRouter();
 const me = ref({ user: "", language: "", roles: [] });
@@ -100,8 +101,8 @@ async function produce(a) {
         <h1 class="text-xl font-semibold text-wouri-700">Mes demandes</h1>
         <p class="text-sm text-stone-600">{{ me.user }} · langue <code>{{ me.language }}</code></p>
       </div>
-      <a href="/" class="underline text-sm">← Atelier</a>
     </header>
+    <NavBar :roles="me.roles || []" actif="/demandes" />
     <p class="text-sm text-stone-600 mt-2">
       Pour chaque demande : lis la consigne (français), puis <strong>enregistre ta voix</strong> dans ta langue.
       Le texte est facultatif.
