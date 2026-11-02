@@ -2,8 +2,11 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "../api.js";
+import NavBar from "../components/NavBar.vue";
 
 const router = useRouter();
+// Cet ecran est deja reserve a l'admin cote API : la barre affiche donc tout.
+const roles = ref(["admin"]);
 const langs = ref([]);
 const rolesAvail = ref([]);
 const rows = ref([]);
@@ -102,7 +105,7 @@ async function saveEdit(u) {
 </script>
 <template>
   <div class="max-w-3xl mx-auto p-6">
-    <p class="text-sm mb-4"><a href="/dashboard" class="underline">← Tableau de bord</a></p>
+    <NavBar :roles="roles" actif="/admin" />
     <h1 class="text-xl font-semibold text-wouri-700">Comptes locuteurs</h1>
     <p class="text-sm text-stone-600">Langue = donnée du compte. Rôles : ingest, review, promote, admin.</p>
     <p v-if="msg" class="text-green-800 text-sm mt-2">{{ msg }}</p>

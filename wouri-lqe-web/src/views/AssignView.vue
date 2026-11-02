@@ -2,8 +2,17 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "../api.js";
+import NavBar from "../components/NavBar.vue";
 
 const router = useRouter();
+const roles = ref([]);
+// Deux catalogues alimentent le meme mecanisme (ADR-0047) : les phrases du corpus
+// a traduire, et les concepts NLU dont le locuteur donne les mots.
+const CATALOGUES = [
+  { valeur: "corpus", texte: "Phrases du corpus" },
+  { valeur: "nlu", texte: "Concepts NLU (mots-clés)" },
+];
+const catalogue = ref("corpus");
 const langs = ref([]);
 const lang = ref("");
 const concepts = ref([]);
@@ -15,6 +24,7 @@ const err = ref("");
 onMounted(async () => {
   try {
     const me = await api("/auth/me");
+    roles.value = me.roles || [];
     if (!(me.roles || []).includes("admin")) {
       router.push("/");
       return;
@@ -40,7 +50,8 @@ async function loadMissing() {
   if (!lang.value) return;
   loading.value = true;
   try {
-    const d = await api("/assignments/missing?language=" + encodeURIComponent(lang.value));
+    const d = await api("/assignments/missing?language=" + encodeURIComponent(lang.value)
+      + "&catalogue=" + encodeURIComponent(catalogue.value));
     concepts.value = d.concepts || [];
   } catch (e) {
     err.value = String(e.message || e);
@@ -73,7 +84,10 @@ async function assign() {
     const r = await api("/assignments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ target_language: lang.value, concept_ids: ids }),
+      body: JSON.stringify({
+          target_language: lang.value, concept_ids: ids,
+          catalogue: catalogue.value,
+        }),
     });
     msg.value = `Assignés: ${r.assigned} · déjà: ${r.already} · ignorés: ${r.skipped.length}`;
     await loadMissing();
@@ -84,11 +98,7 @@ async function assign() {
 </script>
 <template>
   <div class="max-w-3xl mx-auto p-6">
-    <p class="text-sm mb-4">
-      <a href="/dashboard" class="underline">← Tableau de bord</a> ·
-      <a href="/coverage" class="underline">Couverture</a> ·
-      <a href="/admin" class="underline">Comptes</a>
-    </p>
+    <NavBar :roles="roles" actif="/assign" />
     <h1 class="text-xl font-semibold text-wouri-700">Assigner des concepts</h1>
     <p class="text-sm text-stone-600">
       Choisis une langue, coche les concepts manquants à faire produire, envoie le lot.
@@ -98,10 +108,17 @@ async function assign() {
 
     <div class="mt-4 flex items-center gap-3">
       <label class="text-sm">Langue cible</label>
-      <select v-model="lang" class="border rounded p-1 text-sm" @change="loadMissing">
+      <select v-model="lang" data-langue class="border rounded p-1 text-sm"
+              @change="loadMissing">
         <option v-for="l in langs" :key="l.code" :value="l.code">
           {{ l.name }} ({{ l.code }}) — {{ l.covered }}/{{ l.total }} {{ l.up_to_date ? "✅" : "" }}
         </option>
+      </select>
+
+      <label class="text-sm">Catalogue</label>
+      <select v-model="catalogue" class="border rounded p-1 text-sm" data-catalogue
+              @change="loadMissing">
+        <option v-for="c in CATALOGUES" :key="c.valeur" :value="c.valeur">{{ c.texte }}</option>
       </select>
       <span v-if="currentLang" class="text-sm text-stone-600">{{ currentLang.missing }} manquant(s)</span>
     </div>

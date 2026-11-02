@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "../api.js";
+import NavBar from "../components/NavBar.vue";
 
 const router = useRouter();
 const me = ref({ user: "", roles: [] });
@@ -33,6 +34,7 @@ async function logout() {
 </script>
 <template>
   <div class="max-w-3xl mx-auto p-6">
+    <NavBar :roles="me.roles || []" actif="/dashboard" />
     <header class="flex justify-between items-start gap-4">
       <div>
         <h1 class="text-xl font-semibold text-wouri-700">Tableau de bord</h1>

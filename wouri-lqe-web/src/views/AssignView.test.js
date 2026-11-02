@@ -82,7 +82,8 @@ describe("AssignView — chargement", () => {
   it("charge les concepts manquants de la premiere langue couverte", async () => {
     const w = await mountAdmin();
 
-    expect(apiMock).toHaveBeenCalledWith("/assignments/missing?language=dyu");
+    expect(apiMock).toHaveBeenCalledWith(
+      "/assignments/missing?language=dyu&catalogue=corpus");
     expect(w.text()).toContain("Quand planter le riz ?");
     expect(w.text()).toContain("Màlo filɛli waati");
     expect(w.findAll('input[type="checkbox"]')).toHaveLength(3);
@@ -116,6 +117,7 @@ describe("AssignView — assignation par lot", () => {
     expect(post.init.headers).toEqual({ "Content-Type": "application/json" });
     expect(post.body).toEqual({
       target_language: "dyu",
+      catalogue: "corpus",
       concept_ids: ["riz_saison_001", "riz_recolte_001", "engrais_dose_001"],
     });
 
@@ -185,7 +187,8 @@ describe("AssignView — assignation par lot", () => {
     await flushPromises();
 
     // sinon les concepts du dioula partiraient sur le baoule
-    expect(apiMock).toHaveBeenCalledWith("/assignments/missing?language=bci");
+    expect(apiMock).toHaveBeenCalledWith(
+      "/assignments/missing?language=bci&catalogue=corpus");
     expect(w.text()).toContain("Quand semer le mais ?");
     expect(w.text()).toContain("0 sélectionné(s)");
 
@@ -195,6 +198,7 @@ describe("AssignView — assignation par lot", () => {
 
     expect(assignPost().body).toEqual({
       target_language: "bci",
+      catalogue: "corpus",
       concept_ids: ["mais_saison_001"],
     });
   });
@@ -210,5 +214,25 @@ describe("AssignView — assignation par lot", () => {
     expect(w.text()).toContain("langue_inconnue");
     expect(missingCalls()).toHaveLength(1); // pas de rechargement : le lot reste coche
     expect(w.text()).toContain("3 sélectionné(s)");
+  });
+});
+
+describe("AssignView — catalogue des concepts NLU (ADR-0047)", () => {
+  it("interroge le catalogue choisi et le transmet au lot", async () => {
+    const w = await mountAdmin();
+    apiMock.mockClear();
+
+    await w.find("[data-catalogue]").setValue("nlu");
+    await flushPromises();
+
+    // la liste suit le catalogue : sinon on assignerait des phrases en croyant
+    // demander des mots-clés
+    expect(apiMock).toHaveBeenCalledWith(
+      "/assignments/missing?language=dyu&catalogue=nlu");
+  });
+
+  it("le sélecteur de langue reste le premier, l'ordre d'avant est conservé", async () => {
+    const w = await mountAdmin();
+    expect(w.findAll("select")[0].attributes("data-langue")).toBeDefined();
   });
 });

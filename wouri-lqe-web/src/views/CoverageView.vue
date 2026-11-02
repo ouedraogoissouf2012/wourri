@@ -2,14 +2,17 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "../api.js";
+import NavBar from "../components/NavBar.vue";
 
 const router = useRouter();
+const roles = ref([]);
 const rows = ref([]);
 const err = ref("");
 
 onMounted(async () => {
   try {
     const me = await api("/auth/me");
+    roles.value = me.roles || [];
     if (!(me.roles || []).includes("admin")) {
       router.push("/");
       return;
@@ -27,11 +30,7 @@ function pct(r) {
 </script>
 <template>
   <div class="max-w-3xl mx-auto p-6">
-    <p class="text-sm mb-4">
-      <a href="/dashboard" class="underline">← Tableau de bord</a> ·
-      <a href="/assign" class="underline">Assigner</a> ·
-      <a href="/admin" class="underline">Comptes</a>
-    </p>
+    <NavBar :roles="roles" actif="/coverage" />
     <h1 class="text-xl font-semibold text-wouri-700">Couverture par langue</h1>
     <p class="text-sm text-stone-600">
       Concepts couverts (promus) par langue, sur le corpus de référence.
