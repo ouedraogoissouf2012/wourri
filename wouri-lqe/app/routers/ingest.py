@@ -70,6 +70,9 @@ async def ingest_audio(
     concept_id: str = Form(...),
     text_fr: str = Form(...),
     text_local: str = Form(""),
+    # Suit l'assignation (ADR-0047) : « contenu » pour une phrase, « mot_cle » pour
+    # un mot donne sur un concept NLU. Defaut : le comportement d'avant.
+    kind: str = Form("contenu"),
     audio: UploadFile = File(...),
     user: dict = Depends(require_role("ingest")),
 ):
@@ -86,7 +89,7 @@ async def ingest_audio(
     ref = LocalAudioStore().save(raw, mime=mime)
     result = ingest_response(
         concept_id=concept_id, text_local=text_local, text_fr=text_fr,
-        audio_url=ref, language=user["lang"], actor=user["u"],
+        audio_url=ref, language=user["lang"], actor=user["u"], kind=kind,
     )
     if not result.get("ok") and not result.get("duplicate"):
         raise HTTPException(status_code=400, detail=result)

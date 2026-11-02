@@ -179,10 +179,15 @@ def ingest(entries: list[dict], *, language: str, actor: str) -> dict:
     }
 
 
-def ingest_response(*, concept_id, text_local, text_fr, audio_url, language, actor) -> dict:
+def ingest_response(*, concept_id, text_local, text_fr, audio_url, language, actor,
+                    kind: str = repo.CONTENU) -> dict:
     """Ingest d'UNE réponse à une assignation : audio requis (audio_url déjà stocké),
     texte local OPTIONNEL (le baoulé s'écrit peu). Le pivot `text_fr` vient de
-    l'assignation. Dédup par concept (external_id = concept_id)."""
+    l'assignation. Dédup par concept (external_id = concept_id).
+
+    `kind` suit l'assignation (ADR-0047) : `contenu` pour une phrase du corpus,
+    `mot_cle` pour un mot donné sur un concept NLU. Sans cela, un mot arriverait
+    comme contenu et ne rejoindrait jamais son concept."""
     if not is_known(language):
         return {"ok": False, "reason": "unknown_language"}
     fr = str(text_fr or "").strip()
@@ -199,6 +204,7 @@ def ingest_response(*, concept_id, text_local, text_fr, audio_url, language, act
         concept_id=cid,
         audio_url=audio_url,
         created_by=actor,
+        kind=kind if kind in repo.KINDS else repo.CONTENU,
         meta={"source": "speaker_audio", "actor": actor},
     )
     return {

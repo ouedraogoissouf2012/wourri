@@ -77,6 +77,8 @@ async function produce(a) {
   fd.append("concept_id", a.concept_id);
   fd.append("text_fr", a.source_fr);
   fd.append("text_local", (drafts.value[a.concept_id] || "").trim());
+  // Ce que l'assignation demande : une phrase ou un mot-clé (ADR-0047).
+  fd.append("kind", a.kind || "contenu");
   fd.append("audio", rec.blob, "reponse." + ext);
   try {
     const r = await api("/ingest/audio", { method: "POST", body: fd });
@@ -109,7 +111,12 @@ async function produce(a) {
 
     <div class="mt-4 space-y-3">
       <article v-for="a in items" :key="a.concept_id" class="border rounded p-3 bg-white">
+        <p v-if="a.kind === 'mot_cle'" class="text-xs font-semibold uppercase text-wouri-700"
+           data-demande="mot_cle">Un mot pour ce sens</p>
         <p class="font-medium">{{ a.source_fr }}</p>
+        <p v-if="a.ref_dyu" class="text-xs text-stone-500" data-ref>
+          En dioula on dit : <em>{{ a.ref_dyu }}</em> — à titre de repère, ne pas recopier.
+        </p>
         <p class="text-xs text-stone-500"><code>{{ a.concept_id }}</code></p>
 
         <input v-model="drafts[a.concept_id]" type="text"
