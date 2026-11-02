@@ -60,18 +60,26 @@ def test_un_motif_vide_est_refuse(seeded):
     assert "motif_reexamen" not in repo.get(item_id=tid, language="bci")["meta"]
 
 
-def test_ne_touche_jamais_une_production_ni_une_autre_langue(seeded):
-    ingest([_MOT], language="bci", actor="loc")
-    tid = _id("gua")
-    workflow.decide(tid, "admin_accepted", language="bci")
-    workflow.promote(tid, language="bci", actor="admin")
+def test_ne_touche_jamais_une_production(seeded):
+    """Seul un `contenu` atteint 'production' : une validation (mot-cle, paire) n'est
+    jamais publiee (ADR-0045, garde dans `repo.promote`). Le test porte donc sur un
+    contenu — c'est le seul cas ou le statut 'production' existe reellement."""
+    ingest([{"text_local": "Aw ni ce", "text_fr": "Merci"}], language="bci", actor="loc")
+    tid = _id("Aw ni ce")
+    assert workflow.decide(tid, "admin_accepted", language="bci")["ok"]
+    assert workflow.promote(tid, language="bci", actor="admin")["ok"]
 
     out = workflow.remettre_en_question(tid, language="bci", motif=_MOTIF)
     assert out["ok"] is False and out["reason"] == "locked"
     assert repo.get(item_id=tid, language="bci")["status"] == "production"
 
-    # vue depuis une autre langue, la fiche n'existe pas
-    assert workflow.remettre_en_question(tid, language="dyu", motif=_MOTIF)["reason"] == "not_found"
+
+def test_ne_touche_jamais_une_autre_langue(seeded):
+    ingest([_MOT], language="bci", actor="loc")
+    tid = _id("gua")
+    assert workflow.remettre_en_question(tid, language="dyu", motif=_MOTIF) == {
+        "ok": False, "reason": "not_found"}
+    assert "motif_reexamen" not in repo.get(item_id=tid, language="bci")["meta"]
 
 
 def test_route_reexamen_reservee_a_l_admin(seeded, monkeypatch):
