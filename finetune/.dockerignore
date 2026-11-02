@@ -1,0 +1,5 @@
+# Contexte de l'image du serveur voix baoulé (finetune/voix/Dockerfile) : modules Python seulement.
+__pycache__/
+colab/
+*.ipynb
+test_*.py

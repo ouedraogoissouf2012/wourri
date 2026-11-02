@@ -100,12 +100,13 @@ def pieces_tokenizer(path) -> list[str]:
     return [sp.id_to_piece(i) for i in range(sp.get_piece_size())]
 
 
-def capturer(card, rows, cv27_dir, ids, labels) -> tuple[list, list[str]]:
-    """(matrices réduites, transcriptions gloutonnes) du modèle, clip par clip, dans l'ordre."""
+def capturer(card, rows, cv27_dir, ids, labels, processeur=False) -> tuple[list, list[str]]:
+    """(matrices réduites, transcriptions gloutonnes) du modèle, clip par clip, dans l'ordre.
+    `processeur` : le modèle tel que servi sans GPU (float32 + int8, ADR-0048)."""
     import soundfile as sf
-    from omnilingual_asr.models.inference.pipeline import ASRInferencePipeline
+    from serveur_voix_bci import charger_pipeline
 
-    pipe = ASRInferencePipeline(model_card=card)
+    pipe = charger_pipeline(card, processeur)
     mats = []
     lm.brancher(pipe, ids, labels, capture=mats)
     tmp = tempfile.mkdtemp()
@@ -129,6 +130,8 @@ def main(argv=None):
     ap.add_argument("--sources", default=None, help="dossier des textes (défaut : <out>/sources)")
     ap.add_argument("--processus", type=int, default=0)
     ap.add_argument("--beam", type=int, default=64)
+    ap.add_argument("--processeur", action="store_true",
+                    help="sans GPU : le modèle tel que servi par l'image finetune/voix (float32 + int8, ADR-0048)")
     args = ap.parse_args(argv)
 
     out = Path(args.out)
@@ -143,7 +146,7 @@ def main(argv=None):
     asset_dir = tempfile.mkdtemp(prefix="fairseq2_assets_")
     card = ev.write_card(asset_dir, args.step, ev.find_checkpoint(args.checkpoint_root, args.step), "wourri_bci_nouveau")
     os.environ["FAIRSEQ2_USER_ASSET_DIR"] = asset_dir
-    mats, hyps = capturer(card, rep["dev"] + rep["test"], args.cv27, ids, labels)
+    mats, hyps = capturer(card, rep["dev"] + rep["test"], args.cv27, ids, labels, args.processeur)
     n_dev = len(rep["dev"])
     refs = {"dev": [r["sentence"] for r in rep["dev"]], "test": phrases_test}
     m = {"dev": mats[:n_dev], "test": mats[n_dev:]}
