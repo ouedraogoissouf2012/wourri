@@ -43,6 +43,16 @@ def test_vocaux_synthetiques_aux_durees_demandees():
         mesure.vocaux_synthetiques(audios, durees=(30,), sr=16000)
 
 
+def test_audios_du_dossier_pour_la_vitesse_seule(tmp_path):
+    import soundfile as sf
+
+    for nom, n in (("b.wav", 16000), ("a.wav", 8000), ("c.wav", 4000)):
+        sf.write(tmp_path / nom, np.zeros(n, dtype=np.float32), 16000)
+    (tmp_path / "notes.txt").write_text("pas un audio", encoding="utf-8")
+    audios = mesure.audios_du_dossier(tmp_path, limite=2)
+    assert [(len(s), sr) for s, sr in audios] == [(8000, 16000), (16000, 16000)]  # a puis b
+
+
 def test_chronometrer_rend_la_mediane_des_appels():
     instants = iter([0, 2, 10, 13, 20, 21])  # durées 2, 3, 1 -> médiane 2
     appels = []

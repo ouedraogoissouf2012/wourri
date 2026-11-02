@@ -12,6 +12,9 @@ lui donnera en production (`--threads`) :
 Usage (dans le conteneur) :
     python mesure_cpu_bci.py --cv27 /cv27/bci --checkpoint-root /modele --threads 4 \\
         --out /sortie/mesure_cpu_bci.json [--lm /donnees/lm_bci.pkl] [--limit 50]
+
+Vitesse seule, sur le serveur (sans copier Common Voice) : `--audios /donnees/reponses_ogg
+--limit 20` met bout à bout des réponses lues par le locuteur ; pas de mesure de qualité.
 """
 from __future__ import annotations
 
@@ -47,6 +50,12 @@ def vocaux_synthetiques(audios, durees=DUREES_S, sr=None) -> dict[int, object]:
     return out
 
 
+def audios_du_dossier(dossier, limite=None) -> list[tuple[object, int]]:
+    """[(signal 16 kHz, sr)] des fichiers ogg/wav du dossier, dans l'ordre des noms."""
+    fichiers = sorted(p for p in Path(dossier).iterdir() if p.suffix.lower() in (".ogg", ".wav"))[:limite]
+    return [(d2p.decode_to_16k_mono(p.read_bytes(), p.name)[0], d2p.TARGET_SR) for p in fichiers]
+
+
 def chronometrer(transcrire, chemins, repetitions=REPETITIONS, horloge=time.perf_counter) -> float:
     """Médiane des secondes pour transcrire chaque fichier, un appel à la fois (comme le serveur)."""
     temps = []
@@ -68,8 +77,11 @@ def memoire_max_go() -> float | None:
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    for a in ("--cv27", "--checkpoint-root", "--out"):
+    for a in ("--checkpoint-root", "--out"):
         ap.add_argument(a, required=True)
+    source = ap.add_mutually_exclusive_group(required=True)
+    source.add_argument("--cv27", help="test du 2e fine-tune : qualité et vitesse")
+    source.add_argument("--audios", help="dossier d'audios (ogg/wav) : vitesse seule")
     ap.add_argument("--step", default="step_3000")
     ap.add_argument("--threads", type=int, required=True, help="cœurs donnés au serveur en production")
     ap.add_argument("--lm", help="lm_bci.pkl : latence mesurée avec le modèle de langue")
@@ -100,10 +112,14 @@ def main(argv=None):
     chargement = time.perf_counter() - t0
     transcrire = lambda chemin: pipe.transcribe([chemin], lang=["bci_Latn"], batch_size=1)[0]
 
-    rep, _ = cvs.preparer(args.cv27)
-    test = rep["test"][: args.limit] if args.limit else rep["test"]
     tmp = Path(tempfile.mkdtemp())
     refs, hyps, par_clip, audios = [], [], [], []
+    test = []
+    if args.audios:
+        audios = audios_du_dossier(args.audios, args.limit)
+    else:
+        rep, _ = cvs.preparer(args.cv27)
+        test = rep["test"][: args.limit] if args.limit else rep["test"]
     for i, r in enumerate(test):
         wav, _ = d2p.decode_to_16k_mono((Path(args.cv27) / "clips" / r["path"]).read_bytes(), r["path"])
         chemin = tmp / f"{i}.wav"
@@ -113,7 +129,7 @@ def main(argv=None):
         par_clip.append((time.perf_counter() - t, len(wav) / d2p.TARGET_SR))
         refs.append(r["sentence"])
         audios.append((wav, d2p.TARGET_SR))
-    qualite = {**ev.score(refs, hyps), "vides": sum(1 for h in hyps if not h.strip())}
+    qualite = {**ev.score(refs, hyps), "vides": sum(1 for h in hyps if not h.strip())} if test else {}
     if args.details:
         Path(args.details).write_text(json.dumps([{"client": r["client_id"][:8], "ref": r["sentence"], "hyp": h}
                                                   for r, h in zip(test, hyps)], ensure_ascii=False, indent=1),
@@ -144,7 +160,7 @@ def main(argv=None):
         "memoire_max_go": memoire_max_go(),
         "test": {**qualite, "clips": len(test)},
         "par_clip": {"rtf_median": round(statistics.median(rtf), 3),
-                     "p90_s": round(sorted(s for s, _ in par_clip)[int(0.9 * (len(par_clip) - 1))], 2)},
+                     "p90_s": round(sorted(s for s, _ in par_clip)[int(0.9 * (len(par_clip) - 1))], 2)} if rtf else {},
         "latence_s_par_duree_de_vocal": latence,
     }
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

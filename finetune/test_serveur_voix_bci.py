@@ -72,6 +72,24 @@ def test_audio_servi_sans_sortir_du_dossier(tmp_path):
     assert c.get("/health").json() == {"ok": True, "modele_charge": True, "modele_langue": False, "reponses_audio": 1}
 
 
+def test_prechargement_charge_le_modele_une_seule_fois_des_le_demarrage(tmp_path, monkeypatch):
+    import threading
+
+    pret, charges = threading.Event(), []
+
+    def charger():
+        pret.wait(5)  # le chargement est en cours quand le premier vocal arrive
+        charges.append(1)
+        return FakePipeline()
+
+    monkeypatch.setattr(voix, "_pipeline_par_defaut", charger)
+    c = TestClient(voix.creer_app(decodeur=fake_decodeur, cle="cle-test", dossier_audio=tmp_path, precharger=True))
+    assert c.get("/health").json()["modele_charge"] is False  # /health répond pendant le chargement
+    pret.set()
+    assert _post(c).status_code == 200
+    assert charges == [1] and c.get("/health").json()["modele_charge"] is True
+
+
 def test_app_sans_cle_refuse_tout(tmp_path):
     app = voix.creer_app(pipeline=FakePipeline(), decodeur=fake_decodeur, cle="", dossier_audio=tmp_path)
     assert _post(TestClient(app), cle="").status_code == 401

@@ -44,9 +44,11 @@ USER voix
 
 # BCI_VOIX_PROCESSEUR=1 : float32 + int8 (mesuré le 2026-10-27 : CER identique au GPU,
 # vocal de 10 s en 4,8 s sur 4 cœurs ; le bfloat16 du GPU est bien plus lent ici).
-ENV BCI_VOIX_PROCESSEUR=1 BCI_VOIX_MODELE=/modele BCI_VOIX_STEP=step_3000 BCI_VOIX_AUDIO=/donnees/reponses_ogg \
-    FAIRSEQ2_USER_ASSET_DIR=/tmp/fairseq2_assets PYTHONUNBUFFERED=1
+# BCI_VOIX_PRECHARGER=1 : modèle chargé dès le démarrage (~3 min), pas au premier vocal
+# (le serveur WhatsApp abandonne à 180 s). /health répond pendant ce chargement.
+ENV BCI_VOIX_PROCESSEUR=1 BCI_VOIX_PRECHARGER=1 BCI_VOIX_MODELE=/modele BCI_VOIX_STEP=step_3000 \
+    BCI_VOIX_AUDIO=/donnees/reponses_ogg FAIRSEQ2_USER_ASSET_DIR=/tmp/fairseq2_assets PYTHONUNBUFFERED=1
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=300s \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)"
 CMD ["python", "demarrer.py"]
