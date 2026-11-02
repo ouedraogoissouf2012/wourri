@@ -1,6 +1,6 @@
 {
- "version": "bci-2026-10-22",
- "statut": "demo",
+ "version": "bci-2026-11-02",
+ "statut": "valide",
  "entries": [
   {
    "id": "bci-q0",
@@ -829,6 +829,186 @@
    "appariement": "position"
   },
   {
+   "id": "bci-q59",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ amun lua waka nga be flɛ i kɛ kaa niɔn ?",
+   "question_fr": "Quand faut-il planter l'anacardier ?",
+   "reponse_bci": "Ɔ fata kɛ be di fie, kɛ nzue tɔlɛ blɛ bo i bo. Ɔ fata kɛ asiɛ su nzue sin kpa.",
+   "reponse_fr": "Il faut planter en début de saison des pluies. Le sol doit être bien drainé.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q61",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Wafa sɛ yɛ be kwla wun kaa waka i tukpacɛ i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie de l'anacardier ?",
+   "reponse_bci": "Kaa i ngna annzɛ i mma mun be kwla yi lika nga be timan kpa. Ɔ ti cinnjin ekun kɛ be nian waka mma mun be su naan ba wu man.",
+   "reponse_fr": "Les feuilles ou les fruits peuvent présenter des taches anormales. Il faut aussi surveiller le dessèchement des branches.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q62",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Wafa sɛ yɛ be kwla kun kakaa nga be tɔ kaa waka mun be su niɔn ?",
+   "question_fr": "Comment lutter contre les insectes qui attaquent l'anacardier ?",
+   "reponse_bci": "Fie mun be su like sifuɛ kun kwla se be kɛ be yo be ayre ng’ɔ nin i fata. Kɛ be nian be lika titi, ɔ yo maan be tranman lɛ kun.",
+   "reponse_fr": "Un traitement adapté peut être recommandé par un technicien agricole. Un entretien régulier limite aussi leur présence.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q63",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be tu kaa niɔn ?",
+   "question_fr": "Quand faut-il récolter les noix de cajou ?",
+   "reponse_bci": "Kɛ i mma mun be tɔ asiɛ su be bɔbɔ be dumaan nun, yɛ be ti be nun ɔn. Pɔmu nga be flɛ i kɛ kaa, ɔ yo clinman wie.",
+   "reponse_fr": "On récolte quand les noix tombent naturellement au sol. La pomme cajou devient aussi bien colorée.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q64",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Kɛ be ko kpɛ kaa, wafa sɛ yɛ be kwla yo naan wa wu kpa ɔ ?",
+   "question_fr": "Comment bien sécher les noix de cajou après récolte ?",
+   "reponse_bci": "Be fa kaa mma mun be gua via i lika sanwun kun su tchɛn ba kpanngban. Ɔ fata kɛ be kaci be nun titi.",
+   "reponse_fr": "On étale les noix au soleil sur une aire propre pendant plusieurs jours. Il faut les retourner régulièrement.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q67",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Kɛ ɔ ko yo naan ba kpɛ kaa waka i kpɛ klikli, ɔ di blè ngnè ?",
+   "question_fr": "Combien de temps avant la première récolte d'un anacardier ?",
+   "reponse_bci": "Titi, kɛ be ko di fie, afuɛ 3 sin yɛ be kpɛ fie i nun ninnge klikli niɔn. I sin, kɛ waka ko yo kpɛnngbɛn, i nun ninnge mun be yo dan.",
+   "reponse_fr": "La première récolte arrive généralement 3 ans après la plantation. La production augmente ensuite avec l'âge de l'arbre.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q68",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Wafa sɛ yɛ e kwla wun kaa nma ngɔ ti kpa i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une noix de cajou de bonne qualité ?",
+   "reponse_bci": "Kaa mma kpa, ɔ tin kpa, ɔ ti nɔnnin, yɛ i nzɔliɛ ti ufue kunngba tchɛ. Ɔ fataman kɛ kakaa mun be kpɛ i nun annzɛ be saci i.",
+   "reponse_fr": "Une bonne noix est bien formée, lourde et de couleur grise uniforme. Elle ne doit pas être fendue ou attaquée par des insectes.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q69",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Wafa sɛ yɛ be kpɛ kaa waka i nun ɔn ?",
+   "question_fr": "Comment tailler un anacardier ?",
+   "reponse_bci": "Yɛ waka mma nga be wuli annzɛ nga be timan kpa, amun yi be. Kɛ lika ti kee, yɛ ɔ ti kpa kɛ be kpɛ waka niɔn.",
+   "reponse_fr": "On enlève les branches mortes ou mal orientées. La taille se fait de préférence en saison sèche.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q70",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Wafa sɛ yɛ be kwla sasa kaa waka naan sin wa tɔman ijre mun be nun ɔn ?",
+   "question_fr": "Comment protéger l'anacardier contre les feux de brousse ?",
+   "reponse_bci": "Ɔ fata kɛ be yi sin jranwlɛ kun fie i wun lɛ. Kɛ lika ko yo kee, ɔ ti cinnjin kɛ be nian be su.",
+   "reponse_fr": "Il faut créer un pare-feu autour de la plantation. La surveillance pendant la saison sèche est essentielle.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q71",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Kaa wafa benin mun yɛ be man mma kpa ɔ ?",
+   "question_fr": "Quelles variétés d'anacardier donnent le meilleur rendement ?",
+   "reponse_bci": "Ɔ fata kɛ amun fa wafa nga CNRA waan be fa man amun akpasua. Fie dilɛ nun junman difuɛ kun kwla man amun afɔtuɛ.",
+   "reponse_fr": "Il faut choisir des variétés recommandées par le CNRA pour votre région. Un technicien agricole peut vous conseiller.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q72",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Wafa sɛ yɛ be kwla sie kaa mma be ka naan ba yo be atɛ ɔ ?",
+   "question_fr": "Comment conserver les noix de cajou avant la vente ?",
+   "reponse_bci": "Ɔ fata kɛ be sie be lika mɔ ti wusiwusi, mɔ aunmuan wlu lɔ kpa. Be se kɛ be fa saci sanwun mɔ be ti wuwa be sie i lika sɔ nun.",
+   "reponse_fr": "Il faut les stocker dans un endroit sec et bien aéré. Des sacs propres et secs sont recommandés pour le stockage.",
+   "intent": "QUESTION_STOCKAGE",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q73",
+   "filiere": "ANACARDIER (CAJOU)",
+   "question_bci": "Kɛ waka nga be flɛ i kɛ kaa ɔ́ fíte, like benin yɛ ɔ fata kɛ be fa nian su ɔ ?",
+   "question_fr": "Quel entretien faire pendant la période de floraison de l'anacardier ?",
+   "reponse_bci": "Ɔ fata kɛ be yo ayre nga be kwla yo flɛri mun be tɛ, be kan. Kakaa mun be lika nianlɛ te yo cinnjin kpa.",
+   "reponse_fr": "Il faut limiter les traitements qui pourraient nuire aux fleurs. Une surveillance contre les insectes reste importante.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_ANACARDE"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
    "id": "bci-q74",
    "filiere": "COTON",
    "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be lua fɔkɔ ɔ ?",
@@ -1207,6 +1387,606 @@
    "appariement": "position"
   },
   {
+   "id": "bci-q102",
+   "filiere": "MAÏS",
+   "question_bci": "Able mma benin yɛ ɔ fata kɛ be fa gua able fie nu ɔn ?",
+   "question_fr": "Quelle densité de semis choisir pour le maïs ?",
+   "reponse_bci": "Be fa waka kɔeliè 60.000 lele 70.000 be sie i hectare kun su. Be afiɛn taka able i wafa mun be su.",
+   "reponse_fr": "Une densité d'environ 60 000 à 70 000 plants par hectare est courante. L'espacement dépend de la variété.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q104",
+   "filiere": "MAÏS",
+   "question_bci": "Wafa sɛ yɛ be kwla wun able tukpacɛ kun i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie du maïs ?",
+   "reponse_bci": "Be ngna mun be kwla yo nzɔliɛ annzɛ be kwla kaci ufue wafa ngɔ timan su. Ɔ fata kɛ be nian able sum be gninlɛ su wie.",
+   "reponse_fr": "Les feuilles peuvent présenter des taches ou brunir anormalement. Il faut aussi surveiller la croissance des épis.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q105",
+   "filiere": "MAÏS",
+   "question_bci": "Wafa sɛ yɛ be kwla kun kakaa nga be tɔ able su niɔn ?",
+   "question_fr": "Comment lutter contre la chenille légionnaire d'automne sur le maïs ?",
+   "reponse_bci": "Fie mun be su like sifuɛ kun kwla se be kɛ be yo be ayre ngɔ nin i fata. Sɛ be nian fie su titi, be kwla yo like ndɛndɛ.",
+   "reponse_fr": "Un traitement adapté peut être recommandé par un technicien agricole. Une surveillance régulière du champ permet d'intervenir tôt.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q106",
+   "filiere": "MAÏS",
+   "question_bci": "Wafa sɛ yɛ be kwla kun able waka i bofuɛ mun ɔn ?",
+   "question_fr": "Comment lutter contre les foreurs de tige du maïs ?",
+   "reponse_bci": "Ɔ kwla yo cinnjin kɛ be fa ayre nga be fa kun kacikacifuɛ mun be yo be ayre kpa. Fie mun be kacilɛ kusu uka naan ba sɔnman.",
+   "reponse_fr": "Un traitement insecticide adapté peut être nécessaire. La rotation des cultures aide aussi à limiter leur présence.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q107",
+   "filiere": "MAÏS",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be kpɛ able niɔn ?",
+   "question_fr": "Quand faut-il récolter le maïs ?",
+   "reponse_bci": "Kɛ able ko yo kekle mɔ i mma mun be ko wu, yɛ be kpɛ be ɔ. Ɔ fataman kɛ be kpɛ i ndɛndɛ ngboko.",
+   "reponse_fr": "On récolte quand les grains deviennent durs et les feuilles sèchent. Il ne faut pas récolter trop tôt.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q108",
+   "filiere": "MAÏS",
+   "question_bci": "Wafa sɛ yɛ be kwla wun able ngɔ su wa kpɛ i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître un maïs prêt pour la récolte ?",
+   "reponse_bci": "I ngna nin i mma mun be kaci kee, kpɛkun be kaci jooun. I mma be kanlɛ ti kekle.",
+   "reponse_fr": "Les feuilles et les spathes deviennent sèches et jaunes. Les grains sont durs au toucher.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q109",
+   "filiere": "MAÏS",
+   "question_bci": "Kɛ be ko kpɛ able, wafa sɛ yɛ be kwla sie i kpa ɔ ?",
+   "question_fr": "Comment bien conserver le maïs après récolte ?",
+   "reponse_bci": "Ɔ fata kɛ be luè able i kpa ka naan b’a sie i lika kun. Lika nga o ti wusiwusi, mɔ aunmuan wlu lɔ kpa, mɔ kakaa mun be kwla wluman lɔ, yɛ ɔ ti kpa ɔ.",
+   "reponse_fr": "Il faut bien sécher les épis avant stockage. Un endroit sec et aéré, à l'abri des insectes, est recommandé.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q110",
+   "filiere": "MAÏS",
+   "question_bci": "Wafa sɛ yɛ be kwla kun kakaa  nga be o able nga be sieli be nun niɔn ?",
+   "question_fr": "Comment lutter contre les charançons du maïs stocké ?",
+   "reponse_bci": "Be kwla fa ayre nga be nin i fata be fa sasa i. Sɛ be sie be lika m’ɔ ti wusiwusi nun, ɔ yo maan be yoman kpa wie.",
+   "reponse_fr": "Un traitement de conservation adapté peut être utilisé. Un stockage dans un endroit sec limite aussi leur développement.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q111",
+   "filiere": "MAÏS",
+   "question_bci": "Able waka mun be afiɛn, lika benin yɛ ɔ fata kɛ be nien yi i ɔ ?",
+   "question_fr": "Quel espacement respecter entre les plants de maïs ?",
+   "reponse_bci": "Kɛ be fa nzɔliɛ like be afiɛn, ɔ ti kɛ santimɛtri kɔeliè 80 sa, yɛ nzɔliɛ mun be afiɛn ti nun santimɛtri kɔeliè 40. I sɔ kusu fin wafa nga be ti.",
+   "reponse_fr": "Un espacement d'environ 80 cm entre les lignes et 40 cm sur la ligne est courant. Cela dépend aussi de la variété.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q112",
+   "filiere": "MAÏS",
+   "question_bci": "Wafa sɛ yɛ be fa able nin fie uflɛ mun be bo nun ɔn ?",
+   "question_fr": "Comment associer le maïs avec d'autres cultures ?",
+   "reponse_bci": "Able nin  nigé uflè mun be tran kpa. Be likaluè sielɛ sɔ yo maan asiɛ yo kpa.",
+   "reponse_fr": "Le maïs s'associe bien avec des légumineuses comme le niébé. Cette association améliore la fertilité du sol.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q113",
+   "filiere": "MAÏS",
+   "question_bci": "Able i gualɛ nin i kpɛlɛ be afiɛn ti nun ngnè?",
+   "question_fr": "Combien de temps entre le semis et la récolte du maïs ?",
+   "reponse_bci": "Titi, ɔ di anglo 3 annzɛ 4, ɔ taka wafa nga be fa yo su. Lɔ lika i nun lika kwla yo maan blɛ sɔ yo kpa wie.",
+   "reponse_fr": "Il faut généralement compter 3 à 4 mois selon la variété. Le climat local peut aussi influencer ce délai.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q114",
+   "filiere": "MAÏS",
+   "question_bci": "Wafa sɛ yɛ be siesie asiɛ ka naan ba lua able niɔn ?",
+   "question_fr": "Comment préparer le sol avant de semer le maïs ?",
+   "reponse_bci": "Ɔ fata kɛ be di fie i kpa naan be yi ijre mun. Asiɛ ngɔ ti flôlô, ɔ yo maan able mun be gnin kpa.",
+   "reponse_fr": "Il faut bien labourer et désherber la parcelle. Un sol meuble favorise une bonne levée des graines.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q115",
+   "filiere": "MAÏS",
+   "question_bci": "Able wafa benin yɛ ɔ fata kɛ u fa naan man gnin kpa ɔ ?",
+   "question_fr": "Quelle variété de maïs choisir pour un bon rendement ?",
+   "reponse_bci": "Ɔ fata kɛ amun fa agba wafa nga CNRA waan amun fa man amun akpasua. Fie dilɛ nun junman difuɛ kun kwla man amun afɔtuɛ.",
+   "reponse_fr": "Il faut choisir une variété recommandée par le CNRA pour votre région. Un technicien agricole peut vous conseiller.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_MAIS"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q116",
+   "filiere": "MANIOC",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be ta agba niɔn ?",
+   "question_fr": "Quand faut-il planter le manioc ?",
+   "reponse_bci": "Ɔ fata kɛ be di fie, kɛ nzue tɔlɛ blɛ bo i bo. Ɔ fata kɛ agba waka be yo uflɛuflɛ naan be yo juejue.",
+   "reponse_fr": "Il faut planter en début de saison des pluies. Les boutures doivent être fraîches et saines.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q117",
+   "filiere": "MANIOC",
+   "question_bci": "Wafa sɛ yɛ be kwla fa agba waka kpa mun naan ba di fie ɔ ?",
+   "question_fr": "Comment choisir de bonnes boutures de manioc pour la plantation ?",
+   "reponse_bci": "Ɔ fata kɛ amun fa agba waka nga be ti juejue, nán be ti kaan kpa annzɛ be ti kpɛnngbɛn kpa. Ɔ fata kɛ be fin waka nga tukpacɛ nunman be su be nun.",
+   "reponse_fr": "Il faut choisir des tiges saines, ni trop jeunes ni trop vieilles. Elles doivent provenir de plants sans maladie.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q118",
+   "filiere": "MANIOC",
+   "question_bci": "Ɔ fata kɛ be fa agba fie dilɛ wafa benin yɛ ɔ fata kɛ be fa di agba fie niɔn ?",
+   "question_fr": "Quelle densité de plantation choisir pour le manioc ?",
+   "reponse_bci": "Hectare kun nun, agba waka kɔeliê 10.000 be sɔnnin kpa. Titi, be afiɛn ti mɛtri 1 nin mɛtri 1.",
+   "reponse_fr": "Une densité d'environ 10 000 plants par hectare est courante. L'espacement habituel est de 1 mètre sur 1 mètre.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q119",
+   "filiere": "MANIOC",
+   "question_bci": "Wafa sɛ yɛ be kwla wun agba tukpacɛ i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie du manioc ?",
+   "reponse_bci": "Agba ngna mun be kwla kaki wafa uflè annzɛ be kwla yi ngna ng’ɔ ti ufue. Ɔ fata kɛ be nian wafa nga waka i bo ti wie.",
+   "reponse_fr": "Les feuilles peuvent se déformer ou présenter des mosaïques de couleur. Il faut aussi surveiller l'état des tiges.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q120",
+   "filiere": "MANIOC",
+   "question_bci": "Wafa sɛ yɛ be kwla kun agba nun tukpacɛ niɔn ?",
+   "question_fr": "Comment lutter contre la mosaïque du manioc ?",
+   "reponse_bci": "Ɔ fata kɛ be fa agba waka nga be ti juejue, mɔ be le fluwa. Ɔ fata kɛ be kpɛ waka nga tukpacɛ o be su, be bo naan be nunnun be.",
+   "reponse_fr": "Il faut utiliser des boutures saines et certifiées. Les plants malades doivent être arrachés et détruits.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q121",
+   "filiere": "MANIOC",
+   "question_bci": "Wafa sɛ yɛ be kwla kun kakaa tê nga be tô agba su niɔn ?",
+   "question_fr": "Comment lutter contre la cochenille farineuse du manioc ?",
+   "reponse_bci": "Fie mun be su like sifuɛ kun kwla se be kɛ be yo be ayre ngɔ nin i fata. Sɛ e fa agba waka nga be ti juejue e di junman, ɔ yo maan ɔ truman kpa wie.",
+   "reponse_fr": "Un traitement adapté peut être recommandé par un technicien agricole. L'utilisation de boutures saines limite aussi sa propagation.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q122",
+   "filiere": "MANIOC",
+   "question_bci": "Ɔ di tchin ngnè naan ba tu agba ?",
+   "question_fr": "Combien de temps avant la récolte du manioc ?",
+   "reponse_bci": "Titi, kɛ nga agba waka i wafa fa ti sa, be tu be anglo 9 nin 18 be afiɛn. Teknisiɛn kun kwla man e afɔtuɛ blɛ kpafuɛ su.",
+   "reponse_fr": "La récolte se fait généralement entre 9 et 18 mois selon la variété. Un technicien peut conseiller le meilleur moment.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q123",
+   "filiere": "MANIOC",
+   "question_bci": "Wafa sɛ yɛ be kwla wun agba nga be su wa tu i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître un manioc prêt pour la récolte ?",
+   "reponse_bci": "I ngna nga be o i bo lɔ, be su bo jranlɛ bo, kpɛkun be su tɔ. Duo ba mun be juli dan kpa.",
+   "reponse_fr": "Les feuilles du bas commencent à jaunir et tomber. Les tubercules ont atteint une bonne taille.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q124",
+   "filiere": "MANIOC",
+   "question_bci": "Wafa sɛ yɛ be tu agba niɔn ?",
+   "question_fr": "Comment faire le recépage du manioc ?",
+   "reponse_bci": "Be kpɛ agba waka i bo lɔ lika ng’ɔ nin i fata nun naan wa wla wuka be fanngan kɛ be gni uflɛuflɛ. I sɔ yolɛ uka naan ba yi ninnge mun lele.",
+   "reponse_fr": "On coupe les tiges à une hauteur adaptée pour favoriser de nouvelles pousses. Cette technique aide à prolonger la production.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q125",
+   "filiere": "MANIOC",
+   "question_bci": "Kɛ be ko tu agba, wafa sɛ yɛ be sie i ɔ ?",
+   "question_fr": "Comment conserver le manioc après la récolte ?",
+   "reponse_bci": "Agba uflɛuflɛ, ɔ jranman kpa, ɔ fata kɛ be di junman su ndɛndɛ. Asa ekun, be kwla yaci i asiɛ nun lele naan be sa wa mienwun.",
+   "reponse_fr": "Le manioc frais se conserve mal, il faut le transformer rapidement. On peut aussi le laisser en terre jusqu'au besoin.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q126",
+   "filiere": "MANIOC",
+   "question_bci": "Wafa sɛ yɛ be kwla nian ijre tɛ nga be o agba fie nun be lika ɔ ?",
+   "question_fr": "Comment lutter contre les mauvaises herbes dans un champ de manioc ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ ijre mun be nun titi, i li anglo klikli mun be nun. Sɛ be fa ngna be gua be su, ɔ kwla yo maan be su yoman dan kun.",
+   "reponse_fr": "Un désherbage régulier est nécessaire surtout les premiers mois. Le paillage peut aussi limiter leur pousse.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q127",
+   "filiere": "MANIOC",
+   "question_bci": "Kɛ asiɛ i wafa fa ti, ɔ fata kɛ be fa agba wafa benin ?",
+   "question_fr": "Quelle variété de manioc choisir selon le type de sol ?",
+   "reponse_bci": "Ɔ fata kɛ amun fa agba waka wafa ngɔ nin amun asiɛ nin like nga amun sa miɛn i wun be kɔ likawlɛ. Fie dilɛ nun junman difuɛ kun kwla man amun afɔtuɛ.",
+   "reponse_fr": "Il faut choisir une variété adaptée à votre sol et vos besoins. Un technicien agricole peut vous conseiller.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q128",
+   "filiere": "MANIOC",
+   "question_bci": "Wafa sɛ yɛ be kwla yo naan kɛ be ko tu agba, wa kaciman ufue ɔ ?",
+   "question_fr": "Comment éviter le brunissement du manioc après récolte ?",
+   "reponse_bci": "Kɛ be ko tu agba, ɔ fata kɛ be di junman annzɛ be di i ndɛndɛ. Sɛ be sie i lɔ lele, ɔ yo maan ɔ yo ufue.",
+   "reponse_fr": "Il faut transformer ou consommer le manioc rapidement après récolte. Le stockage prolongé favorise ce brunissement.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q129",
+   "filiere": "MANIOC",
+   "question_bci": "Kɛ be ko lua agba, anglo klikli mun be nun like benin yɛ ɔ fata kɛ be yo ɔ?",
+   "question_fr": "Quel entretien faire dans les premiers mois après la plantation du manioc ?",
+   "reponse_bci": "Anglo klikli mun be nun, ɔ ti cinnjin kɛ be kpɛ ijre mun be nun titi. Be se kɛ be nian tukpacɛ mun be lika wie.",
+   "reponse_fr": "Un désherbage régulier est essentiel dans les premiers mois. Une surveillance contre les maladies est aussi recommandée.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_MANIOC"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q131",
+   "filiere": "IGNAME",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be bo duo niɔn ?",
+   "question_fr": "Quand faut-il planter l'igname ?",
+   "reponse_bci": "Ɔ fata kɛ be di fie, kɛ nzue tɔlɛ blɛ bo i bo. Ɔ fata kɛ be bo kofie mma mun be sié.",
+   "reponse_fr": "Il faut planter en début de saison des pluies. Le sol doit être bien préparé en billons.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q132",
+   "filiere": "IGNAME",
+   "question_bci": "Wafa sɛ yɛ be kwla fa duo mma kpa naan ba fa bo kɔfie ɔ ?",
+   "question_fr": "Comment choisir de bonnes semences d'igname pour la plantation ?",
+   "reponse_bci": "Ɔ fata kɛ amun fa mma nga be ti juejue, mɔ be leman tukpacɛ. Ɔ fata kɛ duo mma be yo dan kpa.",
+   "reponse_fr": "Il faut choisir des tubercules sains, sans blessure ni maladie. Les semences doivent être de bonne taille.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q133",
+   "filiere": "IGNAME",
+   "question_bci": "Ɔ fata kɛ be fa duo wafa benin yɛ ɔ fata kɛ be fa di fie nionɔ ?",
+   "question_fr": "Quelle densité de plantation choisir pour l'igname ?",
+   "reponse_bci": "Be fa duo ô kɔeliê 10.000 lele 15.000 be sie i hectare kun su. Be afiɛn taka duo wafawafa mun be su.",
+   "reponse_fr": "Une densité d'environ 10 000 à 15 000 plants par hectare est courante. L'espacement dépend de la variété.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q134",
+   "filiere": "IGNAME",
+   "question_bci": "Wafa sɛ yɛ be kwla suan duo kun be sie ɔ ?",
+   "question_fr": "Comment installer un tuteur pour l'igname ?",
+   "reponse_bci": "Ɔ fata kɛ be fa waka ng’ɔ ti kekle kpa’n be sie i waka kunngunngun mun be wun lɛ. Kɛ duo fiè mun bé bo gninlɛ bo cɛ, ɔ fata kɛ be kle be atin naan be wɔ waka i wun lɔ.",
+   "reponse_fr": "Il faut planter un tuteur solide près de chaque plant. Les lianes doivent être guidées vers le tuteur dès leur croissance.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q135",
+   "filiere": "IGNAME",
+   "question_bci": "Wafa sɛ yɛ be kwla wun duo tukpacɛ i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie de l'igname ?",
+   "reponse_bci": "Duo i ngna mun be kwla yi nzɔliɛ. Kɛ be ko tu duo, ɔ fata kɛ be nian wafa nga duo mun be ti wie.",
+   "reponse_fr": "Les feuilles peuvent présenter des taches. Il faut aussi surveiller l'état des tubercules après récolte.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q137",
+   "filiere": "IGNAME",
+   "question_bci": "Ɔ di blê ngnê ka naan ba tu duo ?",
+   "question_fr": "Combien de temps avant la récolte de l'igname ?",
+   "reponse_bci": "Titi, kɛ nga duo i wafa fa ti sa, be kpɛ ijre anglo nsien(6) nin blu(10) be afiɛn. Teknisiɛn kun kwla man e afɔtuɛ blɛ kpafuɛ su.",
+   "reponse_fr": "La récolte se fait généralement entre 6 et 10 mois selon la variété. Un technicien peut conseiller le meilleur moment.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q138",
+   "filiere": "IGNAME",
+   "question_bci": "Wafa sɛ yɛ e kwla wun duo ngɔ su wa tu i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une igname prête pour la récolte ?",
+   "reponse_bci": "I ngna mun be kaci jɔɔ blɛblɛblɛ kpɛkun be wu. I sɔ kle kɛ duo be tini.",
+   "reponse_fr": "Les feuilles jaunissent et sèchent progressivement. C'est un signe que les tubercules sont matures.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q139",
+   "filiere": "IGNAME",
+   "question_bci": "Kɛ be ko tu duo, wafa sɛ yɛ be kwla sie i kpa ɔ ?",
+   "question_fr": "Comment bien conserver l'igname après la récolte ?",
+   "reponse_bci": "Ɔ fata kɛ be sie i lika mɔ ti wusir, mɔ aunmuan wlu lɔ kpa, mɔ lika ti mlanwa. Lã sua i ti su lɔ lika nga aunmuan wlu lɔ kpa, ɔ ti kpa.",
+   "reponse_fr": "Il faut la stocker dans un endroit sec, aéré et à l'ombre. Un grenier traditionnel bien ventilé convient bien.",
+   "intent": "QUESTION_RECOLTE",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q140",
+   "filiere": "IGNAME",
+   "question_bci": "Wafa sɛ yɛ be kwla kun kakaa nga be tô duo fie kun nu nion?",
+   "question_fr": "Comment lutter contre les nématodes dans un champ d'igname ?",
+   "reponse_bci": "Fie mun be kacilɛ uka be naan ba sɔnman. Fie dilɛ nun junman difuɛ kun kwla kle amun wafa uflɛ nga be nin i fata.",
+   "reponse_fr": "La rotation des cultures aide à limiter leur présence. Un technicien agricole peut recommander d'autres méthodes adaptées.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q141",
+   "filiere": "IGNAME",
+   "question_bci": "Duo kponan wafa benin yɛ ɔ o lɛ ɔ, yɛ ngue ti yɛ be bu i like dan ɔn ?",
+   "question_fr": "Quelle est la variété d'igname Kponan et pourquoi est-elle appréciée ?",
+   "reponse_bci": "Kponan ti lɔ duo wafa kun mɔ be bu i like dan kpa, i fɛ nin i nvan ti. Be kunndɛ i kpa Côte d'Ivoire lɔ gua mun be su.",
+   "reponse_fr": "Le Kponan est une variété locale appréciée pour son goût et sa texture. Elle est très demandée sur les marchés ivoiriens.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q142",
+   "filiere": "IGNAME",
+   "question_bci": "Wafa sɛ yɛ be siesie kɔfie kun mɔ be fa lua duo niɔn ?",
+   "question_fr": "Comment préparer un billon pour la plantation de l'igname ?",
+   "reponse_bci": "Ɔ fata kɛ be yo asiɛ m’ɔ ti kpa, mɔ nzue sin nun kpa, i okaoka mun. Oka i dan fin douo wafa nga be bo.",
+   "reponse_fr": "Il faut former des buttes de terre meuble et bien drainées. La taille du billon dépend de la variété plantée.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q143",
+   "filiere": "IGNAME",
+   "question_bci": "Kɛ duo ɔ́ gni, like benin yɛ ɔ fata kɛ be nian su ɔ ?",
+   "question_fr": "Quel entretien faire pendant la croissance de l'igname ?",
+   "reponse_bci": "Ɔ fata kɛ be kpɛ ijre mun be nun titi, yɛ be fa waka mun be sie be su kpa. Ɔ ti cinnjin ekun kɛ be nian tukpacɛ mun be su naan ba fiteman.",
+   "reponse_fr": "Un désherbage régulier et un bon tuteurage sont nécessaires. Il faut aussi surveiller l'apparition de maladies.",
+   "intent": "CONSEIL_PRODUCTION",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q144",
+   "filiere": "IGNAME",
+   "question_bci": "Wafa sɛ yɛ be kwla yo naan duo wa saciman asiɛ nun ɔn ?",
+   "question_fr": "Comment éviter la pourriture des tubercules d'igname en terre ?",
+   "reponse_bci": "Asiɛ i nun nzue i sin sinlɛ kpa, ɔ yo maan sa sɔ yo kaan. Ɔ fata kɛ be kpalo lika nga kɛ nzue ko tɔ, nzue jran lɛ.",
+   "reponse_fr": "Un bon drainage du sol limite ce risque. Il faut éviter les zones où l'eau stagne après la pluie.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_IGNAME"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
    "id": "bci-q146",
    "filiere": "BANANE PLANTAIN",
    "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be lua banana nga be flɛ i kɛ plantain’n niɔn ?",
@@ -1513,6 +2293,264 @@
    ],
    "audio_reponse": "audio/b3b90be402e943ccb296b57b1a6c9d8f.webm",
    "appariement": "position"
+  },
+  {
+   "id": "bci-q168",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be lua gbôlou niɔn ?",
+   "question_fr": "Quand faut-il semer le gombo ?",
+   "reponse_bci": "Ɔ fata kɛ be lua ninnge mun nzue tɔlɛ blɛ i bo bolɛ nun. Ɔ fata kɛ be siesie asiɛ i kpa naan ɔ yo kpa.",
+   "reponse_fr": "Il faut semer en début de saison des pluies. Le sol doit être bien préparé et fertile.",
+   "intent": "QUESTION_SAISON_PLANTATION",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q169",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Wafa sɛ yɛ be kwla wun gbôlou tukpacɛ i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie du gombo ?",
+   "reponse_bci": "I ngna mun be kwla yi nzɔliɛ annzɛ be kwla wu. Ɔ fata kɛ be nian wafa nga gbôlou mma ti wie.",
+   "reponse_fr": "Les feuilles peuvent présenter des taches ou se flétrir. Il faut surveiller aussi l'état des fruits.",
+   "intent": "DIAGNOSTIC_PROBLEME",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q170",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ amun lua tro mma mun ɔn ?",
+   "question_fr": "Quand faut-il semer l'aubergine ?",
+   "reponse_bci": "Ɔ fata kɛ be lua ninnge mun be lika kun naan ba fa be ba sie i lika uflɛ. Kɛ be ko gua fie, le mɔcuɛ nsan annzɛ nnan sin yɛ be fa fie be sie i lika uflɛ ɔ.",
+   "reponse_fr": "Il faut semer en pépinière avant de repiquer. Le repiquage se fait généralement 3 à 4 semaines après le semis.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q171",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Wafa sɛ yɛ be kwla kun kakaa nga be tɔ tro su niɔn ?",
+   "question_fr": "Comment lutter contre les insectes qui attaquent l'aubergine ?",
+   "reponse_bci": "Fie mun be su like sifuɛ kun kwla se be kɛ be yo be ayre ng’ɔ nin i fata. Sɛ be nian be su titi, be kwla yo be like ndɛndɛ.",
+   "reponse_fr": "Un traitement adapté peut être recommandé par un technicien agricole. Une surveillance régulière permet d'intervenir tôt.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q172",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be lua mankun niɔn ?",
+   "question_fr": "Quand faut-il semer le piment ?",
+   "reponse_bci": "Ɔ fata kɛ be lua mankun mun be lika kun naan ba fa be ba sie i lika uflɛ. Kɛ be ko gua fie, le mɔcuɛ nnan annzɛ nsiɛn sin yɛ be fa fie be sie i lika uflɛ ɔ.",
+   "reponse_fr": "Il faut semer en pépinière avant de repiquer. Le repiquage se fait généralement 4 à 6 semaines après le semis.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q174",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Ɔ fata kɛ be fa engrais wafa benin yɛ ɔ fata kɛ be fa di fie niɔn ?",
+   "question_fr": "Quelle quantité d'engrais utiliser pour les cultures maraîchères ?",
+   "reponse_bci": "I nuan fin ijre wafa nin asiɛ i nun nianlɛ. Fie dilɛ i su like sifuɛ kun kwla se amun kɛ amun fa ayre sɔ i wafa ng’ɔ nin i fata.",
+   "reponse_fr": "La quantité dépend du type de légume et de l'analyse du sol. Un technicien agricole peut recommander la dose adaptée.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q175",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Wafa sɛ yɛ be kwla gua fie kun su nzue kpa blɛ mɔ lika ti kéé nun ɔn ?",
+   "question_fr": "Comment arroser correctement un jardin maraîcher en saison sèche ?",
+   "reponse_bci": "Ɔ fata kɛ amun gua su nzue titi, amun gua su nzue nglɛmun ndɛ kpa annzɛ tchin i awielie lo.  Dolè kusu uka naan lika wa yoman kéé.",
+   "reponse_fr": "Il faut arroser régulièrement, de préférence tôt le matin ou en fin de journée. Le paillage aide aussi à conserver l'humidité.",
+   "intent": "QUESTION_METEO_AGRICOLE",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q176",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Wafa sɛ yɛ be kwla kun tukpacɛ tè nga be fite fie nun waka’m be bo niɔn ?",
+   "question_fr": "Comment lutter contre les nématodes dans un jardin maraîcher ?",
+   "reponse_bci": "Kɛ waka mma’m be te yo kaan, mɔ be te yo mlanmlanmlan, yɛ amun kpɛ be ɔ. Nán amun minndɛ lele naan be yo dan.",
+   "reponse_fr": "On récolte quand les fruits sont encore jeunes et tendres. Il ne faut pas attendre qu'ils deviennent trop fibreux.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q178",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ amun kpɛ tro mma nion ?",
+   "question_fr": "Quand faut-il récolter l'aubergine ?",
+   "reponse_bci": "Kɛ tro mma ko tin kpa, sanngɛ ɔ te kpaja, yɛ be kpɛ i ɔ. Blɛ sunman nun, tro mma ng’ɔ timan mlanwa, ɔ tin tra su.",
+   "reponse_fr": "On récolte quand le fruit est bien formé mais encore brillant. Un fruit terne est souvent trop mûr.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q179",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ be ti mankun niɔn ?",
+   "question_fr": "Quand faut-il récolter le piment ?",
+   "reponse_bci": "Kɛ mankun ko ju i ngna kasiɛn su, yɛ be kpɛ i ɔ, ɔ taka i nma wafa su. Sɛ be ti mankun i nma mun titi, ɔ yo maan be yi nma mun titi.",
+   "reponse_fr": "On récolte quand le fruit atteint sa couleur finale, selon la variété. Une récolte régulière favorise la production continue.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q180",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Kɛ be ko ti nige wafa sɛ yɛ be fa sie ɔ ?",
+   "question_fr": "Comment conserver les légumes après la récolte ?",
+   "reponse_bci": "Ɔ fata kɛ be sie be lika n'ga ô  jɔ, n'ga awunmuan sin kpa. Be se kɛ be yo nige n'ga be yo be atɛ n'dɛ anzɛ be di.",
+   "reponse_fr": "Il faut les stocker dans un endroit frais et aéré. Une vente ou consommation rapide est recommandée pour les légumes fragiles.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q182",
+   "filiere": "CULTURES MARAÎCHÈRES (AUBERGINE | GOMBO | PIMENT | TOMATE)",
+   "question_bci": "Wafa sɛ yɛ be kwla kun ijre tɛ mun fie kun nun ɔn ?",
+   "question_fr": "Comment lutter contre les mauvaises herbes dans un jardin maraîcher ?",
+   "reponse_bci": "Be kpɛ ijre mun be nun titi, sɛ be fa be sa annzɛ be fa ijre ngna be kpɛ ijre mun be nun. I li le mɔcuɛ klikli be nun yɛ ɔ ti cinnjin kpa kɛ be fa be wun wlɛ i ndɛ nun ɔn.",
+   "reponse_fr": "Un désherbage régulier, manuel ou avec paillage, est recommandé. Il faut intervenir surtout dans les premières semaines.",
+   "intent": "HORS_SUJET",
+   "cultures": [
+    "CULTURE_GOMBO"
+   ],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q183",
+   "filiere": "COCOTIER",
+   "question_bci": "Blɛ benin nun yɛ ɔ fata kɛ amun lua kpako waka niɔn ?",
+   "question_fr": "Quand faut-il planter le cocotier ?",
+   "reponse_bci": "Ɔ fata kɛ be lua i nzue i bo bolɛ nun. Ɔ fata kɛ asiɛ ye augnan lika, kpɛkun nzue sin su kpa.",
+   "reponse_fr": "Il faut planter en début de saison des pluies. Le sol doit être bien drainé, idéalement sableux.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q184",
+   "filiere": "COCOTIER",
+   "question_bci": "Ɔ fata kɛ be fa kpako waka dja ngnɛ yɛ be fa di i fie niɔn ?",
+   "question_fr": "Quelle densité de plantation choisir pour le cocotier ?",
+   "reponse_bci": "Be fa waka dja ɔ kɔeliɛ 140 lele 160 be sie i hectare kun nu. Titi, be afiɛn ti nun mɛtri 8 lele 9.",
+   "reponse_fr": "Une densité d'environ 140 à 160 plants par hectare est courante. L'espacement habituel est de 8 à 9 mètres.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q185",
+   "filiere": "COCOTIER",
+   "question_bci": "Wafa sɛ yɛ be kwla wun kpako waka i tukpacɛ i wlɛ ɔ ?",
+   "question_fr": "Comment reconnaître une maladie du cocotier ?",
+   "reponse_bci": "i gnamu'n be kwla yo jɔɔ annzɛ be kwla wu mlɔnmlɔn. Ɔ fata kɛ be nian wafa nga kpako i awlɛn ti wie.",
+   "reponse_fr": "Les feuilles peuvent jaunir ou se dessécher anormalement. Il faut aussi surveiller l'état du cœur du cocotier.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q187",
+   "filiere": "COCOTIER",
+   "question_bci": "Ɔ fata kɛ n'fa engrais ɔ dju wafa sɛ yɛ n'fa yo kpako waka kun on ?",
+   "question_fr": "Quelle quantité d'engrais utiliser pour le cocotier ?",
+   "reponse_bci": "Engrais i nuan fin waka i afuɛ ɔ nin asiɛ i wafa. Fie dilɛ i su like sifuɛ kun kwla se amun kɛ amun fa ayre sɔ’n i wafa ng’ɔ nin i fata.",
+   "reponse_fr": "La quantité dépend de l'âge de l'arbre et du type de sol. Un technicien agricole peut recommander la dose adaptée.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q188",
+   "filiere": "COCOTIER",
+   "question_bci": "Ka naan b’a kpɛ kpako waka i su n'ma klikli, ɔ di blɛ n'gnɛ ?",
+   "question_fr": "Combien de temps avant la première récolte d'un cocotier ?",
+   "reponse_bci": "Titi, kɛ be ko di kpako fie, ɔ di afuɛ 5 annzɛ 6 ka naan b'a kpɛ i su n'ma klikli. I sin, kɛ waka ko yo kpɛnngbɛn, ɔ m'an n'ma dan.",
+   "reponse_fr": "La première récolte arrive généralement 5 à 6 ans après la plantation. La production augmente ensuite avec l'âge de l'arbre.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
+  },
+  {
+   "id": "bci-q189",
+   "filiere": "COCOTIER",
+   "question_bci": "Wafa sɛ yɛ be nian kpako fie uflɛ i lika ɔ ?",
+   "question_fr": "Comment entretenir une jeune plantation de cocotier ?",
+   "reponse_bci": "Sɛ be lua waka i lika fanunfanun nun, ɔ nin aunmuan i jranwlɛ, be kwla uka be. Kɛ be bo bolɛ nun, be bo yo kpa, ɔ yo maan be kwla jran kekle wie.",
+   "reponse_fr": "Une plantation en quinconce et des brise-vents naturels peuvent aider. Un bon ancrage racinaire dès la jeunesse renforce aussi la résistance.",
+   "intent": "QUESTION_GENERALE",
+   "cultures": [],
+   "audio_reponse": null,
+   "appariement": "alignement",
+   "audio_a_reenregistrer": true
   },
   {
    "id": "bci-q191",
