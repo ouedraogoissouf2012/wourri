@@ -1,0 +1,15 @@
+# Serveur voix baoulé sur processeur (ADR-0048). torch 2.8.0+cpu est installé avant,
+# depuis l'index CPU de PyTorch (voir finetune/voix/Dockerfile).
+# Mêmes versions que le serveur sur GPU loué (finetune/colab/serveur_voix_baoule_runpod.ipynb).
+omnilingual-asr==0.1.0
+fairseq2[arrow]==0.6
+datasets<4.0
+soundfile
+librosa<1.0
+jiwer
+pyarrow==20.0.0
+fastapi
+uvicorn
+python-multipart
+pyctcdecode==0.5.0
+sentencepiece

@@ -13,7 +13,8 @@ Tourne sur un GPU loué (RunPod), lancé par finetune/colab/serveur_voix_baoule_
 
 Réglages (variables d'environnement) : `BCI_VOIX_CLE` (clé partagée avec le serveur
 WhatsApp), `BCI_VOIX_CARTE` (carte fairseq2 du modèle, cf. eval_bci_cer.write_card),
-`BCI_VOIX_AUDIO` (dossier des réponses ogg), `BCI_VOIX_LM` (facultatif : lm_bci.pkl).
+`BCI_VOIX_AUDIO` (dossier des réponses ogg), `BCI_VOIX_LM` (facultatif : lm_bci.pkl),
+`BCI_VOIX_PROCESSEUR` (« 1 » : sans GPU, float32 + int8, ADR-0048 ; image finetune/voix).
 
 Ce module est recopié tel quel dans le notebook (cellule %%writefile) :
 `python finetune/colab/sync_smoke_test_notebook.py` le resynchronise, un test le vérifie.
@@ -77,10 +78,49 @@ def convertir_reponses(export_zip, dossier_ogg) -> int:
     return n
 
 
-def _pipeline_par_defaut():
+def vers_int8(modele) -> int:
+    """Couches linéaires en int8 (quantification dynamique de PyTorch), sur place (ADR-0048).
+
+    Les couches de fairseq2 (`fairseq2.nn.Linear`) ne sont pas des `torch.nn.Linear` : la
+    quantification ne les verrait pas. Chacune est recopiée en `torch.nn.Linear` (mêmes poids),
+    quantifiée et remplacée AUSSITÔT : la mémoire ne dépasse jamais le modèle plus une couche
+    (une copie complète avant quantification dépassait 7,6 Go et le conteneur était tué).
+    Retourne le nombre de couches converties."""
+    import torch
+    from fairseq2.nn import Linear as LinearF2
+    from torch.ao.nn.quantized.dynamic import Linear as LinearQ
+
+    cibles = [nom for nom, m in modele.named_modules() if isinstance(m, LinearF2)]
+    for nom in cibles:
+        m = modele.get_submodule(nom)
+        parent = modele.get_submodule(nom.rpartition(".")[0]) if "." in nom else modele
+        lin = torch.nn.Linear(m.input_dim, m.output_dim, bias=m.bias is not None)
+        with torch.no_grad():
+            lin.weight.copy_(m.weight)
+            if m.bias is not None:
+                lin.bias.copy_(m.bias)
+        lin.qconfig = torch.ao.quantization.default_dynamic_qconfig
+        setattr(parent, nom.rpartition(".")[2], LinearQ.from_float(lin))
+        del m, lin
+    return len(cibles)
+
+
+def charger_pipeline(carte, processeur=False):
+    """Pipeline Omnilingual. `processeur` (ADR-0048, mesuré le 2026-10-27) : float32 puis int8 ;
+    le bfloat16 par défaut du pipeline, fait pour le GPU, est beaucoup plus lent sur processeur."""
     from omnilingual_asr.models.inference.pipeline import ASRInferencePipeline
 
-    pipe = ASRInferencePipeline(model_card=os.environ["BCI_VOIX_CARTE"])
+    if not processeur:
+        return ASRInferencePipeline(model_card=carte)
+    import torch
+
+    pipe = ASRInferencePipeline(model_card=carte, device="cpu", dtype=torch.float32)
+    logger.info("modele en int8 : %d couches", vers_int8(pipe.model))
+    return pipe
+
+
+def _pipeline_par_defaut():
+    pipe = charger_pipeline(os.environ["BCI_VOIX_CARTE"], os.environ.get("BCI_VOIX_PROCESSEUR") == "1")
     if os.environ.get("BCI_VOIX_LM"):
         # Modèle de langue retenu par mesure_lm_bci.py (choisi sur dev) : recherche en faisceau.
         import pickle
