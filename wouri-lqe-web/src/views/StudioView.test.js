@@ -117,3 +117,42 @@ describe("StudioView — Mes décisions", () => {
     expect(JSON.parse(appel[1].body)).toEqual({ id: "1" });
   });
 });
+
+describe("StudioView — motif de réexamen (ADR-0047)", () => {
+  it("affiche la question reposée au locuteur", async () => {
+    const REPOSE = {
+      id: "9", kind: "mot_cle", text_local: "gua", text_fr: "prix",
+      meta: { motif_reexamen: "ta traduction « prix » ne dit pas le concept « vendre »" },
+    };
+    routes({ bronze: [REPOSE] });
+    const w = mount(StudioView);
+    await flushPromises();
+
+    const motif = w.find("[data-motif]");
+    expect(motif.exists()).toBe(true);
+    expect(motif.text()).toContain("ne dit pas le concept");
+    // la fiche reste décidable normalement
+    const libelles = w.findAll("button").map((b) => b.text());
+    expect(libelles).toContain("Accepter");
+    expect(libelles).toContain("Rejeter");
+  });
+
+  it("n'affiche rien quand il n'y a pas de motif", async () => {
+    routes({ bronze: [MOT] });
+    const w = mount(StudioView);
+    await flushPromises();
+    expect(w.find("[data-motif]").exists()).toBe(false);
+  });
+
+  it("masque le motif pendant la correction", async () => {
+    const REPOSE = {
+      id: "9", kind: "mot_cle", text_local: "gua", text_fr: "prix",
+      meta: { motif_reexamen: "à confirmer" },
+    };
+    routes({ bronze: [REPOSE] });
+    const w = mount(StudioView);
+    await flushPromises();
+    await w.findAll("button").find((b) => b.text() === "Corriger").trigger("click");
+    expect(w.find("[data-motif]").exists()).toBe(false);
+  });
+});

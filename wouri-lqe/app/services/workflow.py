@@ -71,6 +71,23 @@ def edit_text(item_id: str, *, language: str, text_local: str, text_fr: str,
     return {"ok": True, "id": str(item_id), "text_local": text_local, "text_fr": text_fr, **(reponse or {})}
 
 
+def remettre_en_question(item_id: str, *, language: str, motif: str) -> dict:
+    """Un relecteur repose la question au locuteur : la fiche redevient « a valider »
+    AVEC le motif affiche (ADR-0047). Refuse un motif vide — une fiche reposee sans
+    raison serait re-decidee a l'identique, ce qui ne sert a rien."""
+    motif = (motif or "").strip()
+    if not motif:
+        return {"ok": False, "reason": "motif_requis"}
+    row = repo.get(item_id=item_id, language=language)
+    if row is None:
+        return {"ok": False, "reason": "not_found"}
+    if not repo.remettre_en_question(
+        item_id=item_id, language=language, motif=motif, allowed_from=REPRENABLE_FROM,
+    ):
+        return {"ok": False, "reason": "locked", "status": row["status"]}
+    return {"ok": True, "id": str(item_id), "status": "bronze", "motif": motif}
+
+
 def reprendre(item_id: str, *, language: str) -> dict:
     """Annule la decision ET la correction du locuteur : bronze + texte d'origine."""
     row = repo.get(item_id=item_id, language=language)

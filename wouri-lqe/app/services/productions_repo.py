@@ -108,12 +108,16 @@ def get(*, item_id, language: str) -> dict | None:
 def set_status(*, item_id, language: str, status: str, allowed_from=None) -> bool:
     """UPDATE cible, TOUJOURS filtre par langue (isolation inter-locuteurs). Si
     `allowed_from` est fourni, la transition n'a lieu QUE depuis ces statuts source
-    (garde atomique : empeche p.ex. de retrograder une 'production' publiee)."""
+    (garde atomique : empeche p.ex. de retrograder une 'production' publiee).
+
+    Retire aussi `meta.motif_reexamen` : une fois que le locuteur a tranche, la question
+    posee n'a plus lieu d'etre affichee (ADR-0047)."""
     pid = _as_int(item_id)
     if pid is None:
         return False
     sql = (
-        "UPDATE productions SET status = %s, updated_at = now()"
+        "UPDATE productions SET status = %s, updated_at = now(),"
+        " meta = meta - 'motif_reexamen'"
         " WHERE id = %s AND language = %s"
     )
     params: list = [status, pid, language]
@@ -175,6 +179,31 @@ def reprendre(*, item_id, language: str, allowed_from, text_local=None, text_fr=
             "  'reponse_fr', meta->'texte_origine'->'reponse_fr'))"
             " WHERE id = %s AND language = %s AND status = ANY(%s)",
             (text_local, text_fr, pid, language, list(allowed_from)),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+
+
+def remettre_en_question(*, item_id, language: str, motif: str, allowed_from) -> bool:
+    """Remet une fiche « a valider » (bronze) en y attachant le MOTIF du reexamen
+    (`meta.motif_reexamen`), que l'ecran « A accepter » affiche au locuteur.
+
+    Difference avec `reprendre` : ici c'est un RELECTEUR qui repose la question, et le
+    texte n'est pas restaure — on reexamine la fiche telle qu'elle est. Sans le motif, le
+    locuteur reverrait la fiche comme neuve et la re-deciderait a l'identique : c'est
+    precisement ce qui justifie ce mecanisme (ADR-0047).
+
+    Toujours filtre par langue ; n'agit QUE depuis `allowed_from` (jamais une 'production').
+    """
+    pid = _as_int(item_id)
+    if pid is None or not (motif or "").strip():
+        return False
+    with get_conn() as conn:
+        cur = conn.execute(
+            "UPDATE productions SET status = 'bronze', updated_at = now(),"
+            " meta = meta || jsonb_build_object('motif_reexamen', %s::text)"
+            " WHERE id = %s AND language = %s AND status = ANY(%s)",
+            (motif.strip(), pid, language, list(allowed_from)),
         )
         conn.commit()
         return cur.rowcount > 0
