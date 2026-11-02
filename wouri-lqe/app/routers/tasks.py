@@ -12,6 +12,11 @@ class DecisionBody(BaseModel):
     decision: str
 
 
+class ReexamenBody(BaseModel):
+    id: str = Field(min_length=1)
+    motif: str = Field(min_length=1)
+
+
 class EditBody(BaseModel):
     id: str = Field(min_length=1)
     text_local: str = Field(min_length=1)
@@ -58,6 +63,19 @@ class ReprendreBody(BaseModel):
 def post_reprendre(body: ReprendreBody, user: dict = Depends(require_role("review"))):
     """Le locuteur annule sa decision et sa correction : la fiche redevient « a valider »."""
     result = workflow.reprendre(body.id, language=user["lang"])
+    if not result.get("ok"):
+        code = 404 if result.get("reason") == "not_found" else 400
+        raise HTTPException(status_code=code, detail=result.get("reason"))
+    return result
+
+
+@router.post("/reexamen")
+def post_reexamen(body: ReexamenBody, user: dict = Depends(require_role("admin"))):
+    """Repose une question au locuteur : la fiche redevient « a valider » avec le motif
+    affiche (ADR-0047). Reserve a l'admin — c'est un relecteur qui repose la question."""
+    result = workflow.remettre_en_question(
+        body.id, language=user["lang"], motif=body.motif,
+    )
     if not result.get("ok"):
         code = 404 if result.get("reason") == "not_found" else 400
         raise HTTPException(status_code=code, detail=result.get("reason"))

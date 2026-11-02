@@ -216,6 +216,10 @@ async function promote(id) {
 
     <section v-show="tab==='bronze' && can('review')" class="mt-4 space-y-3">
       <article v-for="r in bronzeShown" :key="r.id" class="border rounded p-3 bg-white">
+        <p v-if="editing !== r.id && (r.meta || {}).motif_reexamen"
+           class="mb-2 border-l-4 border-wouri-700 bg-stone-100 px-2 py-1 text-sm" data-motif>
+          <strong>On te repose la question :</strong> {{ (r.meta || {}).motif_reexamen }}
+        </p>
         <template v-if="editing === r.id">
           <label class="block text-xs text-stone-500">{{ editPaire ? "Question (langue locale)" : "Texte (langue locale)" }}</label>
           <input v-model="editLocal" class="w-full border rounded p-1 mb-2 font-semibold" />
