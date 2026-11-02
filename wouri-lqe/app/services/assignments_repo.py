@@ -9,12 +9,12 @@ from __future__ import annotations
 
 from app.db import get_conn
 
-_COLS = "id, concept_id, target_language, source_fr, status, assigned_by, created_at"
+_COLS = "id, concept_id, target_language, source_fr, status, assigned_by, created_at, kind"
 _SELECT = f"SELECT {_COLS} FROM assignments"
 
 
 def _row(r: tuple) -> dict:
-    aid, concept_id, target_language, source_fr, status, assigned_by, created_at = r
+    aid, concept_id, target_language, source_fr, status, assigned_by, created_at, kind = r
     return {
         "id": str(aid),
         "concept_id": concept_id,
@@ -23,18 +23,25 @@ def _row(r: tuple) -> dict:
         "status": status,
         "assigned_by": assigned_by,
         "created_at": created_at.isoformat() if created_at else None,
+        # Ce que le locuteur doit produire : une phrase (contenu) ou un mot-cle
+        # rattache a son concept (ADR-0047).
+        "kind": kind or "contenu",
     }
 
 
-def assign_one(*, concept_id: str, target_language: str, source_fr: str, assigned_by: str) -> bool:
-    """INSERT idempotent (UNIQUE concept_id+target_language). True si cree, False si deja assigne."""
+def assign_one(*, concept_id: str, target_language: str, source_fr: str, assigned_by: str,
+               kind: str = "contenu") -> bool:
+    """INSERT idempotent (UNIQUE concept_id+target_language). True si cree, False si deja assigne.
+
+    `kind` dit ce que le locuteur doit produire : une phrase (`contenu`) ou un mot-cle
+    rattache a son concept (`mot_cle`) — ADR-0047."""
     with get_conn() as conn:
         row = conn.execute(
-            "INSERT INTO assignments (concept_id, target_language, source_fr, assigned_by)"
-            " VALUES (%s, %s, %s, %s)"
+            "INSERT INTO assignments (concept_id, target_language, source_fr, assigned_by, kind)"
+            " VALUES (%s, %s, %s, %s, %s)"
             " ON CONFLICT (concept_id, target_language) DO NOTHING"
             " RETURNING id",
-            (concept_id, target_language, source_fr, assigned_by),
+            (concept_id, target_language, source_fr, assigned_by, kind),
         ).fetchone()
         conn.commit()
     return row is not None

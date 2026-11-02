@@ -12,9 +12,13 @@ from app.services import productions_repo
 from app.services.catalog import ConceptCatalog
 
 
-def assign_batch(concept_ids, *, target_language: str, assigned_by: str, catalog: ConceptCatalog) -> dict:
+def assign_batch(concept_ids, *, target_language: str, assigned_by: str, catalog: ConceptCatalog,
+                 kind: str = "contenu") -> dict:
     """Assigne un lot de concepts a une langue. Idempotent (UNIQUE concept+langue).
-    Retourne {assigned, already, skipped} — skipped = concept absent du corpus/sans pivot."""
+    Retourne {assigned, already, skipped} — skipped = concept absent du corpus/sans pivot.
+
+    `kind` dit ce que le locuteur doit produire : une phrase (`contenu`, catalogue du
+    corpus) ou un mot-cle (`mot_cle`, catalogue des concepts NLU) — ADR-0047."""
     assigned = 0
     already = 0
     skipped: list[str] = []
@@ -28,7 +32,7 @@ def assign_batch(concept_ids, *, target_language: str, assigned_by: str, catalog
             continue
         if repo.assign_one(
             concept_id=cid, target_language=target_language,
-            source_fr=concept.text_fr, assigned_by=assigned_by,
+            source_fr=concept.text_fr, assigned_by=assigned_by, kind=kind,
         ):
             assigned += 1
         else:
@@ -37,8 +41,23 @@ def assign_batch(concept_ids, *, target_language: str, assigned_by: str, catalog
             "target_language": target_language}
 
 
-def list_open(*, language: str) -> list[dict]:
-    return repo.list_by(target_language=language, status="open")
+def list_open(*, language: str, catalog=None) -> list[dict]:
+    """Assignations ouvertes. Celles qui demandent un MOT-CLE sont enrichies du repere
+    dioula (`ref_dyu`), affiche au locuteur et JAMAIS recopie (ADR-0046).
+
+    Le repere n'est pas stocke sur l'assignation : il est resolu par UNE seule lecture
+    du catalogue, jamais une requete par ligne — meme discipline que `missing_to_assign`."""
+    rows = repo.list_by(target_language=language, status="open")
+    mots = [r for r in rows if r.get("kind") == "mot_cle"]
+    if not mots:
+        return rows
+    if catalog is None:
+        from app.services.nlu_catalog import NluConceptCatalog
+        catalog = NluConceptCatalog()
+    reperes = {c.id: c.ref_dyu for c in catalog.list_concepts()}
+    for r in mots:
+        r["ref_dyu"] = reperes.get(r["concept_id"], "")
+    return rows
 
 
 def missing_to_assign(catalog: ConceptCatalog, *, language: str) -> list[dict]:
