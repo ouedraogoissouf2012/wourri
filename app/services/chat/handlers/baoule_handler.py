@@ -84,9 +84,12 @@ class BaouleHandler:
 
         escalate(nlu, city, user_id, SOURCE_HORS_CORPUS_BCI, excerpt=texte)
         sujets = _sujets(baoule_ivr.entrees())
-        message = "Je n'ai pas encore de réponse validée en baoulé pour cette question."
+        # Dire que la QUESTION n'est pas comprise, jamais que le baoulé manque :
+        # « pas de réponse validée en baoulé » faisait croire au paysan que la
+        # langue ne marche pas, alors que seule sa question n'a pas été reconnue.
+        message = "Je n'ai pas compris ta question."
         if sujets:
-            message += f" Je peux déjà t'aider sur : {sujets}."
+            message += f" Je peux t'aider sur : {sujets}."
         return ChatResult(
             response=message,
             city=city,

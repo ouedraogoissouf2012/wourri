@@ -130,6 +130,9 @@ async def test_handler_repli_honnete_et_escalade(branche):
     nlu.message_original = "Mmo, a ti ?"
     r = await BaouleHandler().process(nlu, None, "Bouaké", False, Language.BAOULE, "u1")
     assert r.response_local is None and r.meta["source"] == "bci_hors_corpus"
-    assert "pas encore de réponse validée en baoulé" in r.response
+    # Le repli parle de LA QUESTION, pas de la langue : un paysan ne doit pas
+    # conclure que le baoule ne marche pas (constate en production le 02/11).
+    assert "Je n'ai pas compris ta question" in r.response
+    assert "baoulé" not in r.response
     assert "cacao" in r.response and "maïs" in r.response  # sujets tirés du corpus
     assert len(branche) == 1
