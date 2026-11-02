@@ -11,7 +11,7 @@
 const { test, describe, afterEach } = require("node:test");
 const assert = require("node:assert/strict");
 
-const { MSG, pickMsg, apiLanguage, baouleServi } = require("../lib/i18n");
+const { MSG, pickMsg, apiLanguage, baouleServi, isPendingLanguage, languePasEncoreServie } = require("../lib/i18n");
 const { STEPS } = require("../lib/user_prefs");
 const { createMessageHandler } = require("../lib/message_handler");
 const { ResponseSender } = require("../lib/response_sender");
@@ -33,6 +33,34 @@ describe("ADR-0045 interrupteur", () => {
         process.env.WOURI_BAOULE_SERVI = "1";
         assert.equal(apiLanguage("baoule"), "baoule");
         for (const lang of ["french", "dioula", "both", "english"]) assert.equal(apiLanguage(lang), lang);
+    });
+});
+
+describe("#477 message d'accueil — il doit suivre l'interrupteur", () => {
+    test("éteint : le démenti est affiché", () => {
+        const t = MSG.PREFS_SAVED("Bouaké", "Baoulé", "baoule");
+        assert.match(t, /ne parle pas encore Baoulé/);
+    });
+
+    test("allumé : plus de démenti, et pas un mot de dioula", () => {
+        process.env.WOURI_BAOULE_SERVI = "1";
+        const t = MSG.PREFS_SAVED("Bouaké", "Baoulé", "baoule");
+        assert.doesNotMatch(t, /ne parle pas encore/);
+        assert.match(t, /Préférences enregistrées/);
+        assert.match(t, /Langue : Baoulé/);
+        // ADR-0046 : la branche bilingue finale est en DIOULA. Un utilisateur
+        // baoulé ne doit jamais la recevoir — défaut révélé le 02/11.
+        assert.ok(!t.includes("Dɔ sɔrɔla"), "dioula servi a un utilisateur baoule");
+        assert.ok(!t.includes("ka yɛlɛma"), "dioula servi a un utilisateur baoule");
+    });
+
+    test("allumé : le garde-fou vocal reste armé", () => {
+        process.env.WOURI_BAOULE_SERVI = "1";
+        // `isPendingLanguage` sert aussi a REFUSER un vocal quand aucun ASR baoule
+        // n'est branche (message_handler). Il doit rester vrai, baoule servi ou non :
+        // le rendre faux enverrait le vocal a Whisper francais (#477).
+        assert.equal(isPendingLanguage("baoule"), true);
+        assert.equal(languePasEncoreServie("baoule"), false);
     });
 });
 
