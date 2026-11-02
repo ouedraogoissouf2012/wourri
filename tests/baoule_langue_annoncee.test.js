@@ -65,7 +65,7 @@ describe("#477 i18n — langue annoncée", () => {
         }
     });
 
-    test("PREFS_SAVED baoule : confirme ET dit honnêtement que ce n'est pas encore servi", () => {
+    test("PREFS_SAVED baoule, interrupteur éteint : confirme ET dit honnêtement que ce n'est pas encore servi", () => {
         const text = MSG.PREFS_SAVED("Bouaké", "Baoulé", "baoule");
         assert.match(text, /Préférences enregistrées/);
         assert.match(text, /Langue : Baoulé/);
@@ -109,6 +109,7 @@ describe("#477 onboarding — choisir le baoulé", () => {
             assert.equal(result.handled, true);
             assert.equal(prefs.language, "baoule");
             assert.equal(prefs.step, STEPS.COMPLETE);
+            // Interrupteur eteint (defaut) : etat allume teste dans baoule_servi.test.js.
             assert.match(sock.sent[0].msg.text, /ne parle pas encore Baoulé/);
         });
     }
