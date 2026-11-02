@@ -20,11 +20,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
 RACINE = Path(__file__).resolve().parent.parent
+if str(RACINE) not in sys.path:
+    sys.path.insert(0, str(RACINE))
 SOURCE = RACINE / "dictionnaires" / "nlu_concepts.json"
 
 # Les mots dioula affiches en reference : on en montre assez pour situer le sens,
@@ -47,13 +48,25 @@ def lire(source: Path) -> list[dict]:
     return sorted(out, key=lambda c: c["id"])
 
 
+def _dsn() -> str:
+    """Chaine de connexion, via la SOURCE UNIQUE du projet.
+
+    `resolve_postgres_url` assemble l'URL depuis POSTGRES_HOST/USER/DB/PORT et lit le
+    mot de passe y compris en secret-fichier. C'est elle qu'utilise alembic. Deviner un
+    nom de variable a la place (DATABASE_URL, POSTGRES_DSN) echouait en production,
+    ou aucune des deux n'existe.
+
+    Le prefixe de pilote SQLAlchemy est retire : psycopg attend une URL simple.
+    """
+    from app.db.url_resolver import resolve_postgres_url
+
+    return resolve_postgres_url().replace("postgresql+psycopg://", "postgresql://")
+
+
 def ecrire(lignes: list[dict]) -> int:
     import psycopg
 
-    dsn = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_DSN")
-    if not dsn:
-        raise SystemExit("DATABASE_URL absent : impossible de se connecter.")
-    with psycopg.connect(dsn) as conn:
+    with psycopg.connect(_dsn()) as conn:
         with conn.cursor() as cur:
             ids = [c["id"] for c in lignes]
             # Un concept retire du JSON ne doit plus etre propose au locuteur.
