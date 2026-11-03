@@ -160,3 +160,14 @@ def test_un_wav_est_reencode_et_signale(tmp_path):
     destination = tmp_path / "out.ogg"
     assert pub.convertir(source.read_bytes(), "audio/src.wav", destination) == "réencodage"
     assert destination.is_file() and destination.stat().st_size > 0
+
+
+def test_la_commande_de_copie_suit_ce_qui_est_installe(tmp_path):
+    """Afficher `rsync` sur un poste qui ne l'a pas renvoie l'operateur a une erreur.
+    Verifie le 2026-11-03 : absent des postes Windows, alors que `scp` vient avec OpenSSH."""
+    avec = pub.commande_de_copie(tmp_path, rsync="/usr/bin/rsync")
+    sans = pub.commande_de_copie(tmp_path, rsync="")
+    assert avec.startswith("rsync ") and "--ignore-existing" in avec
+    assert sans.startswith("scp ") and sans.endswith(pub.DESTINATION_VOIX)
+    for c in (avec, sans):
+        assert "reponses_ogg" in c, "la destination du serveur voix doit rester explicite"
