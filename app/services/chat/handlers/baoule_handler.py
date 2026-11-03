@@ -6,9 +6,10 @@ texte n'est généré (docs/constraints.md §3.3). Le NLU baoulé (concepts → 
 `preprocess_nlu`) cadre la culture ; la réponse servie est celle du corpus de la dictée
 (`baoule_ivr`), écrite et lue par le locuteur natif, avec sa traduction française.
 
-Sans réponse assez proche : repli en français qui le dit, liste les sujets connus (tirés
-du corpus lui-même) et remonte la question au sas de validation (ADR-0031), comme le
-dioula le fait avant le LLM.
+Sans réponse assez proche : repli qui le dit, liste les sujets connus (tirés du corpus
+lui-même) et remonte la question au sas de validation (ADR-0031), comme le dioula le
+fait avant le LLM. Ce repli est servi dans la langue dès qu'un message système y a été
+validé (ADR-0049) ; en français tant qu'il n'y en a pas.
 """
 from __future__ import annotations
 
@@ -90,8 +91,28 @@ class BaouleHandler:
         message = "Je n'ai pas compris ta question."
         if sujets:
             message += f" Je peux t'aider sur : {sujets}."
+
+        # Le repli dans la langue, s'il a ete valide par le locuteur (ADR-0049).
+        # Le francais garde la liste des sujets, qui est calculee ; le natif s'ajoute
+        # en texte et en voix. Sans message valide : le francais seul, comme avant.
+        # Jamais une phrase inventee ni une tournure d'une autre langue (ADR-0031/0046).
+        from app.config import settings
+        from app.data.lqe_languages import BAOULE_CODE
+        from app.services import messages_systeme
+
+        # BAOULE_CODE (« bci »), pas `language.value` (« baoule ») : les fichiers de
+        # langue, la dictee et l'atelier sont tous nommes par le code ISO.
+        natif = messages_systeme.message(BAOULE_CODE, messages_systeme.REPLI)
+        audio_url = (
+            messages_systeme.url_audio(natif, settings.bci_audio_base_url)
+            if natif and include_audio
+            else None
+        )
         return ChatResult(
             response=message,
+            response_local=natif.texte if natif else None,
+            audio_url=audio_url,
+            audio_language="Baoulé" if audio_url else None,
             city=city,
             language=language.value,
             meta={"intent": nlu.intent, "cultures": cultures, "source": SOURCE_HORS_CORPUS_BCI},
