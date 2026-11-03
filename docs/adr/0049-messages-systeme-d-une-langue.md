@@ -1,9 +1,9 @@
 # ADR-0049 — Messages système d'une langue : texte validé versionné, voix publiée depuis l'atelier
 
-**Statut** : proposé
+**Statut** : accepté
 **Date** : 2026-11-02
 **Auteur(s)** : Claude (assistant) sous direction de Ouedraogo Issouf
-**Valideur** : Ouedraogo Issouf — en attente
+**Valideur** : Ouedraogo Issouf — **option B retenue le 2026-11-03**
 **ADRs liés** : [ADR-0031](0031-moteur-amelioration-linguistique.md) (jamais d'invention linguistique), [ADR-0034](0034-atelier-parite-linguistique.md) (réponses natives produites par l'atelier), [ADR-0039](0039-politique-reponse-llm-et-escalade.md) (accusé rendu en français — dette tracée), [ADR-0043](0043-accueil-baoule-langue-annoncee.md) (langue annoncée, repli honnête), [ADR-0045](0045-nlu-baoule-methode-dioula-validation-atelier.md) (corpus baoulé construit depuis l'atelier), [ADR-0048](0048-voix-baoule-sur-contabo-processeur.md) (serveur voix baoulé)
 **Issues** : #475, #476, #477
 
@@ -154,17 +154,19 @@ façon dont le résultat atteint la production**. C'est là qu'est la décision.
 
 ## Décision
 
-**Option retenue** : **TBD — en attente de l'arbitrage d'Issouf.**
+**Option retenue** : **B — fichier versionné par langue + script de publication des audios.**
 
-Recommandation de l'auteur : **Option B**. Les trois options coûtent presque la même
-chose à écrire ; une seule supprime l'étape manuelle qui a déjà fait perdre onze jours
-de travail du locuteur, et c'est la seule qui serve aussi les 70 réenregistrements
-déjà en attente dans l'atelier. L'option A est explicitement le choix de recréer le
-piège en connaissance de cause.
+**Justification** : les trois options coûtent presque la même chose à écrire ; une seule
+supprime l'étape manuelle qui a déjà fait perdre onze jours de travail du locuteur, et
+c'est la seule qui serve aussi les 70 réenregistrements déjà en attente dans l'atelier.
+L'option A revenait à recréer sciemment le piège qu'on venait de constater ; l'option C
+met du binaire croissant dans Git et laisse un second chemin audio à maintenir.
+
+Arbitrage d'Issouf, 2026-11-03.
 
 ## Conséquences
 
-### Si B est retenue
+### Conséquences de B
 
 - **Positives** :
   - le repli et la salutation sont dits **en baoulé, avec la voix du locuteur**, et en
@@ -208,3 +210,4 @@ piège en connaissance de cause.
 | Date | Évolution |
 |---|---|
 | 2026-11-02 | Rédaction. Arbitrages Q1/Q2/Q3 obtenus d'Issouf. Décision laissée TBD. |
+| 2026-11-03 | **Option B retenue par Issouf.** Statut : accepté. Mise en œuvre ouverte. |
