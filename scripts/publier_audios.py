@@ -216,6 +216,23 @@ def _afficher(langue: str, vers: Path, e: dict) -> None:
         print(f"  servis en TEXTE (audio à réenregistrer)     : {e['sans_audio']}")
 
 
+DESTINATION_VOIX = "marcel@serveur.africandigitconsulting.com:/home/marcel/voix-bci/donnees/reponses_ogg/"
+
+
+def commande_de_copie(vers: Path, *, rsync: str | None = None) -> str:
+    """Commande de recopie adaptee a ce qui est installe sur le poste.
+
+    `rsync` est absent des postes Windows (verifie le 2026-11-03) : afficher une
+    commande qui n'existe pas renvoie l'operateur a une erreur au lieu du travail.
+    `scp` vient avec OpenSSH, donc partout ou l on peut deja joindre le serveur.
+    Recopier un fichier deja present est sans effet : ce sont les memes octets.
+    """
+    outil = rsync if rsync is not None else shutil.which("rsync")
+    if outil:
+        return f"rsync -av --ignore-existing {vers}/ {DESTINATION_VOIX}"
+    return f"scp {vers}/*.ogg {DESTINATION_VOIX}"
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("langue", help="code de la langue (ex. bci)")
@@ -265,9 +282,7 @@ def main(argv=None) -> int:
     if introuvables:
         print(f"  INTROUVABLES dans l'atelier : {len(introuvables)} — {', '.join(introuvables[:8])}")
         print("  Ces entrées seront servies SANS voix tant que l'audio manque.")
-    print(f"\nÀ recopier sur le serveur voix :\n"
-          f"  rsync -av --ignore-existing {vers}/ "
-          f"marcel@serveur.africandigitconsulting.com:/home/marcel/voix-bci/donnees/reponses_ogg/")
+    print("\nA recopier sur le serveur voix :\n  " + commande_de_copie(vers))
     return 1 if introuvables else 0
 
 
