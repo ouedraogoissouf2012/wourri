@@ -1,0 +1,20 @@
+{
+ "commentaire": [
+  "ADR-0049 — quelle entrée du catalogue assignable porte quel message système.",
+  "Le locuteur produit ces phrases dans l'atelier comme n'importe quel contenu ;",
+  "scripts/construire_messages_systeme.py les relève par leur concept_id et écrit",
+  "dictionnaires/messages_systeme_<langue>.json, lu par app/services/messages_systeme.py.",
+  "",
+  "Ajouter un message système = une ligne ici. Aucun code à toucher, aucune langue à citer.",
+  "",
+  "Hors de cette table, et pourquoi : les salutations horaires (salutation_matin_001,",
+  "_midi_, _soir_, _nuit_) portent un gabarit {{METEO_CONTEXTUEL}} rempli par un texte",
+  "météo qui n'existe dans aucune langue locale validée. Les faire enregistrer avec un",
+  "trou qu'on ne sait pas boucher donnerait une phrase bancale à l'oreille."
+ ],
+ "roles": {
+  "_SYSTEME_REPLI": "generic_fallback_001",
+  "_SYSTEME_SALUTATION": "generic_salutation_001",
+  "_SYSTEME_HORS_SUJET": "generic_hors_sujet_001"
+ }
+}

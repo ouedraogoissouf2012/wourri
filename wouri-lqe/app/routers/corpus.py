@@ -3,8 +3,10 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from app.data.language_registry import is_known
 from app.routers.session import current_user, require_role
 from app.services import assignments, workflow
+from app.services.auth import session_has
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +18,22 @@ class PromoteBody(BaseModel):
 
 
 @router.get("")
-def get_corpus(user: dict = Depends(current_user)):
+def get_corpus(language: str | None = None, user: dict = Depends(current_user)):
+    """Corpus servi de la langue de session.
+
+    `language` lit celui d'une AUTRE langue et est reserve aux admins, comme
+    `/dictation/export` et `/assignments/missing`. Sans ce parametre le
+    comportement ne change pas : un locuteur reste enferme dans sa langue
+    (isolation inter-locuteurs, ADR-0034). C'est ce que `adc.admin` (langue `*`)
+    doit passer pour construire les messages systeme d'une langue (ADR-0049) :
+    sans lui il ne verrait rien, sa session n'etant liee a aucune langue."""
     lang = user["lang"]
+    if language is not None:
+        if not session_has(user, "admin"):
+            raise HTTPException(status_code=403, detail="forbidden")
+        lang = language.strip().lower()
+        if not is_known(lang):
+            raise HTTPException(status_code=400, detail="unknown_language")
     rows = workflow.list_corpus(language=lang)
     return {
         "language": lang,
