@@ -97,13 +97,53 @@ def nlu_file(keywords: dict[str, list[str]], labels_fr: dict, statut: str) -> di
     }
 
 
-def corpus_entries(rows, labels, pairs, keep_alignement, textes=None) -> list[dict]:
+def _index_reponse(pid: str) -> int | None:
+    """Indice de la réponse d'origine, lu dans l'identifiant `paire:<q>:<a>`."""
+    parts = pid.split(":")
+    return int(parts[2]) if len(parts) == 3 and parts[2].isdigit() else None
+
+
+def separer_reenregistrements(rows, textes) -> tuple[list[dict], dict[str, str]]:
+    """Sépare les lignes de la dictée des réenregistrements de réponses corrigées.
+
+    Une réponse corrigée dans l'atelier est réenregistrée en dictée : la ligne porte mot
+    pour mot le texte corrigé. Ce n'est pas une réponse de plus à apparier — la compter
+    comme telle donne plus de réponses que de questions dans la filière et l'appariement
+    s'arrête (`boot.align`, « alignement impossible »). C'est la voix à servir.
+
+    La réponse d'origine porte parfois déjà le texte accepté (le locuteur n'a corrigé que
+    la question) : son indice est inscrit dans l'identifiant de paire, ce qui la distingue
+    d'un réenregistrement.
+
+    Retourne (lignes de la dictée, dans l'ordre ; {réponse corrigée: fichier audio}).
+    """
+    corrigees, origines = {}, set()
+    for pid, t in textes.items():
+        reponse = (t.get("reponse_bci") or "").strip()
+        if reponse:
+            corrigees[reponse] = pid
+        i = _index_reponse(pid)
+        if i is not None:
+            origines.add(i)
+    dictee, voix = [], {}
+    for i, row in enumerate(rows):
+        texte = (row.get("transcription") or "").strip()
+        if not boot.is_question(row) and i not in origines and texte in corrigees:
+            voix[texte] = row["file_name"]
+            continue
+        dictee.append(row)
+    return dictee, voix
+
+
+def corpus_entries(rows, labels, pairs, keep_alignement, textes=None,
+                   reenregistrements=None) -> list[dict]:
     """Une entrée par paire gardée : position toujours, alignement si `keep_alignement(id)`.
 
     `textes` ({id: textes acceptés}, voir `accepted_pairs`) : la question et la réponse
     corrigées par le locuteur remplacent celles de la dictée. Si la réponse baoulé a changé,
-    l'enregistrement de la dictée ne la dit plus : pas d'audio (réponse en texte) et
-    `audio_a_reenregistrer` pour la liste à rendre au locuteur."""
+    l'enregistrement de la dictée ne la dit plus : on sert le réenregistrement quand
+    `reenregistrements` en donne un (voir `separer_reenregistrements`), sinon la réponse
+    part en texte seul avec `audio_a_reenregistrer`, pour la liste à rendre au locuteur."""
     out = []
     for p in pairs:
         if p["a"] is None:
@@ -124,7 +164,11 @@ def corpus_entries(rows, labels, pairs, keep_alignement, textes=None) -> list[di
         if corrige:
             entry.update({k: v.strip() for k, v in corrige.items() if v and v.strip()})
             if entry["reponse_bci"] != a["transcription"].strip():
-                entry["audio_reponse"], entry["audio_a_reenregistrer"] = None, True
+                refait = (reenregistrements or {}).get(entry["reponse_bci"])
+                if refait:
+                    entry["audio_reponse"] = refait
+                else:
+                    entry["audio_reponse"], entry["audio_a_reenregistrer"] = None, True
         out.append(entry)
     return out
 
@@ -170,7 +214,10 @@ def main(argv=None):
     ap.add_argument("--provisoire", action="store_true", help="candidats de l'amorçage (jamais déployé)")
     ap.add_argument("--demo", action="store_true",
                     help="démo terrain (décision du valideur 2026-10-22) : mots-clés de l'amorçage, "
-                         "seulement les paires reliées par position ; remplacé par la version validée")
+                         "seulement les paires reliées par position ; remplacé par la version validée. "
+                         "Sur un export qui contient des réenregistrements de réponses corrigées, "
+                         "passer aussi --paires : sans eux ils comptent comme des réponses et "
+                         "l'appariement s'arrête")
     ap.add_argument("--mots-cles", help="JSON de /tasks/validations?kind=mot_cle (atelier)")
     ap.add_argument("--paires", help="JSON de /tasks/validations?kind=paire_qr (atelier)")
     ap.add_argument("--relecture", default=str(DICTIONNAIRES / "relecture_mots_cles_bci.json"),
@@ -183,9 +230,20 @@ def main(argv=None):
 
     from app.services.nlu.nlu_service import NLUService, build_bci_config
 
+    load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
     rows = boot.read_export(args.export)
     base = json.loads(boot.CONCEPTS_FR.read_text(encoding="utf-8"))
     labels_fr = {c: v.get("label_fr", c) for c, v in base["concepts"].items()}
+
+    # Les réponses corrigées ont été réenregistrées en dictée : ces lignes sont la voix à
+    # servir, pas des réponses à apparier — sinon la filière déborde et l'appariement cale.
+    textes = accepted_pairs(load(args.paires)) if args.paires else None
+    reenregistrements = {}
+    if textes is not None:
+        rows, reenregistrements = separer_reenregistrements(rows, textes)
+        print("Réenregistrements de réponses corrigées, mis de côté avant l'appariement : "
+              f"{len(reenregistrements)}")
+
     labels = boot.label_rows(rows, NLUService(str(boot.CONCEPTS_FR), min_confidence=0.0))
     pairs = boot.pair_qa(rows, boot._st_similarity())
 
@@ -201,18 +259,17 @@ def main(argv=None):
         else:
             statut, keep = "provisoire", (lambda pid: True)
     else:
-        load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
         relecture = load(args.relecture)
         keywords = keywords_from_validations(load(args.mots_cles), relecture)
         par = Counter(m.get("decision") for m in relecture.get("mots", []))
         print(f"Relecture ({relecture['date']}) : {len(exclus_par_relecture(relecture))} mot(s) accepté(s) "
               f"écarté(s) de leur concept : {par['hors_concept']} hors concept, "
               f"{par['a_confirmer']} en attente de confirmation du locuteur")
-        textes = accepted_pairs(load(args.paires))
         statut, keep = "valide", (lambda pid: pid in textes)
 
     nlu_json = nlu_file(keywords, labels_fr, statut)
-    corpus = corpus_entries(rows, labels, pairs, keep, textes if statut == "valide" else None)
+    corpus = corpus_entries(rows, labels, pairs, keep, textes if statut == "valide" else None,
+                            reenregistrements)
     out = Path(args.out)
     (out / "nlu_concepts_bci.json").write_text(json.dumps(nlu_json, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     (out / "corpus_ivr_bci.json").write_text(json.dumps(
