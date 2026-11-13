@@ -90,7 +90,11 @@ def test_route_reexamen_reservee_a_l_admin(seeded, monkeypatch):
     app = FastAPI()
     app.include_router(tasks.router)
 
-    # require_role("admin") passe par current_user : le dict doit porter les roles
+    # require_role("admin") passe par current_user : le dict doit porter les roles.
+    # ATTENTION : cette session est FABRIQUEE. Un compte admin reel porte toujours la
+    # langue `*` (users.create_user l'impose), jamais `bci` — c'est pourquoi ce test
+    # passait alors que la route etait inatteignable en production. Le cas reel est
+    # couvert par tests/test_tasks_langue_admin.py, qui se connecte pour de vrai.
     app.dependency_overrides[tasks.current_user] = lambda: {
         "u": "admin", "lang": "bci", "roles": ["admin", "review"],
     }
