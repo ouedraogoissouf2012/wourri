@@ -1,5 +1,5 @@
 {
- "version": "bci-2026-11-02",
+ "version": "bci-2026-11-13",
  "statut": "valide",
  "entries": [
   {
@@ -839,9 +839,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/95c64994ad2e43198f329be434144ca8.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q61",
@@ -854,9 +853,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/cad34606304a432f8c434c727ed32606.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q62",
@@ -869,9 +867,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/3bc5e29e4a5440ff8cbc550286290ee9.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q63",
@@ -884,9 +881,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/ef46cf34c2e64ca4ba7e6ed1b1692270.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q64",
@@ -899,9 +895,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/0babc8fb534943e09fb9b6ff6038e721.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q67",
@@ -914,9 +909,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/1344789a20e6429ca86e4a7149db9122.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q68",
@@ -929,9 +923,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/2ccea588bf1b45d1b18d7b6dd4a62562.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q69",
@@ -944,9 +937,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/706b04339cba4239adf2e0f4f409f824.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q70",
@@ -959,9 +951,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/7119b3b44bbd401587d0563487bdd75c.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q71",
@@ -974,9 +965,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/d2221cea972c40da9374d260e01d11d0.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q72",
@@ -989,9 +979,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/9400582183d14838be4a8dc6675fc241.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q73",
@@ -1004,9 +993,8 @@
    "cultures": [
     "CULTURE_ANACARDE"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/0b72649aa5b245c084ac2949fa2c5e86.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q74",
@@ -1397,9 +1385,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/0f4b2c3605394cf9ac8fa64e83a0e072.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q104",
@@ -1412,9 +1399,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/c07a8e028600414da6567f8a884cbce2.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q105",
@@ -1427,9 +1413,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/cf19ee5f54d64d61af65b639c62af458.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q106",
@@ -1442,9 +1427,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/ed76d5b574384851ba834d1b2a72a1c9.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q107",
@@ -1457,9 +1441,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/7513bc2a41dd4fb2a4da862a81c8a6da.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q108",
@@ -1472,9 +1455,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/234c3917c5034810bbb43206a2c71c95.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q109",
@@ -1487,9 +1469,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/6613ce9e085b43f9833054faffbf3e20.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q110",
@@ -1502,9 +1483,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/d61e92c51e4948219a504b51cc290590.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q111",
@@ -1517,9 +1497,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/e40d83c166bd4c9fbaec50eac9ede378.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q112",
@@ -1532,9 +1511,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/b254b60ea9bc4c17aa592bfc3add9e81.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q113",
@@ -1547,9 +1525,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/e5fbdcfe857f441391db1d423cff3c09.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q114",
@@ -1562,9 +1539,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/602a3caaff4542eaa85e9ac4bf01e45c.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q115",
@@ -1577,9 +1553,8 @@
    "cultures": [
     "CULTURE_MAIS"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/1f850ef89f3a412fab74867fa262b934.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q116",
@@ -1592,9 +1567,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/246cab8543414764bbfcba7fb31cce10.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q117",
@@ -1607,9 +1581,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/07f917385d384b4bb244dac699f3f2b1.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q118",
@@ -1622,9 +1595,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/6dcf8374b8164ee9a68421c972ac40b4.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q119",
@@ -1637,9 +1609,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/5e473fa73d1e4b1c8281fcf718877b58.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q120",
@@ -1652,9 +1623,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/e2176384be684c9ba9784c5960abba61.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q121",
@@ -1667,9 +1637,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/7e7c64cdc1ff4eb1b7921fcfa39df452.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q122",
@@ -1682,9 +1651,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/b0d1a6dcde214f7a83df08f9468a6cae.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q123",
@@ -1697,9 +1665,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/0e0aa1f05b25441db1c58936ff01f083.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q124",
@@ -1712,9 +1679,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/96567fcabc194ae587b68f73aa6a9016.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q125",
@@ -1727,9 +1693,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/0d5fabffa62046de88a449c37029f4ea.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q126",
@@ -1742,9 +1707,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/75d462b7eed7442585c8472ffae3c37c.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q127",
@@ -1757,9 +1721,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/81ece0d089c9482b913b4f1faf2d3d4a.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q128",
@@ -1772,9 +1735,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/d1b7800aabdd443e93efb1c12f63d0c9.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q129",
@@ -1787,9 +1749,8 @@
    "cultures": [
     "CULTURE_MANIOC"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/aebc583e87fc46cbaf9fcfa60af817bc.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q131",
@@ -1802,9 +1763,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/8ec6aac3685f4262873749bd99ef5450.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q132",
@@ -1817,9 +1777,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/ce34284728334c8694c0d58c2d2566d6.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q133",
@@ -1832,9 +1791,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/0a99100a766a402db14f63e377567731.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q134",
@@ -1847,9 +1805,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/4bd6f0db17b245f28a04e75492d22a08.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q135",
@@ -1862,9 +1819,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/00b41a1056d846968e00c28922352e4c.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q137",
@@ -1877,9 +1833,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/533aa36875dd4951b3bf77d9b833f6cd.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q138",
@@ -1892,9 +1847,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/9034708c375f4d03a0a1ab2a087c6fea.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q139",
@@ -1907,9 +1861,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/b30943644e96456985bbe3e9eb7d9a39.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q140",
@@ -1922,9 +1875,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/3a2772f1be2d46cca0eef4216c2ba6b1.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q141",
@@ -1937,9 +1889,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/c4041e412c024d6881a7c11e70bd1cef.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q142",
@@ -1952,9 +1903,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/8e5d2876eaa54cb9ae694b3baaa77322.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q143",
@@ -1967,9 +1917,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/5228d70178394bef87dac852066d1bda.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q144",
@@ -1982,9 +1931,8 @@
    "cultures": [
     "CULTURE_IGNAME"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/884805cc09b4481d9c74bf19a5900a3c.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q146",
@@ -2305,9 +2253,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/399d57ca4e7545139c81ecb681f9a636.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q169",
@@ -2320,9 +2267,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/2063b30d84e040fc950a7c4ef93ca108.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q170",
@@ -2335,9 +2281,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/c68aa3db128e4258b36eb22c98d41954.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q171",
@@ -2350,9 +2295,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/7119dbaa22604dac92e9f7d9c9579581.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q172",
@@ -2365,9 +2309,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/144c74ed782e4847896ce1b098552b8c.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q174",
@@ -2380,9 +2323,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/080e2bb1e93c45ff9dbeecd690060d25.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q175",
@@ -2395,9 +2337,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/c5856f83e3824df6a9f7a6c404c7dc6a.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q176",
@@ -2410,9 +2351,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/1c201700290241dfa3db58d42f0e2346.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q178",
@@ -2425,9 +2365,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/c674a6059f6b4023b045aa1bd8e7835e.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q179",
@@ -2440,9 +2379,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/0f2b9e864d9647e7b06eb4e41ed6c092.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q180",
@@ -2455,9 +2393,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/09fb03c323db4491978ba7c3958155fa.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q182",
@@ -2470,9 +2407,8 @@
    "cultures": [
     "CULTURE_GOMBO"
    ],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/4181c6c1fbd94b0eb8376cb64eef169f.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q183",
@@ -2483,9 +2419,8 @@
    "reponse_fr": "Il faut planter en début de saison des pluies. Le sol doit être bien drainé, idéalement sableux.",
    "intent": "QUESTION_GENERALE",
    "cultures": [],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/ea938c3aa96a4d1c83d2d495f220d0f9.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q184",
@@ -2496,9 +2431,8 @@
    "reponse_fr": "Une densité d'environ 140 à 160 plants par hectare est courante. L'espacement habituel est de 8 à 9 mètres.",
    "intent": "QUESTION_GENERALE",
    "cultures": [],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/0088936dcbb5437a9b2b3d8872113856.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q185",
@@ -2509,9 +2443,8 @@
    "reponse_fr": "Les feuilles peuvent jaunir ou se dessécher anormalement. Il faut aussi surveiller l'état du cœur du cocotier.",
    "intent": "QUESTION_GENERALE",
    "cultures": [],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/75964ab22fb2404ca083d5bbffbf6774.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q187",
@@ -2522,9 +2455,8 @@
    "reponse_fr": "La quantité dépend de l'âge de l'arbre et du type de sol. Un technicien agricole peut recommander la dose adaptée.",
    "intent": "QUESTION_GENERALE",
    "cultures": [],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/490bbc7a36094f1384cd490eba573604.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q188",
@@ -2535,9 +2467,8 @@
    "reponse_fr": "La première récolte arrive généralement 5 à 6 ans après la plantation. La production augmente ensuite avec l'âge de l'arbre.",
    "intent": "QUESTION_GENERALE",
    "cultures": [],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/917952a26f034782a2ea509b3da46552.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q189",
@@ -2548,9 +2479,8 @@
    "reponse_fr": "Une plantation en quinconce et des brise-vents naturels peuvent aider. Un bon ancrage racinaire dès la jeunesse renforce aussi la résistance.",
    "intent": "QUESTION_GENERALE",
    "cultures": [],
-   "audio_reponse": null,
-   "appariement": "alignement",
-   "audio_a_reenregistrer": true
+   "audio_reponse": "audio/17e25ae636784317916d2f7cc049b6d1.webm",
+   "appariement": "alignement"
   },
   {
    "id": "bci-q191",

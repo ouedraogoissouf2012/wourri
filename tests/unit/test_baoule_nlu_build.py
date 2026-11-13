@@ -116,3 +116,111 @@ def test_bruiter_reproductible_et_au_taux():
     b = build.bruiter(texte, 0.2, random.Random(1), "abɛɔ")
     assert a == b and a != texte
     assert build.bruiter(texte, 0.0, random.Random(1), "abɛɔ") == texte
+
+
+# --------------------------------------------- réponses corrigées puis réenregistrées
+#
+# Le locuteur corrige une réponse dans l'atelier, puis la réenregistre en dictée. La
+# ligne du réenregistrement porte le texte corrigé — mais ce n'est PAS une réponse de
+# plus à apparier : la compter comme telle donne plus de réponses que de questions dans
+# la filière et l'appariement s'arrête (« alignement impossible »).
+
+
+def _rows_une_paire(reponse_corrigee="R0 corrigée", fichier="audio/neuf.webm"):
+    """Une filière : la question, la réponse d'origine, puis son réenregistrement."""
+    return [
+        {"transcription": "Q0", "text_fr": "Quand planter ?", "file_name": "audio/q0.webm"},
+        {"transcription": "R0", "text_fr": "En saison.", "file_name": "audio/r0.webm"},
+        {"transcription": reponse_corrigee, "text_fr": "En saison.", "file_name": fichier},
+    ]
+
+
+def _textes_une_paire(question="Q0", reponse="R0 corrigée", pid="paire:0:1"):
+    return {pid: {"question_bci": question, "question_fr": "Quand planter ?",
+                  "reponse_bci": reponse, "reponse_fr": "En saison."}}
+
+
+def test_un_reenregistrement_est_mis_de_cote_avant_appariement():
+    dictee, voix = build.separer_reenregistrements(_rows_une_paire(), _textes_une_paire())
+    assert [r["transcription"] for r in dictee] == ["Q0", "R0"]
+    assert voix == {"R0 corrigée": "audio/neuf.webm"}
+
+
+def test_l_ordre_est_conserve_donc_les_identifiants_ne_bougent_pas():
+    """Les réenregistrements arrivent en fin d'export : les retirer ne décale aucun
+    indice, donc aucun `bci-q…` déjà servi ne change d'identité."""
+    rows = _rows_une_paire() + [
+        {"transcription": "Q1", "text_fr": "Comment récolter ?", "file_name": "audio/q1.webm"},
+        {"transcription": "R1", "text_fr": "À maturité.", "file_name": "audio/r1.webm"},
+    ]
+    dictee, _ = build.separer_reenregistrements(rows, _textes_une_paire())
+    assert dictee == [rows[0], rows[1], rows[3], rows[4]]
+
+
+def test_la_reponse_d_origine_n_est_jamais_prise_pour_un_reenregistrement():
+    """Quand le locuteur n'a corrigé que la question, la réponse acceptée est mot pour
+    mot celle de la dictée. Mettre sa ligne de côté la ferait disparaître du corpus :
+    la ligne d'origine est reconnue par son indice, inscrit dans l'identifiant de paire."""
+    rows = _rows_une_paire()[:2]
+    textes = _textes_une_paire(question="Q0 corrigée", reponse="R0")
+    dictee, voix = build.separer_reenregistrements(rows, textes)
+    assert dictee == rows and voix == {}
+
+
+def test_une_question_n_est_jamais_mise_de_cote():
+    rows = [{"transcription": "R0 corrigée", "text_fr": "Est-ce la saison ?", "file_name": "audio/x.webm"}]
+    rows += _rows_une_paire()[:2]
+    dictee, voix = build.separer_reenregistrements(rows, _textes_une_paire(pid="paire:1:2"))
+    assert dictee == rows and voix == {}
+
+
+def test_un_identifiant_de_paire_inattendu_ne_bloque_pas_la_construction():
+    dictee, voix = build.separer_reenregistrements(
+        _rows_une_paire(), {"inattendu": {"reponse_bci": "R0 corrigée"}})
+    assert [r["transcription"] for r in dictee] == ["Q0", "R0"]
+    assert voix == {"R0 corrigée": "audio/neuf.webm"}
+
+
+def test_une_reponse_vide_ou_absente_ne_met_rien_de_cote():
+    for reponse in ("", "   ", None):
+        dictee, voix = build.separer_reenregistrements(
+            _rows_une_paire(), {"paire:0:1": {"reponse_bci": reponse}})
+        assert len(dictee) == 3 and voix == {}
+
+
+# ----------------------------------------------- la voix du réenregistrement est servie
+
+_LABELS = [{"intent": "QUESTION_SAISON_PLANTATION", "concepts": [], "cultures_filiere": ["CULTURE_CACAO"]}, {}]
+_PAIRS = [{"filiere": "CACAO", "q": 0, "a": 1, "sim": 0.4, "method": "alignement"}]
+
+
+def test_une_reponse_corrigee_retrouve_la_voix_du_reenregistrement():
+    """Le cœur du correctif : sans la table des réenregistrements, le travail du
+    locuteur restait invisible — la réponse était servie en texte seul."""
+    rows = _rows_une_paire()[:2]
+    textes = _textes_une_paire()
+    entree, = build.corpus_entries(rows, _LABELS, _PAIRS, lambda pid: pid in textes, textes,
+                                   {"R0 corrigée": "audio/neuf.webm"})
+    assert entree["reponse_bci"] == "R0 corrigée"
+    assert entree["audio_reponse"] == "audio/neuf.webm"
+    assert "audio_a_reenregistrer" not in entree
+
+
+def test_une_reponse_corrigee_sans_reenregistrement_reste_a_refaire():
+    """Le repli existant ne change pas : pas de voix inventée, et la réponse part dans
+    la liste à rendre au locuteur."""
+    rows = _rows_une_paire()[:2]
+    textes = _textes_une_paire()
+    entree, = build.corpus_entries(rows, _LABELS, _PAIRS, lambda pid: pid in textes, textes,
+                                   {"une autre réponse": "audio/pas-la-bonne.webm"})
+    assert entree["audio_reponse"] is None and entree["audio_a_reenregistrer"] is True
+
+
+def test_une_reponse_inchangee_garde_la_voix_de_la_dictee():
+    """La table des réenregistrements ne doit pas détourner une réponse non corrigée."""
+    rows = _rows_une_paire()[:2]
+    textes = _textes_une_paire(reponse=" R0 ")
+    entree, = build.corpus_entries(rows, _LABELS, _PAIRS, lambda pid: pid in textes, textes,
+                                   {"R0": "audio/jamais.webm"})
+    assert entree["audio_reponse"] == "audio/r0.webm"
+    assert "audio_a_reenregistrer" not in entree

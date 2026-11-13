@@ -1,5 +1,5 @@
 {
- "version": "bci-2026-11-02",
+ "version": "bci-2026-11-13",
  "statut": "valide",
  "description": "NLU baoulé (ADR-0045) : mots-clés par concept ; intents = nlu_concepts.json",
  "concepts": {
