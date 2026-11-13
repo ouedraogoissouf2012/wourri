@@ -1,10 +1,30 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from app.data.language_registry import is_known
 from app.routers.session import current_user, require_role
 from app.services import workflow
+from app.services.auth import session_has
 
 router = APIRouter(prefix="/tasks")
+
+
+def _langue(user: dict, demandee: str | None) -> str:
+    """Langue visée : celle de la session, ou celle qu'un **admin** nomme (ADR-0034).
+
+    Un compte admin porte toujours la langue `*` (`users.create_user` l'impose) : sans
+    ce paramètre il ne verrait aucune fiche et ne pourrait reposer aucune question, le
+    dépôt filtrant en égalité stricte. Le paramètre ne perce pas l'isolation entre
+    locuteurs — un compte sans le rôle `admin` est refusé, même pour sa propre langue.
+    """
+    if demandee is None:
+        return user["lang"]
+    if not session_has(user, "admin"):
+        raise HTTPException(status_code=403, detail="forbidden")
+    lang = demandee.strip().lower()
+    if not is_known(lang):
+        raise HTTPException(status_code=400, detail="unknown_language")
+    return lang
 
 
 class DecisionBody(BaseModel):
@@ -15,6 +35,8 @@ class DecisionBody(BaseModel):
 class ReexamenBody(BaseModel):
     id: str = Field(min_length=1)
     motif: str = Field(min_length=1)
+    # Admin seulement : la langue visée, puisque sa session porte `*` (voir `_langue`).
+    language: str | None = None
 
 
 class EditBody(BaseModel):
@@ -27,8 +49,8 @@ class EditBody(BaseModel):
 
 
 @router.get("")
-def get_tasks(user: dict = Depends(current_user)):
-    lang = user["lang"]
+def get_tasks(language: str | None = None, user: dict = Depends(current_user)):
+    lang = _langue(user, language)
     return {
         "language": lang,
         "bronze": workflow.list_tasks(language=lang, status="bronze"),
@@ -72,9 +94,12 @@ def post_reprendre(body: ReprendreBody, user: dict = Depends(require_role("revie
 @router.post("/reexamen")
 def post_reexamen(body: ReexamenBody, user: dict = Depends(require_role("admin"))):
     """Repose une question au locuteur : la fiche redevient « a valider » avec le motif
-    affiche (ADR-0047). Reserve a l'admin — c'est un relecteur qui repose la question."""
+    affiche (ADR-0047). Reserve a l'admin — c'est un relecteur qui repose la question.
+
+    L'admin DOIT nommer la langue (`language`) : sa session porte `*`, qui ne vise
+    aucune fiche. Sans ce champ l'appel ne peut que renvoyer 404 — voir `_langue`."""
     result = workflow.remettre_en_question(
-        body.id, language=user["lang"], motif=body.motif,
+        body.id, language=_langue(user, body.language), motif=body.motif,
     )
     if not result.get("ok"):
         code = 404 if result.get("reason") == "not_found" else 400
