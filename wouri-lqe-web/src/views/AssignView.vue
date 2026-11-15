@@ -1,8 +1,10 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "../api.js";
 import NavBar from "../components/NavBar.vue";
+import Pagination from "../components/Pagination.vue";
+import { usePagination } from "../composables/usePagination.js";
 
 const router = useRouter();
 const roles = ref([]);
@@ -44,6 +46,14 @@ const conceptsAffiches = computed(() => {
     || normaliser(c.ref_dyu).includes(q));
 });
 
+// La liste est paginee, mais la SELECTION porte sur tout le filtre : « Tout cocher »
+// prend les 45 concepts trouves, pas les 20 de la page affichee.
+const pagination = usePagination(conceptsAffiches);
+
+// Une nouvelle recherche repart de la premiere page : rester en page 3 d'un filtre
+// qui n'a qu'une page afficherait une liste vide.
+watch(recherche, () => pagination.reinitialiser());
+
 onMounted(async () => {
   try {
     const me = await api("/auth/me");
@@ -71,6 +81,7 @@ async function loadMissing() {
   selected.value = new Set();
   // Une recherche héritée d'une autre langue masquerait des concepts sans raison.
   recherche.value = "";
+  pagination.reinitialiser();
   concepts.value = [];
   if (!lang.value) return;
   loading.value = true;
@@ -170,7 +181,7 @@ async function assign() {
     </div>
 
     <div class="mt-3 space-y-2">
-      <label v-for="c in conceptsAffiches" :key="c.concept_id"
+      <label v-for="c in pagination.tranche.value" :key="c.concept_id"
         class="flex items-start gap-2 border rounded p-3 bg-white cursor-pointer">
         <input type="checkbox" class="mt-1" :checked="selected.has(c.concept_id)"
           @change="toggle(c.concept_id)" />
@@ -190,6 +201,10 @@ async function assign() {
         Aucun concept ne correspond à « {{ recherche }} ».
       </p>
     </div>
+
+    <Pagination :page="pagination.page.value" :pages="pagination.pages.value"
+      :premier="pagination.premier.value" :dernier="pagination.dernier.value"
+      :total="pagination.total.value" @aller="pagination.allerA" />
 
     <button v-if="concepts.length" type="button"
       class="mt-4 bg-wouri-700 text-white px-3 py-1 rounded" @click="assign">

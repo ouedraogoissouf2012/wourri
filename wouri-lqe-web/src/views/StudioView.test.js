@@ -156,3 +156,90 @@ describe("StudioView — motif de réexamen (ADR-0047)", () => {
     expect(w.find("[data-motif]").exists()).toBe(false);
   });
 });
+
+
+// Pagination des listes de l'atelier.
+//
+// « Mes décisions » compte 369 fiches en baoule : les afficher d'un bloc rend
+// l'ecran inutilisable. Ce qui casse en silence ici : rester sur une page devenue
+// vide apres avoir traite des fiches, et croire qu'il n'y a plus rien a faire.
+describe("StudioView — pagination", () => {
+  const fiches = (n, prefixe, statut) => Array.from({ length: n }, (_, i) => ({
+    id: String(i + 1),
+    text_local: prefixe + " " + (i + 1),
+    text_fr: "fr " + (i + 1),
+    status: statut,
+    kind: "contenu",
+    meta: {},
+  }));
+
+  const barre = (w) => w.find("[data-pagination]");
+  const visible = (w) => w.findAll("section").filter((s) => !s.attributes("style"));
+  const cartes = (w) => visible(w).flatMap((s) => s.findAll("article")).length;
+
+  async function ouvrir(w, libelle) {
+    const onglet = w.findAll("nav button").find((b) => b.text().startsWith(libelle));
+    if (!onglet) throw new Error("onglet « " + libelle + " » absent");
+    await onglet.trigger("click");
+    await flushPromises();
+  }
+
+  async function atelier(etat) {
+    routes(etat);
+    const w = mount(StudioView);
+    await flushPromises();
+    return w;
+  }
+
+  it("« Mes décisions » n'affiche que 20 fiches par page", async () => {
+    const w = await atelier({ decided: fiches(45, "decidee", "admin_accepted") });
+    await ouvrir(w, "Mes décisions");
+
+    expect(cartes(w)).toBe(20);
+    expect(w.text()).toContain("decidee 45"); // le plus recent en haut
+    expect(w.text()).not.toContain("decidee 25");
+    expect(barre(w).text()).toContain("1–20 sur 45");
+  });
+
+  it("« Suivant » montre la tranche suivante des décisions", async () => {
+    const w = await atelier({ decided: fiches(45, "decidee", "admin_accepted") });
+    await ouvrir(w, "Mes décisions");
+
+    await w.find("[data-pagination] [data-suiv]").trigger("click");
+    await flushPromises();
+
+    expect(barre(w).text()).toContain("21–40 sur 45");
+    expect(w.text()).toContain("decidee 25");
+  });
+
+  it("aucune barre quand la liste tient sur une page", async () => {
+    const w = await atelier({ decided: fiches(5, "decidee", "admin_accepted") });
+    await ouvrir(w, "Mes décisions");
+
+    expect(barre(w).exists()).toBe(false);
+  });
+
+  it("« À accepter » est paginee elle aussi", async () => {
+    const w = await atelier({ bronze: fiches(30, "a-valider", "bronze") });
+    await ouvrir(w, "À accepter");
+
+    expect(cartes(w)).toBe(20);
+    expect(barre(w).text()).toContain("1–20 sur 30");
+  });
+
+  it("changer d'onglet repart de la premiere page", async () => {
+    const w = await atelier({
+      decided: fiches(45, "decidee", "admin_accepted"),
+      bronze: fiches(45, "a-valider", "bronze"),
+    });
+    await ouvrir(w, "Mes décisions");
+    await w.find("[data-pagination] [data-suiv]").trigger("click");
+    await flushPromises();
+    expect(barre(w).text()).toContain("21–40 sur 45");
+
+    await ouvrir(w, "À accepter");
+    await ouvrir(w, "Mes décisions");
+
+    expect(barre(w).text()).toContain("1–20 sur 45");
+  });
+});
