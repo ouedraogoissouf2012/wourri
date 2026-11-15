@@ -236,3 +236,132 @@ describe("AssignView — catalogue des concepts NLU (ADR-0047)", () => {
     expect(w.findAll("select")[0].attributes("data-langue")).toBeDefined();
   });
 });
+
+// Recherche dans la liste des concepts a assigner.
+//
+// Pourquoi : le catalogue « Phrases du corpus » compte 183 concepts manquants en
+// baoule — 29 pages a l'impression. Trouver `generic_fallback_001` a l'oeil y est
+// impraticable. Ce qui casse en silence ici : une selection perdue parce qu'on a
+// filtre, ou un « Tout cocher » qui coche les 183 alors que 2 sont affiches.
+describe("AssignView — recherche", () => {
+  function champ(w) {
+    const input = w.find('[data-recherche]');
+    if (!input.exists()) throw new Error("champ de recherche absent");
+    return input;
+  }
+  async function chercher(w, texte) {
+    await champ(w).setValue(texte);
+    await flushPromises();
+  }
+  function lignes(w) {
+    return w.findAll('input[type="checkbox"]').length;
+  }
+
+  it("filtre sur le texte francais", async () => {
+    const w = await mountAdmin();
+
+    await chercher(w, "recolter");
+
+    expect(lignes(w)).toBe(1);
+    expect(w.text()).toContain("Quand recolter le riz ?");
+    expect(w.text()).not.toContain("Quand planter le riz ?");
+  });
+
+  it("filtre sur l'identifiant du concept", async () => {
+    // Le cas reel : retrouver generic_fallback_001 parmi 183.
+    const w = await mountAdmin();
+
+    await chercher(w, "engrais_dose");
+
+    expect(lignes(w)).toBe(1);
+    expect(w.text()).toContain("Quelle dose d'engrais ?");
+  });
+
+  it("filtre sur la reference dioula", async () => {
+    const w = await mountAdmin();
+
+    await chercher(w, "filɛli");
+
+    expect(lignes(w)).toBe(1);
+    expect(w.text()).toContain("Quand recolter le riz ?");
+  });
+
+  it("ignore la casse et les accents", async () => {
+    const w = await mountAdmin();
+
+    await chercher(w, "RÉCOLTER");
+
+    expect(lignes(w)).toBe(1);
+    expect(w.text()).toContain("Quand recolter le riz ?");
+  });
+
+  it("garde la selection faite avant le filtre, meme masquee", async () => {
+    // Sinon on croit avoir perdu son lot, ou on l'envoie incomplet.
+    const w = await mountAdmin();
+    await w.findAll('input[type="checkbox"]')[0].setValue(true);
+    expect(w.text()).toContain("1 sélectionné(s)");
+
+    await chercher(w, "engrais_dose");
+
+    expect(lignes(w)).toBe(1);
+    expect(w.text()).toContain("1 sélectionné(s)");
+    expect(btn(w, "Assigner").text()).toContain("Assigner 1 concept(s)");
+  });
+
+  it("« Tout cocher » ne coche que les concepts AFFICHES", async () => {
+    // Le garde-fou qui compte : sans lui, un filtre sur 2 concepts suivi de
+    // « Tout cocher » en assignerait 183 au locuteur.
+    const w = await mountAdmin();
+
+    await chercher(w, "riz");
+    await btn(w, "Tout cocher").trigger("click");
+
+    expect(w.text()).toContain("2 sélectionné(s)");
+    await btn(w, "Assigner").trigger("click");
+    expect(assignPost().body.concept_ids.sort()).toEqual(
+      ["riz_recolte_001", "riz_saison_001"]);
+  });
+
+  it("« Tout cocher » ajoute aux concepts deja coches ailleurs", async () => {
+    const w = await mountAdmin();
+    await chercher(w, "engrais_dose");
+    await w.findAll('input[type="checkbox"]')[0].setValue(true);
+
+    await chercher(w, "riz");
+    await btn(w, "Tout cocher").trigger("click");
+
+    expect(w.text()).toContain("3 sélectionné(s)");
+  });
+
+  it("annonce qu'aucun concept ne correspond, sans casser la liste", async () => {
+    const w = await mountAdmin();
+
+    await chercher(w, "zzzz-introuvable");
+
+    expect(lignes(w)).toBe(0);
+    expect(w.text()).toContain("Aucun concept ne correspond");
+  });
+
+  it("vider la recherche reaffiche tout", async () => {
+    const w = await mountAdmin();
+    await chercher(w, "riz");
+    expect(lignes(w)).toBe(2);
+
+    await chercher(w, "");
+
+    expect(lignes(w)).toBe(3);
+  });
+
+  it("remet la recherche a zero quand on change de langue cible", async () => {
+    // Un filtre herite d'une autre langue masquerait des concepts sans raison.
+    const w = await mountAdmin();
+    await chercher(w, "riz");
+
+    await w.find("[data-langue]").setValue("bci");
+    await flushPromises();
+
+    expect(champ(w).element.value).toBe("");
+    expect(lignes(w)).toBe(1);
+    expect(w.text()).toContain("Quand semer le mais ?");
+  });
+});

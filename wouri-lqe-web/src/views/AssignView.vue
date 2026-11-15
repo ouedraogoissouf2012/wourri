@@ -17,9 +17,32 @@ const langs = ref([]);
 const lang = ref("");
 const concepts = ref([]);
 const selected = ref(new Set());
+const recherche = ref("");
 const loading = ref(false);
 const msg = ref("");
 const err = ref("");
+
+/** Minuscules sans accents, pour que « mais » trouve « maïs ».
+ *  Les lettres propres aux langues ivoiriennes (ɛ, ɔ, ɲ…) ne sont PAS des
+ *  accents : elles traversent la normalisation intactes et restent cherchables. */
+function normaliser(texte) {
+  return String(texte || "")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+}
+
+/** Les concepts visibles : le catalogue « Phrases du corpus » en compte 183 pour
+ *  le baoulé, impossibles à parcourir à l'œil. La recherche porte sur le texte
+ *  français, l'identifiant et la référence dioula. */
+const conceptsAffiches = computed(() => {
+  const q = normaliser(recherche.value).trim();
+  if (!q) return concepts.value;
+  return concepts.value.filter((c) =>
+    normaliser(c.source_fr).includes(q)
+    || normaliser(c.concept_id).includes(q)
+    || normaliser(c.ref_dyu).includes(q));
+});
 
 onMounted(async () => {
   try {
@@ -46,6 +69,8 @@ async function loadMissing() {
   err.value = "";
   msg.value = "";
   selected.value = new Set();
+  // Une recherche héritée d'une autre langue masquerait des concepts sans raison.
+  recherche.value = "";
   concepts.value = [];
   if (!lang.value) return;
   loading.value = true;
@@ -65,8 +90,14 @@ function toggle(cid) {
   s.has(cid) ? s.delete(cid) : s.add(cid);
   selected.value = s;
 }
+/** Coche ce qui est AFFICHÉ, en gardant ce qui l'était déjà.
+ *  Sans la restriction à l'affiché, un filtre sur deux concepts suivi d'un
+ *  « Tout cocher » en assignerait 183 au locuteur. Sans le cumul, une sélection
+ *  faite sous un filtre précédent serait perdue en silence. */
 function selectAll() {
-  selected.value = new Set(concepts.value.map((c) => c.concept_id));
+  const s = new Set(selected.value);
+  conceptsAffiches.value.forEach((c) => s.add(c.concept_id));
+  selected.value = s;
 }
 function clearAll() {
   selected.value = new Set();
@@ -123,14 +154,23 @@ async function assign() {
       <span v-if="currentLang" class="text-sm text-stone-600">{{ currentLang.missing }} manquant(s)</span>
     </div>
 
+    <div v-if="concepts.length" class="mt-3">
+      <input v-model="recherche" data-recherche type="search"
+        class="w-full border rounded p-2 text-sm"
+        placeholder="Rechercher : texte français, identifiant (ex. generic_fallback) ou dioula" />
+    </div>
+
     <div v-if="concepts.length" class="mt-3 text-sm space-x-3">
       <button type="button" class="underline" @click="selectAll">Tout cocher</button>
       <button type="button" class="underline" @click="clearAll">Tout décocher</button>
       <span class="text-stone-600">{{ selected.size }} sélectionné(s)</span>
+      <span v-if="recherche.trim()" class="text-stone-600">
+        · {{ conceptsAffiches.length }} affiché(s) sur {{ concepts.length }}
+      </span>
     </div>
 
     <div class="mt-3 space-y-2">
-      <label v-for="c in concepts" :key="c.concept_id"
+      <label v-for="c in conceptsAffiches" :key="c.concept_id"
         class="flex items-start gap-2 border rounded p-3 bg-white cursor-pointer">
         <input type="checkbox" class="mt-1" :checked="selected.has(c.concept_id)"
           @change="toggle(c.concept_id)" />
@@ -145,6 +185,9 @@ async function assign() {
       <p v-if="loading" class="text-stone-500 text-sm">Chargement…</p>
       <p v-else-if="!concepts.length" class="text-stone-500 text-sm">
         Aucun concept à assigner (langue à jour ou tout déjà assigné).
+      </p>
+      <p v-else-if="!conceptsAffiches.length" class="text-stone-500 text-sm">
+        Aucun concept ne correspond à « {{ recherche }} ».
       </p>
     </div>
 
