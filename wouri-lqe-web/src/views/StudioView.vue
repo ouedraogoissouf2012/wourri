@@ -1,8 +1,10 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "../api.js";
 import NavBar from "../components/NavBar.vue";
+import Pagination from "../components/Pagination.vue";
+import { usePagination } from "../composables/usePagination.js";
 
 const router = useRouter();
 const me = ref({ user: "", language: "", roles: [] });
@@ -40,6 +42,19 @@ const bronzeShown = computed(() => newestFirst(bronze.value));
 const promotable = computed(() => newestFirst(accepted.value.filter((r) => kindOf(r) === "contenu")));
 const corpusShown = computed(() => newestFirst(corpus.value));
 const decidedShown = computed(() => newestFirst(decided.value));
+// « Mes décisions » dépasse 350 fiches chez le locuteur baoulé : chaque liste est
+// paginée. Les compteurs des onglets, eux, restent sur le TOTAL — c'est le nombre
+// de fiches qui reste à traiter qui intéresse le locuteur, pas celui de la page.
+const pBronze = usePagination(bronzeShown);
+const pDecided = usePagination(decidedShown);
+const pPromo = usePagination(promotable);
+const pCorpus = usePagination(corpusShown);
+
+// Changer d'onglet est un changement de contexte : on repart de la première page.
+watch(tab, () => {
+  [pBronze, pDecided, pPromo, pCorpus].forEach((p) => p.reinitialiser());
+});
+
 const ETAT = { admin_accepted: "Accepté", admin_rejected: "Rejeté", bronze: "Corrigé, pas encore décidé" };
 const etatOf = (r) => ETAT[r.status] || r.status;
 const origineOf = (r) => (r.meta || {}).texte_origine || null;
@@ -214,7 +229,7 @@ async function promote(id) {
     </section>
 
     <section v-show="tab==='bronze' && can('review')" class="mt-4 space-y-3">
-      <article v-for="r in bronzeShown" :key="r.id" class="border rounded p-3 bg-white">
+      <article v-for="r in pBronze.tranche.value" :key="r.id" class="border rounded p-3 bg-white">
         <p v-if="editing !== r.id && (r.meta || {}).motif_reexamen"
            class="mb-2 border-l-4 border-wouri-700 bg-stone-100 px-2 py-1 text-sm" data-motif>
           <strong>On te repose la question :</strong> {{ (r.meta || {}).motif_reexamen }}
@@ -267,11 +282,14 @@ async function promote(id) {
         </template>
       </article>
       <p v-if="!bronze.length" class="text-stone-500 text-sm">Aucune phrase Bronze.</p>
+      <Pagination :page="pBronze.page.value" :pages="pBronze.pages.value"
+        :premier="pBronze.premier.value" :dernier="pBronze.dernier.value"
+        :total="pBronze.total.value" @aller="pBronze.allerA" />
     </section>
 
     <section v-show="tab==='decided' && can('review')" class="mt-4 space-y-3">
       <p class="text-xs text-stone-500">Une erreur ? « Reprendre » remet la fiche dans « À accepter », avec son texte d'origine.</p>
-      <article v-for="r in decidedShown" :key="r.id" class="border rounded p-3 bg-white" :data-etat="r.status">
+      <article v-for="r in pDecided.tranche.value" :key="r.id" class="border rounded p-3 bg-white" :data-etat="r.status">
         <p class="text-xs font-semibold uppercase text-wouri-700">{{ etatOf(r) }}</p>
         <p v-if="kindOf(r) === 'mot_cle'">« <strong>{{ r.text_local }}</strong> » veut dire : <strong>{{ r.text_fr }}</strong></p>
         <template v-else>
@@ -283,26 +301,35 @@ async function promote(id) {
         <button class="mt-2 border px-2 py-1" type="button" @click="reprendre(r.id)">Reprendre</button>
       </article>
       <p v-if="!decided.length" class="text-stone-500 text-sm">Aucune décision pour l'instant.</p>
+      <Pagination :page="pDecided.page.value" :pages="pDecided.pages.value"
+        :premier="pDecided.premier.value" :dernier="pDecided.dernier.value"
+        :total="pDecided.total.value" @aller="pDecided.allerA" />
     </section>
 
     <section v-show="tab==='accepted' && can('promote')" class="mt-4 space-y-3">
-      <article v-for="r in promotable" :key="r.id" class="border rounded p-3 bg-white">
+      <article v-for="r in pPromo.tranche.value" :key="r.id" class="border rounded p-3 bg-white">
         <p><strong>{{ r.text_local }}</strong></p>
         <p class="text-stone-600">{{ r.text_fr }}</p>
         <audio v-if="r.audio_url" :src="mediaSrc(r)" crossorigin="use-credentials" controls class="mt-2 h-8"></audio>
         <button class="mt-2 bg-wouri-700 text-white px-2 py-1 rounded" type="button" @click="promote(r.id)">Promouvoir</button>
       </article>
       <p v-if="!promotable.length" class="text-stone-500 text-sm">Rien à promouvoir.</p>
+      <Pagination :page="pPromo.page.value" :pages="pPromo.pages.value"
+        :premier="pPromo.premier.value" :dernier="pPromo.dernier.value"
+        :total="pPromo.total.value" @aller="pPromo.allerA" />
     </section>
 
     <section v-show="tab==='corpus'" class="mt-4 space-y-3">
-      <article v-for="r in corpusShown" :key="r.id" class="border rounded p-3 bg-white">
+      <article v-for="r in pCorpus.tranche.value" :key="r.id" class="border rounded p-3 bg-white">
         <p><strong>{{ r.text_local }}</strong></p>
         <p class="text-stone-600">{{ r.text_fr }}</p>
         <audio v-if="r.audio_url" :src="mediaSrc(r)" crossorigin="use-credentials" controls class="mt-2 h-8"></audio>
         <p v-else class="text-xs text-stone-500">Sans audio</p>
       </article>
       <p v-if="!corpus.length" class="text-stone-500 text-sm">Corpus atelier vide.</p>
+      <Pagination :page="pCorpus.page.value" :pages="pCorpus.pages.value"
+        :premier="pCorpus.premier.value" :dernier="pCorpus.dernier.value"
+        :total="pCorpus.total.value" @aller="pCorpus.allerA" />
     </section>
   </div>
 </template>

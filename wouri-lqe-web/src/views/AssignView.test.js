@@ -51,13 +51,13 @@ function missingCalls() {
   return apiMock.mock.calls.filter(([p]) => p.startsWith("/assignments/missing"));
 }
 
-function useApi({ me = ADMIN } = {}) {
+function useApi({ me = ADMIN, dyu = CONCEPTS_DYU } = {}) {
   apiMock.mockImplementation((path, opt) => {
     if (path === "/auth/me") return Promise.resolve(me);
     if (path === "/coverage") return Promise.resolve({ languages: LANGS });
     if (path.startsWith("/assignments/missing")) {
       const code = new URLSearchParams(path.split("?")[1]).get("language");
-      const src = code === "bci" ? CONCEPTS_BCI : CONCEPTS_DYU;
+      const src = code === "bci" ? CONCEPTS_BCI : dyu;
       return Promise.resolve({ concepts: src.map((c) => ({ ...c })) });
     }
     if (path === "/assignments" && opt && opt.method === "POST") {
@@ -363,5 +363,105 @@ describe("AssignView — recherche", () => {
     expect(champ(w).element.value).toBe("");
     expect(lignes(w)).toBe(1);
     expect(w.text()).toContain("Quand semer le mais ?");
+  });
+});
+
+// Pagination de la liste a assigner.
+//
+// 183 concepts manquants en baoule tiennent sur 29 pages a l'impression. Ce qui
+// casse en silence ici : un « Tout cocher » qui ne cocherait que la page affichee
+// — l'utilisateur croit avoir pris tout son filtre et n'en envoie qu'une partie.
+describe("AssignView — pagination", () => {
+  // 45 concepts : trois pages de 20, la derniere incomplete.
+  const LONG = Array.from({ length: 45 }, (_, i) => ({
+    concept_id: "riz_" + String(i + 1).padStart(3, "0"),
+    source_fr: "Question riz numero " + (i + 1),
+    ref_dyu: null,
+  }));
+
+  function lignes(w) {
+    return w.findAll('input[type="checkbox"]').length;
+  }
+  function barre(w) {
+    return w.find("[data-pagination]");
+  }
+  async function page(w, label) {
+    await w.find("[data-pagination] [data-" + label + "]").trigger("click");
+    await flushPromises();
+  }
+
+  it("n'affiche que les 20 premiers concepts", async () => {
+    useApi({ dyu: LONG });
+    const w = await mountAdmin();
+
+    expect(lignes(w)).toBe(20);
+    expect(w.text()).toContain("Question riz numero 1");
+    expect(w.text()).not.toContain("Question riz numero 21");
+    expect(barre(w).text()).toContain("1–20 sur 45");
+  });
+
+  it("« Suivant » montre la tranche suivante", async () => {
+    useApi({ dyu: LONG });
+    const w = await mountAdmin();
+
+    await page(w, "suiv");
+
+    expect(w.text()).toContain("Question riz numero 21");
+    expect(w.text()).not.toContain("Question riz numero 1\n");
+    expect(barre(w).text()).toContain("21–40 sur 45");
+  });
+
+  it("la derniere page est incomplete et le dit", async () => {
+    useApi({ dyu: LONG });
+    const w = await mountAdmin();
+
+    await page(w, "suiv");
+    await page(w, "suiv");
+
+    expect(lignes(w)).toBe(5);
+    expect(barre(w).text()).toContain("41–45 sur 45");
+  });
+
+  it("« Tout cocher » coche TOUS les concepts filtres, pas seulement la page", async () => {
+    // Le garde-fou qui compte : sans lui, on croit assigner 45 concepts et on en
+    // envoie 20.
+    useApi({ dyu: LONG });
+    const w = await mountAdmin();
+
+    await btn(w, "Tout cocher").trigger("click");
+
+    expect(w.text()).toContain("45 sélectionné(s)");
+    await btn(w, "Assigner").trigger("click");
+    expect(assignPost().body.concept_ids).toHaveLength(45);
+  });
+
+  it("une recherche ramene a la premiere page", async () => {
+    useApi({ dyu: LONG });
+    const w = await mountAdmin();
+    await page(w, "suiv");
+
+    await w.find("[data-recherche]").setValue("riz_04");
+    await flushPromises();
+
+    expect(w.text()).toContain("Question riz numero 40");
+    expect(barre(w).exists()).toBe(false); // 6 resultats : une seule page
+  });
+
+  it("changer de langue cible ramene a la premiere page", async () => {
+    useApi({ dyu: LONG });
+    const w = await mountAdmin();
+    await page(w, "suiv");
+
+    await w.find("[data-langue]").setValue("bci");
+    await flushPromises();
+
+    expect(lignes(w)).toBe(1);
+    expect(w.text()).toContain("Quand semer le mais ?");
+  });
+
+  it("aucune barre de pagination quand tout tient sur une page", async () => {
+    const w = await mountAdmin(); // 3 concepts
+
+    expect(barre(w).exists()).toBe(false);
   });
 });
