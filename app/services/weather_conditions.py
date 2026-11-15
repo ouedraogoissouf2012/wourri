@@ -54,6 +54,14 @@ class MeteoCondition:
 #
 # ⚠ NON SOURCES : valeurs heritees, jamais validees agronomiquement.
 # Dette tracee ADR-0038 §5.
+#
+# C'est parce que ces seuils ne distinguent NI culture, NI stade, NI zone que les
+# messages ci-dessous ne prescrivent plus d'acte de production. Regle appliquee :
+# **garder ce qui protege, retirer ce qui prescrit**. Mettre sa recolte a l'abri
+# d'un orage ou se proteger du soleil vaut quelle que soit la culture ; semer,
+# preparer un champ ou irriguer n'en valent pas moins — mais cela depend de la
+# culture, du stade et de la zone, que ces seuils ignorent.
+# Garde-fou de non-reintroduction : tests/unit/test_meteo_sans_prescription.py.
 _s = get_settings()
 SEUIL_GROSSE_PLUIE_MM = _s.meteo_seuil_grosse_pluie_mm
 SEUIL_PLUIE_LEGERE_MM = _s.meteo_seuil_pluie_legere_mm
@@ -70,32 +78,32 @@ METEO_CONDITIONS: list[MeteoCondition] = [
     MeteoCondition(
         "grosse_pluie",
         lambda temp, precip, code: code >= 61 or precip > SEUIL_GROSSE_PLUIE_MM,
-        "{city} kɔnɔ sanji bɛ na. Aw ka aw ka dòn ni aw ka fɛnw lakana, sanji bɛ se ka u bɔsi. Foro labɛnni waati ye sisan ye!",
-        "La pluie arrive sur {city}. Protégez vos grains et affaires. C'est le moment de préparer le champ !",
+        "{city} kɔnɔ sanji bɛ na. Aw ka aw ka dòn ni aw ka fɛnw lakana, sanji bɛ se ka u bɔsi.",
+        "La pluie arrive sur {city}. Protégez vos grains et affaires.",
     ),
     MeteoCondition(
         "pluie_legere",
         lambda temp, precip, code: code >= 51 or precip > SEUIL_PLUIE_LEGERE_MM,
-        "{city} kɔnɔ sanji fɛrɛn bɛ na. Sɛnɛ daminɛ waati ɲuman ye sisan ye.",
-        "Légère pluie sur {city}. C'est un bon moment pour commencer les semis.",
+        "{city} kɔnɔ sanji fɛrɛn bɛ na.",
+        "Légère pluie sur {city}.",
     ),
     MeteoCondition(
         "couvert",
         lambda temp, precip, code: code == 3,
-        "{city} kɔnɔ sankolo bɛ fara. Sanji bɛ se ka na. Aw ka foro labɛn sisan.",
-        "Ciel couvert sur {city}. La pluie peut venir. Préparez votre champ maintenant.",
+        "{city} kɔnɔ sankolo bɛ fara. Sanji bɛ se ka na.",
+        "Ciel couvert sur {city}. La pluie peut venir.",
     ),
     MeteoCondition(
         "chaleur",
         lambda temp, precip, code: temp > SEUIL_CHALEUR_C,
         "{city} kɔnɔ tile ka jugu, sanji tɛ. Aw ka aw ka sɛnɛ kalan dɔn kosɛbɛ ani aw yɛrɛw lakana tile la.",
-        "Chaleur intense sur {city}, pas de pluie. Irriguez bien vos cultures et protégez-vous du soleil.",
+        "Chaleur intense sur {city}, pas de pluie. Protégez-vous du soleil.",
     ),
     MeteoCondition(
         "degage",
         lambda temp, precip, code: True,
-        "{city} kɔnɔ tile bɛ ɲɛ, sanji tɛ sisan. Aw ka aw ka sɛnɛ kalan dɔn ni ji.",
-        "Ciel dégagé sur {city}, pas de pluie. Pensez à arroser vos cultures.",
+        "{city} kɔnɔ tile bɛ ɲɛ, sanji tɛ sisan.",
+        "Ciel dégagé sur {city}, pas de pluie.",
     ),
 ]
 
@@ -112,15 +120,15 @@ def classify_meteo(temperature: float, precipitation: float, weather_code: int) 
 # Copiés à l'identique depuis l'ancien generate_farming_advice (weather.py).
 RAIN_ADVICE_FR: list[tuple[float | None, str]] = [
     (10, "Fortes pluies prévues. Évitez les travaux au champ et protégez vos récoltes."),
-    (2, "Pluies modérées. Bon moment pour les semis si le sol est préparé."),
-    (0, "Légères pluies. Conditions favorables pour l'arrosage naturel."),
-    (None, "Pas de pluie prévue. Pensez à irriguer vos cultures si nécessaire."),
+    (2, "Pluies modérées."),
+    (0, "Légères pluies."),
+    (None, "Pas de pluie prévue."),
 ]
 
 TEMP_ADVICE_FR: list[tuple[str, float | None, str]] = [
     ("gt", 35, "Chaleur intense. Travaillez tôt le matin ou tard le soir. Hydratez-vous."),
-    ("gt", 30, "Température chaude. Protégez les jeunes plants du soleil direct."),
-    ("lt", 20, "Température fraîche. Bonnes conditions pour les cultures maraîchères."),
+    ("gt", 30, "Température chaude."),
+    ("lt", 20, "Température fraîche."),
 ]
 
 STORM_ADVICE_FR = "Orages prévus. Mettez vos outils à l'abri et évitez les zones découvertes."
