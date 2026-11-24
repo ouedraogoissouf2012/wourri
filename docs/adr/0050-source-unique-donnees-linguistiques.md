@@ -262,21 +262,62 @@ corpus en novembre 2026 et a détecté des écarts réels.
 | 2 | corpus dioula — 197 entrées | issue #624 |
 | 3 | NLU, messages, dictionnaire, calendriers | issue #625 |
 
+### Amendement du 2026-11-24 — la source reste le fichier relu, la base en est la copie servie
+
+Validé par Ouedraogo Issouf le 2026-11-24, **en renversement de l'arbitrage du
+2026-11-17** qui faisait de la base la source de vérité.
+
+Le §7 retenait l'option E pour le **schéma**, et cela ne change pas. Ce qui
+change est la **source** : le fichier relu en PR reste l'artefact validé, et la
+base en est la copie servie, tenue à jour automatiquement. C'est l'option D pour
+la source, l'option E pour le schéma.
+
+**Pourquoi ce renversement.** La mise en œuvre de la phase 1 a rendu visible ce
+que l'arbitrage du 17 novembre ne pouvait pas peser : faire de la base la source
+supprime la relecture en PR du contenu linguistique. Or la PR est **le dernier
+endroit où un humain voit une phrase baoulé ou dioula avant qu'un agriculteur
+l'entende**. La règle cardinale du projet — rien d'inventé, validation par un
+locuteur natif (ADR-0014, ADR-0031, ADR-0046) — perd son dernier garde-fou
+automatique si ce point de passage disparaît. Le §6 de cet ADR le reconnaissait
+déjà : la relecture en PR est le seul mérite réel de l'option D. Il s'est avéré
+décisif.
+
+**Ce qui empêche la copie de dériver.** Le reproche fait à l'option D était
+l'oubli de l'import, déjà constaté en production. Il est levé par la
+synchronisation automatique : **le moteur applique lui-même le contenu** dès
+qu'il constate une empreinte différente, à la première requête de la langue
+concernée — jamais au démarrage, `app/main.py` étant à zéro ligne de marge sous
+le plafond de l'ADR-0051. L'application se fait sous verrou consultatif
+PostgreSQL, en une transaction, hors de la boucle d'exécution, et chaque écriture
+est historisée.
+
+Il n'y a donc **aucun geste humain à oublier** : la décision humaine est le merge
+de la PR, exactement comme pour le code. Un contrôle d'intégration continue exige
+par ailleurs que la base synchronisée depuis le fichier courant soit égale, entrée
+par entrée, au fichier lui-même.
+
+**Ce qui reste vrai de l'option E.** Le schéma normalisé, la migration en deux
+temps, la réversibilité tant que `corpus_entries` subsiste, et la condition posée
+au §6 : toute modification de contenu linguistique en base laisse une trace
+consultable et réversible.
+
 ---
 
 ## 8. Conséquences attendues
 
-Quelle que soit l'option retenue :
-
-- **La recherche baoulé passe par un index** au lieu d'un balayage mémoire. Le
-  coût mesuré de 64 ms par requête disparaît.
 - **La règle devient vérifiable** : un contrôle d'intégration continue refuse
-  toute PR qui introduit un chargement de contenu linguistique depuis un fichier.
+  toute PR qui introduit un chargement de contenu linguistique depuis un fichier,
+  et exige l'égalité entre le fichier relu et la base synchronisée.
 - **Le peuplement manuel disparaît.** Aujourd'hui, `scripts/import_corpus_ivr.py`
   doit être lancé à la main après toute modification du corpus — oubli déjà
-  constaté en production.
-- **Les scripts hors ligne doivent être repris** : `baoule_nlu_build.py` écrit
-  aujourd'hui un fichier JSON ; il devra écrire en base.
+  constaté en production. La synchronisation par le moteur le supprime, sans
+  remplacer l'oubli d'un script par l'oubli d'un autre.
+- **Les scripts hors ligne ne sont pas repris** : `baoule_nlu_build.py` continue
+  d'écrire le fichier relu en PR, qui reste l'artefact validé (amendement du
+  2026-11-24). Il n'écrit pas en base.
+- **La recherche ne change pas en phase 1.** Elle garde son algorithme et ses
+  seuils : la base devient la source des données, pas le moteur de recherche.
+  C'est la condition pour que les 193 réponses servies restent identiques.
 
 ### Ce qui reste hors périmètre
 
@@ -290,3 +331,6 @@ Quelle que soit l'option retenue :
 | Date | Évolution |
 |---|---|
 | 2026-11-17 | Rédaction. Statut **proposé**. Arbitrages de périmètre, de source de vérité et d'application recueillis. Décision en attente. |
+| 2026-11-17 | **Option E retenue** — schéma linguistique normalisé, migré en deux temps, baoulé puis dioula. Statut **accepté**. |
+| 2026-11-24 | **Amendement : la source reste le fichier relu en PR**, la base en est la copie servie, synchronisée automatiquement par le moteur. Renverse l'arbitrage du 17/11 « la base devient la vraie source », qui aurait supprimé la relecture humaine du contenu linguistique avant mise en production — dernier garde-fou de la règle « rien d'inventé ». Le schéma reste celui de l'option E. Validé par Ouedraogo Issouf. |
+| 2026-11-24 | **Correction de deux affirmations fausses du §8**, relevées pendant la mise en œuvre (#623). (1) « La recherche baoulé passe par un index, le coût de 64 ms disparaît » : faux deux fois. Un index trigramme ou vectoriel changerait les réponses servies et relève d'une décision séparée avec A/B ; et les 64 ms étaient surévaluées d'un facteur 2,6 à 4,2 — la mesure refaite donne ≈ 1 ms en médiane sur une requête typique, ≈ 15 ms pour un balayage complet des 193 entrées. (2) « `baoule_nlu_build.py` devra écrire en base » : il continue d'écrire le fichier relu, par l'amendement ci-dessus. |
