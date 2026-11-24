@@ -14,7 +14,7 @@ from __future__ import annotations
 import psycopg
 import pytest
 
-from app.db import get_conn
+from app.db import close_pool, get_conn
 from app.services.migrate import run_migrations
 
 _TABLES = "languages, assignments, productions, media, dictation"
@@ -27,6 +27,20 @@ def pytest_collection_modifyitems(items):
     for item in items:
         if "db" in getattr(item, "fixturenames", ()):
             item.add_marker(pytest.mark.base_de_donnees)
+
+@pytest.fixture(autouse=True)
+def _pool_ferme_au_demontage():
+    """#649 : aucun fil du pool ne survit au test qui l'a ouvert.
+
+    Mesuré (5 passes sur 30) : le pool « grandit » pendant qu'un test déclaré attend une
+    connexion ; la connexion supplémentaire était configurée par un fil `lqe-worker-N`
+    0,13 ms après le début du test suivant, que la garde de la base accusait alors.
+    `close_pool()` attend la fin des fils : la tentative en vol se termine pendant CE
+    démontage, donc dans la zone du test qui l'a provoquée. Sans pool ouvert : sans effet.
+    """
+    yield
+    close_pool()
+
 
 # Verdict mis en cache : sans base joignable, chaque tentative coute le timeout du
 # pool (LQE_DB_POOL_TIMEOUT, issue #494). On ne le paie qu'une fois par session.

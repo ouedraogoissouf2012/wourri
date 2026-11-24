@@ -35,12 +35,20 @@ LIMITES CONNUES — à lire avant de croire la garde complète :
   CI exporte POSTGRES_URL pour toute la suite). `os.system` / `os.spawn*` non plus.
 - Seul psycopg (3) est surveillé : seul pilote des deux suites au 2026-11-24. Un autre
   pilote (psycopg2, asyncpg) passerait sans être vu.
-- Un fil qui survit à son test est imputé au test en cours au moment de l'accès, ou au
-  « hors de tout test ». D'où ADMIN_METRICS_ENABLED=false dans `tests/conftest.py` : sans
-  lui, l'écriture de métriques en arrière-plan accusait un test innocent.
-- Fils d'un pool (`psycopg_pool`) : après un échec, le pool espace ses tentatives ; un
-  test qui l'attend sans qu'aucune tentative ne tombe pendant lui échoue sur PoolTimeout,
-  rouge mais SANS le message de la garde.
+- Un fil qui SURVIT à son test : la garde ne sait pas quel test l'a lancé ; elle impute
+  l'accès à la zone en cours au moment où il est DÉCIDÉ. Un test innocent peut donc être
+  accusé — c'est un faux positif, pas une imprécision (mesuré, #649 : 5 passes sur 30 de
+  l'atelier, un fil de `psycopg_pool` configurant sa connexion 0,13 ms après la fin du test
+  qui l'avait demandée). Le remède est dans les suites, qui ne laissent survivre aucun fil :
+  ADMIN_METRICS_ENABLED=false dans `tests/conftest.py`, et le pool fermé au démontage dans
+  `wouri-lqe/tests/conftest.py`. Ce que la garde garantit, elle : décision, message et
+  imputation portent sur la MÊME zone, lue une fois — un refus décidé dans un test n'est
+  jamais enregistré sous un autre (`tests/unit/test_garde_base_fils.py`).
+- Un pool (`psycopg_pool`) qui survit à son test : après un refus, il espace ses
+  tentatives ; le test suivant qui l'attend échoue sur PoolTimeout, rouge mais SANS le
+  message de la garde (mesuré, #649 : 2 sur 10 avec un pool partagé entre deux tests,
+  0 sur 10 une fois le pool fermé au démontage). Même racine que le faux positif
+  ci-dessus, même remède : aucune suite ne laisse un pool survivre à son test.
 """
 from __future__ import annotations
 
@@ -95,14 +103,16 @@ def _origine() -> str:
     return "?"
 
 
-def _refuser(message: str):
+def _refuser(message: str, z: _Zone):
+    """Imputé à `z`, la zone CAPTURÉE au moment de la décision — jamais relue ici (#649) :
+    entre la décision et cet enregistrement, un fil peut voir commencer un autre test."""
     with _verrou:
-        _refus.setdefault(_zone.nom, []).append(message)
+        _refus.setdefault(z.nom, []).append(message)
     raise AccesBaseRefuse(message)
 
 
-def _non_declare(point: str) -> str:
-    z, lieu = _zone, f"{point} depuis {_origine()}"
+def _non_declare(point: str, z: _Zone) -> str:
+    lieu = f"{point} depuis {_origine()}"
     if z.collecte:
         return (f"la collecte de {z.nom} atteint PostgreSQL ({lieu}) : aucune connexion n'est "
                 "permise pendant la collecte (import d'un module, crochet de collecte) — "
@@ -114,8 +124,8 @@ def _non_declare(point: str) -> str:
             f"sur une base dont le nom finit par `{SUFFIXE}`.")
 
 
-def _non_jetable(nom: str) -> str:
-    return f"{_zone.nom} : base non jetable : {nom} (attendu : un nom finissant par `{SUFFIXE}`)"
+def _non_jetable(nom: str, z: _Zone) -> str:
+    return f"{z.nom} : base non jetable : {nom} (attendu : un nom finissant par `{SUFFIXE}`)"
 
 
 def _nom_de_base(conninfo: str, kwargs: dict) -> str:
@@ -132,11 +142,12 @@ def _nom_de_base(conninfo: str, kwargs: dict) -> str:
 
 
 def _controler_connexion(point: str, conninfo: str, kwargs: dict) -> None:
-    if not _zone.declare:
-        _refuser(_non_declare(point))
+    z = _zone  # UNE lecture : décision, message et imputation portent sur la même zone
+    if not z.declare:
+        _refuser(_non_declare(point, z), z)
     nom = _nom_de_base(conninfo, kwargs)
     if not nom.endswith(SUFFIXE):
-        _refuser(_non_jetable(nom))
+        _refuser(_non_jetable(nom, z), z)
 
 
 def _remplacer(cible, nom: str, nouveau) -> None:
@@ -161,8 +172,9 @@ def _garder_requete(cls, methode: str) -> None:
     vraie = cls.__dict__[methode]
 
     def requete(self, *args, **kwargs):  # def simple : le refus tombe à l'appel, même en async
-        if not _zone.declare:
-            _refuser(_non_declare(f"{cls.__name__}.{methode}"))
+        z = _zone
+        if not z.declare:
+            _refuser(_non_declare(f"{cls.__name__}.{methode}", z), z)
         return vraie(self, *args, **kwargs)
 
     _remplacer(cls, methode, requete)
@@ -180,13 +192,14 @@ def _garder_sous_processus() -> None:
     vraie = subprocess.Popen.__init__
 
     def __init__(self, args, *a, **kwargs):
-        if _zone.declare:
+        z = _zone
+        if z.declare:
             env = kwargs.get("env") if "env" in kwargs else (a[9] if len(a) > 9 else None)
             env = os.environ if env is None else env
             for variable in (*_VARIABLES_URL, *_VARIABLES_NOM):
                 nom = _nom_dans(variable, env.get(variable))
                 if nom and not nom.endswith(SUFFIXE):
-                    _refuser(f"sous-processus ({variable}) — {_non_jetable(nom)}")
+                    _refuser(f"sous-processus ({variable}) — {_non_jetable(nom, z)}", z)
         vraie(self, args, *a, **kwargs)
 
     _remplacer(subprocess.Popen, "__init__", __init__)
