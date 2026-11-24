@@ -1,10 +1,11 @@
 """Dictee guidee ASR (ADR-0035) — routeur mince. Le locuteur LIT des phrases imposees
 (transcription garantie) ; l'admin importe le lot et exporte le dataset (format HF).
-Isolation par langue heritee de la session (`user['lang']`)."""
+Isolation par langue : celle de la session, ou celle qu'un admin nomme
+(`session.langue_visee`, #641)."""
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile
 
 from app.data.language_registry import is_known
-from app.routers.session import require_role
+from app.routers.session import langue_visee, require_role
 from app.services import dictation as svc
 from app.services import dictation_repo as repo
 from app.services.audio_store import LocalAudioStore
@@ -39,19 +40,23 @@ async def import_prompts(
 
 
 @router.get("/prompts")
-def list_prompts(status: str | None = None, user: dict = Depends(require_role("ingest"))):
-    """Locuteur : les phrases de SA langue (filtre statut `todo`/`recorded` optionnel)."""
+def list_prompts(status: str | None = None, language: str | None = None,
+                 user: dict = Depends(require_role("ingest"))):
+    """Locuteur : les phrases de SA langue (filtre statut `todo`/`recorded` optionnel).
+    Un admin nomme la langue (`language`), sinon 400 (#641)."""
+    lang = langue_visee(user, language)
     st = (status or "").strip().lower() or None
     if st and st not in ("todo", "recorded"):
         raise HTTPException(status_code=400, detail="statut_invalide")
-    rows = repo.list_prompts(language=user["lang"], status=st)
-    return {"language": user["lang"], "prompts": rows, "count": len(rows)}
+    rows = repo.list_prompts(language=lang, status=st)
+    return {"language": lang, "prompts": rows, "count": len(rows)}
 
 
 @router.get("/progress")
-def progress(user: dict = Depends(require_role("ingest"))):
-    """Locuteur : progression de la dictee (total / enregistrees / restantes)."""
-    return repo.counts(language=user["lang"])
+def progress(language: str | None = None, user: dict = Depends(require_role("ingest"))):
+    """Locuteur : progression de la dictee (total / enregistrees / restantes). Un admin
+    nomme la langue (`language`), sinon 400 (#641)."""
+    return repo.counts(language=langue_visee(user, language))
 
 
 @router.get("/stats")

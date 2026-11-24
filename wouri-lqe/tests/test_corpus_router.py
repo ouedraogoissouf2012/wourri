@@ -75,12 +75,14 @@ def test_un_admin_lit_la_langue_demandee(seeded, monkeypatch, tmp_path):
     assert dyu["entries"][0]["text_local"] == "Aw ni ce"
 
 
-def test_admin_sans_parametre_ne_voit_rien(seeded, monkeypatch, tmp_path):
-    """C'est la raison d'être du paramètre : la langue `*` ne sert aucun corpus."""
+def test_admin_sans_parametre_est_refuse(seeded, monkeypatch, tmp_path):
+    """La langue `*` ne sert aucun corpus. #641 : ce test exigeait `count == 0` (200) —
+    il figeait le défaut ; un corpus vide ressemblait à un locuteur sans travail."""
     _promouvoir("Akwaba", "bci")
     client = _app(monkeypatch, tmp_path)
     client.post("/auth/login", json={"user": "admin", "password": "adminpass1"})
-    assert client.get("/corpus").json()["count"] == 0
+    r = client.get("/corpus")
+    assert r.status_code == 400 and r.json()["detail"] == "language_required"
 
 
 def test_langue_inconnue_refusee(seeded, monkeypatch, tmp_path):
