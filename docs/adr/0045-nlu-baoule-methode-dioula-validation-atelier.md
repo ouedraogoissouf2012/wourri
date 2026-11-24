@@ -129,6 +129,10 @@ Le locuteur **redit la réponse dans la fiche**, au moment où il la corrige. La
 règle n° 3 est amendée en conséquence : l'écran Dictée cesse d'être le seul
 endroit où une voix se refait.
 
+Le bouton de sauvegarde de la correction, qui portait le mot « Enregistrer »,
+est renommé. Plus aucun bouton de l'atelier ne dit « Enregistrer » pour
+*sauvegarder* : le mot est réservé à la voix.
+
 ### Ce qui ne change pas
 
 - Une réponse corrigée n'est **jamais** servie avec un audio qui dirait autre
@@ -146,6 +150,11 @@ fausse — parce que le texte a été recorrigé ensuite — est donc ignorée d
 sans aucune logique d'invalidation à maintenir. Le marqueur
 `audio_a_reenregistrer` ne subsiste que lorsqu'aucune voix juste n'existe.
 
+**Si une voix juste existe à la fois dans la fiche et par le détour de la
+dictée, celle de la fiche est servie.** Elle est le geste le plus récent, et la
+seule des deux à être attachée explicitement à cette fiche ; le détour ne repose
+que sur une égalité de texte.
+
 ### Portée
 
 Les paires question → réponse, seule source du marqueur et seule origine de
@@ -156,14 +165,19 @@ mais le mécanisme est écrit pour pouvoir les accueillir.
 
 ### Dette inscrite
 
-L'enregistreur existe en **trois copies** dans l'atelier (`DictationView`,
-`RequestsView`, et désormais la fiche). La révision n'en unifie que deux :
-`RequestsView` est l'écran que le locuteur utilise au moment de cette décision,
-et on ne refactore pas sous les pieds de quelqu'un qui travaille.
+L'enregistreur existait en **deux copies** dans l'atelier (`DictationView`,
+`RequestsView`). La révision extrait la première dans un composant partagé, que
+la Dictée et la fiche utilisent toutes deux — la fiche n'ajoute donc aucune
+copie. `RequestsView` garde la sienne : c'est l'écran que le locuteur utilise au
+moment de cette décision, et on ne refactore pas sous les pieds de quelqu'un qui
+travaille.
+
+Après la révision : deux implémentations pour trois écrans, au lieu de deux pour
+deux. La dette ne grandit pas, elle attend.
 
 ## Historique
 
 - 2026-10-21 — proposé (plan approuvé par le valideur ; validation par l'atelier exigée).
 - 2026-10-22 — **décision du valideur : démo terrain avant la fin de la validation**. « On doit partir de ce que nous connaissons et apprendre sur le terrain avec les corrections et le retour des paysans. » Les paysans ne lisent pas : la démo est vocale (serveur voix baoulé, réponses lues par le locuteur). Dictionnaire **« demo »** (`scripts/baoule_nlu_build.py --demo`) : mots-clés de l'amorçage (non encore validés, usage interne au NLU) et **seulement les 123 paires reliées par position** (9 filières) ; les 74 paires reliées par le sens restent écartées jusqu'à leur validation. Tout ce que le paysan entend ou lit reste le texte et la voix du locuteur natif. Mesure (questions de la dictée) : exacte 123/123 ; bruitée à 19 % 83 à 87 % bonnes, 4 à 7 % mauvaises, le reste en repli honnête (escaladé). Remplacé par la version validée dès la fin de la validation dans l'atelier.
-- 2026-11-24 — **révision : la voix se refait dans la fiche** (ci-dessus). La règle n° 3 envoyait le locuteur refaire sa voix dans l'écran Dictée ; il a signalé lui-même qu'aucun enregistreur n'y existe côté fiche. Ce détour est la cause directe de l'épisode des 70 réenregistrements et du correctif PR #616. La voix est désormais attachée au texte accepté, et ignorée d'elle-même si ce texte change. Portée : paires question → réponse ; les fiches `contenu` restent hors révision.
 - 2026-10-26 — état de la validation (export de l'atelier) : mots-clés 290 décidés, 172 acceptés dont 128 avec une traduction précisée, 118 rejetés ; paires 74, 2 acceptées, 34 rejetées, 38 à décider. Révision « Corriger une paire » (ci-dessus). Construction validée essayée sur ces décisions : 38 concepts, 168 mots-clés, 125 réponses ; questions de la dictée exactes 125/125, bruitées à 19 % 106 bonnes, 5 mauvaises, 14 replis honnêtes. Pas encore déployée.
+- 2026-11-24 — **révision : la voix se refait dans la fiche** (ci-dessus). La règle n° 3 envoyait le locuteur refaire sa voix dans l'écran Dictée ; il a signalé lui-même qu'aucun enregistreur n'existe dans la fiche de relecture. Ce détour est la cause directe de l'épisode des 70 réenregistrements et du correctif PR #616. La voix est désormais attachée au texte accepté, et ignorée d'elle-même si ce texte change. Portée : paires question → réponse ; les fiches `contenu` restent hors révision.
