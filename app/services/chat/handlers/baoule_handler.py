@@ -39,9 +39,9 @@ def _audio_url(entry: dict) -> Optional[str]:
     return f"{base}/{PurePosixPath(fichier).stem}.ogg"
 
 
-def _sujets(corpus) -> str:
-    filieres = sorted({(e.get("filiere") or "").split("(")[0].strip().lower() for e in corpus} - {""})
-    return ", ".join(filieres)
+def _sujets(filieres) -> str:
+    sujets = sorted({(f or "").split("(")[0].strip().lower() for f in filieres} - {""})
+    return ", ".join(sujets)
 
 
 class BaouleHandler:
@@ -88,7 +88,9 @@ class BaouleHandler:
         from app.services.chat.llm_guard import escalate
 
         escalate(nlu, city, user_id, SOURCE_HORS_CORPUS_BCI, excerpt=texte)
-        sujets = _sujets(baoule_ivr.entrees())
+        # #623 : une requête en base, hors de la boucle comme la recherche (#622) ; le repli
+        # ne lit que les filières, jamais le corpus entier.
+        sujets = _sujets(await asyncio.to_thread(baoule_ivr.filieres))
         # Dire que la QUESTION n'est pas comprise, jamais que le baoulé manque :
         # « pas de réponse validée en baoulé » faisait croire au paysan que la
         # langue ne marche pas, alors que seule sa question n'a pas été reconnue.

@@ -9,6 +9,10 @@ Recherche : parmi les entrées de la culture comprise par le NLU baoulé, la que
 plus proche de ce que le paysan a dit, comparée par trigrammes de caractères (robuste
 aux erreurs d'orthographe de l'ASR), avec un bonus si l'intention concorde. Sans
 culture comprise, toute la base est comparée, avec un seuil plus exigeant.
+
+Servi depuis PostgreSQL (ADR-0050 amendé, #623) : le fichier reste la source relue en PR,
+la base en est la copie servie, que le moteur met à jour lui-même quand l'empreinte du
+fichier change (`corpus_bci_base`). L'algorithme de recherche, lui, ne change pas.
 """
 from __future__ import annotations
 
@@ -20,6 +24,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import NamedTuple, Optional
 
+from app.db import engine as db
+from app.services import corpus_bci_base
 from app.services.nlu.baoule_text import tokens_bci
 
 logger = logging.getLogger(__name__)
@@ -60,18 +66,111 @@ def similarite(a: str, b: str) -> float:
     return dot / (math.sqrt(sum(v * v for v in ta.values())) * math.sqrt(sum(v * v for v in tb.values())))
 
 
+class _Lot(NamedTuple):
+    empreinte: str
+    entrees: tuple
+
+
 @lru_cache(maxsize=1)
-def _charger(path: str) -> tuple:
+def _lot_fichier(path: str) -> Optional[_Lot]:
+    """Le fichier relu en PR, tel que déployé : il ne change pas pendant la vie du processus."""
     p = Path(path)
     if not p.is_file():
-        logger.warning("[BCI-IVR] Corpus absent: %s — réponses baoulé désactivées", p)
-        return ()
+        logger.warning("[BCI-DB] Fichier source absent : %s — la base sert son dernier lot", p)
+        return None
     data = json.loads(p.read_text(encoding="utf-8"))
-    return tuple(e for e in data.get("entries", []) if e.get("question_bci") and e.get("reponse_bci"))
+    servies = tuple(e for e in data.get("entries", []) if e.get("question_bci") and e.get("reponse_bci"))
+    return _Lot(corpus_bci_base.empreinte(data), servies)
 
 
-def entrees(path: Optional[Path] = None) -> tuple:
-    return _charger(str(path or CORPUS_PATH))
+# Lots dont ce processus a déjà vérifié qu'ils sont appliqués : une seule vérification par lot.
+_synchronises: set[str] = set()
+
+
+def _synchroniser_si_besoin(engine) -> None:
+    """ADR-0050 amendé : le moteur applique lui-même le fichier relu quand son empreinte
+    diffère du dernier lot en base — à la première requête, jamais au démarrage."""
+    lot = _lot_fichier(str(CORPUS_PATH))
+    if lot is None or lot.empreinte in _synchronises:
+        return
+    try:
+        with engine.begin() as conn:
+            bilan = corpus_bci_base.synchroniser(conn, lot.entrees, lot.empreinte,
+                                                 auteur=f"moteur, lot {lot.empreinte[:12]}")
+    except ValueError as exc:
+        # Lot refusé (vide) : la base garde son dernier lot ET continue d'être servie. Refus
+        # définitif pour ce fichier : ne pas le retenter à chaque requête. Une erreur de base,
+        # elle, remonte (repli) et sera retentée.
+        logger.error("[BCI-DB] Lot %s refusé (%s) — la base continue de servir son dernier lot",
+                     lot.empreinte[:12], exc)
+        _synchronises.add(lot.empreinte)
+        return
+    if bilan.applique:
+        logger.info("[BCI-DB] Lot %s appliqué : %d ajoutée(s), %d modifiée(s), %d supprimée(s)",
+                    lot.empreinte[:12], bilan.ajoutees, bilan.modifiees, bilan.supprimees)
+    _synchronises.add(lot.empreinte)
+
+
+def _base_tombee(exc: Exception) -> Optional[tuple]:
+    """Base injoignable : le corpus en mémoire s'il y en a un, sinon None (-> repli).
+
+    Même règle que pour un fichier refusé (décision a, #623) : servir le dernier contenu
+    VÉRIFIÉ plutôt que le silence. La garantie « rien de périmé » porte sur ce qu'on peut
+    vérifier ; quand la vérification est impossible, le journal le dit à chaque requête."""
+    cache = _cache
+    if cache is not None:
+        logger.error("[BCI-DB] Base injoignable (%s) — corpus servi depuis la mémoire (lot %s), "
+                     "fraîcheur non vérifiée", db.message_sur(exc), (cache.empreinte or "?")[:12])
+        return cache.entrees
+    # D4 (#623) : le texte servi reste le repli habituel, mais le journal dit la vraie cause.
+    logger.error("[BCI-DB] Corpus baoulé indisponible en base (%s) — repli servi : ce n'est pas "
+                 "la question qui est en cause", db.message_sur(exc))
+    return None
+
+
+class _Cache(NamedTuple):
+    empreinte: Optional[str]
+    entrees: tuple
+
+
+# Le corpus servi, gardé tant que le lot en base ne change pas (décision B, #623). Rempli
+# depuis un fil : deux premières requêtes concurrentes peuvent le remplir deux fois — même
+# contenu, une seule affectation gagne ; bénin, mesuré dans la PR, sans verrou.
+_cache: Optional[_Cache] = None
+
+
+def entrees() -> tuple:
+    """Les entrées servies : la base, mise à jour d'abord depuis le fichier s'il a changé.
+
+    L'empreinte du lot est relue à CHAQUE requête (une requête légère) : c'est elle, et non
+    une durée, qui dit si la copie en mémoire est périmée — y compris quand un autre
+    processus a synchronisé. Le corpus n'est relu que si elle a changé. L'empreinte est lue
+    AVANT le corpus : une copie peut être plus récente que son étiquette (relue la fois
+    suivante), jamais plus ancienne."""
+    global _cache
+    try:
+        engine = db.get_engine()
+        _synchroniser_si_besoin(engine)  # garde SA transaction : le verrou consultatif en dépend
+        # Lecture seule en autocommit : pas de BEGIN/ROLLBACK autour de la vérification
+        # d'empreinte (−0,7 ms mesuré). Jamais sur la synchronisation, dont le verrou
+        # pg_advisory_xact_lock ne tient que le temps d'une transaction.
+        with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+            lot = corpus_bci_base.lot_courant(conn)
+            cache = _cache
+            if cache is None or cache.empreinte != lot:
+                cache = _cache = _Cache(lot, corpus_bci_base.charger(conn))
+            return cache.entrees
+    except Exception as exc:  # base injoignable : la mémoire si elle existe, sinon le repli
+        return _base_tombee(exc) or ()
+
+
+def filieres() -> list[str]:
+    """Les filières du corpus servi : tout ce dont le repli a besoin."""
+    try:
+        with db.get_engine().connect() as conn:
+            return corpus_bci_base.filieres(conn)
+    except Exception as exc:
+        return [e["filiere"] for e in _base_tombee(exc) or ()]
 
 
 def chercher(text: str, intent: Optional[str], concepts, corpus=None) -> Optional[Trouvaille]:

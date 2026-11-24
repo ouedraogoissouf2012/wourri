@@ -250,9 +250,13 @@ def main(argv=None) -> int:
     e = etat(args.langue, vers, dossier=dossier)
     _afficher(args.langue, vers, e)
 
-    if not e["attendus"]:
-        print(f"\nAucun fichier versionné pour « {args.langue} » : rien à publier.")
-        return 0
+    if not (e["attendus"] or e["sans_audio"]):
+        # #623 : langue mal tapée, mauvais dossier, fichier absent ou vide. Finir en « rien
+        # à publier » avec un code de succès, c'est la panne silencieuse de l'ADR-0049.
+        raise EchecPublication(
+            f"aucune entrée pour « {args.langue} » dans {dossier or DICTIONNAIRES} — "
+            "source introuvable ou vide, rien n'a été publié"
+        )
     if args.verifier or not e["manquants"]:
         if not e["manquants"]:
             print("\nRien à faire : la destination est à jour.")

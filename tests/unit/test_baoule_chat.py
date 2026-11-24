@@ -52,6 +52,7 @@ def branche(monkeypatch, nlu_bci):
     """Branche le NLU baoulé de test et le mini-corpus, et capte les escalades."""
     monkeypatch.setattr(nlu_service, "get_nlu_service_bci", lambda: nlu_bci)
     monkeypatch.setattr(baoule_ivr, "entrees", lambda path=None: CORPUS)
+    monkeypatch.setattr(baoule_ivr, "filieres", lambda: [e["filiere"] for e in CORPUS])
     escalades = []
     import app.services.chat.llm_guard as guard
     monkeypatch.setattr(guard, "escalate", lambda *a, **k: escalades.append((a, k)))
@@ -196,3 +197,81 @@ async def test_recherche_deportee_avec_les_memes_arguments(branche, monkeypatch)
     assert args == (nlu.message_original, nlu.intent, nlu.concepts) and kwargs == {}
     assert fil != threading.get_ident()
     assert r.meta["source"] == "bci_hors_corpus"
+
+
+@pytest.mark.asyncio
+async def test_le_repli_ne_charge_pas_le_corpus_et_sort_de_la_boucle(branche, monkeypatch):
+    """#623 (piège relevé sous #622) : le repli n'a besoin que des filières. Il ne relit pas
+    tout le corpus, et sa requête en base tourne hors de la boucle, comme la recherche."""
+    fils = []
+
+    def filieres():
+        fils.append(threading.get_ident())
+        return ["CACAO", "MAÏS"]
+
+    def entrees_interdites(*args, **kwargs):
+        raise AssertionError("le repli ne doit pas charger le corpus")
+
+    monkeypatch.setattr(baoule_ivr, "chercher", lambda *a, **k: None)
+    monkeypatch.setattr(baoule_ivr, "entrees", entrees_interdites)
+    monkeypatch.setattr(baoule_ivr, "filieres", filieres)
+    nlu = nlu_preprocessor.preprocess_nlu("Mmo, a ti ?", None, Language.BAOULE)
+    nlu.message_original = "Mmo, a ti ?"
+    r = await BaouleHandler().process(nlu, None, "Bouaké", False, Language.BAOULE, "u1")
+    assert r.response == "Je n'ai pas compris ta question. Je peux t'aider sur : cacao, maïs."
+    assert len(fils) == 1 and fils[0] != threading.get_ident()
+
+
+def test_base_injoignable_rien_n_est_servi_et_le_journal_dit_pourquoi(monkeypatch, caplog):
+    """D4 (#623) : base tombée ET rien en mémoire -> aucune réponse du corpus, le repli habituel
+    est servi (texte inchangé), mais le journal dit que c'est la base, pas la question."""
+    def base_tombee():
+        raise ConnectionRefusedError("connexion refusée")
+
+    monkeypatch.setattr(baoule_ivr, "_cache", None)
+
+    monkeypatch.setattr("app.db.engine.get_engine", base_tombee)
+    with caplog.at_level("ERROR", logger="app.services.baoule_ivr"):
+        assert baoule_ivr.entrees() == ()
+        assert baoule_ivr.filieres() == []
+        assert baoule_ivr.chercher(CACAO_PLANTER["question_bci"], None, {}) is None
+    messages = [r.getMessage() for r in caplog.records if r.levelname == "ERROR"]
+    assert messages and all("[BCI-DB]" in m and "base" in m and "ConnectionRefusedError" in m
+                            for m in messages)
+
+
+@pytest.mark.asyncio
+async def test_base_injoignable_le_repli_servi_ne_change_pas(monkeypatch):
+    monkeypatch.setattr(baoule_ivr, "_cache", None)
+    monkeypatch.setattr("app.db.engine.get_engine", lambda: (_ for _ in ()).throw(OSError("down")))
+    import app.services.chat.llm_guard as guard
+    monkeypatch.setattr(guard, "escalate", lambda *a, **k: None)
+    nlu = nlu_preprocessor.preprocess_nlu(CACAO_PLANTER["question_bci"], None, Language.BAOULE)
+    nlu.message_original = CACAO_PLANTER["question_bci"]
+    r = await BaouleHandler().process(nlu, None, "Bouaké", False, Language.BAOULE, "u1")
+    assert r.meta["source"] == "bci_hors_corpus"
+    assert r.response == "Je n'ai pas compris ta question."
+
+
+@pytest.mark.asyncio
+async def test_base_coupee_cache_chaud_la_reponse_est_encore_servie(monkeypatch, caplog):
+    """#623, décision (a) : la base hoquette, le corpus lu il y a une requête est encore en
+    mémoire -> la réponse est servie, et le journal dit que sa fraîcheur n'a pas pu être
+    vérifiée. La garantie porte sur ce qu'on PEUT vérifier, pas sur le silence."""
+    monkeypatch.setattr(baoule_ivr, "_cache", baoule_ivr._Cache("lot-en-memoire", CORPUS))
+    monkeypatch.setattr("app.db.engine.get_engine", lambda: (_ for _ in ()).throw(OSError("down")))
+    import app.services.chat.llm_guard as guard
+    escalades = []
+    monkeypatch.setattr(guard, "escalate", lambda *a, **k: escalades.append(a))
+
+    nlu = nlu_preprocessor.preprocess_nlu(CACAO_PLANTER["question_bci"], None, Language.BAOULE)
+    nlu.message_original = CACAO_PLANTER["question_bci"]
+    with caplog.at_level("ERROR", logger="app.services.baoule_ivr"):
+        r = await BaouleHandler().process(nlu, None, "Bouaké", False, Language.BAOULE, "u1")
+        sujets = baoule_ivr.filieres()
+    assert r.response_local == CACAO_PLANTER["reponse_bci"] and r.meta["source"] == "ivr_bci"
+    assert escalades == []
+    assert sorted(sujets) == ["CACAO", "MAÏS"]  # le repli garde ses sujets pendant la panne
+    messages = [m.getMessage() for m in caplog.records if m.levelname == "ERROR"]
+    assert messages and all("fraîcheur non vérifiée" in m and "lot-en-memo" in m and "OSError" in m
+                            for m in messages)
