@@ -13,6 +13,7 @@ validé (ADR-0049) ; en français tant qu'il n'y en a pas.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from pathlib import PurePosixPath
 from typing import Optional
@@ -58,7 +59,10 @@ class BaouleHandler:
         from app.services import baoule_ivr
 
         texte = nlu.message_original or nlu.message_for_deepseek
-        trouvaille = baoule_ivr.chercher(texte, nlu.intent, nlu.concepts)
+        # #622 : `chercher` compare la question à tout le corpus par trigrammes ; son
+        # coût croît avec le corpus (mesures dans l'issue). En ligne, elle bloquait la
+        # boucle. Même correctif que le dioula (#193, ivr_searcher.py).
+        trouvaille = await asyncio.to_thread(baoule_ivr.chercher, texte, nlu.intent, nlu.concepts)
         cultures = [k for k in (nlu.concepts or {}) if k.startswith("CULTURE_")]
         if trouvaille is not None:
             e = trouvaille.entry

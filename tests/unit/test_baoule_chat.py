@@ -4,7 +4,9 @@ Mini-corpus factice fait de phrases de la dictée validée (aucun baoulé invent
 NLU baoulé y est construit avec quatre mots-clés, comme le produirait
 scripts/baoule_nlu_build.py après validation dans l'atelier.
 """
+import asyncio
 import json
+import threading
 from pathlib import Path
 
 import pytest
@@ -136,3 +138,50 @@ async def test_handler_repli_honnete_et_escalade(branche):
     assert "baoulé" not in r.response
     assert "cacao" in r.response and "maïs" in r.response  # sujets tirés du corpus
     assert len(branche) == 1
+
+
+@pytest.mark.asyncio
+async def test_recherche_ne_bloque_pas_la_boucle(branche, monkeypatch):
+    """#622 : pendant la recherche, la boucle reste libre de servir les autres requêtes.
+
+    Poignée de main, pas chronomètre : la fausse recherche attend un signal que seule
+    une autre tâche de la boucle peut lever. Appelée en ligne, elle bloque la boucle,
+    cette tâche ne tourne jamais et l'attente expire ; déportée, la tâche la libère.
+    """
+    signal = threading.Event()
+
+    def recherche_qui_attend(*args, **kwargs):
+        assert signal.wait(timeout=2), "la boucle est restée bloquée pendant la recherche"
+        return baoule_ivr.Trouvaille(CACAO_PLANTER, 0.9, 0.9)
+
+    monkeypatch.setattr(baoule_ivr, "chercher", recherche_qui_attend)
+
+    async def autre_requete():
+        signal.set()
+
+    nlu = nlu_preprocessor.preprocess_nlu(CACAO_PLANTER["question_bci"], None, Language.BAOULE)
+    nlu.message_original = CACAO_PLANTER["question_bci"]
+    autre = asyncio.create_task(autre_requete())
+    r = await BaouleHandler().process(nlu, None, "Bouaké", False, Language.BAOULE, "u1")
+    await autre
+    assert r.response_local == CACAO_PLANTER["reponse_bci"]
+
+
+@pytest.mark.asyncio
+async def test_recherche_deportee_avec_les_memes_arguments(branche, monkeypatch):
+    """#622 : la recherche tourne hors du fil de la boucle, appelée exactement comme avant."""
+    appels = []
+
+    def recherche(*args, **kwargs):
+        appels.append((args, kwargs, threading.get_ident()))
+        return None
+
+    monkeypatch.setattr(baoule_ivr, "chercher", recherche)
+    nlu = nlu_preprocessor.preprocess_nlu("Mmo, a ti ?", None, Language.BAOULE)
+    nlu.message_original = "Mmo, a ti ?"
+    r = await BaouleHandler().process(nlu, None, "Bouaké", False, Language.BAOULE, "u1")
+    assert len(appels) == 1
+    args, kwargs, fil = appels[0]
+    assert args == (nlu.message_original, nlu.intent, nlu.concepts) and kwargs == {}
+    assert fil != threading.get_ident()
+    assert r.meta["source"] == "bci_hors_corpus"
