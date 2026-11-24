@@ -36,8 +36,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts import baoule_nlu_bootstrap as boot  # noqa: E402
+from scripts.validations_atelier import ValidationsInvalides, charger_validations  # noqa: E402
 
 DICTIONNAIRES = ROOT / "dictionnaires"
+LANGUE = "bci"  # langue de ce build : les validations lues doivent être les siennes
 ACCEPTE = "admin_accepted"
 
 
@@ -263,6 +265,10 @@ def main(argv=None):
     args = ap.parse_args(argv)
     if not (args.provisoire or args.demo) and not (args.mots_cles and args.paires):
         ap.error("--mots-cles et --paires requis (ou --provisoire / --demo)")
+    # Contrôlées AVANT tout calcul (#637) : un fichier inutilisable arrête le build, avec
+    # un message, au lieu d'être lu comme « aucune entrée ».
+    paires = charger_validations(args.paires, kind="paire_qr", langue=LANGUE) if args.paires else None
+    mots_cles = charger_validations(args.mots_cles, kind="mot_cle", langue=LANGUE) if args.mots_cles else None
 
     from app.services.nlu.nlu_service import NLUService, build_bci_config
 
@@ -273,7 +279,6 @@ def main(argv=None):
 
     # Les réponses corrigées ont été réenregistrées en dictée : ces lignes sont la voix à
     # servir, pas des réponses à apparier — sinon la filière déborde et l'appariement cale.
-    paires = load(args.paires) if args.paires else None  # lu une seule fois, pour les deux vues
     textes = accepted_pairs(paires) if paires is not None else None
     # Voix redites dans la fiche par le locuteur (ADR-0045, révision du 2026-11-24).
     voix_fiches = voix_des_paires(paires) if paires is not None else {}
@@ -299,7 +304,7 @@ def main(argv=None):
             statut, keep = "provisoire", (lambda pid: True)
     else:
         relecture = load(args.relecture)
-        keywords = keywords_from_validations(load(args.mots_cles), relecture)
+        keywords = keywords_from_validations(mots_cles, relecture)
         par = Counter(m.get("decision") for m in relecture.get("mots", []))
         print(f"Relecture ({relecture['date']}) : {len(exclus_par_relecture(relecture))} mot(s) accepté(s) "
               f"écarté(s) de leur concept : {par['hors_concept']} hors concept, "
@@ -333,4 +338,8 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ValidationsInvalides as exc:
+        print(f"ÉCHEC : {exc}", file=sys.stderr)
+        sys.exit(2)
