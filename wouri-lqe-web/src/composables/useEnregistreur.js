@@ -40,7 +40,7 @@ export function useEnregistreur() {
   }
 
   async function demarrer() {
-    if (demarrage || enCours.value || extrait.value) return { ok: false };
+    if (demonte || demarrage || enCours.value || extrait.value) return { ok: false };
     demarrage = true;
     let obtenu;
     try {
@@ -51,6 +51,7 @@ export function useEnregistreur() {
     }
     if (demonte) {
       obtenu.getTracks().forEach((t) => t.stop());
+      demarrage = false;
       return { ok: false };
     }
     let rec;
@@ -86,12 +87,15 @@ export function useEnregistreur() {
 
   onUnmounted(() => {
     demonte = true;
-    if (recorder && recorder.state !== "inactive") {
-      // l'ecran disparait : on ne fabrique pas d'extrait que personne ne verra
+    if (recorder) {
+      // L'ecran disparait : on ne fabrique pas d'extrait que personne ne verra.
+      // Inconditionnel : stop() passe a « inactive » tout de suite mais onstop tire
+      // plus tard — apres « Arreter », il serait encore en vol et creerait une URL
+      // que personne ne revoquerait.
       recorder.ondataavailable = null;
       recorder.onstop = null;
-      recorder.stop();
     }
+    if (recorder && recorder.state !== "inactive") recorder.stop();
     enCours.value = false;
     relacherMicro();
     effacer();

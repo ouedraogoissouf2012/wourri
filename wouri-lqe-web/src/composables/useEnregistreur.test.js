@@ -36,6 +36,19 @@ class FakeMediaRecorder {
   }
 }
 
+/** Fidele au vrai MediaRecorder : stop() passe a « inactive » TOUT DE SUITE, mais
+ *  dataavailable et stop ne tirent que plus tard (ici : quand le test appelle tirer()). */
+class DeferredMediaRecorder extends FakeMediaRecorder {
+  stop() {
+    this.state = "inactive";
+  }
+
+  tirer() {
+    if (this.ondataavailable) this.ondataavailable({ data: new Blob(["audio"], { type: this.mimeType }) });
+    if (this.onstop) this.onstop();
+  }
+}
+
 let piste;
 let getUserMedia;
 
@@ -178,6 +191,29 @@ describe("useEnregistreur — demontage", () => {
     await flushPromises();
     expect(piste.stop).toHaveBeenCalledTimes(1);
     expect(FakeMediaRecorder.instances).toHaveLength(0);
+  });
+
+  it("« Arrêter » puis demontage avant que onstop tire : aucune URL creee apres", async () => {
+    vi.stubGlobal("MediaRecorder", DeferredMediaRecorder);
+    const { wrapper, enregistreur } = monterHote();
+    await enregistreur.demarrer();
+    enregistreur.arreter(); // etat « inactive », evenements encore en vol
+    wrapper.unmount();
+    FakeMediaRecorder.instances[0].tirer();
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
+    expect(enregistreur.extrait.value).toBeNull();
+  });
+
+  it("apres le demontage, demarrer n'ouvre plus jamais le micro", async () => {
+    let liberer;
+    getUserMedia.mockImplementation(() => new Promise((r) => (liberer = r)));
+    const { wrapper, enregistreur } = monterHote();
+    const demarrage = enregistreur.demarrer();
+    wrapper.unmount();
+    liberer({ getTracks: () => [piste] });
+    await demarrage;
+    expect(await enregistreur.demarrer()).toEqual({ ok: false });
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
   });
 
   it("avec un extrait pret : son URL est revoquee", async () => {
