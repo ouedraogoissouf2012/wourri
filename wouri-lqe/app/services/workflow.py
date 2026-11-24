@@ -77,9 +77,12 @@ def attacher_voix(item_id: str, *, language: str, audio: bytes, mime: str, store
     2026-11-24). Memes verrous que la correction du texte (EDITABLE_FROM), et seulement
     pour un type qui porte une voix (`repo.VOIX_PAR_TYPE`) : la paire question/reponse.
 
-    Tout refus previsible est tranche AVANT de stocker l'audio, pour ne pas laisser de
-    fichier orphelin. Seule une course — la fiche publiee entre ces controles et l'UPDATE —
-    peut encore en laisser un ; il n'est reference nulle part et n'est jamais servi."""
+    Tout refus previsible est tranche AVANT de stocker l'audio. Dette assumee : `store.save`
+    ecrit avant que l'UPDATE ne decide, et AUCUN ramassage n'existe. Trois cas laissent un
+    fichier que rien ne reference : (1) la course entre ces controles et l'UPDATE, (2) tout
+    refus de l'UPDATE apres le `save` (statut change entre-temps), (3) le cas COURANT : une
+    nouvelle voix remplace la precedente dans `meta.voix`, dont le fichier reste sur le
+    disque. Aucun n'est servi ni ne casse rien ; leur volume croit sans borne."""
     row = repo.get(item_id=item_id, language=language)
     if row is None:
         return {"ok": False, "reason": "not_found"}

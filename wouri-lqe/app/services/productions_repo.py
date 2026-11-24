@@ -223,7 +223,8 @@ def set_voix(*, item_id, language: str, kind: str, audio_url: str, allowed_from)
     Le `texte` est lu en base DANS l'UPDATE — la reponse telle qu'elle est a cet instant,
     jamais un texte fourni par le client, et sans fenetre entre lecture et ecriture. Le
     build ne sert cette voix que si ce texte est encore celui que le locuteur a accepte :
-    une voix devenue fausse s'ignore d'elle-meme. Une nouvelle voix remplace la precedente.
+    une voix devenue fausse s'ignore d'elle-meme. Une nouvelle voix remplace la precedente
+    (le fichier de l'ancienne reste dans le stockage : voir `workflow.attacher_voix`).
 
     Toujours filtre par langue, par type et par statut (`allowed_from`) ; refuse un texte
     vide. Retourne `meta.voix` ecrit, ou None si aucune ligne n'a change."""
