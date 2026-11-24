@@ -62,7 +62,7 @@ describe("StudioView — types d'element", () => {
     expect(rep.element.value).toBe("Be lua i …"); // pre-rempli avec la reponse proposee
     // on ne change que le francais : aucun baoule invente dans les tests
     await w.find('[data-champ="reponse_fr"]').setValue("Au début des pluies.");
-    await w.findAll("button").find((b) => b.text() === "Enregistrer").trigger("click");
+    await w.findAll("button").find((b) => b.text() === "Valider la correction").trigger("click");
     await flushPromises();
     const appel = apiMock.mock.calls.find(([path]) => path === "/tasks/edit");
     expect(JSON.parse(appel[1].body)).toEqual({
@@ -78,7 +78,7 @@ describe("StudioView — types d'element", () => {
     await flushPromises();
     await w.findAll("button").find((b) => b.text() === "Corriger").trigger("click");
     expect(w.find('[data-champ="reponse_bci"]').exists()).toBe(false);
-    await w.findAll("button").find((b) => b.text() === "Enregistrer").trigger("click");
+    await w.findAll("button").find((b) => b.text() === "Valider la correction").trigger("click");
     await flushPromises();
     const appel = apiMock.mock.calls.find(([path]) => path === "/tasks/edit");
     expect(JSON.parse(appel[1].body)).toEqual({ id: "1", text_local: "kakao", text_fr: "cacao" });

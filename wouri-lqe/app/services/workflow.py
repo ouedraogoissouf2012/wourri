@@ -7,6 +7,7 @@ role `promote`), jamais par decide (/tasks/decision, role `review`).
 from __future__ import annotations
 
 from app.services import productions_repo as repo
+from app.services.audio_store import AudioStore
 
 # decide (role review) ne peut PAS promouvoir : 'production' n'est pas une decision.
 DECISIONS = {"admin_accepted", "admin_rejected"}
@@ -69,6 +70,33 @@ def edit_text(item_id: str, *, language: str, text_local: str, text_fr: str,
     ):
         return {"ok": False, "reason": "locked", "status": row["status"]}
     return {"ok": True, "id": str(item_id), "text_local": text_local, "text_fr": text_fr, **(reponse or {})}
+
+
+def attacher_voix(item_id: str, *, language: str, audio: bytes, mime: str, store: AudioStore) -> dict:
+    """Le locuteur redit, dans la fiche, la phrase qu'il corrige (ADR-0045, revision du
+    2026-11-24). Memes verrous que la correction du texte (EDITABLE_FROM), et seulement
+    pour un type qui porte une voix (`repo.VOIX_PAR_TYPE`) : la paire question/reponse.
+
+    Tout refus previsible est tranche AVANT de stocker l'audio. Dette assumee : `store.save`
+    ecrit avant que l'UPDATE ne decide, et AUCUN ramassage n'existe. Trois cas laissent un
+    fichier que rien ne reference : (1) la course entre ces controles et l'UPDATE, (2) tout
+    refus de l'UPDATE apres le `save` (statut change entre-temps), (3) le cas COURANT : une
+    nouvelle voix remplace la precedente dans `meta.voix`, dont le fichier reste sur le
+    disque. Aucun n'est servi ni ne casse rien ; leur volume croit sans borne."""
+    row = repo.get(item_id=item_id, language=language)
+    if row is None:
+        return {"ok": False, "reason": "not_found"}
+    if row["kind"] not in repo.VOIX_PAR_TYPE:
+        return {"ok": False, "reason": "type_sans_voix"}
+    if row["status"] not in EDITABLE_FROM:
+        return {"ok": False, "reason": "locked", "status": row["status"]}
+    ref = store.save(audio, mime=mime)
+    voix = repo.set_voix(
+        item_id=item_id, language=language, kind=row["kind"], audio_url=ref, allowed_from=EDITABLE_FROM,
+    )
+    if voix is None:
+        return {"ok": False, "reason": "locked", "status": row["status"]}
+    return {"ok": True, "id": str(item_id), "voix": voix}
 
 
 def remettre_en_question(item_id: str, *, language: str, motif: str) -> dict:

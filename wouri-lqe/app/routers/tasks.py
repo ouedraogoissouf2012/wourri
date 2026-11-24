@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
 from app.data.language_registry import is_known
 from app.routers.session import current_user, require_role
 from app.services import workflow
+from app.services.audio_store import LocalAudioStore
+from app.services.audio_upload import AudioRefuse, lire_audio
 from app.services.auth import session_has
 
 router = APIRouter(prefix="/tasks")
@@ -119,3 +121,24 @@ def post_edit(body: EditBody, user: dict = Depends(require_role("review"))):
         raise HTTPException(status_code=code, detail=result.get("reason"))
     return result
 
+
+
+@router.post("/{item_id}/voix")
+async def post_voix(
+    item_id: str,
+    audio: UploadFile = File(...),
+    user: dict = Depends(require_role("review")),
+):
+    """Le locuteur redit la reponse qu'il corrige, dans la fiche (ADR-0045, revision du
+    2026-11-24). La voix est attachee au texte lu en base, jamais a un texte du client."""
+    try:
+        raw, mime = await lire_audio(audio)
+    except AudioRefuse as exc:
+        raise HTTPException(status_code=400, detail=exc.detail) from exc
+    result = workflow.attacher_voix(
+        item_id, language=user["lang"], audio=raw, mime=mime, store=LocalAudioStore(),
+    )
+    if not result.get("ok"):
+        code = 404 if result.get("reason") == "not_found" else 400
+        raise HTTPException(status_code=code, detail=result.get("reason"))
+    return result

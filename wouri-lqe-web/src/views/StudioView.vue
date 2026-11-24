@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "../api.js";
+import FicheCorrection from "../components/FicheCorrection.vue";
 import NavBar from "../components/NavBar.vue";
 import Pagination from "../components/Pagination.vue";
 import { usePagination } from "../composables/usePagination.js";
@@ -16,12 +17,7 @@ const corpus = ref([]);
 const jsonText = ref('[{"text_local":"","text_fr":""}]');
 const msg = ref("");
 const err = ref("");
-const editing = ref(null); // id de la fiche en cours de correction
-const editLocal = ref("");
-const editFr = ref("");
-const editPaire = ref(false); // une paire se corrige en entier : question ET reponse
-const editRepBci = ref("");
-const editRepFr = ref("");
+const editing = ref(null); // id de la fiche en cours de correction (FicheCorrection)
 
 const can = (r) => {
   const rs = me.value.roles || [];
@@ -141,34 +137,13 @@ async function decide(id, decision) {
 
 function startEdit(r) {
   editing.value = r.id;
-  editLocal.value = r.text_local;
-  editFr.value = r.text_fr;
-  editPaire.value = kindOf(r) === "paire_qr";
-  editRepBci.value = (r.meta || {}).reponse_bci || "";
-  editRepFr.value = (r.meta || {}).reponse_fr || "";
   err.value = "";
 }
 
-function cancelEdit() {
+async function finirCorrection(message) {
   editing.value = null;
-}
-
-async function saveEdit(id) {
-  err.value = "";
-  try {
-    await api("/tasks/edit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id, text_local: editLocal.value, text_fr: editFr.value,
-        ...(editPaire.value ? { reponse_bci: editRepBci.value, reponse_fr: editRepFr.value } : {}),
-      }),
-    });
-    editing.value = null;
-    await refresh();
-  } catch (e) {
-    err.value = String(e.message || e);
-  }
+  msg.value = message;
+  await refresh();
 }
 
 // Le locuteur annule sa decision et sa correction : la fiche revient dans « A accepter »
@@ -234,23 +209,8 @@ async function promote(id) {
            class="mb-2 border-l-4 border-wouri-700 bg-stone-100 px-2 py-1 text-sm" data-motif>
           <strong>On te repose la question :</strong> {{ (r.meta || {}).motif_reexamen }}
         </p>
-        <template v-if="editing === r.id">
-          <label class="block text-xs text-stone-500">{{ editPaire ? "Question (langue locale)" : "Texte (langue locale)" }}</label>
-          <input v-model="editLocal" class="w-full border rounded p-1 mb-2 font-semibold" />
-          <label class="block text-xs text-stone-500">{{ editPaire ? "Question en français" : "Traduction française" }}</label>
-          <input v-model="editFr" class="w-full border rounded p-1 text-stone-600" />
-          <template v-if="editPaire">
-            <label class="block text-xs text-stone-500 mt-2">Réponse (langue locale)</label>
-            <textarea v-model="editRepBci" data-champ="reponse_bci" class="w-full border rounded p-1 mb-2 font-semibold" rows="3" />
-            <label class="block text-xs text-stone-500">Réponse en français</label>
-            <textarea v-model="editRepFr" data-champ="reponse_fr" class="w-full border rounded p-1 text-stone-600" rows="2" />
-          </template>
-          <audio v-if="r.audio_url" :src="mediaSrc(r)" crossorigin="use-credentials" controls class="mt-2 h-8"></audio>
-          <div class="mt-2">
-            <button class="mr-2 bg-wouri-700 text-white px-2 py-1 rounded" type="button" @click="saveEdit(r.id)">Enregistrer</button>
-            <button class="border px-2 py-1" type="button" @click="cancelEdit">Annuler</button>
-          </div>
-        </template>
+        <FicheCorrection v-if="editing === r.id" :fiche="r" :audio-src="mediaSrc(r)"
+          @fini="finirCorrection" @annule="editing = null" />
         <template v-else-if="kindOf(r) === 'mot_cle'">
           <p class="text-xs font-semibold uppercase text-wouri-700" data-kind="mot_cle">Mot-clé de compréhension</p>
           <p>« <strong>{{ r.text_local }}</strong> » veut dire : <strong>{{ r.text_fr }}</strong></p>

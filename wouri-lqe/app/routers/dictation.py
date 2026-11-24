@@ -8,12 +8,11 @@ from app.routers.session import require_role
 from app.services import dictation as svc
 from app.services import dictation_repo as repo
 from app.services.audio_store import LocalAudioStore
+from app.services.audio_upload import AudioRefuse, lire_audio
 
 router = APIRouter(prefix="/dictation")
 
-_ALLOWED_AUDIO = {"audio/webm", "audio/ogg", "audio/wav", "audio/mpeg", "audio/mp4"}
 _MAX_IMPORT = 5_000_000
-_MAX_AUDIO = 15_000_000
 
 
 @router.post("/import")
@@ -74,14 +73,10 @@ async def submit_audio(
     """Locuteur : enregistre l'audio d'UNE phrase de sa langue -> le prompt passe 'recorded'."""
     if repo.get(item_id=item_id, language=user["lang"]) is None:
         raise HTTPException(status_code=404, detail="prompt_introuvable")
-    mime = (audio.content_type or "audio/webm").split(";")[0].strip()
-    if mime not in _ALLOWED_AUDIO:
-        raise HTTPException(status_code=400, detail="format_audio_non_supporte")
-    raw = await audio.read()
-    if not raw:
-        raise HTTPException(status_code=400, detail="audio_vide")
-    if len(raw) > _MAX_AUDIO:
-        raise HTTPException(status_code=400, detail="audio_trop_grand")
+    try:
+        raw, mime = await lire_audio(audio)
+    except AudioRefuse as exc:
+        raise HTTPException(status_code=400, detail=exc.detail) from exc
     ref = LocalAudioStore().save(raw, mime=mime)
     if not repo.set_recorded(item_id=item_id, language=user["lang"], audio_url=ref, actor=user["u"]):
         raise HTTPException(status_code=409, detail="enregistrement_impossible")
