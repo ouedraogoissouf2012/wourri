@@ -29,8 +29,6 @@ REPLI_BCI = {
 def dossier(tmp_path, monkeypatch):
     """Isole les fichiers lus et vide le cache des deux côtés du test."""
     monkeypatch.setattr(msys, "DOSSIER", tmp_path)
-    monkeypatch.setattr("app.services.baoule_ivr.entrees", lambda: ())  # sans base (#623)
-    monkeypatch.setattr("app.services.baoule_ivr.filieres", lambda: ["CACAO", "MAÏS"])
     msys.vider_cache()
     yield tmp_path
     msys.vider_cache()
