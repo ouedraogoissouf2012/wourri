@@ -273,9 +273,10 @@ def main(argv=None):
 
     # Les réponses corrigées ont été réenregistrées en dictée : ces lignes sont la voix à
     # servir, pas des réponses à apparier — sinon la filière déborde et l'appariement cale.
-    textes = accepted_pairs(load(args.paires)) if args.paires else None
+    paires = load(args.paires) if args.paires else None  # lu une seule fois, pour les deux vues
+    textes = accepted_pairs(paires) if paires is not None else None
     # Voix redites dans la fiche par le locuteur (ADR-0045, révision du 2026-11-24).
-    voix_fiches = voix_des_paires(load(args.paires)) if args.paires else {}
+    voix_fiches = voix_des_paires(paires) if paires is not None else {}
     reenregistrements = {}
     if textes is not None:
         rows, reenregistrements = separer_reenregistrements(rows, textes)
