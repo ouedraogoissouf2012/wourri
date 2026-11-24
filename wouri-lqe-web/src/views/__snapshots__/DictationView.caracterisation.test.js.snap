@@ -1,0 +1,186 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`DictationView — caracterisation du cycle d'enregistrement > 1. au repos 1`] = `
+"<div class="max-w-3xl mx-auto p-6">
+  <header class="flex justify-between items-start gap-4">
+    <div>
+      <h1 class="text-xl font-semibold text-wouri-700">Dictée ASR</h1>
+      <p class="text-sm text-stone-600">aya · langue <code>dyu</code></p>
+    </div><a href="/" class="underline text-sm">← Retour</a>
+  </header>
+  <!--v-if-->
+  <!--v-if-->
+  <!-- ===================== ADMIN ===================== -->
+  <!-- ===================== LOCUTEUR ===================== -->
+  <section class="mt-5">
+    <div class="flex items-center justify-between text-sm text-stone-600"><span>Progression : <strong>4</strong> / 10</span><span>40%</span></div>
+    <div class="mt-1 h-2 bg-stone-200 rounded overflow-hidden">
+      <div class="h-full bg-wouri-700" style="width: 40%;"></div>
+    </div>
+    <div class="mt-5 border rounded p-4 bg-white">
+      <p class="inline-block text-xs bg-stone-100 rounded px-2 py-0.5 text-stone-600">riz</p>
+      <p class="mt-3 text-lg font-semibold leading-snug">Aw ye malo sɛnɛ</p>
+      <p class="mt-1 text-sm text-stone-500">Plantez le riz</p>
+      <div class="mt-4 flex items-center gap-2 flex-wrap"><button type="button" class="border px-3 py-1 rounded">🎙️ Enregistrer</button>
+        <!--v-if-->
+        <!--v-if-->
+      </div>
+      <div class="mt-4 flex items-center gap-2"><button type="button" class="bg-wouri-700 text-white px-3 py-1 rounded disabled:opacity-50" disabled="">Valider &amp; suivante</button><button type="button" class="underline text-sm text-stone-600">Passer</button></div>
+    </div>
+  </section>
+</div>"
+`;
+
+exports[`DictationView — caracterisation du cycle d'enregistrement > 2. enregistrement en cours 1`] = `
+"<div class="max-w-3xl mx-auto p-6">
+  <header class="flex justify-between items-start gap-4">
+    <div>
+      <h1 class="text-xl font-semibold text-wouri-700">Dictée ASR</h1>
+      <p class="text-sm text-stone-600">aya · langue <code>dyu</code></p>
+    </div><a href="/" class="underline text-sm">← Retour</a>
+  </header>
+  <!--v-if-->
+  <!--v-if-->
+  <!-- ===================== ADMIN ===================== -->
+  <!-- ===================== LOCUTEUR ===================== -->
+  <section class="mt-5">
+    <div class="flex items-center justify-between text-sm text-stone-600"><span>Progression : <strong>4</strong> / 10</span><span>40%</span></div>
+    <div class="mt-1 h-2 bg-stone-200 rounded overflow-hidden">
+      <div class="h-full bg-wouri-700" style="width: 40%;"></div>
+    </div>
+    <div class="mt-5 border rounded p-4 bg-white">
+      <p class="inline-block text-xs bg-stone-100 rounded px-2 py-0.5 text-stone-600">riz</p>
+      <p class="mt-3 text-lg font-semibold leading-snug">Aw ye malo sɛnɛ</p>
+      <p class="mt-1 text-sm text-stone-500">Plantez le riz</p>
+      <div class="mt-4 flex items-center gap-2 flex-wrap">
+        <!--v-if--><button type="button" class="border px-3 py-1 rounded bg-red-600 text-white">⏹️ Arrêter</button>
+        <!--v-if-->
+      </div>
+      <div class="mt-4 flex items-center gap-2"><button type="button" class="bg-wouri-700 text-white px-3 py-1 rounded disabled:opacity-50" disabled="">Valider &amp; suivante</button><button type="button" class="underline text-sm text-stone-600" disabled="">Passer</button></div>
+    </div>
+  </section>
+</div>"
+`;
+
+exports[`DictationView — caracterisation du cycle d'enregistrement > 3. extrait pret a valider 1`] = `
+"<div class="max-w-3xl mx-auto p-6">
+  <header class="flex justify-between items-start gap-4">
+    <div>
+      <h1 class="text-xl font-semibold text-wouri-700">Dictée ASR</h1>
+      <p class="text-sm text-stone-600">aya · langue <code>dyu</code></p>
+    </div><a href="/" class="underline text-sm">← Retour</a>
+  </header>
+  <!--v-if-->
+  <!--v-if-->
+  <!-- ===================== ADMIN ===================== -->
+  <!-- ===================== LOCUTEUR ===================== -->
+  <section class="mt-5">
+    <div class="flex items-center justify-between text-sm text-stone-600"><span>Progression : <strong>4</strong> / 10</span><span>40%</span></div>
+    <div class="mt-1 h-2 bg-stone-200 rounded overflow-hidden">
+      <div class="h-full bg-wouri-700" style="width: 40%;"></div>
+    </div>
+    <div class="mt-5 border rounded p-4 bg-white">
+      <p class="inline-block text-xs bg-stone-100 rounded px-2 py-0.5 text-stone-600">riz</p>
+      <p class="mt-3 text-lg font-semibold leading-snug">Aw ye malo sɛnɛ</p>
+      <p class="mt-1 text-sm text-stone-500">Plantez le riz</p>
+      <div class="mt-4 flex items-center gap-2 flex-wrap">
+        <!--v-if-->
+        <!--v-if--><audio src="blob:extrait-fixe" controls="" class="h-8"></audio><button type="button" class="underline text-sm">Refaire</button>
+      </div>
+      <div class="mt-4 flex items-center gap-2"><button type="button" class="bg-wouri-700 text-white px-3 py-1 rounded disabled:opacity-50">Valider &amp; suivante</button><button type="button" class="underline text-sm text-stone-600">Passer</button></div>
+    </div>
+  </section>
+</div>"
+`;
+
+exports[`DictationView — caracterisation du cycle d'enregistrement > 4. micro refuse 1`] = `
+"<div class="max-w-3xl mx-auto p-6">
+  <header class="flex justify-between items-start gap-4">
+    <div>
+      <h1 class="text-xl font-semibold text-wouri-700">Dictée ASR</h1>
+      <p class="text-sm text-stone-600">aya · langue <code>dyu</code></p>
+    </div><a href="/" class="underline text-sm">← Retour</a>
+  </header>
+  <!--v-if-->
+  <p class="mt-3 text-red-700 text-sm">Micro non autorisé — autorise l'accès au micro dans le navigateur.</p><!-- ===================== ADMIN ===================== -->
+  <!-- ===================== LOCUTEUR ===================== -->
+  <section class="mt-5">
+    <div class="flex items-center justify-between text-sm text-stone-600"><span>Progression : <strong>4</strong> / 10</span><span>40%</span></div>
+    <div class="mt-1 h-2 bg-stone-200 rounded overflow-hidden">
+      <div class="h-full bg-wouri-700" style="width: 40%;"></div>
+    </div>
+    <div class="mt-5 border rounded p-4 bg-white">
+      <p class="inline-block text-xs bg-stone-100 rounded px-2 py-0.5 text-stone-600">riz</p>
+      <p class="mt-3 text-lg font-semibold leading-snug">Aw ye malo sɛnɛ</p>
+      <p class="mt-1 text-sm text-stone-500">Plantez le riz</p>
+      <div class="mt-4 flex items-center gap-2 flex-wrap"><button type="button" class="border px-3 py-1 rounded">🎙️ Enregistrer</button>
+        <!--v-if-->
+        <!--v-if-->
+      </div>
+      <div class="mt-4 flex items-center gap-2"><button type="button" class="bg-wouri-700 text-white px-3 py-1 rounded disabled:opacity-50" disabled="">Valider &amp; suivante</button><button type="button" class="underline text-sm text-stone-600">Passer</button></div>
+    </div>
+  </section>
+</div>"
+`;
+
+exports[`DictationView — caracterisation du cycle d'enregistrement > 5. apres « Refaire » 1`] = `
+"<div class="max-w-3xl mx-auto p-6">
+  <header class="flex justify-between items-start gap-4">
+    <div>
+      <h1 class="text-xl font-semibold text-wouri-700">Dictée ASR</h1>
+      <p class="text-sm text-stone-600">aya · langue <code>dyu</code></p>
+    </div><a href="/" class="underline text-sm">← Retour</a>
+  </header>
+  <!--v-if-->
+  <!--v-if-->
+  <!-- ===================== ADMIN ===================== -->
+  <!-- ===================== LOCUTEUR ===================== -->
+  <section class="mt-5">
+    <div class="flex items-center justify-between text-sm text-stone-600"><span>Progression : <strong>4</strong> / 10</span><span>40%</span></div>
+    <div class="mt-1 h-2 bg-stone-200 rounded overflow-hidden">
+      <div class="h-full bg-wouri-700" style="width: 40%;"></div>
+    </div>
+    <div class="mt-5 border rounded p-4 bg-white">
+      <p class="inline-block text-xs bg-stone-100 rounded px-2 py-0.5 text-stone-600">riz</p>
+      <p class="mt-3 text-lg font-semibold leading-snug">Aw ye malo sɛnɛ</p>
+      <p class="mt-1 text-sm text-stone-500">Plantez le riz</p>
+      <div class="mt-4 flex items-center gap-2 flex-wrap"><button type="button" class="border px-3 py-1 rounded">🎙️ Enregistrer</button>
+        <!--v-if-->
+        <!--v-if-->
+      </div>
+      <div class="mt-4 flex items-center gap-2"><button type="button" class="bg-wouri-700 text-white px-3 py-1 rounded disabled:opacity-50" disabled="">Valider &amp; suivante</button><button type="button" class="underline text-sm text-stone-600">Passer</button></div>
+    </div>
+  </section>
+</div>"
+`;
+
+exports[`DictationView — caracterisation du cycle d'enregistrement > 6. apres l'envoi de l'extrait 1`] = `
+"<div class="max-w-3xl mx-auto p-6">
+  <header class="flex justify-between items-start gap-4">
+    <div>
+      <h1 class="text-xl font-semibold text-wouri-700">Dictée ASR</h1>
+      <p class="text-sm text-stone-600">aya · langue <code>dyu</code></p>
+    </div><a href="/" class="underline text-sm">← Retour</a>
+  </header>
+  <p class="mt-3 text-green-800 text-sm">Enregistré ✓</p>
+  <!--v-if-->
+  <!-- ===================== ADMIN ===================== -->
+  <!-- ===================== LOCUTEUR ===================== -->
+  <section class="mt-5">
+    <div class="flex items-center justify-between text-sm text-stone-600"><span>Progression : <strong>5</strong> / 10</span><span>50%</span></div>
+    <div class="mt-1 h-2 bg-stone-200 rounded overflow-hidden">
+      <div class="h-full bg-wouri-700" style="width: 50%;"></div>
+    </div>
+    <div class="mt-5 border rounded p-4 bg-white">
+      <p class="inline-block text-xs bg-stone-100 rounded px-2 py-0.5 text-stone-600">riz</p>
+      <p class="mt-3 text-lg font-semibold leading-snug">Aw ye foro labɛn</p>
+      <p class="mt-1 text-sm text-stone-500">Preparez le champ</p>
+      <div class="mt-4 flex items-center gap-2 flex-wrap"><button type="button" class="border px-3 py-1 rounded">🎙️ Enregistrer</button>
+        <!--v-if-->
+        <!--v-if-->
+      </div>
+      <div class="mt-4 flex items-center gap-2"><button type="button" class="bg-wouri-700 text-white px-3 py-1 rounded disabled:opacity-50" disabled="">Valider &amp; suivante</button><button type="button" class="underline text-sm text-stone-600">Passer</button></div>
+    </div>
+  </section>
+</div>"
+`;

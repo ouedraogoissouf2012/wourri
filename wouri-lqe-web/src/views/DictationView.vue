@@ -1,6 +1,8 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { api } from "../api.js";
+import EnregistreurVoix from "../components/EnregistreurVoix.vue";
+import { useEnregistreur } from "../composables/useEnregistreur.js";
 
 // Front (lqe.*) et API (lqe-api.*) sur des origines distinctes : l'export (binaire) passe
 // par fetch credentials + Blob (le helper api() ne gère que du JSON).
@@ -17,17 +19,11 @@ const err = ref("");
 const queue = ref([]); // phrases à lire (status todo)
 const idx = ref(0);
 const prog = ref({ total: 0, recorded: 0, todo: 0 });
-const audio = ref(null); // { blob, url, mime }
-const recording = ref(false);
-let recorder = null;
-let stream = null;
-let starting = false; // garde anti-ré-entrance de startRec (await getUserMedia)
-
-function clearAudio() {
-  // révoque l'Object URL avant de perdre la référence (sinon le blob fuit en mémoire)
-  if (audio.value && audio.value.url) URL.revokeObjectURL(audio.value.url);
-  audio.value = null;
-}
+// Enregistreur partagé avec la fiche de relecture (ADR-0045, révision du 2026-11-24).
+const enregistreur = useEnregistreur();
+const audio = enregistreur.extrait; // { blob, url, mime }
+const recording = enregistreur.enCours;
+const clearAudio = enregistreur.effacer;
 
 const current = computed(() => queue.value[idx.value] || null);
 const donePct = computed(() =>
@@ -75,47 +71,14 @@ onMounted(async () => {
   }
 });
 
-// --- enregistrement (repris du pattern RequestsView) ---
-async function startRec() {
-  // garde synchrone AVANT l'await : le bouton reste rendu pendant getUserMedia,
-  // un double-clic relancerait un 2e flux micro orphelin (stream/recorder écrasés).
-  if (starting || recording.value || audio.value) return;
-  starting = true;
+// --- enregistrement : le cycle vit dans useEnregistreur, l'écran garde ses messages ---
+function onDemarrage() {
   err.value = "";
   msg.value = "";
-  let s;
-  try {
-    s = await navigator.mediaDevices.getUserMedia({ audio: true });
-  } catch {
-    starting = false;
-    err.value = "Micro non autorisé — autorise l'accès au micro dans le navigateur.";
-    return;
-  }
-  stream = s;
-  const chunks = [];
-  recorder = new MediaRecorder(stream);
-  recorder.ondataavailable = (e) => {
-    if (e.data && e.data.size) chunks.push(e.data);
-  };
-  recorder.onstop = () => {
-    const mime = (recorder && recorder.mimeType) || "audio/webm";
-    const blob = new Blob(chunks, { type: mime });
-    audio.value = { blob, url: URL.createObjectURL(blob), mime };
-    if (stream) stream.getTracks().forEach((t) => t.stop());
-    stream = null;
-  };
-  recorder.start();
-  recording.value = true;
-  starting = false; // code post-await synchrone : pas de fenêtre d'interleaving
 }
 
-function stopRec() {
-  if (recorder && recorder.state !== "inactive") recorder.stop();
-  recording.value = false;
-}
-
-function redo() {
-  clearAudio();
+function onRefus(message) {
+  err.value = message;
 }
 
 function skip() {
@@ -257,16 +220,7 @@ function downloadExport() {
         <p class="mt-3 text-lg font-semibold leading-snug">{{ current.text_local }}</p>
         <p v-if="current.text_fr" class="mt-1 text-sm text-stone-500">{{ current.text_fr }}</p>
 
-        <div class="mt-4 flex items-center gap-2 flex-wrap">
-          <button v-if="!recording && !audio" type="button"
-            class="border px-3 py-1 rounded" @click="startRec">🎙️ Enregistrer</button>
-          <button v-if="recording" type="button"
-            class="border px-3 py-1 rounded bg-red-600 text-white" @click="stopRec">⏹️ Arrêter</button>
-          <template v-if="audio">
-            <audio :src="audio.url" controls class="h-8"></audio>
-            <button type="button" class="underline text-sm" @click="redo">Refaire</button>
-          </template>
-        </div>
+        <EnregistreurVoix :enregistreur="enregistreur" @demarrage="onDemarrage" @refus="onRefus" />
 
         <div class="mt-4 flex items-center gap-2">
           <button type="button"
