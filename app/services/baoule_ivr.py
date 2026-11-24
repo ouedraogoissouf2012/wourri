@@ -111,10 +111,21 @@ def _synchroniser_si_besoin(engine) -> None:
     _synchronises.add(lot.empreinte)
 
 
-def _base_tombee(exc: Exception) -> None:
+def _base_tombee(exc: Exception) -> Optional[tuple]:
+    """Base injoignable : le corpus en mémoire s'il y en a un, sinon None (-> repli).
+
+    Même règle que pour un fichier refusé (décision a, #623) : servir le dernier contenu
+    VÉRIFIÉ plutôt que le silence. La garantie « rien de périmé » porte sur ce qu'on peut
+    vérifier ; quand la vérification est impossible, le journal le dit à chaque requête."""
+    cache = _cache
+    if cache is not None:
+        logger.error("[BCI-DB] Base injoignable (%s) — corpus servi depuis la mémoire (lot %s), "
+                     "fraîcheur non vérifiée", db.message_sur(exc), (cache.empreinte or "?")[:12])
+        return cache.entrees
     # D4 (#623) : le texte servi reste le repli habituel, mais le journal dit la vraie cause.
     logger.error("[BCI-DB] Corpus baoulé indisponible en base (%s) — repli servi : ce n'est pas "
                  "la question qui est en cause", db.message_sur(exc))
+    return None
 
 
 class _Cache(NamedTuple):
@@ -149,9 +160,8 @@ def entrees() -> tuple:
             if cache is None or cache.empreinte != lot:
                 cache = _cache = _Cache(lot, corpus_bci_base.charger(conn))
             return cache.entrees
-    except Exception as exc:  # base injoignable ou synchronisation refusée : repli, jamais une 500
-        _base_tombee(exc)
-        return ()
+    except Exception as exc:  # base injoignable : la mémoire si elle existe, sinon le repli
+        return _base_tombee(exc) or ()
 
 
 def filieres() -> list[str]:
@@ -160,8 +170,7 @@ def filieres() -> list[str]:
         with db.get_engine().connect() as conn:
             return corpus_bci_base.filieres(conn)
     except Exception as exc:
-        _base_tombee(exc)
-        return []
+        return [e["filiere"] for e in _base_tombee(exc) or ()]
 
 
 def chercher(text: str, intent: Optional[str], concepts, corpus=None) -> Optional[Trouvaille]:
