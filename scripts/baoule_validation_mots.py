@@ -36,6 +36,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts import baoule_sources as src  # noqa: E402
+from scripts.validations_atelier import ValidationsInvalides  # noqa: E402
 
 CONCEPTS_FR = ROOT / "dictionnaires" / "nlu_concepts.json"
 SCORE_MAX = 20
@@ -230,4 +231,8 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ValidationsInvalides as exc:
+        print(f"ÉCHEC : {exc}", file=sys.stderr)
+        sys.exit(2)

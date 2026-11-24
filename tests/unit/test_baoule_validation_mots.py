@@ -93,7 +93,8 @@ def test_bible_alignee_par_reference_et_validations_acceptees_seulement(tmp_path
     xml(tmp_path / "bci.xml", [(2, "kpa tɔ"), (3, "yo")])
     assert list(src.bible_alignee(tmp_path / "fr.xml", tmp_path / "bci.xml")) == [("la lumière", "kpa tɔ")]
     v = tmp_path / "val.json"
-    v.write_text(json.dumps({"entries": [{"status": "admin_accepted", "text_fr": "zorbe", "text_local": "zuka"},
+    # La forme réelle d'un export de /tasks/validations?kind=mot_cle (garde de #637).
+    v.write_text(json.dumps({"language": "bci", "kind": "mot_cle", "entries": [{"status": "admin_accepted", "text_fr": "zorbe", "text_local": "zuka"},
                                          {"status": "admin_rejected", "text_fr": "zorbe", "text_local": "tɔ"}]}),
                  encoding="utf-8")
     assert list(src.validations_locuteur(v)) == [("zorbe", "zuka")]

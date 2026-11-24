@@ -29,6 +29,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from app.services.nlu.baoule_text import tokens_bci
+from scripts.validations_atelier import charger_validations
 
 ARTICLES_FR = {"le", "la", "les", "l", "un", "une", "des", "du", "de", "d", "se", "s"}
 MAX_MOTS_GLOSE = 3  # au-delà, la glose est une définition, pas une traduction
@@ -191,11 +192,14 @@ def panlex_fr_bci(bci_eng: Path, en_fr: Path):
 
 
 def validations_locuteur(path: Path):
-    """Mots-clés ACCEPTÉS par le locuteur dans l'atelier (/tasks/validations?kind=mot_cle)."""
-    data = json.loads(Path(path).read_text(encoding="utf-8"))
-    for e in data.get("entries", data) if isinstance(data, dict) else data:
-        if e.get("status") == "admin_accepted":
-            yield e.get("text_fr", ""), e.get("text_local", "")
+    """Mots-clés ACCEPTÉS par le locuteur dans l'atelier (/tasks/validations?kind=mot_cle).
+
+    Le fichier est contrôlé dès l'appel, pas à la première lecture (#637) : un fichier
+    inutilisable lève `ValidationsInvalides`, lisible, au lieu d'être lu comme « aucune
+    entrée » ou de casser plus loin sur un dict d'erreur."""
+    data = charger_validations(path, kind="mot_cle", langue="bci")
+    return ((e.get("text_fr", ""), e.get("text_local", ""))
+            for e in data["entries"] if e.get("status") == "admin_accepted")
 
 
 def dictee(export: Path):
