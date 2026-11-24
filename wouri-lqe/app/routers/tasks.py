@@ -18,8 +18,15 @@ def _langue(user: dict, demandee: str | None) -> str:
     ce paramètre il ne verrait aucune fiche et ne pourrait reposer aucune question, le
     dépôt filtrant en égalité stricte. Le paramètre ne perce pas l'isolation entre
     locuteurs — un compte sans le rôle `admin` est refusé, même pour sa propre langue.
+
+    Ne renvoie jamais `*` (#637) : cette valeur ne vise aucune fiche, et la renvoyer
+    faisait répondre « 200, rien » — on croyait le locuteur sans travail. La garde porte
+    sur la VALEUR, pas sur le rôle : `users.update_user` garde la langue quand seuls les
+    rôles changent, un admin rétrogradé porte donc encore `*`.
     """
     if demandee is None:
+        if user["lang"] == "*":
+            raise HTTPException(status_code=400, detail="language_required")
         return user["lang"]
     if not session_has(user, "admin"):
         raise HTTPException(status_code=403, detail="forbidden")
@@ -62,11 +69,14 @@ def get_tasks(language: str | None = None, user: dict = Depends(current_user)):
 
 
 @router.get("/validations")
-def get_validations(kind: str, user: dict = Depends(current_user)):
+def get_validations(kind: str, language: str | None = None,
+                    user: dict = Depends(current_user)):
     """Mots-cles ou paires question/reponse de la langue du compte, tous statuts (ADR-0045).
 
-    Sert a reconstruire le NLU depuis les seules decisions du locuteur."""
-    lang = user["lang"]
+    Sert a reconstruire le NLU depuis les seules decisions du locuteur. Un admin nomme
+    la langue (`language`, voir `_langue`), une seule : le build ne trie pas les entrees
+    par langue, une reponse melangee polluerait le NLU sans un mot."""
+    lang = _langue(user, language)
     entries = workflow.list_validations(language=lang, kind=kind)
     return {"language": lang, "kind": kind, "entries": entries, "count": len(entries)}
 
@@ -99,7 +109,7 @@ def post_reexamen(body: ReexamenBody, user: dict = Depends(require_role("admin")
     affiche (ADR-0047). Reserve a l'admin — c'est un relecteur qui repose la question.
 
     L'admin DOIT nommer la langue (`language`) : sa session porte `*`, qui ne vise
-    aucune fiche. Sans ce champ l'appel ne peut que renvoyer 404 — voir `_langue`."""
+    aucune fiche. Sans ce champ l'appel est refuse (400 `language_required`) — voir `_langue`."""
     result = workflow.remettre_en_question(
         body.id, language=_langue(user, body.language), motif=body.motif,
     )
