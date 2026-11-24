@@ -104,8 +104,9 @@ def _refuser(message: str):
 def _non_declare(point: str) -> str:
     z, lieu = _zone, f"{point} depuis {_origine()}"
     if z.collecte:
-        return (f"le module {z.nom} atteint PostgreSQL pendant la collecte ({lieu}) : aucune "
-                "connexion n'est permise à l'import — déplace-la dans une fixture d'un test déclaré.")
+        return (f"la collecte de {z.nom} atteint PostgreSQL ({lieu}) : aucune connexion n'est "
+                "permise pendant la collecte (import d'un module, crochet de collecte) — "
+                "déplace-la dans une fixture d'un test déclaré.")
     if z is _HORS:
         return f"PostgreSQL atteint hors de tout test ({lieu}) : seul un test déclaré y a droit."
     return (f"{z.nom} a atteint PostgreSQL sans le déclarer ({lieu}). S'il n'a pas besoin de la "
@@ -243,13 +244,18 @@ def _imputer(rapport, nom: str) -> None:
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_make_collect_report(collector):
+    # Les collectes S'IMBRIQUENT : la Session collecte en elle-même les dossiers qui mènent
+    # aux chemins demandés. Zone locale, imputée telle quelle, et zone PRÉCÉDENTE restaurée
+    # en sortie : sinon, après un enfant, la Session continuait en « hors de tout test » et
+    # ses propres refus n'étaient jamais imputés à sa collecte.
     global _zone
-    _zone = _Zone(collector.nodeid or "<session>", declare=False, collecte=True)
+    precedente, zone = _zone, _Zone(collector.nodeid or "<session>", declare=False, collecte=True)
+    _zone = zone
     try:
         resultat = yield
-        _imputer(resultat.get_result(), _zone.nom)
+        _imputer(resultat.get_result(), zone.nom)
     finally:
-        _zone = _HORS
+        _zone = precedente
 
 
 @pytest.hookimpl(hookwrapper=True)

@@ -1,105 +1,13 @@
 """La garde de la base (#638) se prouve elle-même : chaque porte qu'elle prétend tenir a
 ici son test, et chaque test fait tourner une VRAIE session pytest dans un sous-processus
-(pas d'interférence avec la garde de la session qui les lance).
-
-Aucune base n'est nécessaire : un refus doit survenir AVANT le réseau. Des sockets
-d'écoute locales comptent les connexions qui l'atteignent — zéro pour un refus, une pour
-un accès autorisé (sinon le compteur lui-même ne prouverait rien).
+(pas d'interférence avec la garde de la session qui les lance). Outils partagés :
+`_garde_outils.py` ; la collecte a son fichier : `test_garde_base_collecte.py`.
 """
 from __future__ import annotations
 
-import os
-import socket
-import subprocess
-import sys
-import textwrap
-import threading
-import xml.etree.ElementTree as ET
-from pathlib import Path
-
 import pytest
 
-GARDE = Path(__file__).resolve().parents[2] / "tools" / "pytest"
-NON_DECLARE = "sans le déclarer"
-NON_JETABLE = "base non jetable : wourri_dev (attendu : un nom finissant par `_test`)"
-
-
-class _Ecoute:
-    """Un faux serveur : accepte, compte, raccroche."""
-
-    def __init__(self):
-        self._s = socket.create_server(("127.0.0.1", 0))
-        self._s.settimeout(0.1)
-        self.port = self._s.getsockname()[1]
-        self.acceptees = 0
-        self._fin = threading.Event()
-        self._fil = threading.Thread(target=self._boucle, daemon=True)
-        self._fil.start()
-
-    def _boucle(self):
-        while not self._fin.is_set():
-            try:
-                conn, _ = self._s.accept()
-            except OSError:
-                continue
-            self.acceptees += 1
-            conn.close()
-
-    def fermer(self):
-        self._fin.set()
-        self._fil.join()
-        self._s.close()
-
-
-def _session(tmp_path: Path, fichiers: dict[str, str], ecoutes: dict[str, _Ecoute]):
-    """Lance pytest sur `fichiers`, garde chargée comme en CI. -> (code, sortie, issues)."""
-    for nom, source in fichiers.items():
-        (tmp_path / nom).write_text(textwrap.dedent(source), encoding="utf-8")
-    (tmp_path / "pytest.ini").write_text(
-        "[pytest]\naddopts = -p garde_base -p no:cacheprovider\n", encoding="utf-8")
-    env = {k: v for k, v in os.environ.items()
-           if not k.startswith(("POSTGRES", "PG", "LQE_DATABASE"))}
-    # PYTHONPATH et non `pythonpath` du pytest.ini : ce dernier s'applique APRÈS l'import des
-    # greffons `-p`. Ces sessions éprouvent la garde ; son câblage réel a son propre test.
-    env["PYTHONPATH"] = str(GARDE)
-    env.update({f"PORT_{cle}": str(e.port) for cle, e in ecoutes.items()})
-    rapport = tmp_path / "rapport.xml"
-    r = subprocess.run(
-        [sys.executable, "-m", "pytest", "-q", f"--junitxml={rapport}"],
-        cwd=tmp_path, env=env, capture_output=True, text=True, timeout=180,
-    )
-    return r.returncode, r.stdout + r.stderr, _issues(rapport)
-
-
-def _issues(rapport: Path) -> dict[str, tuple[str, str]]:
-    """{nom du test: (issue, texte du rapport)} depuis le JUnit XML."""
-    if not rapport.exists():
-        return {}
-    issues = {}
-    for cas in ET.parse(rapport).getroot().iter("testcase"):
-        issue, texte = "passed", ""
-        for balise in ("failure", "error", "skipped"):
-            el = cas.find(balise)
-            if el is not None:
-                issue = {"failure": "failed", "error": "error", "skipped": "skipped"}[balise]
-                texte = (el.get("message") or "") + "\n" + (el.text or "")
-                break
-        issues[cas.get("name")] = (issue, texte)
-    return issues
-
-
-@pytest.fixture
-def ecoutes():
-    actives: dict[str, _Ecoute] = {}
-
-    def creer(*cles):
-        for cle in cles:
-            actives[cle] = _Ecoute()
-        return actives
-
-    yield creer
-    for e in actives.values():
-        e.fermer()
+from tests.unit._garde_outils import NON_DECLARE, NON_JETABLE, Ecoute, ecoutes, lancer_session  # noqa: F401
 
 
 SCENARIOS = '''
@@ -206,9 +114,9 @@ REFUSES_SANS_RESEAU = ("CONNECT", "AVALEE", "CLASSE", "ASYNC", "SQLA", "FIL", "T
 @pytest.fixture(scope="module")
 def scenarios(tmp_path_factory):
     """Une seule session pour tous les scénarios de test : ~1 s au lieu d'une par cas."""
-    ecoute = {cle: _Ecoute() for cle in (*REFUSES_SANS_RESEAU, "JETABLE")}
+    ecoute = {cle: Ecoute() for cle in (*REFUSES_SANS_RESEAU, "JETABLE")}
     try:
-        code, sortie, issues = _session(tmp_path_factory.mktemp("garde"),
+        code, sortie, issues = lancer_session(tmp_path_factory.mktemp("garde"),
                                         {"test_scenarios.py": SCENARIOS}, ecoute)
     finally:
         for e in ecoute.values():
@@ -282,33 +190,9 @@ def test_un_sous_processus_vers_une_base_jetable_est_autorise(scenarios):
     assert issues["test_sous_processus_vers_base_jetable"][0] == "passed", sortie
 
 
-def test_une_connexion_a_l_import_est_une_erreur_de_collecte(tmp_path, ecoutes):
-    """Le cas le plus sournois : un module qui se connecte à l'import, hors de tout test,
-    et avale l'erreur — comme le faisaient les `skipif` de module avec postgres_reachable."""
-    e = ecoutes("IMPORT")
-    code, sortie, _ = _session(tmp_path, {
-        "test_a_l_import.py": '''
-            import os, psycopg
-            try:
-                psycopg.connect(f"host=127.0.0.1 port={os.environ['PORT_IMPORT']} dbname=x_test user=u connect_timeout=2")
-            except Exception:
-                pass
-            def test_rien():
-                pass
-        ''',
-        "test_voisin.py": "def test_voisin():\n    pass\n",
-    }, e)
-    assert code != 0, sortie
-    assert "pendant la collecte" in sortie, sortie
-    # Une ERREUR DE COLLECTE, pas un échec de fin de session : le module fautif est nommé
-    # comme tel et rien ne tourne (le filet de fin de session aurait laissé passer ses tests).
-    assert "ERROR test_a_l_import.py" in sortie and "error during collection" in sortie, sortie
-    assert e["IMPORT"].acceptees == 0
-
-
 def test_une_connexion_hors_de_tout_test_fait_echouer_la_session(tmp_path, ecoutes):
     e = ecoutes("HORS")
-    code, sortie, issues = _session(tmp_path, {
+    code, sortie, issues = lancer_session(tmp_path, {
         "conftest.py": '''
             import os, psycopg
             def pytest_sessionstart(session):
