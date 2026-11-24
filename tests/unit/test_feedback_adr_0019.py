@@ -161,13 +161,24 @@ def test_negatif_creates_bronze_task_not_corpus(redirect_files, monkeypatch):
         lambda *a, **k: (_ for _ in ()).throw(AssertionError("corpus")),
         raising=False,
     )
-    # #638 : source="ivr_exact" fait chercher l'id de l'entrée corpus (traçabilité du log
-    # négatif, échec avalé). Avec le modèle d'embedding présent (CI), la recherche
-    # atteignait la VRAIE base ; ce test porte sur la tâche Bronze, pas sur cet id.
-    monkeypatch.setattr("app.services.corpus_service.chercher_reponse_ivr", lambda **k: None)
     _run_negatif(_req(source="ivr_exact"))
     assert redirect_files.tasks.exists()
     task = json.loads(redirect_files.tasks.read_text(encoding="utf-8").strip())
     assert task["status"] == "bronze"
     assert task["intent"] == "CONSEIL_PRODUCTION"
     assert not task["user"].startswith("221")
+
+
+def test_negatif_ne_cherche_plus_l_entree_au_moment_du_vote(redirect_files, monkeypatch):
+    """#644 : la recherche du vote (sans la question, donc peut-être sur une autre entrée
+    que celle servie) bloquait la boucle — embedding + SQL. Le journal garde le TEXTE
+    servi ; tools/analyze_feedback.py retrouve l'entrée hors ligne."""
+    appels = []
+    # Un espion qui LÈVERAIT serait avalé par un `except Exception: pass` : il enregistre.
+    monkeypatch.setattr("app.services.corpus_service.chercher_reponse_ivr",
+                        lambda *a, **k: appels.append((a, k)))
+    _run_negatif(_req(source="ivr_exact"))
+    assert appels == []
+    ligne = json.loads(redirect_files.negatif.read_text(encoding="utf-8").strip())
+    assert "id_entree_corpus" not in ligne
+    assert ligne["reponse_bambara"] == _req().reponse_bambara[:200]
