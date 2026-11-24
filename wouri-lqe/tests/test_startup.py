@@ -21,6 +21,7 @@ def _fresh_app():
     return m.app
 
 
+@pytest.mark.base_de_donnees  # DROP SCHEMA hors de la fixture `db` (#638)
 def test_lifespan_applies_migrations(monkeypatch):
     # DROP schéma puis démarrage SANS fixture db : SEUL le lifespan doit recréer les tables.
     monkeypatch.setenv("LQE_ENV", "dev")

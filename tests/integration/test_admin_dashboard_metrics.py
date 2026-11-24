@@ -11,12 +11,12 @@ from app.services.admin_metrics import (
     get_dashboard_data,
     record_request_metric,
 )
-from tests.integration._helpers import postgres_reachable
+from tests.integration._helpers import exiger_postgres
 
 _URL = resolve_postgres_url(raise_on_missing=False)
-pytestmark = pytest.mark.skipif(
-    not postgres_reachable(_URL),
-    reason="PostgreSQL+pgvector non disponible pour le dashboard #41.",
+pytestmark = pytest.mark.base_de_donnees  # #638 : ce module atteint PostgreSQL
+_base_joignable = exiger_postgres(
+    _URL, "PostgreSQL+pgvector non disponible pour le dashboard #41.",
 )
 
 

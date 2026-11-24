@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 
 from app.db.url_resolver import resolve_postgres_url
-from tests.integration._helpers import postgres_reachable
+from tests.integration._helpers import exiger_postgres
 
 from scripts.import_corpus_from_convex import (
     _apply_inserts,
@@ -25,12 +25,8 @@ from scripts.import_corpus_from_convex import (
 )
 
 _URL = resolve_postgres_url(raise_on_missing=False)
-_REACHABLE = postgres_reachable(_URL)
-
-pytestmark = pytest.mark.skipif(
-    not _REACHABLE,
-    reason="PostgreSQL+pgvector non disponible (cf. test_corpus_schema.py).",
-)
+pytestmark = pytest.mark.base_de_donnees  # #638 : ce module atteint PostgreSQL
+_base_joignable = exiger_postgres(_URL, "PostgreSQL+pgvector non disponible (cf. test_corpus_schema.py).")
 
 _VEC_ZERO = "[" + ",".join(["0"] * 384) + "]"
 

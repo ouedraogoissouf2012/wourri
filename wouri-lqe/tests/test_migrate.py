@@ -38,6 +38,7 @@ def test_migrations_are_idempotent(db):
     assert migrate.run_migrations() == []
 
 
+@pytest.mark.base_de_donnees  # DROP SCHEMA hors de la fixture `db` (#638)
 def test_seed_langues_via_migration():
     # sur une base fraiche (schema droppe -> schema_migrations vide), la migration 003
     # seed dyu/bci. N'utilise PAS `db` (qui truncate languages apres migration).

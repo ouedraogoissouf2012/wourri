@@ -23,6 +23,14 @@ os.environ.setdefault("LOG_RETENTION_ENABLED", "false")
 # (test_rate_limiting.py) posent leur propre RATE_LIMIT explicitement.
 os.environ.setdefault("RATE_LIMIT", "100000/minute")
 
+# Issue #638 : chaque requête HTTP sur une route surveillée confiait une écriture de
+# métriques à un fil d'arrière-plan (« wourri-admin »), qui atteignait la base pendant le
+# test SUIVANT. Mesuré : une INSERT lancée par test_upload_limits a abouti pendant un
+# test unitaire sans rapport. La garde de la base (tools/pytest/garde_base.py) aurait
+# accusé cet innocent, au hasard du moment où le fil écrit. Les tests des métriques
+# règlent la valeur eux-mêmes (test_admin_metrics_service, test_admin_dashboard_*).
+os.environ.setdefault("ADMIN_METRICS_ENABLED", "false")
+
 
 # ADR-0039 / #550 : le garde LLM escalade désormais les questions non couvertes
 # (remontée préventive). Sans ce garde-fou, les tests de handlers qui traversent

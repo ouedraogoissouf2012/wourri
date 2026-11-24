@@ -17,7 +17,7 @@
     "scripts/generate_culture_validation_pdf.py": 632,
     "scripts/generate_issue_40_hevea_validation_pdf.py": 488,
     "scripts/prevalidation_rules.py": 346,
-    "tests/integration/test_corpus_schema.py": 395,
+    "tests/integration/test_corpus_schema.py": 393,
     "tests/unit/test_asr_chain.py": 321,
     "tests/unit/test_bambara_validator_source.py": 479,
     "tests/unit/test_chat_service.py": 328,

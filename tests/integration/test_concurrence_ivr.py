@@ -62,11 +62,13 @@ class TestConcurrenceIVR:
                 "cultures": cultures[0] if cultures else "*",
             }
 
-        # Patch la fonction réelle (backend pgvector unique, #203)
+        # Patch la fonction réelle (backend pgvector unique, #203). `get_phrases_for_intent`
+        # (les phrases attestées du meta) atteignait la VRAIE base, dans la section
+        # chronométrée : ce test n'en a pas besoin (#638, garde de la base).
         with patch(
             "app.services.corpus_service.chercher_reponse_ivr",
             side_effect=fake_chercher,
-        ):
+        ), patch("app.services.corpus_service.get_phrases_for_intent", return_value=[]):
             nlu = NLUResult(
                 message_for_deepseek="test",
                 intent="CONSEIL_PRODUCTION",

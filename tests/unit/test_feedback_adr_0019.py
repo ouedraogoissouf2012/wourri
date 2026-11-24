@@ -161,6 +161,10 @@ def test_negatif_creates_bronze_task_not_corpus(redirect_files, monkeypatch):
         lambda *a, **k: (_ for _ in ()).throw(AssertionError("corpus")),
         raising=False,
     )
+    # #638 : source="ivr_exact" fait chercher l'id de l'entrée corpus (traçabilité du log
+    # négatif, échec avalé). Avec le modèle d'embedding présent (CI), la recherche
+    # atteignait la VRAIE base ; ce test porte sur la tâche Bronze, pas sur cet id.
+    monkeypatch.setattr("app.services.corpus_service.chercher_reponse_ivr", lambda **k: None)
     _run_negatif(_req(source="ivr_exact"))
     assert redirect_files.tasks.exists()
     task = json.loads(redirect_files.tasks.read_text(encoding="utf-8").strip())
