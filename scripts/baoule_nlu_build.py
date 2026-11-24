@@ -75,12 +75,39 @@ def accepted_pairs(paires) -> dict[str, dict]:
     out = {}
     for e in accepted(paires):
         meta = e.get("meta") or {}
-        ext = meta.get("external_id") or ""
-        out[ext.split(":", 1)[1] if ext.startswith("paire_qr:") else ext] = {
+        out[_identifiant_paire(meta)] = {
             "question_bci": e.get("text_local") or "", "question_fr": e.get("text_fr") or "",
             "reponse_bci": meta.get("reponse_bci") or "", "reponse_fr": meta.get("reponse_fr") or "",
         }
     return out
+
+
+def _identifiant_paire(meta: dict) -> str:
+    """`paire:<q>:<a>`, lu dans l'external_id `paire_qr:paire:q:a` de l'atelier."""
+    ext = meta.get("external_id") or ""
+    return ext.split(":", 1)[1] if ext.startswith("paire_qr:") else ext
+
+
+def voix_des_paires(paires) -> dict[str, dict]:
+    """{`paire:<q>:<a>`: voix redite dans la fiche} des paires acceptées (ADR-0045,
+    révision du 2026-11-24). L'atelier range `meta.voix = {champ, texte, audio}`, le texte
+    étant la réponse lue en base au moment de l'envoi ; seule une voix de la réponse
+    (`champ` = reponse_bci) et portant un audio est retenue."""
+    out = {}
+    for e in accepted(paires):
+        meta = e.get("meta") or {}
+        voix = meta.get("voix")
+        if isinstance(voix, dict) and voix.get("champ") == "reponse_bci" and voix.get("audio"):
+            out[_identifiant_paire(meta)] = voix
+    return out
+
+
+def _voix_juste(voix: dict | None, reponse: str) -> str | None:
+    """L'audio de la voix de la fiche, si elle dit ENCORE la réponse acceptée ; sinon None.
+    Une voix devenue fausse (réponse recorrigée après l'enregistrement) s'ignore d'elle-même."""
+    if voix and (voix.get("texte") or "").strip() == (reponse or "").strip():
+        return voix["audio"]
+    return None
 
 
 def accepted_pair_ids(paires) -> set[str]:
@@ -136,14 +163,19 @@ def separer_reenregistrements(rows, textes) -> tuple[list[dict], dict[str, str]]
 
 
 def corpus_entries(rows, labels, pairs, keep_alignement, textes=None,
-                   reenregistrements=None) -> list[dict]:
+                   reenregistrements=None, voix_fiches=None) -> list[dict]:
     """Une entrée par paire gardée : position toujours, alignement si `keep_alignement(id)`.
 
     `textes` ({id: textes acceptés}, voir `accepted_pairs`) : la question et la réponse
-    corrigées par le locuteur remplacent celles de la dictée. Si la réponse baoulé a changé,
-    l'enregistrement de la dictée ne la dit plus : on sert le réenregistrement quand
-    `reenregistrements` en donne un (voir `separer_reenregistrements`), sinon la réponse
-    part en texte seul avec `audio_a_reenregistrer`, pour la liste à rendre au locuteur."""
+    corrigées par le locuteur remplacent celles de la dictée.
+
+    La voix servie, dans cet ordre (ADR-0045, révision du 2026-11-24) :
+      1. la voix redite dans la fiche (`voix_fiches`, voir `voix_des_paires`), si elle dit
+         encore la réponse acceptée — corrigée ou non ;
+      2. si la réponse a changé : le réenregistrement par la dictée (`reenregistrements`,
+         voir `separer_reenregistrements`), sinon la réponse part en texte seul avec
+         `audio_a_reenregistrer`, pour la liste à rendre au locuteur ;
+      3. sinon, l'enregistrement de la dictée."""
     out = []
     for p in pairs:
         if p["a"] is None:
@@ -163,6 +195,10 @@ def corpus_entries(rows, labels, pairs, keep_alignement, textes=None,
         corrige = (textes or {}).get(pid)
         if corrige:
             entry.update({k: v.strip() for k, v in corrige.items() if v and v.strip()})
+        redite = _voix_juste((voix_fiches or {}).get(pid), entry["reponse_bci"])
+        if redite:
+            entry["audio_reponse"] = redite
+        elif corrige:
             if entry["reponse_bci"] != a["transcription"].strip():
                 refait = (reenregistrements or {}).get(entry["reponse_bci"])
                 if refait:
@@ -238,6 +274,8 @@ def main(argv=None):
     # Les réponses corrigées ont été réenregistrées en dictée : ces lignes sont la voix à
     # servir, pas des réponses à apparier — sinon la filière déborde et l'appariement cale.
     textes = accepted_pairs(load(args.paires)) if args.paires else None
+    # Voix redites dans la fiche par le locuteur (ADR-0045, révision du 2026-11-24).
+    voix_fiches = voix_des_paires(load(args.paires)) if args.paires else {}
     reenregistrements = {}
     if textes is not None:
         rows, reenregistrements = separer_reenregistrements(rows, textes)
@@ -268,8 +306,9 @@ def main(argv=None):
         statut, keep = "valide", (lambda pid: pid in textes)
 
     nlu_json = nlu_file(keywords, labels_fr, statut)
-    corpus = corpus_entries(rows, labels, pairs, keep, textes if statut == "valide" else None,
-                            reenregistrements)
+    valide = statut == "valide"
+    corpus = corpus_entries(rows, labels, pairs, keep, textes if valide else None,
+                            reenregistrements, voix_fiches if valide else None)
     out = Path(args.out)
     (out / "nlu_concepts_bci.json").write_text(json.dumps(nlu_json, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     (out / "corpus_ivr_bci.json").write_text(json.dumps(
@@ -279,10 +318,13 @@ def main(argv=None):
     nlu = NLUService(config=build_bci_config(nlu_json, base), min_confidence=0.0)
     print(f"Statut : {statut} | concepts : {len(keywords)} | mots-clés : {sum(map(len, keywords.values()))} "
           f"| entrées du corpus : {len(corpus)}")
+    audios_fiches = {v["audio"] for v in voix_fiches.values()} if valide else set()
+    servies = [e["id"] for e in corpus if e.get("audio_reponse") in audios_fiches]
+    print(f"Réponses servies avec la voix redite dans la fiche : {len(servies)}")
     a_refaire = [e["id"] for e in corpus if e.get("audio_a_reenregistrer")]
-    if a_refaire:
-        print(f"Réponses corrigées, envoyées en texte (à réenregistrer en dictée) : {len(a_refaire)} — "
-              + ", ".join(a_refaire))
+    # Toujours affiché, même à 0 : c'est le chiffre qui prouve qu'une voix est servie.
+    print(f"Réponses corrigées, envoyées en texte (à redire dans la fiche) : {len(a_refaire)}"
+          + (" — " + ", ".join(a_refaire) if a_refaire else ""))
     for taux in (0.0, args.taux_bruit):
         m = mesurer(corpus, nlu, taux)
         print(f"Questions bruitées à {taux:.0%} : bonne réponse {m['bonne']}/{m['n']}, "
