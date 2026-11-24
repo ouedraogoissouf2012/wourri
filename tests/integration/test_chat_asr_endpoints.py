@@ -5,6 +5,7 @@ Les frontières ML sont mockées : ces tests vérifient le câblage HTTP, la
 validation Pydantic et la délégation vers les services sans charger de modèle.
 """
 import io
+import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -229,3 +230,57 @@ def test_asr_transcribe_returns_500_when_transcription_none(client):
     assert response.status_code == 500
     assert "transcription" in response.json()["detail"].lower()
     chain.transcribe.assert_awaited_once_with(b"fake-audio", "ogg")
+
+
+def _mesures_asr(caplog) -> list[dict]:
+    """#650 : les lignes [ASR-MESURE], découpées comme le ferait une agrégation."""
+    from app.services.mesure_asr import PREFIXE
+
+    return [
+        dict(couple.split("=", 1) for couple in r.getMessage()[len(PREFIXE):].split())
+        for r in caplog.records
+        if r.getMessage().startswith(PREFIXE)
+    ]
+
+
+def test_asr_transcribe_laisse_une_mesure(client, caplog):
+    """#650 : /transcribe mesure l'appel ; la chaîne reçoit toujours les mêmes arguments."""
+    caplog.set_level(logging.INFO, logger="app.services.mesure_asr")
+    chain = MagicMock()
+    chain.transcribe = AsyncMock(return_value="malo sɛnɛ")
+    with (
+        patch("app.routers.asr.get_asr_chain", return_value=chain),
+        patch("app.routers.asr.set_request_metric_context"),
+    ):
+        response = client.post(
+            "/api/asr/transcribe",
+            files={"audio": ("question.ogg", io.BytesIO(b"fake-audio"), "audio/ogg")},
+            data={"language": "bam"},
+        )
+
+    assert response.status_code == 200
+    chain.transcribe.assert_awaited_once_with(b"fake-audio", "ogg")
+    [mesure] = _mesures_asr(caplog)
+    assert mesure["endpoint"] == "transcribe" and mesure["resultat"] == "texte"
+    assert mesure["octets"] == str(len(b"fake-audio")) and mesure["duree_audio_s"] == "inconnue"
+
+
+def test_asr_transcribe_and_translate_mesure_aussi_un_echec(client, caplog):
+    """#650 : l'endpoint appelé par WhatsApp. « Pas transcrit du tout » doit laisser une
+    trace — c'est le cas que l'issue ne savait pas distinguer d'un appel lent."""
+    caplog.set_level(logging.INFO, logger="app.services.mesure_asr")
+    chain = MagicMock()
+    chain.transcribe = AsyncMock(return_value=None)
+    with (
+        patch("app.routers.asr.get_asr_chain", return_value=chain),
+        patch("app.routers.asr.set_request_metric_context"),
+    ):
+        response = client.post(
+            "/api/asr/transcribe-and-translate",
+            files={"audio": ("vocal.ogg", io.BytesIO(b"fake-audio"), "audio/ogg")},
+            data={"language": "bam"},
+        )
+
+    assert response.status_code == 500
+    [mesure] = _mesures_asr(caplog)
+    assert mesure["endpoint"] == "transcribe-and-translate" and mesure["resultat"] == "aucun"
