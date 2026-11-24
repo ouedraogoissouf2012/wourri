@@ -50,3 +50,35 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # ADR-0051 / #621 : aucun fichier de code au-dessus de 300 lignes logiques, et la
+  # liste d'exemptions (scripts/line_budget.json) ne peut que diminuer. Le job mesure
+  # TOUT le dépôt, pas le seul sous-arbre de ce workflow ; il est identique dans
+  # ci-api.yml, ci-lqe.yml et ci-lqe-web.yml (tests/unit/test_line_budget_ci.py).
+  line-budget:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # pull_request : HEAD est la fusion de test, HEAD^1 la pointe de la base.
+          fetch-depth: 2
+
+      - name: Fetch push base
+        # push : la base est l'état de la branche avant la poussée.
+        if: github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: git fetch --no-tags --depth=1 origin "$BEFORE"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check logical-line ceiling (ADR-0051)
+        env:
+          BASELINE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
+        run: python scripts/check_line_budget.py --baseline "$BASELINE"

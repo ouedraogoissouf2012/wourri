@@ -38,6 +38,23 @@ Aucune donnée métier dans le code Python :
 - Tests unitaires pour la logique, tests d'intégration pour les chaînes
 - Coverage non mesurée en pourcentage, mais en chemins critiques couverts
 
+### 1.4 Plafond de 300 lignes logiques par fichier
+
+Aucun fichier de code ne dépasse **300 lignes logiques** — hors commentaires,
+lignes vides et chaînes de documentation ; une chaîne SQL compte. Décision et
+règle de comptage : [ADR-0051](adr/0051-plafond-300-lignes-verifie-en-ci.md).
+
+- **Périmètre** : `.py`, `.js`, `.vue` suivis par git, tests compris. Hors
+  périmètre : les données (`dictionnaires/*.json`) et les fichiers engendrés
+  (`convex/_generated`).
+- **Vérifié en CI** par `scripts/check_line_budget.py`, appelé par `ci-api`,
+  `ci-lqe` et `ci-lqe-web`.
+- **La dette initiale est inscrite** dans `scripts/line_budget.json` et ne peut
+  que diminuer : un fichier exempté ne s'allonge pas, la liste ne s'agrandit
+  jamais, et la valeur inscrite d'un fichier qui raccourcit doit être abaissée
+  (`python scripts/check_line_budget.py --resserrer`).
+- Un fichier qui dépasserait le plafond se **découpe** ; il ne s'exempte pas.
+
 ---
 
 ## 2. Processus de décision
@@ -146,5 +163,5 @@ en permanence :
 
 ---
 
-**Dernière révision** : 2026-04-21 (création initiale)
+**Dernière révision** : 2026-11-24 (§1.4 plafond de lignes logiques, ADR-0051)
 **Règle** : toute modification de ce fichier passe par un ADR.
