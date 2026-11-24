@@ -7,3 +7,5 @@
 pytest>=7.4.0
 pytest-asyncio>=0.23.0
 pytest-cov>=7.1.0,<8.0
+# #621 : tests/unit/test_line_budget_ci.py lit les workflows de CI.
+PyYAML>=6.0

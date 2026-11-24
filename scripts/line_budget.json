@@ -1,0 +1,31 @@
+{
+  "_commentaire": "Plafond de lignes logiques par fichier — ADR-0051, contrôle scripts/check_line_budget.py. Les exemptions sont la dette initiale (§6.4) : la liste ne peut que diminuer, le cliquet de la CI refuse toute exemption ajoutée ou valeur relevée. Après un découpage : python scripts/check_line_budget.py --resserrer. Exclusions : motifs fnmatch sur le chemin, où * traverse les dossiers.",
+  "plafond_lignes_logiques": 300,
+  "extensions": [
+    ".py",
+    ".js",
+    ".vue"
+  ],
+  "exclusions": [
+    "convex/_generated/*"
+  ],
+  "exemptions": {
+    "app/services/admin_metrics.py": 325,
+    "app/services/corpus_service.py": 364,
+    "finetune/prepare_dioula_dataset.py": 341,
+    "scripts/build_culture_validation_drafts.py": 461,
+    "scripts/generate_culture_validation_pdf.py": 632,
+    "scripts/generate_issue_40_hevea_validation_pdf.py": 488,
+    "scripts/prevalidation_rules.py": 346,
+    "tests/integration/test_corpus_schema.py": 395,
+    "tests/unit/test_asr_chain.py": 321,
+    "tests/unit/test_bambara_validator_source.py": 479,
+    "tests/unit/test_chat_service.py": 328,
+    "tests/unit/test_corpus_service.py": 390,
+    "tests/unit/test_dioula_handler.py": 390,
+    "tests/unit/test_ivr_searcher.py": 314,
+    "tests/unit/test_operational_services.py": 518,
+    "tools/test_tts_batch.py": 339,
+    "wouri-lqe-web/src/views/AssignView.test.js": 332
+  }
+}
