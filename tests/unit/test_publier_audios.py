@@ -171,3 +171,18 @@ def test_la_commande_de_copie_suit_ce_qui_est_installe(tmp_path):
     assert sans.startswith("scp ") and sans.endswith(pub.DESTINATION_VOIX)
     for c in (avec, sans):
         assert "reponses_ogg" in c, "la destination du serveur voix doit rester explicite"
+
+
+def test_une_source_vide_fait_echouer_le_script(tmp_path):
+    """#623 : un corpus introuvable (langue mal tapée, mauvais dossier) ne doit pas finir en
+    « rien à publier » avec un code de succès — c'est la panne silencieuse de l'ADR-0049."""
+    with pytest.raises(pub.EchecPublication, match="aucune entrée"):
+        pub.main(["bci", "--vers", str(tmp_path / "ogg"), "--dictionnaires", str(tmp_path), "--verifier"])
+
+
+def test_un_corpus_sans_audio_n_est_pas_une_source_vide(tmp_path):
+    """Toutes les réponses en attente de réenregistrement : rien à publier, et c'est légitime."""
+    (tmp_path / "corpus_ivr_bci.json").write_text(json.dumps(
+        {"entries": [{"id": "bci-q2", "audio_reponse": None, "audio_a_reenregistrer": True}]}),
+        encoding="utf-8")
+    assert pub.main(["bci", "--vers", str(tmp_path / "ogg"), "--dictionnaires", str(tmp_path)]) == 0
