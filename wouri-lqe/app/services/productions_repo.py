@@ -209,6 +209,42 @@ def remettre_en_question(*, item_id, language: str, motif: str, allowed_from) ->
         return cur.rowcount > 0
 
 
+# Ce que prononce la voix d'une fiche, par type (ADR-0045, revision du 2026-11-24) :
+# {type: (champ, expression SQL qui lit ce texte en base)}. Seule la paire
+# question/reponse recoit une voix — c'est elle qui porte `audio_a_reenregistrer`.
+# Une fiche `contenu` s'ajouterait ici avec ("text_local", "text_local"), une fois sa
+# chaine de publication (scripts/construire_messages_systeme.py) prete a lire `meta.voix`.
+VOIX_PAR_TYPE = {"paire_qr": ("reponse_bci", "meta->>'reponse_bci'")}
+
+
+def set_voix(*, item_id, language: str, kind: str, audio_url: str, allowed_from) -> dict | None:
+    """Attache une voix a une fiche, en UNE instruction : `meta.voix` = {champ, texte, audio}.
+
+    Le `texte` est lu en base DANS l'UPDATE — la reponse telle qu'elle est a cet instant,
+    jamais un texte fourni par le client, et sans fenetre entre lecture et ecriture. Le
+    build ne sert cette voix que si ce texte est encore celui que le locuteur a accepte :
+    une voix devenue fausse s'ignore d'elle-meme. Une nouvelle voix remplace la precedente.
+
+    Toujours filtre par langue, par type et par statut (`allowed_from`) ; refuse un texte
+    vide. Retourne `meta.voix` ecrit, ou None si aucune ligne n'a change."""
+    pid = _as_int(item_id)
+    if pid is None or kind not in VOIX_PAR_TYPE:
+        return None
+    champ, texte = VOIX_PAR_TYPE[kind]  # constantes du module, jamais une entree client
+    with get_conn() as conn:
+        row = conn.execute(
+            "UPDATE productions SET updated_at = now(),"
+            f" meta = meta || jsonb_build_object('voix', jsonb_build_object("
+            f"  'champ', %s::text, 'texte', {texte}, 'audio', %s::text))"
+            " WHERE id = %s AND language = %s AND kind = %s AND status = ANY(%s)"
+            f" AND COALESCE({texte}, '') <> ''"
+            " RETURNING meta->'voix'",
+            (champ, audio_url, pid, language, kind, list(allowed_from)),
+        ).fetchone()
+        conn.commit()
+        return row[0] if row else None
+
+
 def promote(*, item_id, language: str, actor: str, allowed_from) -> dict:
     """Transition atomique -> 'production' (verrou FOR UPDATE). Ne cree JAMAIS de nouvelle
     ligne : flippe le statut de LA meme ligne. Refuse si statut hors `allowed_from`."""
