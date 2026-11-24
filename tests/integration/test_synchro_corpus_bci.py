@@ -25,15 +25,14 @@ from pathlib import Path
 import pytest
 
 from app.db.url_resolver import resolve_postgres_url
-from tests.integration._helpers import postgres_reachable
+from tests.integration._helpers import exiger_postgres
 
 _RACINE = Path(__file__).resolve().parents[2]
 _FICHIER = _RACINE / "dictionnaires" / "corpus_ivr_bci.json"
 _URL = resolve_postgres_url(raise_on_missing=False)
 
-pytestmark = pytest.mark.skipif(
-    not postgres_reachable(_URL), reason="PostgreSQL non disponible (POSTGRES_URL)"
-)
+pytestmark = pytest.mark.base_de_donnees  # #638 : ce module atteint PostgreSQL
+_base_joignable = exiger_postgres(_URL, "PostgreSQL non disponible (POSTGRES_URL)")
 
 
 def _fichier() -> dict:
@@ -49,7 +48,7 @@ def base_isolee():
     from sqlalchemy import create_engine, text
     from sqlalchemy.engine import make_url
 
-    nom = f"wourri_synchro_bci_{os.getpid()}"
+    nom = f"wourri_synchro_bci_{os.getpid()}_test"  # jetable : la garde #638 refuse tout autre nom
     admin = create_engine(_URL, future=True, isolation_level="AUTOCOMMIT")
     with admin.connect() as c:
         c.execute(text(f'DROP DATABASE IF EXISTS "{nom}" WITH (FORCE)'))
