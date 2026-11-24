@@ -130,8 +130,14 @@ règle n° 3 est amendée en conséquence : l'écran Dictée cesse d'être le se
 endroit où une voix se refait.
 
 Le bouton de sauvegarde de la correction, qui portait le mot « Enregistrer »,
-est renommé. Plus aucun bouton de l'atelier ne dit « Enregistrer » pour
-*sauvegarder* : le mot est réservé à la voix.
+est renommé. **Dans les écrans où le locuteur peut enregistrer sa voix,
+« Enregistrer » ne désigne plus que la voix** ; la sauvegarde y porte un autre
+mot.
+
+La règle s'arrête là, et c'est voulu. Le mot n'est pas interdit ailleurs :
+l'écran d'administration des comptes garde son bouton « Enregistrer » au sens
+courant, parce qu'aucun micro n'y existe et qu'aucune ambiguïté n'y est possible.
+Ce qu'on corrige est une confusion de contexte, pas un mot.
 
 ### Ce qui ne change pas
 
