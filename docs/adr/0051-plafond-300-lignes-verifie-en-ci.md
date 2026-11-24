@@ -144,6 +144,19 @@ ou d'une fonction. **Une chaîne SQL compte**, elle n'est pas de la documentatio
 Le découpage est fait par le `tokenize` et l'`ast` de Python, pas par une
 heuristique.
 
+**En JavaScript et dans les composants Vue**, la règle est la même : hors
+commentaires `//` et `/* */`, hors lignes vides. Un analyseur lexical reconnaît
+les chaînes, les gabarits et les expressions régulières, afin qu'un `//` ou un
+`/*` placé à l'intérieur de l'un d'eux ne soit pas pris pour un commentaire. Dans
+un `.vue`, le bloc `template` ignore `<!-- -->`, le bloc `style` ignore `/* */`,
+et les balises de bloc comptent. Le `.ts` est hors périmètre, et les fichiers
+engendrés — `convex/_generated` — sont exclus comme toute donnée produite.
+
+Cette règle doit être écrite, et pas seulement implémentée : vingt-sept fichiers
+du périmètre sont en `.js` ou en `.vue`, dont un exempté et un à une ligne du
+plafond. Un chiffre dont la méthode n'est pas publiée n'est pas opposable à
+l'auteur d'une PR.
+
 La mesure change la portée de la règle :
 
 | Périmètre | Fichiers au-dessus de 300 |
