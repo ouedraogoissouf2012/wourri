@@ -44,9 +44,11 @@ LIMITES CONNUES — à lire avant de croire la garde complète :
   `wouri-lqe/tests/conftest.py`. Ce que la garde garantit, elle : décision, message et
   imputation portent sur la MÊME zone, lue une fois — un refus décidé dans un test n'est
   jamais enregistré sous un autre (`tests/unit/test_garde_base_fils.py`).
-- Fils d'un pool (`psycopg_pool`) : après un échec, le pool espace ses tentatives ; un
-  test qui l'attend sans qu'aucune tentative ne tombe pendant lui échoue sur PoolTimeout,
-  rouge mais SANS le message de la garde.
+- Un pool (`psycopg_pool`) qui survit à son test : après un refus, il espace ses
+  tentatives ; le test suivant qui l'attend échoue sur PoolTimeout, rouge mais SANS le
+  message de la garde (mesuré, #649 : 2 sur 10 avec un pool partagé entre deux tests,
+  0 sur 10 une fois le pool fermé au démontage). Même racine que le faux positif
+  ci-dessus, même remède : aucune suite ne laisse un pool survivre à son test.
 """
 from __future__ import annotations
 
