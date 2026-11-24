@@ -281,25 +281,21 @@ def _load_head_policy(root: Path) -> Policy:
     return parse_policy(path.read_text(encoding="utf-8"))
 
 
-def _tighten_on_disk(root: Path, policy: Policy, counts: Mapping[str, int]) -> Policy:
-    tightened = tighten(policy, counts)
-    if tightened != policy:
-        (root / POLICY_PATH).write_text(render_policy(tightened), encoding="utf-8", newline="\n")
-        for path, value in sorted(policy.exemptions.items()):
-            new = tightened.exemptions.get(path)
-            if new != value:
-                print(f"resserré : {path} {value} → {new if new is not None else 'retiré'}")
-    return tightened
+def _write_tightened(root: Path, before: Policy, after: Policy) -> None:
+    (root / POLICY_PATH).write_text(render_policy(after), encoding="utf-8", newline="\n")
+    for path, value in sorted(before.exemptions.items()):
+        new = after.exemptions.get(path)
+        if new != value:
+            print(f"resserré : {path} {value} → {new if new is not None else 'retiré'}")
 
 
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     root = Path(args.racine).resolve()
     try:
-        policy = _load_head_policy(root)
-        counts, violations = measure(root, policy)
-        if args.resserrer:
-            policy = _tighten_on_disk(root, policy, counts)
+        written = _load_head_policy(root)
+        counts, violations = measure(root, written)
+        policy = tighten(written, counts) if args.resserrer else written
         violations += budget_violations(policy, counts)
         if args.baseline:
             base = load_baseline(root, args.baseline)
@@ -310,6 +306,11 @@ def main(argv: list[str] | None = None) -> int:
     except (PolicyError, ControlError) as exc:
         print(f"ERREUR : {exc}", file=sys.stderr)
         return EXIT_CONFIG
+
+    # L'écriture vient en dernier : un contrôle qui échoue en route (base illisible…)
+    # ne laisse jamais derrière lui une politique déjà réécrite.
+    if policy != written:
+        _write_tightened(root, written, policy)
 
     if violations:
         for violation in violations:

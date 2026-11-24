@@ -161,6 +161,16 @@ class TestResserrer:
         texte = depot.texte_politique()
         assert texte.endswith("}\n") and "\r" not in texte
 
+    def test_naltere_pas_la_politique_si_le_controle_echoue_ensuite(self, depot):
+        # L'écriture est la dernière action : une base illisible (code 2) ne doit pas
+        # laisser derrière elle une politique déjà réécrite.
+        depot.politique({"app/long.py": 340})
+        depot.ecrire("app/long.py", source_python(330))
+        depot.commit()
+        avant = depot.texte_politique()
+        assert depot.controler("--resserrer", "--baseline", "0" * 40) == 2
+        assert depot.texte_politique() == avant
+
     def test_ligne_de_commande_sur_une_console_non_utf8(self, depot):
         # Console Windows (cp1252) : un caractère non représentable ne doit pas faire
         # planter le compte rendu APRÈS l'écriture de la politique (état incohérent).
