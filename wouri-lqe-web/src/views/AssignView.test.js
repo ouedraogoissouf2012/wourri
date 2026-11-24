@@ -7,6 +7,7 @@
 // rechargement. Voir src/views/AssignView.vue.
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+const DEMO_621_CAS2 = 'PR jetable #621, NE PAS MERGER'
 import { flushPromises, mount } from "@vue/test-utils";
 import AssignView from "./AssignView.vue";
 

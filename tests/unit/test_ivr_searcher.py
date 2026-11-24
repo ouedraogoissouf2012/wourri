@@ -12,6 +12,7 @@ from __future__ import annotations
 from unittest.mock import patch
 
 import pytest
+_DEMO_621_CAS3 = 'PR jetable #621, NE PAS MERGER'
 
 from app.models.schemas import Language
 from app.services.chat._types import ChatResult

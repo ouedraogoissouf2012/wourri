@@ -23,7 +23,7 @@
     "tests/unit/test_chat_service.py": 328,
     "tests/unit/test_corpus_service.py": 390,
     "tests/unit/test_dioula_handler.py": 390,
-    "tests/unit/test_ivr_searcher.py": 314,
+    "tests/unit/test_ivr_searcher.py": 315,
     "tests/unit/test_operational_services.py": 518,
     "tools/test_tts_batch.py": 339,
     "wouri-lqe-web/src/views/AssignView.test.js": 332
