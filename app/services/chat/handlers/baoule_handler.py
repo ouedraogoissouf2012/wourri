@@ -59,9 +59,9 @@ class BaouleHandler:
         from app.services import baoule_ivr
 
         texte = nlu.message_original or nlu.message_for_deepseek
-        # #622 : `chercher` compare la question à tout le corpus par trigrammes ; son
-        # coût croît avec le corpus (mesures dans l'issue). En ligne, elle bloquait la
-        # boucle. Même correctif que le dioula (#193, ivr_searcher.py).
+        # #622 : `chercher` compare la question au corpus par trigrammes ; son coût croît
+        # avec la taille du corpus. En ligne, elle bloquait la boucle pendant tout ce
+        # temps. Même correctif que le dioula (#193, ivr_searcher.py).
         trouvaille = await asyncio.to_thread(baoule_ivr.chercher, texte, nlu.intent, nlu.concepts)
         cultures = [k for k in (nlu.concepts or {}) if k.startswith("CULTURE_")]
         if trouvaille is not None:
