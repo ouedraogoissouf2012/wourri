@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from app.config import get_settings
+from app.data.language_registry import is_known
 from app.services.auth import read_session, session_has, sign_session, verify
 
 router = APIRouter(prefix="/auth")
@@ -25,6 +26,31 @@ def require_role(role: str):
             raise HTTPException(status_code=403, detail="forbidden")
         return user
     return _inner
+
+
+def langue_visee(user: dict, demandee: str | None) -> str:
+    """Langue visée : celle de la session, ou celle qu'un **admin** nomme (ADR-0034).
+
+    Un compte admin porte toujours la langue `*` (`users.create_user` l'impose) : sans
+    ce paramètre il ne verrait aucune fiche et ne pourrait reposer aucune question, le
+    dépôt filtrant en égalité stricte. Le paramètre ne perce pas l'isolation entre
+    locuteurs — un compte sans le rôle `admin` est refusé, même pour sa propre langue.
+
+    Ne renvoie jamais `*` (#637) : cette valeur ne vise aucune fiche, et la renvoyer
+    faisait répondre « 200, rien » — on croyait le locuteur sans travail. La garde porte
+    sur la VALEUR, pas sur le rôle : `users.update_user` garde la langue quand seuls les
+    rôles changent, un admin rétrogradé porte donc encore `*`.
+    """
+    if demandee is None:
+        if user["lang"] == "*":
+            raise HTTPException(status_code=400, detail="language_required")
+        return user["lang"]
+    if not session_has(user, "admin"):
+        raise HTTPException(status_code=403, detail="forbidden")
+    lang = demandee.strip().lower()
+    if not is_known(lang):
+        raise HTTPException(status_code=400, detail="unknown_language")
+    return lang
 
 
 @router.post("/login")
