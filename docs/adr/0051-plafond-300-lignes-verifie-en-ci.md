@@ -24,7 +24,7 @@ personne.
 |---|---|
 | Fichiers de code (hors tests, hors dépendances) | 197 |
 | Lignes totales | 28 420 |
-| Fichiers au-dessus de 300 lignes | **19** (9,6 %) |
+| Fichiers au-dessus de 300 lignes **physiques** | **19** (9,6 %) |
 | Le plus long | `scripts/generate_culture_validation_pdf.py` — 749 lignes |
 
 Les dix plus longs :
@@ -139,12 +139,18 @@ Validée par Ouedraogo Issouf le 2026-11-17.
 #### 6.1 Ce qui est compté
 
 **Les lignes logiques** : hors commentaires, hors lignes vides, hors chaînes de
-documentation. La mesure change radicalement la portée de la règle :
+documentation au sens PEP 257 — la première instruction d'un module, d'une classe
+ou d'une fonction. **Une chaîne SQL compte**, elle n'est pas de la documentation.
+Le découpage est fait par le `tokenize` et l'`ast` de Python, pas par une
+heuristique.
 
-| | Fichiers au-dessus de 300 |
+La mesure change la portée de la règle :
+
+| Périmètre | Fichiers au-dessus de 300 |
 |---|---|
-| Lignes physiques | 19 sur 197 |
-| **Lignes logiques** | **5 sur 197** |
+| Code hors tests, lignes physiques | 19 sur 197 |
+| Code hors tests, lignes logiques | 8 |
+| **Périmètre décidé — tests inclus, lignes logiques** | **17** |
 
 `app/config.py` fait 364 lignes physiques pour **96 logiques** : il est à 73 % de
 commentaires. Compter le physique obligerait à découper un fichier dont le seul
@@ -174,18 +180,70 @@ aurait perdu son seul garde-fou existant.
 
 #### 6.4 La dette initiale
 
-| Fichier | Lignes logiques | Nature |
-|---|---|---|
-| `scripts/generate_culture_validation_pdf.py` | 632 | hors ligne |
-| `scripts/generate_issue_40_hevea_validation_pdf.py` | 488 | hors ligne |
-| `scripts/build_culture_validation_drafts.py` | 461 | hors ligne |
-| `scripts/prevalidation_rules.py` | 346 | hors ligne |
-| `app/services/corpus_service.py` | 327 | **service applicatif** |
+Mesurée sur `origin/APIPy` @ `626d00d`, le 2026-11-24, dans le périmètre décidé
+au 6.3 — tests inclus.
 
-Quatre des cinq ne tournent jamais en production. Le cinquième sera réécrit par
-l'ADR-0050 phase 2 : il ne doit pas être découpé avant.
+| Fichier | Logiques | Physiques | Nature |
+|---|---|---|---|
+| `scripts/generate_culture_validation_pdf.py` | 632 | 749 | script hors ligne |
+| `tests/unit/test_operational_services.py` | 518 | 595 | test |
+| `scripts/generate_issue_40_hevea_validation_pdf.py` | 488 | 561 | script hors ligne |
+| `tests/unit/test_bambara_validator_source.py` | 479 | 778 | test |
+| `scripts/build_culture_validation_drafts.py` | 461 | 621 | script hors ligne |
+| `tests/integration/test_corpus_schema.py` | 395 | 580 | test |
+| `tests/unit/test_corpus_service.py` | 390 | 583 | test |
+| `tests/unit/test_dioula_handler.py` | 390 | 526 | test |
+| `app/services/corpus_service.py` | 364 | 668 | **service applicatif** |
+| `scripts/prevalidation_rules.py` | 346 | 628 | script hors ligne |
+| `finetune/prepare_dioula_dataset.py` | 341 | 520 | script hors ligne |
+| `tools/test_tts_batch.py` | 339 | 439 | outil hors ligne, malgré son nom |
+| `wouri-lqe-web/src/views/AssignView.test.js` | 332 | 467 | test (front) |
+| `tests/unit/test_chat_service.py` | 328 | 504 | test |
+| `app/services/admin_metrics.py` | 325 | 425 | **service applicatif** |
+| `tests/unit/test_asr_chain.py` | 321 | 513 | test |
+| `tests/unit/test_ivr_searcher.py` | 314 | 434 | test |
+
+**Dix-sept fichiers** : neuf tests, six scripts ou outils hors ligne, **deux
+services applicatifs**. Quinze des dix-sept ne tournent jamais en production.
+
+`corpus_service.py` sera réécrit par l'ADR-0050 phase 2 : il ne doit pas être
+découpé avant. `admin_metrics.py` est le seul service applicatif réellement à
+résorber par découpage.
+
+Deux fichiers sont au bord sans dépasser, et il faut les connaître :
+
+| Fichier | Logiques | Marge |
+|---|---|---|
+| `app/main.py` | 300 | **0** — le plafond est « au-dessus de 300 » |
+| `wouri-lqe-web/src/views/StudioView.vue` | 299 | **1 ligne** |
+
+La marge de `StudioView.vue` a une conséquence déjà identifiée : le correctif de
+l'enregistreur vocal dans la fiche de relecture — le défaut signalé par le
+locuteur baoulé, qui ne peut pas redire une phrase qu'il corrige — ajoutera des
+lignes à ce fichier et fera échouer le contrôle. C'est le comportement voulu : il
+forcera l'extraction de l'enregistreur de `DictationView.vue` dans un composant
+réutilisable, qui est la conception correcte. Le plafond joue ici son rôle, il ne
+gêne pas.
 
 Mise en œuvre suivie par l'issue #621.
+
+#### 6.5 Le cliquet, décidé avec la mise en œuvre
+
+Une liste d'exemptions se contourne de la façon la plus simple du monde : en
+relevant le chiffre inscrit dans la même PR que l'allongement. Le contrôle doit
+donc comparer sa liste à celle de la **branche de base**, et refuser toute
+exemption ajoutée, toute valeur relevée et tout plafond relevé.
+
+Conséquence voulue : **une valeur inscrite au-dessus du réel échoue aussi.** La
+liste ne peut pas seulement cesser de grandir, elle doit descendre quand un
+fichier raccourcit. C'est ce qui rend la dette réellement décroissante au lieu de
+simplement figée.
+
+Deuxième point révélé par la mise en œuvre : **25 fichiers de code suivis par git
+n'étaient déclenchés par aucune chaîne d'intégration** — les vingt fichiers de
+`finetune/` et les cinq `.py` de la racine. Un contrôle qu'aucun déclencheur
+n'appelle ne contrôle rien. Les déclencheurs de `ci-api.yml` reçoivent donc
+`finetune/**` et `*.py`.
 
 ---
 
@@ -195,8 +253,8 @@ Mise en œuvre suivie par l'issue #621.
   protocole de revue.
 - Le contrôle est un script court, appelé par les trois chaînes d'intégration
   existantes.
-- La dette, si l'option B est retenue, est **inscrite et décroissante** : chaque
-  fichier résorbé sort de la liste et ne peut plus y revenir.
+- La dette est **inscrite et décroissante** : chaque fichier résorbé sort de la
+  liste et ne peut plus y revenir, et le cliquet du 6.5 l'y oblige.
 
 ---
 
@@ -204,4 +262,7 @@ Mise en œuvre suivie par l'issue #621.
 
 | Date | Évolution |
 |---|---|
-| 2026-11-17 | Rédaction. Statut **proposé**. Mesure de l'existant faite : 19 fichiers sur 197 dépassent le plafond. Décision en attente. |
+| 2026-11-17 | Rédaction. Statut **proposé**. Mesure de l'existant faite : 19 fichiers sur 197 dépassent le plafond en lignes physiques. Décision en attente. |
+| 2026-11-17 | **Option B retenue**, plafond sur les lignes logiques, tests inclus, données exclues. Statut **accepté**. |
+| 2026-11-24 | **Correction de trois erreurs de la rédaction initiale**, relevées pendant la mise en œuvre (#621), avant toute ligne de code. (1) Le §6.4 publiait `corpus_service.py` à 327 lignes logiques : l'outil de mesure du 17/11 prenait ses quatre requêtes SQL en triple guillemets pour des chaînes de documentation. La valeur réelle est **364**, fichier inchangé depuis le 13/10. (2) Le §6.3 décidait « tests inclus » et le §6.4 listait une dette mesurée **sans** les tests : les deux sections se contredisaient, et une liste de cinq exemptions aurait rendu la CI rouge au premier commit, c'est-à-dire la règle inapplicable. La dette réelle est de **dix-sept fichiers**. (3) L'en-tête portait « accepté » sans qu'aucune entrée d'historique n'enregistre la décision. Mesures reprises avec le `tokenize` et l'`ast` de Python, méthode recoupée sur les valeurs déjà connues. |
+| 2026-11-24 | Ajout du **§6.5** : le cliquet comparant la liste à la branche de base, et la correction des déclencheurs de `ci-api.yml`, qui laissaient 25 fichiers de code hors de toute chaîne d'intégration. |
