@@ -122,6 +122,9 @@ def upgrade() -> None:
         CREATE TRIGGER enonce_historique AFTER INSERT OR UPDATE OR DELETE ON enonce
             FOR EACH ROW EXECUTE FUNCTION historiser_linguistique();
 
+        -- Pas d'index GIN sur reponse.cultures : VOULU, pas oublié. Avec 193 lignes, un
+        -- parcours séquentiel coûte moins que l'index. À créer si le volume l'exige.
+
         COMMENT ON TABLE reponse IS
             'Entrée de corpus, toutes langues (ADR-0050). Le propre d''une langue va dans metadonnees.';
         COMMENT ON COLUMN reponse.rang IS 'Ordre du lot d''origine : départage déterministe des candidats.';
