@@ -224,3 +224,87 @@ def test_une_reponse_inchangee_garde_la_voix_de_la_dictee():
                                    {"R0": "audio/jamais.webm"})
     assert entree["audio_reponse"] == "audio/r0.webm"
     assert "audio_a_reenregistrer" not in entree
+
+
+# ------------------------------------------------- la voix redite dans la fiche est servie
+#
+# ADR-0045, révision du 2026-11-24 : le locuteur redit la réponse dans la fiche. L'atelier
+# range `meta.voix = {champ, texte, audio}`, le texte étant la réponse lue en base au
+# moment de l'envoi. Le build ne la sert que si ce texte est ENCORE la réponse acceptée.
+
+
+def _paire_acceptee(voix, status="admin_accepted", ext="paire_qr:paire:0:1"):
+    meta = {"external_id": ext, "reponse_bci": "R0 corrigée", "reponse_fr": "En saison."}
+    if voix is not None:
+        meta["voix"] = voix
+    return {"status": status, "text_local": "Q0", "text_fr": "Quand planter ?", "meta": meta}
+
+
+def _voix(texte="R0 corrigée", audio="audio/fiche.webm", champ="reponse_bci"):
+    return {"champ": champ, "texte": texte, "audio": audio}
+
+
+def _construire(voix_fiches, reponse="R0 corrigée", reenregistrements=None):
+    rows = _rows_une_paire()[:2]
+    textes = _textes_une_paire(reponse=reponse)
+    entree, = build.corpus_entries(rows, _LABELS, _PAIRS, lambda pid: pid in textes, textes,
+                                   reenregistrements or {}, voix_fiches)
+    return entree
+
+
+def test_les_voix_des_paires_acceptees_par_identifiant():
+    paires = {"entries": [
+        _paire_acceptee(_voix()),
+        _paire_acceptee(_voix(audio="audio/rejetee.webm"), status="admin_rejected", ext="paire_qr:paire:2:3"),
+        _paire_acceptee(None, ext="paire_qr:paire:4:5"),
+        _paire_acceptee(_voix(champ="text_local"), ext="paire_qr:paire:6:7"),
+        _paire_acceptee({"champ": "reponse_bci", "texte": "R"}, ext="paire_qr:paire:8:9"),  # sans audio
+    ]}
+    assert build.voix_des_paires(paires) == {"paire:0:1": _voix()}
+
+
+def test_une_reponse_corrigee_redite_dans_la_fiche_est_servie_avec_cette_voix():
+    """Le cœur de la révision : plus de détour par la dictée, plus de réponse muette."""
+    entree = _construire({"paire:0:1": _voix()})
+    assert entree["reponse_bci"] == "R0 corrigée"
+    assert entree["audio_reponse"] == "audio/fiche.webm"
+    assert "audio_a_reenregistrer" not in entree
+
+
+def test_une_voix_devenue_fausse_est_ignoree_d_elle_meme():
+    """Le texte a été recorrigé après l'enregistrement : la voix ne dit plus la réponse.
+    Jamais un audio qui dirait autre chose — retour au marqueur."""
+    entree = _construire({"paire:0:1": _voix(texte="R0 première correction")})
+    assert entree["audio_reponse"] is None and entree["audio_a_reenregistrer"] is True
+
+
+def test_la_voix_de_la_fiche_prime_sur_le_detour_de_la_dictee():
+    """ADR-0045 : la fiche est le geste le plus récent et le seul attaché à cette fiche ;
+    le détour ne repose que sur une égalité de texte."""
+    entree = _construire({"paire:0:1": _voix()}, reenregistrements={"R0 corrigée": "audio/detour.webm"})
+    assert entree["audio_reponse"] == "audio/fiche.webm"
+
+
+def test_sans_voix_juste_dans_la_fiche_le_detour_reste_servi():
+    """Les 70 réenregistrements déjà faits par la dictée restent valides."""
+    entree = _construire({"paire:0:1": _voix(texte="autre")}, reenregistrements={"R0 corrigée": "audio/detour.webm"})
+    assert entree["audio_reponse"] == "audio/detour.webm"
+    assert "audio_a_reenregistrer" not in entree
+
+
+def test_une_reponse_non_corrigee_mais_redite_est_servie_avec_la_voix_de_la_fiche():
+    """Le locuteur peut redire une réponse qu'il n'a pas corrigée (enregistrement d'origine
+    raté). Ignorer sa voix ferait disparaître son geste sans bruit."""
+    entree = _construire({"paire:0:1": _voix(texte="R0")}, reponse="R0")
+    assert entree["audio_reponse"] == "audio/fiche.webm"
+    assert "audio_a_reenregistrer" not in entree
+
+
+def test_les_espaces_autour_du_texte_ne_rendent_pas_une_voix_fausse():
+    entree = _construire({"paire:0:1": _voix(texte="  R0 corrigée ")}, reponse=" R0 corrigée ")
+    assert entree["audio_reponse"] == "audio/fiche.webm"
+
+
+def test_sans_table_des_voix_rien_ne_change():
+    entree = _construire(None)
+    assert entree["audio_reponse"] is None and entree["audio_a_reenregistrer"] is True
