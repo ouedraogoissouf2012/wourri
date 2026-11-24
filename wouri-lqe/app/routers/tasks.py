@@ -1,39 +1,12 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
-from app.data.language_registry import is_known
-from app.routers.session import current_user, require_role
+from app.routers.session import current_user, langue_visee, require_role
 from app.services import workflow
 from app.services.audio_store import LocalAudioStore
 from app.services.audio_upload import AudioRefuse, lire_audio
-from app.services.auth import session_has
 
 router = APIRouter(prefix="/tasks")
-
-
-def _langue(user: dict, demandee: str | None) -> str:
-    """Langue visée : celle de la session, ou celle qu'un **admin** nomme (ADR-0034).
-
-    Un compte admin porte toujours la langue `*` (`users.create_user` l'impose) : sans
-    ce paramètre il ne verrait aucune fiche et ne pourrait reposer aucune question, le
-    dépôt filtrant en égalité stricte. Le paramètre ne perce pas l'isolation entre
-    locuteurs — un compte sans le rôle `admin` est refusé, même pour sa propre langue.
-
-    Ne renvoie jamais `*` (#637) : cette valeur ne vise aucune fiche, et la renvoyer
-    faisait répondre « 200, rien » — on croyait le locuteur sans travail. La garde porte
-    sur la VALEUR, pas sur le rôle : `users.update_user` garde la langue quand seuls les
-    rôles changent, un admin rétrogradé porte donc encore `*`.
-    """
-    if demandee is None:
-        if user["lang"] == "*":
-            raise HTTPException(status_code=400, detail="language_required")
-        return user["lang"]
-    if not session_has(user, "admin"):
-        raise HTTPException(status_code=403, detail="forbidden")
-    lang = demandee.strip().lower()
-    if not is_known(lang):
-        raise HTTPException(status_code=400, detail="unknown_language")
-    return lang
 
 
 class DecisionBody(BaseModel):
@@ -44,7 +17,7 @@ class DecisionBody(BaseModel):
 class ReexamenBody(BaseModel):
     id: str = Field(min_length=1)
     motif: str = Field(min_length=1)
-    # Admin seulement : la langue visée, puisque sa session porte `*` (voir `_langue`).
+    # Admin seulement : la langue visée, puisque sa session porte `*` (voir `langue_visee`).
     language: str | None = None
 
 
@@ -59,7 +32,7 @@ class EditBody(BaseModel):
 
 @router.get("")
 def get_tasks(language: str | None = None, user: dict = Depends(current_user)):
-    lang = _langue(user, language)
+    lang = langue_visee(user, language)
     return {
         "language": lang,
         "bronze": workflow.list_tasks(language=lang, status="bronze"),
@@ -74,9 +47,9 @@ def get_validations(kind: str, language: str | None = None,
     """Mots-cles ou paires question/reponse de la langue du compte, tous statuts (ADR-0045).
 
     Sert a reconstruire le NLU depuis les seules decisions du locuteur. Un admin nomme
-    la langue (`language`, voir `_langue`), une seule : le build ne trie pas les entrees
+    la langue (`language`, voir `langue_visee`), une seule : le build ne trie pas les entrees
     par langue, une reponse melangee polluerait le NLU sans un mot."""
-    lang = _langue(user, language)
+    lang = langue_visee(user, language)
     entries = workflow.list_validations(language=lang, kind=kind)
     return {"language": lang, "kind": kind, "entries": entries, "count": len(entries)}
 
@@ -109,9 +82,9 @@ def post_reexamen(body: ReexamenBody, user: dict = Depends(require_role("admin")
     affiche (ADR-0047). Reserve a l'admin — c'est un relecteur qui repose la question.
 
     L'admin DOIT nommer la langue (`language`) : sa session porte `*`, qui ne vise
-    aucune fiche. Sans ce champ l'appel est refuse (400 `language_required`) — voir `_langue`."""
+    aucune fiche. Sans ce champ l'appel est refuse (400 `language_required`) — voir `langue_visee`."""
     result = workflow.remettre_en_question(
-        body.id, language=_langue(user, body.language), motif=body.motif,
+        body.id, language=langue_visee(user, body.language), motif=body.motif,
     )
     if not result.get("ok"):
         code = 404 if result.get("reason") == "not_found" else 400

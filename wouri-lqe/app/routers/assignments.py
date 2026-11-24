@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.data.language_registry import is_known
-from app.routers.session import current_user, require_role
+from app.routers.session import current_user, langue_visee, require_role
 from app.services import assignments
 from app.services.nlu_catalog import NluConceptCatalog
 from app.services.pg_catalog import PgCorpusCatalog
@@ -37,9 +37,10 @@ class AssignBody(BaseModel):
 
 
 @router.get("")
-def get_my_assignments(user: dict = Depends(current_user)):
-    """Assignations OUVERTES de la langue de session (isolation par langue)."""
-    lang = user["lang"]
+def get_my_assignments(language: str | None = None, user: dict = Depends(current_user)):
+    """Assignations OUVERTES de la langue de session (isolation par langue). Un admin
+    nomme la langue (`language`), sinon 400 — voir `session.langue_visee` (#641)."""
+    lang = langue_visee(user, language)
     rows = assignments.list_open(language=lang)
     return {"language": lang, "assignments": rows, "count": len(rows)}
 
