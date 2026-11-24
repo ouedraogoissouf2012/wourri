@@ -99,15 +99,91 @@ Réponses (discussion du 2026-10-21) :
    - À la première correction, la question et la réponse d'origine sont gardées dans `meta.texte_origine` ; « Reprendre » restaure les deux.
    - Une réponse envoyée pour un autre type que `paire_qr` est refusée.
 2. **Construction** (`scripts/baoule_nlu_build.py`) : une paire acceptée entre au corpus avec la question et la réponse **telles que le locuteur les a acceptées**, et non plus le texte de la dictée.
-3. **Audio** : l'enregistrement de la dictée dit la réponse d'origine. Si le locuteur a corrigé la réponse baoulé, elle est servie **en texte seul** (`audio_reponse` vide), jamais avec un audio qui dirait autre chose. Ces réponses sont marquées `audio_a_reenregistrer` et listées à la construction, pour un nouvel enregistrement dans l'écran Dictée.
+3. **Audio** : l'enregistrement de la dictée dit la réponse d'origine. Si le locuteur a corrigé la réponse baoulé, elle est servie **en texte seul** (`audio_reponse` vide), jamais avec un audio qui dirait autre chose. Ces réponses sont marquées `audio_a_reenregistrer` et listées à la construction, pour un nouvel enregistrement dans l'écran Dictée. *(Amendé le 2026-11-24 : le nouvel enregistrement se fait désormais dans la fiche elle-même — voir la révision du 2026-11-24 ci-dessous. Le détour par l'écran Dictée reste accepté pour les enregistrements déjà faits.)*
 4. **Reprise des rejets** : `scripts/reprendre_validations.py --types paire_qr --statuts admin_rejected` remet les seules paires rejetées « à valider », pour correction. Les paires acceptées ne sont pas touchées.
 5. **Mots-clés acceptés hors concept** (approuvé par le valideur le 2026-10-26). Le locuteur accepte un mot comme baoulé correct et en précise la traduction ; cette traduction peut ne plus dire le concept (« amun » = « vous », proposé pour « planter »). Règle : un mot accepté n'entre dans son concept que si la traduction du locuteur dit encore ce concept.
    - La décision mot par mot est une **donnée datée**, pas une liste dans le code : `dictionnaires/relecture_mots_cles_bci.json` (identifiant externe, concept, mot, sens du locuteur, décision `hors_concept` / `a_confirmer` / `garde`).
    - Relecture du 2026-10-26 : sur 128 mots acceptés à traduction changée, 39 hors concept, 7 à confirmer par le locuteur (écartés tant qu'il n'a pas répondu), le reste garde son concept. Un mot écarté reste un mot baoulé validé avec son sens.
    - Effet mesuré : 168 → 123 mots-clés, 38 → 35 concepts (vendre, haricot et météo n'ont plus de mot validé) ; questions de la dictée bruitées à 19 % inchangées (106 bonnes, 5 mauvaises, 14 replis). Mesure optimiste : le vrai test reste des questions vocales nouvelles.
 
+## Révision du 2026-11-24 — La voix se refait dans la fiche, plus par un détour
+
+### Ce que l'usage a montré
+
+La règle n° 3 ci-dessus envoyait le locuteur refaire sa voix **dans l'écran
+Dictée**. Le locuteur l'a signalé lui-même : dans la fiche de relecture, il peut
+corriger les mots mais **pas redire la phrase**. Aucun enregistreur n'existe dans
+cet écran, et le bouton voisin porte le mot « Enregistrer » au sens de
+*sauvegarder* — ce qui laisse croire que la fonction existe.
+
+Le coût de ce détour est mesuré, pas supposé : il est la cause directe de
+l'épisode des 70 réenregistrements d'octobre-novembre 2026. Les réponses
+corrigées ont dû être réinjectées comme nouvelles consignes de dictée, ce qui a
+cassé la reconstruction du corpus (`ValueError: 25 réponses pour 15 questions`)
+et a exigé un correctif dédié (PR #616). Tant que la voix ne se refait pas dans
+la fiche, ce détour et son coût reviennent à **chaque** correction.
+
+### Ce qui est décidé
+
+Le locuteur **redit la réponse dans la fiche**, au moment où il la corrige. La
+règle n° 3 est amendée en conséquence : l'écran Dictée cesse d'être le seul
+endroit où une voix se refait.
+
+Le bouton de sauvegarde de la correction, qui portait le mot « Enregistrer »,
+est renommé. **Dans les écrans où le locuteur peut enregistrer sa voix,
+« Enregistrer » ne désigne plus que la voix** ; la sauvegarde y porte un autre
+mot.
+
+La règle s'arrête là, et c'est voulu. Le mot n'est pas interdit ailleurs :
+l'écran d'administration des comptes garde son bouton « Enregistrer » au sens
+courant, parce qu'aucun micro n'y existe et qu'aucune ambiguïté n'y est possible.
+Ce qu'on corrige est une confusion de contexte, pas un mot.
+
+### Ce qui ne change pas
+
+- Une réponse corrigée n'est **jamais** servie avec un audio qui dirait autre
+  chose. C'est le fond de la règle n° 3 et il est maintenu.
+- La voix reste **facultative** : la correction du texte se valide sans elle.
+- Les enregistrements déjà faits par le détour de la dictée restent valides et
+  continuent d'être servis.
+
+### Ce qui rend la règle sûre
+
+La voix est attachée **au texte** et non à la fiche : le serveur enregistre, avec
+l'extrait, la réponse telle qu'elle est au moment de l'envoi. Elle n'est servie
+que si ce texte est encore celui que le locuteur a accepté. Une voix devenue
+fausse — parce que le texte a été recorrigé ensuite — est donc ignorée d'elle-même,
+sans aucune logique d'invalidation à maintenir. Le marqueur
+`audio_a_reenregistrer` ne subsiste que lorsqu'aucune voix juste n'existe.
+
+**Si une voix juste existe à la fois dans la fiche et par le détour de la
+dictée, celle de la fiche est servie.** Elle est le geste le plus récent, et la
+seule des deux à être attachée explicitement à cette fiche ; le détour ne repose
+que sur une égalité de texte.
+
+### Portée
+
+Les paires question → réponse, seule source du marqueur et seule origine de
+l'épisode des 70. Les fiches de type `contenu` présentent le même défaut et
+relèvent d'une chaîne de publication différente
+(`scripts/construire_messages_systeme.py`) : elles sont hors de cette révision,
+mais le mécanisme est écrit pour pouvoir les accueillir.
+
+### Dette inscrite
+
+L'enregistreur existait en **deux copies** dans l'atelier (`DictationView`,
+`RequestsView`). La révision extrait la première dans un composant partagé, que
+la Dictée et la fiche utilisent toutes deux — la fiche n'ajoute donc aucune
+copie. `RequestsView` garde la sienne : c'est l'écran que le locuteur utilise au
+moment de cette décision, et on ne refactore pas sous les pieds de quelqu'un qui
+travaille.
+
+Après la révision : deux implémentations pour trois écrans, au lieu de deux pour
+deux. La dette ne grandit pas, elle attend.
+
 ## Historique
 
 - 2026-10-21 — proposé (plan approuvé par le valideur ; validation par l'atelier exigée).
 - 2026-10-22 — **décision du valideur : démo terrain avant la fin de la validation**. « On doit partir de ce que nous connaissons et apprendre sur le terrain avec les corrections et le retour des paysans. » Les paysans ne lisent pas : la démo est vocale (serveur voix baoulé, réponses lues par le locuteur). Dictionnaire **« demo »** (`scripts/baoule_nlu_build.py --demo`) : mots-clés de l'amorçage (non encore validés, usage interne au NLU) et **seulement les 123 paires reliées par position** (9 filières) ; les 74 paires reliées par le sens restent écartées jusqu'à leur validation. Tout ce que le paysan entend ou lit reste le texte et la voix du locuteur natif. Mesure (questions de la dictée) : exacte 123/123 ; bruitée à 19 % 83 à 87 % bonnes, 4 à 7 % mauvaises, le reste en repli honnête (escaladé). Remplacé par la version validée dès la fin de la validation dans l'atelier.
 - 2026-10-26 — état de la validation (export de l'atelier) : mots-clés 290 décidés, 172 acceptés dont 128 avec une traduction précisée, 118 rejetés ; paires 74, 2 acceptées, 34 rejetées, 38 à décider. Révision « Corriger une paire » (ci-dessus). Construction validée essayée sur ces décisions : 38 concepts, 168 mots-clés, 125 réponses ; questions de la dictée exactes 125/125, bruitées à 19 % 106 bonnes, 5 mauvaises, 14 replis honnêtes. Pas encore déployée.
+- 2026-11-24 — **révision : la voix se refait dans la fiche** (ci-dessus). La règle n° 3 envoyait le locuteur refaire sa voix dans l'écran Dictée ; il a signalé lui-même qu'aucun enregistreur n'existe dans la fiche de relecture. Ce détour est la cause directe de l'épisode des 70 réenregistrements et du correctif PR #616. La voix est désormais attachée au texte accepté, et ignorée d'elle-même si ce texte change. Portée : paires question → réponse ; les fiches `contenu` restent hors révision.
