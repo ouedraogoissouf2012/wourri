@@ -83,6 +83,17 @@ def test_un_fichier_absent_est_refuse_avec_un_message(tmp_path):
         charger_validations(tmp_path / "jamais_telecharge.json", kind="paire_qr", langue="bci")
 
 
+def test_un_dossier_ou_un_fichier_non_utf8_est_refuse_avec_un_message(tmp_path):
+    """Toute impossibilité de lire le fichier donne le message, jamais une trace brute."""
+    dossier = tmp_path / "paires.json"
+    dossier.mkdir()
+    non_utf8 = tmp_path / "latin1.json"
+    non_utf8.write_bytes('{"language": "bci", "kind": "paire_qr", "entries": [], "x": "é"}'.encode("latin-1"))
+    for chemin in (dossier, non_utf8):
+        with pytest.raises(ValidationsInvalides, match="lecture impossible"):
+            charger_validations(chemin, kind="paire_qr", langue="bci")
+
+
 # ------------------------------------------------------------------ les trois points de lecture
 #
 # Chaque test passe par l'entrée publique : retirer l'appel à la garde dans l'un des trois

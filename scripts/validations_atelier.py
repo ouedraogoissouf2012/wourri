@@ -41,12 +41,15 @@ def _citer(valeur) -> str:
 def charger_validations(chemin, *, kind: str, langue: str) -> dict:
     """Lit un export de `/tasks/validations` et le rend tel quel s'il est bien du `kind`
     et de la `langue` attendus, avec une liste `entries`. Lève `ValidationsInvalides`
-    sinon : fichier absent, JSON illisible, corps d'erreur, autre langue, autre type."""
+    sinon : fichier absent ou illisible, JSON invalide, corps d'erreur, autre langue,
+    autre type. Une racine en liste est refusée : l'atelier a toujours répondu un objet."""
     chemin = Path(chemin)
     try:
         texte = chemin.read_text(encoding="utf-8")
     except FileNotFoundError:
         raise _refus(chemin, kind, langue, "fichier absent") from None
+    except (OSError, UnicodeDecodeError) as exc:  # dossier, droits, encodage autre qu'UTF-8
+        raise _refus(chemin, kind, langue, f"lecture impossible ({type(exc).__name__})") from None
     try:
         data = json.loads(texte)
     except json.JSONDecodeError as exc:
