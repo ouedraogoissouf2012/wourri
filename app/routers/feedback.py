@@ -156,8 +156,9 @@ async def feedback_negatif(req: FeedbackRequest):
     """
     Feedback 👎 — l'utilisateur n'a pas apprécié la réponse.
     Logue dans feedback-YYYY-MM.jsonl (général) + feedback_negatif.jsonl (dédié corpus).
-    feedback_negatif.jsonl est lu par tools/analyze_feedback.py pour identifier
-    les entrées corpus à réécrire en priorité.
+    feedback_negatif.jsonl est lu par tools/analyze_feedback.py, qui retrouve HORS LIGNE
+    l'entrée corpus depuis le texte servi (`reponse_bambara`, 200 caractères) pour
+    classer les entrées à réécrire (#644).
     """
     ts = datetime.utcnow().isoformat()
 
@@ -173,28 +174,16 @@ async def feedback_negatif(req: FeedbackRequest):
     }
     _log_feedback(entry)
 
-    # Log dédié corpus — inclut l'id de l'entrée VDB pour traçabilité
-    corpus_entry_id = None
-    if req.intent and req.source == "ivr_exact":
-        try:
-            # Façade ADR-0008 §Phase C : route vers Chroma (défaut) / dual / pgvector.
-            from app.services.corpus_service import chercher_reponse_ivr
-            result = chercher_reponse_ivr(
-                intent=req.intent,
-                cultures=req.cultures or ["*"],
-            )
-            if result:
-                corpus_entry_id = result.get("id")
-        except Exception:
-            pass
-
+    # Log dédié corpus. Le TEXTE servi est la traçabilité : aucune recherche ici (#644).
+    # L'ancienne recherche (sans la question de l'agriculteur) bloquait la boucle et
+    # pouvait désigner une autre entrée que celle servie (#528 choisit par la question).
+    # 200 caractères : tools/analyze_feedback.py en dépend (TRONCATURE_JOURNAL_NEGATIF).
     negatif_entry = {
         "ts": ts,
         "user": anonymize_user_id(req.user_id),
         "intent": req.intent,
         "cultures": req.cultures,
         "source": req.source,
-        "id_entree_corpus": corpus_entry_id,
         "reponse_bambara": req.reponse_bambara[:200],
     }
     try:
@@ -205,7 +194,7 @@ async def feedback_negatif(req: FeedbackRequest):
         logger.error(f"[C5] Erreur log feedback_negatif: {e}")
 
     logger.warning(
-        f"[C5] Réponse rejetée: id={corpus_entry_id} intent={req.intent} "
+        f"[C5] Réponse rejetée: intent={req.intent} "
         f"cultures={req.cultures} source={req.source}"
     )
 
