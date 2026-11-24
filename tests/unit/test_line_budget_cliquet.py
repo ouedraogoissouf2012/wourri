@@ -9,9 +9,13 @@ n'ajoute ni ne relève jamais rien — sinon il deviendrait lui-même le contour
 """
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
+
 import pytest
 
-from .line_budget_depot import Depot, source_python
+from .line_budget_depot import SCRIPTS_DIR, Depot, source_python
 
 from check_line_budget import POLICY_PATH  # noqa: E402  (scripts/ ajouté au path par line_budget_depot)
 
@@ -156,3 +160,17 @@ class TestResserrer:
         assert apres == avant
         texte = depot.texte_politique()
         assert texte.endswith("}\n") and "\r" not in texte
+
+    def test_ligne_de_commande_sur_une_console_non_utf8(self, depot):
+        # Console Windows (cp1252) : un caractère non représentable ne doit pas faire
+        # planter le compte rendu APRÈS l'écriture de la politique (état incohérent).
+        depot.politique({"app/long.py": 340})
+        depot.ecrire("app/long.py", source_python(330))
+        depot.commit()
+        env = {**os.environ, "PYTHONIOENCODING": "cp1252"}
+        res = subprocess.run(
+            [sys.executable, str(SCRIPTS_DIR / "check_line_budget.py"), "--racine", str(depot.racine), "--resserrer"],
+            capture_output=True, env=env,
+        )
+        assert res.returncode == 0, res.stderr.decode("cp1252", errors="replace")
+        assert depot.lire_politique()["exemptions"] == {"app/long.py": 330}

@@ -327,4 +327,9 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # Console Windows en cp1252 : un caractère non représentable (« → », un chemin
+    # accentué) est remplacé au lieu de faire planter le compte rendu après
+    # l'écriture de la politique par --resserrer.
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(errors="replace")
     sys.exit(main())
