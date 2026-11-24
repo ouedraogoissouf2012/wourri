@@ -40,6 +40,10 @@ def langue_visee(user: dict, demandee: str | None) -> str:
     faisait répondre « 200, rien » — on croyait le locuteur sans travail. La garde porte
     sur la VALEUR, pas sur le rôle : `users.update_user` garde la langue quand seuls les
     rôles changent, un admin rétrogradé porte donc encore `*`.
+
+    Pour les LECTURES. À ne pas fusionner avec `langue_du_locuteur`, qui lui ressemble
+    mais applique la politique inverse : un geste de locuteur (décider, corriger,
+    redire, enregistrer, importer, publier) ne se fait jamais à sa place (#643).
     """
     if demandee is None:
         if user["lang"] == "*":
@@ -51,6 +55,25 @@ def langue_visee(user: dict, demandee: str | None) -> str:
     if not is_known(lang):
         raise HTTPException(status_code=400, detail="unknown_language")
     return lang
+
+
+def langue_du_locuteur(user: dict) -> str:
+    """Langue d'un GESTE du locuteur — décider, reprendre, corriger, redire une réponse,
+    publier, enregistrer en dictée, importer (#643). Toujours celle de la session.
+
+    Personne ne fait ces gestes à la place du locuteur : une session `*` (tout compte
+    admin) est refusée, 403 `speaker_account_required`. Décider, corriger, reprendre et
+    redire ne gardent pas l'auteur, et le build du NLU prend `admin_accepted` pour la
+    parole du locuteur : un admin qui opérerait à sa place serait indistinguable de lui.
+
+    À ne pas fusionner avec `langue_visee`, qui lui ressemble mais applique la politique
+    inverse pour les lectures (un admin y nomme la langue). D'où l'ABSENCE de paramètre de
+    langue ici, voulue et vérifiée par test. Garde sur la VALEUR `*`, pas sur le rôle
+    (un admin rétrogradé la garde).
+    """
+    if user["lang"] == "*":
+        raise HTTPException(status_code=403, detail="speaker_account_required")
+    return user["lang"]
 
 
 @router.post("/login")

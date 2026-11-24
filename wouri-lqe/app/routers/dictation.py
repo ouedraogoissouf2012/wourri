@@ -5,7 +5,7 @@ Isolation par langue : celle de la session, ou celle qu'un admin nomme
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile
 
 from app.data.language_registry import is_known
-from app.routers.session import langue_visee, require_role
+from app.routers.session import langue_du_locuteur, langue_visee, require_role
 from app.services import dictation as svc
 from app.services import dictation_repo as repo
 from app.services.audio_store import LocalAudioStore
@@ -76,14 +76,15 @@ async def submit_audio(
     user: dict = Depends(require_role("ingest")),
 ):
     """Locuteur : enregistre l'audio d'UNE phrase de sa langue -> le prompt passe 'recorded'."""
-    if repo.get(item_id=item_id, language=user["lang"]) is None:
+    lang = langue_du_locuteur(user)
+    if repo.get(item_id=item_id, language=lang) is None:
         raise HTTPException(status_code=404, detail="prompt_introuvable")
     try:
         raw, mime = await lire_audio(audio)
     except AudioRefuse as exc:
         raise HTTPException(status_code=400, detail=exc.detail) from exc
     ref = LocalAudioStore().save(raw, mime=mime)
-    if not repo.set_recorded(item_id=item_id, language=user["lang"], audio_url=ref, actor=user["u"]):
+    if not repo.set_recorded(item_id=item_id, language=lang, audio_url=ref, actor=user["u"]):
         raise HTTPException(status_code=409, detail="enregistrement_impossible")
     return {"ok": True, "id": str(item_id), "audio_url": ref}
 

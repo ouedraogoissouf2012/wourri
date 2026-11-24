@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
-from app.routers.session import current_user, langue_visee, require_role
+from app.routers.session import current_user, langue_du_locuteur, langue_visee, require_role
 from app.services import workflow
 from app.services.audio_store import LocalAudioStore
 from app.services.audio_upload import AudioRefuse, lire_audio
@@ -56,7 +56,7 @@ def get_validations(kind: str, language: str | None = None,
 
 @router.post("/decision")
 def post_decision(body: DecisionBody, user: dict = Depends(require_role("review"))):
-    result = workflow.decide(body.id, body.decision, language=user["lang"])
+    result = workflow.decide(body.id, body.decision, language=langue_du_locuteur(user))
     if not result.get("ok"):
         raise HTTPException(status_code=400, detail=result.get("reason"))
     return result
@@ -69,7 +69,7 @@ class ReprendreBody(BaseModel):
 @router.post("/reprendre")
 def post_reprendre(body: ReprendreBody, user: dict = Depends(require_role("review"))):
     """Le locuteur annule sa decision et sa correction : la fiche redevient « a valider »."""
-    result = workflow.reprendre(body.id, language=user["lang"])
+    result = workflow.reprendre(body.id, language=langue_du_locuteur(user))
     if not result.get("ok"):
         code = 404 if result.get("reason") == "not_found" else 400
         raise HTTPException(status_code=code, detail=result.get("reason"))
@@ -95,7 +95,7 @@ def post_reexamen(body: ReexamenBody, user: dict = Depends(require_role("admin")
 @router.post("/edit")
 def post_edit(body: EditBody, user: dict = Depends(require_role("review"))):
     result = workflow.edit_text(
-        body.id, language=user["lang"],
+        body.id, language=langue_du_locuteur(user),
         text_local=body.text_local, text_fr=body.text_fr,
         reponse_bci=body.reponse_bci, reponse_fr=body.reponse_fr,
     )
@@ -114,12 +114,13 @@ async def post_voix(
 ):
     """Le locuteur redit la reponse qu'il corrige, dans la fiche (ADR-0045, revision du
     2026-11-24). La voix est attachee au texte lu en base, jamais a un texte du client."""
+    lang = langue_du_locuteur(user)
     try:
         raw, mime = await lire_audio(audio)
     except AudioRefuse as exc:
         raise HTTPException(status_code=400, detail=exc.detail) from exc
     result = workflow.attacher_voix(
-        item_id, language=user["lang"], audio=raw, mime=mime, store=LocalAudioStore(),
+        item_id, language=lang, audio=raw, mime=mime, store=LocalAudioStore(),
     )
     if not result.get("ok"):
         code = 404 if result.get("reason") == "not_found" else 400
