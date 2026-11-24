@@ -52,7 +52,10 @@ règle de comptage : [ADR-0051](adr/0051-plafond-300-lignes-verifie-en-ci.md).
 - **La dette initiale est inscrite** dans `scripts/line_budget.json` et ne peut
   que diminuer : un fichier exempté ne s'allonge pas, la liste ne s'agrandit
   jamais, et la valeur inscrite d'un fichier qui raccourcit doit être abaissée
-  (`python scripts/check_line_budget.py --resserrer`).
+  (`python scripts/check_line_budget.py --resserrer`). `--resserrer` écrit la
+  politique resserrée même si le contrôle signale par ailleurs une violation ;
+  le resserrement ne fait que baisser des valeurs, il est toujours valide, et le
+  code 1 signale la violation restante.
 - Un fichier qui dépasserait le plafond se **découpe** ; il ne s'exempte pas.
 
 ---

@@ -161,6 +161,16 @@ class TestResserrer:
         texte = depot.texte_politique()
         assert texte.endswith("}\n") and "\r" not in texte
 
+    def test_ecrit_le_resserrement_meme_avec_une_autre_violation(self, depot):
+        # Comportement assumé et documenté : le resserrement est toujours valide, il est
+        # écrit ; le code 1 signale la violation restante, qui est d'une autre nature.
+        depot.politique({"app/raccourci.py": 340})
+        depot.ecrire("app/raccourci.py", source_python(330))
+        depot.ecrire("app/neuf.py", source_python(301))
+        depot.commit()
+        assert depot.controler("--resserrer") == 1
+        assert depot.lire_politique()["exemptions"] == {"app/raccourci.py": 330}
+
     def test_naltere_pas_la_politique_si_le_controle_echoue_ensuite(self, depot):
         # L'écriture est la dernière action : une base illisible (code 2) ne doit pas
         # laisser derrière elle une politique déjà réécrite.

@@ -270,7 +270,16 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Plafond de lignes logiques par fichier (ADR-0051).")
     parser.add_argument("--racine", default=str(DEFAULT_ROOT), help="racine du dépôt git (défaut : ce dépôt)")
     parser.add_argument("--baseline", metavar="REF", help="ref git de la base, pour le cliquet")
-    parser.add_argument("--resserrer", action="store_true", help="abaisser les valeurs inscrites au réel")
+    parser.add_argument(
+        "--resserrer",
+        action="store_true",
+        help=(
+            "abaisser les valeurs inscrites au réel et retirer les exemptions périmées. "
+            "La politique resserrée est écrite même si le contrôle signale par ailleurs une "
+            "violation : le resserrement ne fait que baisser des valeurs, il est toujours "
+            "valide, et le code 1 signale la violation restante."
+        ),
+    )
     return parser.parse_args(argv)
 
 
