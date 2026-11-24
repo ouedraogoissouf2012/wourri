@@ -13,11 +13,13 @@ on:
     branches: [APIPy]
     paths:
       - 'wouri-lqe/**'
+      - 'tools/pytest/**'  # la garde de la base (#638) est chargée par cette suite
       - '.github/workflows/ci-lqe.yml'
   pull_request:
     branches: [APIPy]
     paths:
       - 'wouri-lqe/**'
+      - 'tools/pytest/**'  # la garde de la base (#638) est chargée par cette suite
       - '.github/workflows/ci-lqe.yml'
 
 jobs:

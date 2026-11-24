@@ -1,12 +1,14 @@
 """Helpers partagés pour les tests d'intégration Wourri.
 
 Consommateurs actuels :
-- `postgres_reachable` : test_corpus_schema, test_admin_dashboard_metrics.
+- `postgres_reachable` / `exiger_postgres` : les modules qui déclarent la base (#638).
 - `ml_subprocess_env`  : test_corpus_schema, test_ml_subprocess_stability.
 """
 from __future__ import annotations
 
 import os
+
+import pytest
 
 
 def ml_subprocess_env(**extra: str) -> dict:
@@ -54,8 +56,8 @@ def ml_subprocess_env(**extra: str) -> dict:
 def postgres_reachable(url: str) -> bool:
     """Vérifie qu'on peut ouvrir une connexion + exécuter `SELECT 1` sur Postgres.
 
-    Utilisé par les fixtures `pytestmark = pytest.mark.skipif(...)` au module
-    level. Retourne False sur n'importe quelle erreur (URL vide, container down,
+    Utilisé par `exiger_postgres` (fixture de module, sous la garde #638 — plus
+    jamais à la collecte). Retourne False sur n'importe quelle erreur (URL vide, container down,
     auth fail, etc.) — l'objectif est uniquement de décider du skip.
 
     Le `engine.dispose()` est explicite : un test rapide ne doit pas laisser
@@ -76,3 +78,22 @@ def postgres_reachable(url: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def exiger_postgres(url: str, raison: str):
+    """Fixture de module : saute le module si PostgreSQL est injoignable.
+
+    Remplace l'ancien `pytestmark = pytest.mark.skipif(not postgres_reachable(url))`,
+    qui ouvrait une connexion PENDANT LA COLLECTE, hors de tout test : la garde de la base
+    (#638, tools/pytest/garde_base.py) l'interdit — un module unitaire aurait pu faire de
+    même sans être vu. Ici la vérification tourne au premier test du module, déclaré
+    (`pytest.mark.base_de_donnees`), donc sous la garde : une base non jetable y est
+    REFUSÉE au lieu d'être sondée.
+    """
+
+    @pytest.fixture(scope="module", autouse=True)
+    def _base_joignable():
+        if not postgres_reachable(url):
+            pytest.skip(raison)
+
+    return _base_joignable

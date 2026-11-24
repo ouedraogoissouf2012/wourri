@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 from app.db.url_resolver import resolve_postgres_url
-from tests.integration._helpers import postgres_reachable
+from tests.integration._helpers import exiger_postgres
 
 _RACINE = Path(__file__).resolve().parents[2]
 _MIGRATION = _RACINE / "alembic" / "versions" / "0006_schema_linguistique_bci.py"
@@ -28,9 +28,8 @@ _LOT = _RACINE / "alembic" / "data" / "corpus_ivr_bci_2026-11-13.json"
 
 _URL = resolve_postgres_url(raise_on_missing=False)
 
-pytestmark = pytest.mark.skipif(
-    not postgres_reachable(_URL), reason="PostgreSQL non disponible (POSTGRES_URL)"
-)
+pytestmark = pytest.mark.base_de_donnees  # #638 : ce module atteint PostgreSQL
+_base_joignable = exiger_postgres(_URL, "PostgreSQL non disponible (POSTGRES_URL)")
 
 
 def _migration():

@@ -56,11 +56,12 @@ def _session(tmp_path: Path, fichiers: dict[str, str], ecoutes: dict[str, _Ecout
     for nom, source in fichiers.items():
         (tmp_path / nom).write_text(textwrap.dedent(source), encoding="utf-8")
     (tmp_path / "pytest.ini").write_text(
-        f"[pytest]\naddopts = -p garde_base -p no:cacheprovider\npythonpath = {GARDE.as_posix()}\n",
-        encoding="utf-8",
-    )
+        "[pytest]\naddopts = -p garde_base -p no:cacheprovider\n", encoding="utf-8")
     env = {k: v for k, v in os.environ.items()
            if not k.startswith(("POSTGRES", "PG", "LQE_DATABASE"))}
+    # PYTHONPATH et non `pythonpath` du pytest.ini : ce dernier s'applique APRÈS l'import des
+    # greffons `-p`. Ces sessions éprouvent la garde ; son câblage réel a son propre test.
+    env["PYTHONPATH"] = str(GARDE)
     env.update({f"PORT_{cle}": str(e.port) for cle, e in ecoutes.items()})
     rapport = tmp_path / "rapport.xml"
     r = subprocess.run(
@@ -298,7 +299,10 @@ def test_une_connexion_a_l_import_est_une_erreur_de_collecte(tmp_path, ecoutes):
         "test_voisin.py": "def test_voisin():\n    pass\n",
     }, e)
     assert code != 0, sortie
-    assert "test_a_l_import.py" in sortie and "pendant la collecte" in sortie, sortie
+    assert "pendant la collecte" in sortie, sortie
+    # Une ERREUR DE COLLECTE, pas un échec de fin de session : le module fautif est nommé
+    # comme tel et rien ne tourne (le filet de fin de session aurait laissé passer ses tests).
+    assert "ERROR test_a_l_import.py" in sortie and "error during collection" in sortie, sortie
     assert e["IMPORT"].acceptees == 0
 
 

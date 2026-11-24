@@ -30,21 +30,18 @@ _EXPECTED_VERSION = _CORPUS["version"]
 
 # Source unique partagée avec alembic/env.py, scripts/import_corpus_ivr.py,
 # app/services/corpus_service.py. `raise_on_missing=False` est la divergence
-# test/prod encodée dans la signature : le skipif ci-dessous a besoin d'une
+# test/prod encodée dans la signature : la fixture ci-dessous a besoin d'une
 # valeur falsy pour décider de skip le module entier proprement.
 from app.db.url_resolver import resolve_postgres_url  # noqa: E402
-from tests.integration._helpers import ml_subprocess_env, postgres_reachable  # noqa: E402
+from tests.integration._helpers import exiger_postgres, ml_subprocess_env  # noqa: E402
 
 _URL = resolve_postgres_url(raise_on_missing=False)
-_REACHABLE = postgres_reachable(_URL)
-
-pytestmark = pytest.mark.skipif(
-    not _REACHABLE,
-    reason=(
-        "PostgreSQL+pgvector non disponible. Démarrer le container dev avec :\n"
-        "  docker compose -f docker-compose.dev.yml up -d\n"
-        "et exporter POSTGRES_URL ou la définir dans .env."
-    ),
+pytestmark = pytest.mark.base_de_donnees  # #638 : ce module atteint PostgreSQL
+_base_joignable = exiger_postgres(
+    _URL,
+    "PostgreSQL+pgvector non disponible. Démarrer le container dev avec :\n"
+    "  docker compose -f docker-compose.dev.yml up -d\n"
+    "et exporter POSTGRES_URL vers une base dont le nom finit par `_test`.",
 )
 
 

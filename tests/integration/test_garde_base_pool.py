@@ -49,10 +49,8 @@ def test_reutiliser_une_connexion_ouverte_par_un_autre_test_est_refuse(tmp_path)
         pytest.skip("POSTGRES_URL absent : la CI, elle, l'a")
     (tmp_path / "test_pool.py").write_text(textwrap.dedent(SCENARIO), encoding="utf-8")
     (tmp_path / "pytest.ini").write_text(
-        f"[pytest]\naddopts = -p garde_base -p no:cacheprovider\npythonpath = {GARDE.as_posix()}\n",
-        encoding="utf-8",
-    )
-    env = {**os.environ, "URL_TEST": url}
+        "[pytest]\naddopts = -p garde_base -p no:cacheprovider\n", encoding="utf-8")
+    env = {**os.environ, "URL_TEST": url, "PYTHONPATH": str(GARDE)}
     r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-rA"],
                        cwd=tmp_path, env=env, capture_output=True, text=True, timeout=120)
     sortie = r.stdout + r.stderr

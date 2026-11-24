@@ -79,22 +79,24 @@ class _Ecoute:
         self._s.close()
 
 
-def _session(tmp_path: Path, base: str):
-    """La suite miniature contre `base` -> (issues, appels espionnés, connexions reçues, sortie)."""
+def _session(tmp_path: Path, base: str, test: str):
+    """UN test de la suite miniature, contre `base` -> (issues, appels espionnés, connexions
+    reçues, sortie). Un seul par session : le pool de l'atelier est neuf, sa première
+    tentative tombe pendant CE test (un pool en attente de reconnexion la décalerait)."""
     (tmp_path / "conftest.py").write_text(textwrap.dedent(CONFTEST), encoding="utf-8")
     (tmp_path / "test_mini.py").write_text(textwrap.dedent(TESTS), encoding="utf-8")
     (tmp_path / "pytest.ini").write_text(
-        "[pytest]\naddopts = -p garde_base -p no:cacheprovider\n"
-        f"pythonpath = {ATELIER.as_posix()} {GARDE.as_posix()}\n",
+        f"[pytest]\naddopts = -p garde_base -p no:cacheprovider\npythonpath = {ATELIER.as_posix()}\n",
         encoding="utf-8",
     )
     ecoute = _Ecoute()
     env = {k: v for k, v in os.environ.items() if not k.startswith(("POSTGRES", "PG", "LQE_"))}
-    env.update(POSTGRES_HOST="127.0.0.1", POSTGRES_PORT=str(ecoute.port), POSTGRES_USER="u",
+    # PYTHONPATH pour la garde : `pythonpath` du pytest.ini s'applique après les greffons `-p`.
+    env.update(PYTHONPATH=str(GARDE), POSTGRES_HOST="127.0.0.1", POSTGRES_PORT=str(ecoute.port), POSTGRES_USER="u",
                POSTGRES_PASSWORD="p", POSTGRES_DB=base, LQE_DB_SCHEMA="lqe",
-               LQE_DB_POOL_TIMEOUT="3", ESPION=str(tmp_path / "espion.json"))
+               LQE_DB_POOL_TIMEOUT="1", ESPION=str(tmp_path / "espion.json"))
     try:
-        r = subprocess.run([sys.executable, "-m", "pytest", "-q", "--junitxml=rapport.xml"],
+        r = subprocess.run([sys.executable, "-m", "pytest", "-q", "--junitxml=rapport.xml", f"test_mini.py::{test}"],
                            cwd=tmp_path, env=env, capture_output=True, text=True, timeout=180)
     finally:
         ecoute.fermer()
@@ -108,7 +110,7 @@ def _session(tmp_path: Path, base: str):
 
 
 def test_db_sur_une_base_non_jetable_est_refusee_avant_toute_ecriture(tmp_path):
-    issues, appels, acceptees, sortie = _session(tmp_path, "wourri_dev")
+    issues, appels, acceptees, sortie = _session(tmp_path, "wourri_dev", "test_demande_db")
     issue, texte = issues["test_demande_db"]
     assert issue in ("failure", "error"), sortie
     # « non jetable » et non « sans le déclarer » : demander `db` a bien valu déclaration.
@@ -118,7 +120,7 @@ def test_db_sur_une_base_non_jetable_est_refusee_avant_toute_ecriture(tmp_path):
 
 
 def test_db_sur_une_base_jetable_est_autorisee(tmp_path):
-    issues, appels, acceptees, sortie = _session(tmp_path, "atelier_garde_test")
+    issues, appels, acceptees, sortie = _session(tmp_path, "atelier_garde_test", "test_demande_db")
     # Le faux serveur raccroche : la fixture saute (« PostgreSQL indisponible »), comme
     # sans base — mais la connexion l'a ATTEINT, ce qui prouve que la garde l'a laissée passer.
     assert issues["test_demande_db"][0] == "skipped", sortie
@@ -126,7 +128,18 @@ def test_db_sur_une_base_jetable_est_autorisee(tmp_path):
 
 
 def test_drop_schema_hors_fixture_sans_declaration_est_refuse(tmp_path):
-    issues, _, _, sortie = _session(tmp_path, "atelier_garde_test")
+    issues, _, _, sortie = _session(tmp_path, "atelier_garde_test", "test_drop_schema_sans_declaration")
     issue, texte = issues["test_drop_schema_sans_declaration"]
     assert issue in ("failure", "error") and "sans le déclarer" in texte, f"{issue}\n{texte}\n{sortie}"
 
+
+
+def test_la_garde_est_branchee_dans_cette_session(request):
+    """Les tests ci-dessus prouvent que la garde fonctionne ; celui-ci, qu'elle est
+    branchée ICI (`../tools/pytest`, un autre chemin que celui du moteur)."""
+    import psycopg
+
+    assert request.config.pluginmanager.has_plugin("garde_base"), (
+        "garde_base absente de la session : voir addopts et pythonpath dans wouri-lqe/pytest.ini"
+    )
+    assert hasattr(psycopg.Cursor.execute, "__garde__"), "garde chargée mais psycopg non surveillé"

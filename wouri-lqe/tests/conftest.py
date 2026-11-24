@@ -19,6 +19,15 @@ from app.services.migrate import run_migrations
 
 _TABLES = "languages, assignments, productions, media, dictation"
 
+
+def pytest_collection_modifyitems(items):
+    """#638 : demander `db` (directement ou via seeded/corpus) VAUT déclaration du droit à
+    la base — visible dans la signature du test. La garde (tools/pytest/garde_base.py)
+    refuse la base à tout le reste, et n'accepte qu'un nom finissant par `_test`."""
+    for item in items:
+        if "db" in getattr(item, "fixturenames", ()):
+            item.add_marker(pytest.mark.base_de_donnees)
+
 # Verdict mis en cache : sans base joignable, chaque tentative coute le timeout du
 # pool (LQE_DB_POOL_TIMEOUT, issue #494). On ne le paie qu'une fois par session.
 _indisponible: str | None = None
