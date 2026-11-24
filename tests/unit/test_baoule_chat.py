@@ -142,21 +142,32 @@ async def test_handler_repli_honnete_et_escalade(branche):
 
 @pytest.mark.asyncio
 async def test_recherche_ne_bloque_pas_la_boucle(branche, monkeypatch):
-    """#622 : pendant la recherche, la boucle reste libre de servir les autres requêtes.
+    """#622 : pendant que la recherche tourne, la boucle avance.
 
-    Poignée de main, pas chronomètre : la fausse recherche attend un signal que seule
-    une autre tâche de la boucle peut lever. Appelée en ligne, elle bloque la boucle,
-    cette tâche ne tourne jamais et l'attente expire ; déportée, la tâche la libère.
+    Poignée de main, pas chronomètre : une autre tâche de la boucle attend que la
+    recherche ait COMMENCÉ, puis lève le signal que la recherche attend. Appelée en
+    ligne, la recherche bloque la boucle, la tâche ne peut plus tourner et l'attente
+    expire ; déportée, la tâche la libère. Le test garde cette propriété quel que soit
+    le nombre d'`await` qui précèdent la recherche dans `process`.
+
+    La scrutation est bornée et le signal toujours levé : si la recherche n'était
+    jamais appelée, le test échouerait sur la réponse au lieu de pendre.
     """
-    signal = threading.Event()
+    commencee, signal = threading.Event(), threading.Event()
 
     def recherche_qui_attend(*args, **kwargs):
+        commencee.set()
         assert signal.wait(timeout=2), "la boucle est restée bloquée pendant la recherche"
         return baoule_ivr.Trouvaille(CACAO_PLANTER, 0.9, 0.9)
 
     monkeypatch.setattr(baoule_ivr, "chercher", recherche_qui_attend)
 
     async def autre_requete():
+        # Borne dure en temps, pas en tours : sous Windows, sleep(0.001) dure ~15 ms.
+        boucle = asyncio.get_running_loop()
+        echeance = boucle.time() + 2
+        while not commencee.is_set() and boucle.time() < echeance:
+            await asyncio.sleep(0.001)
         signal.set()
 
     nlu = nlu_preprocessor.preprocess_nlu(CACAO_PLANTER["question_bci"], None, Language.BAOULE)
