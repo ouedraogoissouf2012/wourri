@@ -32,10 +32,21 @@ def _lignes(chemin):
     return [json.loads(l) for l in chemin.read_text(encoding="utf-8").splitlines() if l.strip()]
 
 
-def test_un_ajout_pendant_une_decision_n_est_pas_efface(chemin, monkeypatch):
-    """Le scénario de l'issue, rendu déterministe à DEUX fils : A décide ; juste après sa
-    lecture, B (un agriculteur qui vote 👎) ajoute sa tâche. Sans verrou, B passe et A
-    réécrit sa copie : la question disparaît. Avec verrou, B attend la fin de A."""
+# Les deux réécritures complètes de la file : décider (atelier) et marquer remise (chat).
+REECRITURES = {
+    "decide_task": (lambda tid, p: q.decide_task(tid, "speaker_accepted", path=p),
+                    lambda tache: tache.get("status") == "speaker_accepted"),
+    "mark_delivered": (lambda tid, p: q.mark_delivered(tid, path=p),
+                       lambda tache: bool(tache.get("delivered_at"))),
+}
+
+
+@pytest.mark.parametrize("nom", sorted(REECRITURES))
+def test_un_ajout_pendant_une_reecriture_n_est_pas_efface(chemin, monkeypatch, nom):
+    """Le scénario de l'issue, rendu déterministe à DEUX fils : A réécrit la file ; juste
+    après sa lecture, B (un agriculteur qui vote 👎) ajoute sa tâche. Sans verrou, B passe
+    et A réécrit sa copie : la question disparaît. Avec verrou, B attend la fin de A."""
+    reecrire, appliquee = REECRITURES[nom]
     a_decider = _ajouter(chemin, 0)
     lu, b_fini, fil_a, nouvelle = threading.Event(), threading.Event(), {}, {}
     vraie_lecture = pathlib.Path.read_text
@@ -52,14 +63,13 @@ def test_un_ajout_pendant_une_decision_n_est_pas_efface(chemin, monkeypatch):
         lu.wait(5)
         nouvelle["id"] = _ajouter(chemin, 1)
         b_fini.set()
-    fil_a["fil"] = threading.Thread(target=q.decide_task, args=(a_decider, "speaker_accepted"),
-                                    kwargs={"path": chemin})
+    fil_a["fil"] = threading.Thread(target=reecrire, args=(a_decider, chemin))
     fil_b = threading.Thread(target=agriculteur)
     fil_a["fil"].start(); fil_b.start(); fil_a["fil"].join(5); fil_b.join(5)
 
-    etats = {t["id"]: t["status"] for t in _lignes(chemin)}
-    assert nouvelle["id"] in etats, "la tâche ajoutée pendant la décision a été effacée"
-    assert etats[a_decider] == "speaker_accepted"
+    taches = {t["id"]: t for t in _lignes(chemin)}
+    assert nouvelle["id"] in taches, f"la tâche ajoutée pendant {nom} a été effacée"
+    assert appliquee(taches[a_decider]), f"{nom} n'a pas été appliqué"
 
 
 def test_vrais_fils_ni_perte_ni_ligne_illisible(chemin):
