@@ -145,11 +145,20 @@ def list_corpus(*, language: str) -> list[dict]:
     return repo.list_by(language=language, status="production", kind=repo.CONTENU)
 
 
-def list_validations(*, language: str, kind: str) -> list[dict]:
+def list_validations(*, language: str, kind: str) -> dict:
     """Elements de validation (mot_cle, paire_qr) d'une langue, tous statuts (ADR-0045).
 
     Le NLU baoule ne retient que les elements 'admin_accepted' (texte eventuellement
-    corrige par le locuteur) ; les autres statuts restent visibles pour le suivi."""
-    if kind == repo.CONTENU or kind not in repo.KINDS:
-        return []
-    return repo.list_by(language=language, kind=kind)
+    corrige par le locuteur) ; les autres statuts restent visibles pour le suivi.
+
+    Deux causes, deux reponses (#640) :
+    - `contenu` est un kind REEL qui n'est jamais une validation : « zero validation de ce
+      type » est vrai par definition -> {"ok": True, "entries": []} ;
+    - un kind absent de KINDS (faute de frappe : `paires_qr`) -> refus `unknown_kind`, avec
+      le kind recu et les valeurs attendues. Une liste vide y cacherait ce que l'appelant
+      voulait lire : un corpus ampute, sans un mot."""
+    if kind not in repo.KINDS:
+        return {"ok": False, "reason": "unknown_kind", "kind": kind, "attendus": list(repo.KINDS)}
+    if kind == repo.CONTENU:
+        return {"ok": True, "entries": []}
+    return {"ok": True, "entries": repo.list_by(language=language, kind=kind)}
