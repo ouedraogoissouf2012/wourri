@@ -12,6 +12,7 @@ from app.middleware.admin_metrics import set_request_metric_context
 from app.routers._audio_upload import read_audio_within_limits, resolve_extension
 from app.security import require_api_key
 from app.services.asr import ASRChain, get_asr_chain, get_generic_asr_chain
+from app.services.mesure_asr import transcrire_mesure
 from app.services.tts_bambara import translate_to_french
 
 logger = logging.getLogger(__name__)
@@ -82,7 +83,8 @@ async def transcribe_audio(
     chain = _resolve_chain(language)
 
     set_request_metric_context(request, asr_success=False)
-    transcription = await chain.transcribe(audio_bytes, extension)
+    transcription = await transcrire_mesure(chain, audio_bytes, extension,
+                                            endpoint="transcribe", langue=language)
 
     if transcription is None:
         raise HTTPException(
@@ -124,7 +126,8 @@ async def transcribe_and_translate(
     chain = _resolve_chain(language)
 
     set_request_metric_context(request, asr_success=False)
-    transcription = await chain.transcribe(audio_bytes, extension)
+    transcription = await transcrire_mesure(chain, audio_bytes, extension,
+                                            endpoint="transcribe-and-translate", langue=language)
 
     if transcription is None:
         raise HTTPException(status_code=500, detail="Echec de la transcription")
