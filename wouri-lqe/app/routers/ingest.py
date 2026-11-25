@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 
-from app.routers.session import require_role
+from app.routers.session import langue_du_locuteur, require_role
 from app.services.assignments import parity_ok
 from app.services.audio_store import LocalAudioStore
 from app.services.ingest import ingest, ingest_response, is_validation_kind, parse_upload
@@ -32,6 +32,7 @@ def _guard_parity(entries: list, language: str) -> None:
 
 @router.post("/json")
 async def ingest_json(request: Request, user: dict = Depends(require_role("ingest"))):
+    lang = langue_du_locuteur(user)
     payload = await request.json()
     if isinstance(payload, dict) and isinstance(payload.get("entries"), list):
         entries = payload["entries"]
@@ -39,8 +40,8 @@ async def ingest_json(request: Request, user: dict = Depends(require_role("inges
         entries = payload
     else:
         entries = [payload] if isinstance(payload, dict) else []
-    _guard_parity(entries, user["lang"])
-    result = ingest(entries, language=user["lang"], actor=user["u"])
+    _guard_parity(entries, lang)
+    result = ingest(entries, language=lang, actor=user["u"])
     if not result.get("ok"):
         raise HTTPException(status_code=400, detail=result)
     return result
@@ -48,6 +49,7 @@ async def ingest_json(request: Request, user: dict = Depends(require_role("inges
 
 @router.post("/file")
 async def ingest_file(file: UploadFile = File(...), user: dict = Depends(require_role("ingest"))):
+    lang = langue_du_locuteur(user)
     raw = await file.read()
     if len(raw) > 5_000_000:
         raise HTTPException(status_code=400, detail="too_large")
@@ -55,8 +57,8 @@ async def ingest_file(file: UploadFile = File(...), user: dict = Depends(require
         entries = parse_upload(file.filename or "", raw)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    _guard_parity(entries, user["lang"])
-    result = ingest(entries, language=user["lang"], actor=user["u"])
+    _guard_parity(entries, lang)
+    result = ingest(entries, language=lang, actor=user["u"])
     if not result.get("ok"):
         raise HTTPException(status_code=400, detail=result)
     return result
@@ -77,7 +79,11 @@ async def ingest_audio(
     user: dict = Depends(require_role("ingest")),
 ):
     """Réponse d'un locuteur à une assignation : audio natif requis + texte optionnel.
-    Stocke l'audio (audio_store) puis crée la production bronze rattachée au concept."""
+    Stocke l'audio (audio_store) puis crée la production bronze rattachée au concept.
+
+    La langue est tranchée AVANT de stocker l'audio : une session `*` gardait sinon un
+    fichier que rien ne référence (#643)."""
+    lang = langue_du_locuteur(user)
     mime = (audio.content_type or "audio/webm").split(";")[0].strip()
     if mime not in _ALLOWED_AUDIO:
         raise HTTPException(status_code=400, detail="format_audio_non_supporte")
@@ -89,7 +95,7 @@ async def ingest_audio(
     ref = LocalAudioStore().save(raw, mime=mime)
     result = ingest_response(
         concept_id=concept_id, text_local=text_local, text_fr=text_fr,
-        audio_url=ref, language=user["lang"], actor=user["u"], kind=kind,
+        audio_url=ref, language=lang, actor=user["u"], kind=kind,
     )
     if not result.get("ok") and not result.get("duplicate"):
         raise HTTPException(status_code=400, detail=result)

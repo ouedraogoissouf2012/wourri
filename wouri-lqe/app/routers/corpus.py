@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.routers.session import current_user, langue_visee, require_role
+from app.routers.session import current_user, langue_du_locuteur, langue_visee, require_role
 from app.services import assignments, workflow
 
 logger = logging.getLogger(__name__)
@@ -39,15 +39,16 @@ def get_corpus(language: str | None = None, user: dict = Depends(current_user)):
 
 @router.post("/promote")
 def post_promote(body: PromoteBody, user: dict = Depends(require_role("promote"))):
-    result = workflow.promote(body.id, language=user["lang"], actor=user["u"])
+    lang = langue_du_locuteur(user)
+    result = workflow.promote(body.id, language=lang, actor=user["u"])
     if not result.get("ok"):
         raise HTTPException(status_code=400, detail=result.get("reason"))
     # ferme la boucle : si la production promue repond a une assignation, la marquer 'done'
     concept_id = (result.get("entry") or {}).get("concept_id")
     if concept_id:
         try:
-            assignments.mark_done(concept_id=concept_id, language=user["lang"])
+            assignments.mark_done(concept_id=concept_id, language=lang)
         except Exception as exc:  # la promotion est deja actee : ne jamais la faire echouer
-            logger.warning("mark_done apres promote (%s/%s): %s", concept_id, user["lang"], exc)
+            logger.warning("mark_done apres promote (%s/%s): %s", concept_id, lang, exc)
     return result
 
