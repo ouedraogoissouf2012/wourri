@@ -5,6 +5,7 @@ UI console Marcel pourra appeler ces routes plus tard.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 
 from typing import Any
@@ -78,7 +79,7 @@ async def baoule_upload_json(file: UploadFile = File(...)):
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise HTTPException(status_code=400, detail=f"JSON invalide: {exc}") from exc
 
-    result = ingest_baoule_json(payload, provider_id="provider_baoule_upload")
+    result = await asyncio.to_thread(ingest_baoule_json, payload, provider_id="provider_baoule_upload")
     status = 200 if result.get("ok") else 400
     return JSONResponse(result, status_code=status)
 
@@ -86,6 +87,6 @@ async def baoule_upload_json(file: UploadFile = File(...)):
 @router.post("/upload-json", dependencies=[Depends(require_api_key)])
 async def baoule_upload_body(payload: Any = Body(...)):
     """Même chose avec body JSON brut (sans multipart)."""
-    result = ingest_baoule_json(payload, provider_id="provider_baoule_api")
+    result = await asyncio.to_thread(ingest_baoule_json, payload, provider_id="provider_baoule_api")
     status = 200 if result.get("ok") else 400
     return JSONResponse(result, status_code=status)

@@ -22,6 +22,7 @@ Issue : #277 (PR 2/4)
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Optional
 
@@ -165,7 +166,7 @@ class DioulaHandler:
                     language=language,
                     user_id=user_id,
                 )
-            escalate(nlu, city, user_id, SOURCE_LLM_ESCALATED)
+            await asyncio.to_thread(escalate, nlu, city, user_id, SOURCE_LLM_ESCALATED)
 
         # Niveau 3 : DeepSeek dioula + traduction NLLB + TTS
         return await try_deepseek_dioula(

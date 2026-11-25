@@ -31,6 +31,7 @@ Pattern : fonctions module-level orchestrées par les handlers, à l'identique d
 """
 from __future__ import annotations
 
+import asyncio
 import contextvars
 import logging
 from typing import Optional
@@ -167,7 +168,7 @@ async def build_escalation_response(
     Renvoie TOUJOURS un `ChatResult` (jamais None) : c'est précisément le point
     où l'on refuse de laisser le LLM inventer. Rendu en français (dette dioula).
     """
-    escalate(nlu, city, user_id, SOURCE_ESCALATED)
+    await asyncio.to_thread(escalate, nlu, city, user_id, SOURCE_ESCALATED)
 
     audio_url = None
     if include_audio:

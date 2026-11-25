@@ -19,6 +19,7 @@ Issue : #276 (PR 1/4)
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Optional
 
@@ -130,7 +131,7 @@ class FrenchHandler:
                     language=language,
                     user_id=user_id,
                 )
-            escalate(nlu, city, user_id, SOURCE_LLM_ESCALATED)
+            await asyncio.to_thread(escalate, nlu, city, user_id, SOURCE_LLM_ESCALATED)
 
         from app.services.deepseek import chat_with_deepseek
         from app.services.tts_french import synthesize_french

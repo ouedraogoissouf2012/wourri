@@ -202,7 +202,11 @@ EXPOSE 8000
 # uvicorn en mode prod : 1 worker, sans reload, log JSON propre.
 # #520 : UN SEUL worker. L'historique de conversation, les caches météo et les
 # compteurs de rate limiting vivent en mémoire PAR processus, et la file JSONL
-# d'escalade est réécrite sans verrou : avec 2 workers, un même agriculteur
+# d'escalade n'est protégée que par un verrou DE PROCESSUS (#656). Attention : un
+# seul worker ne sérialisait PAS ces écritures — FastAPI exécute les gestionnaires
+# `def` dans un pool de fils (mesuré avant #656 : 39 tâches perdues sur 2000 à un
+# worker). C'est le verrou du module qui les sérialise, et seulement dans un
+# processus : à 2 workers, il ne protège plus rien. Avec 2 workers, un même agriculteur
 # tombait tour à tour sur deux historiques différents, et chaque worker
 # chargeait sa propre copie des modèles (ASR MMS 1B, NLLB, TTS). Le trafic
 # mesuré (88 requêtes de chat en 30 jours, ADR-0039) ne justifie pas un 2e

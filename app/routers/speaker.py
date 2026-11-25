@@ -1,6 +1,7 @@
 """Écran locuteur FR — file dyu (#433). Auth = Better Auth (Convex), session cookie locale."""
 from __future__ import annotations
 
+import asyncio
 from fastapi import APIRouter, Form, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 
@@ -58,7 +59,7 @@ async def speaker_home(request: Request):
             </form>
             """
         )
-    tasks = list_tasks(status="bronze", language="dyu")
+    tasks = await asyncio.to_thread(list_tasks, status="bronze", language="dyu")
     if not tasks:
         cards = "<p>Aucune phrase Bronze dyu pour le moment.</p>"
     else:
@@ -147,5 +148,5 @@ async def speaker_decide(
     )
     if not mapped:
         return RedirectResponse("/speaker/", status_code=303)
-    decide_task(id, mapped)
+    await asyncio.to_thread(decide_task, id, mapped)
     return RedirectResponse("/speaker/", status_code=303)
