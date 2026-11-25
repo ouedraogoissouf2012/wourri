@@ -50,7 +50,11 @@ def get_validations(kind: str, language: str | None = None,
     la langue (`language`, voir `langue_visee`), une seule : le build ne trie pas les entrees
     par langue, une reponse melangee polluerait le NLU sans un mot."""
     lang = langue_visee(user, language)
-    entries = workflow.list_validations(language=lang, kind=kind)
+    result = workflow.list_validations(language=lang, kind=kind)
+    if not result["ok"]:
+        # Le seul refus qui transporte une donnee utile : l'orthographe attendue (#640).
+        raise HTTPException(status_code=400, detail={k: v for k, v in result.items() if k != "ok"})
+    entries = result["entries"]
     return {"language": lang, "kind": kind, "entries": entries, "count": len(entries)}
 
 

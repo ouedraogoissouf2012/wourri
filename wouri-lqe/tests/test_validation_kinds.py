@@ -84,3 +84,42 @@ def test_route_validations_par_type(seeded, monkeypatch, tmp_path):
     paires = c.get("/tasks/validations", params={"kind": "paire_qr"}).json()["entries"]
     assert paires[0]["meta"]["reponse_fr"] == "On le plante ..."
     assert c.get("/tasks/validations", params={"kind": "contenu"}).json()["entries"] == []
+
+
+# ------------------------------------------------------------------ un kind inconnu (#640)
+
+
+_PAIRE = {"kind": "paire_qr", "text_local": "Blɛ benin yɛ be lua kakao ɔ ?",
+          "text_fr": "Quand planter le cacao ?", "reponse_bci": "Be lua i ...",
+          "reponse_fr": "On le plante ...", "id": "q1"}
+
+
+def test_un_kind_inconnu_est_refuse_en_nommant_les_valeurs_attendues(seeded, monkeypatch, tmp_path):
+    """Une faute de frappe (`paires_qr`) répondait 200 et une liste vide : un corpus amputé
+    sans un mot. Le refus dit ce qui a été reçu et l'orthographe juste, tirée de KINDS."""
+    ingest([_MOT, _PAIRE], language="bci", actor="loc")
+    c = _client(monkeypatch, tmp_path)
+    for faute in ("paires_qr", "mots_cles"):
+        r = c.get("/tasks/validations", params={"kind": faute})
+        assert r.status_code == 400, f"{faute} : {r.status_code} {r.text[:120]}"
+        assert r.json()["detail"] == {"reason": "unknown_kind", "kind": faute, "attendus": list(repo.KINDS)}
+
+
+def test_contenu_est_un_kind_reel_sans_validation(seeded, monkeypatch, tmp_path):
+    """`contenu` existe mais n'est jamais une validation (ADR-0045) : « zéro validation de
+    ce type » est VRAI par définition — liste vide, jamais un refus, même avec des
+    mots-clés, des paires ET du contenu en base (le contenu n'est jamais rendu ici)."""
+    ingest([_MOT, _PAIRE, {"text_local": "contenu (factice)", "text_fr": "fr"}], language="bci", actor="loc")
+    r = _client(monkeypatch, tmp_path).get("/tasks/validations", params={"kind": "contenu"})
+    assert r.status_code == 200
+    assert r.json()["entries"] == [] and r.json()["count"] == 0
+
+
+def test_le_service_distingue_les_deux_causes(seeded):
+    """Deux causes, deux réponses nommées : un kind réel sans validation, un kind inexistant."""
+    assert workflow.list_validations(language="bci", kind="contenu") == {"ok": True, "entries": []}
+    assert workflow.list_validations(language="bci", kind="paires_qr") == {
+        "ok": False, "reason": "unknown_kind", "kind": "paires_qr", "attendus": list(repo.KINDS)}
+    ingest([_MOT], language="bci", actor="loc")
+    r = workflow.list_validations(language="bci", kind="mot_cle")
+    assert r["ok"] is True and [e["text_local"] for e in r["entries"]] == ["kakao"]
