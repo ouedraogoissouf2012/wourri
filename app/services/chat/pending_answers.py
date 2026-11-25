@@ -23,6 +23,7 @@ le prix explicite du refus de constituer une base ré-identifiante.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Awaitable, Callable, Optional
 
@@ -70,7 +71,7 @@ async def build_pending_answer(
 
         # SENS DIRECT uniquement : identifiant détenu → empreinte.
         empreinte = anonymize_user_id(user_id)
-        taches = list_deliverables(empreinte)
+        taches = await asyncio.to_thread(list_deliverables, empreinte)
         if not taches:
             return None  # cas de loin le plus fréquent : sortie immédiate
 
@@ -112,7 +113,7 @@ async def build_pending_answer(
 
         # Marquer APRÈS avoir obtenu une réponse : si le rejeu échoue, la tâche
         # reste en attente et sera retentée au prochain échange.
-        mark_delivered(tache.get("id") or "")
+        await asyncio.to_thread(mark_delivered, tache.get("id") or "")
 
         rappel = PREFIXE_RAPPEL_FR.format(question=question)
         texte = f"{rappel}\n\n{resultat.response}"

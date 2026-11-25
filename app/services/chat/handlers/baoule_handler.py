@@ -87,7 +87,7 @@ class BaouleHandler:
 
         from app.services.chat.llm_guard import escalate
 
-        escalate(nlu, city, user_id, SOURCE_HORS_CORPUS_BCI, excerpt=texte)
+        await asyncio.to_thread(escalate, nlu, city, user_id, SOURCE_HORS_CORPUS_BCI, excerpt=texte)
         # #623 : une requête en base, hors de la boucle comme la recherche (#622) ; le repli
         # ne lit que les filières, jamais le corpus entier.
         sujets = _sujets(await asyncio.to_thread(baoule_ivr.filieres))

@@ -21,6 +21,7 @@ n'est produit nulle part. La SEULE source de dioula machine est `deepseek_open`
 (traduction NLLB du fallback DeepSeek) : c'est elle, et elle seule, qui alimente
 la file de revue native.
 """
+import asyncio
 import json
 import logging
 import os
@@ -201,7 +202,8 @@ async def feedback_negatif(req: FeedbackRequest):
     # ADR-0031 / #431 : 👎 → tâche Bronze (file équivalente). Jamais de corpus.
     from app.services.improvement_queue import enqueue_improvement_task
 
-    enqueue_improvement_task(
+    await asyncio.to_thread(
+        enqueue_improvement_task,
         intent=req.intent,
         source=req.source,
         cultures=req.cultures,

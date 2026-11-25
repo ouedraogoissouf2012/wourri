@@ -5,6 +5,7 @@ Aucune publication corpus dioula.
 """
 from __future__ import annotations
 
+import asyncio
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -122,7 +123,7 @@ async def baoule_api_upload_json(
     user: str = Depends(require_baoule_session),
 ):
     payload = await request.json()
-    result = ingest_baoule_json(payload, provider_id=f"baoule:{user}")
+    result = await asyncio.to_thread(ingest_baoule_json, payload, provider_id=f"baoule:{user}")
     return JSONResponse(result, status_code=200 if result.get("ok") else 400)
 
 
@@ -138,7 +139,7 @@ async def baoule_api_upload_file(
         payload = parse_upload(file.filename or "", raw)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    result = ingest_baoule_json(payload, provider_id=f"baoule:{user}")
+    result = await asyncio.to_thread(ingest_baoule_json, payload, provider_id=f"baoule:{user}")
     return JSONResponse(result, status_code=200 if result.get("ok") else 400)
 
 
